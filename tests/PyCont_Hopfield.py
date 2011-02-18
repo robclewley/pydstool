@@ -1,0 +1,108 @@
+#Author:    David Sterratt
+#Date:      May 2007
+""" EXAMPLE: Hopfield.
+    Uses special math functions and user-defined stopping criteria for PyCont.
+
+    David Sterratt, May 2007
+"""
+
+from PyDSTool import *
+from scipy.special import *
+
+pars = {'alpha': 0.1,
+        'p': 0.5,
+        'theta': 0.,
+        'gamma': 0.,
+        'lambda': 0.,
+        'chi': 1.}
+ 
+icdict = {'m': 1., 'r': 1, 'C': 0., 's': 0}
+
+# Set up model
+auxfndict = {'sigsq': (['s', 'r'], 'alpha*(4.*p*(1.-p)*r+pow((1.-chi)*s+lambda,2))'), \
+             'yp': (['m', 's', 'r'], '(2.*(1.-p)*m-gamma*s-theta)/sqrt(2*alpha*(4*p*(1-p)*r+pow((1-chi)*s+lambda,2)))'), \
+             'ym': (['m', 's', 'r'], '(2.*(-p)*m-gamma*s-theta)/sqrt(2*alpha*(4*p*(1-p)*r+pow((1-chi)*s+lambda,2)))')}
+		
+mstr = '-m + 0.5*special_erf(yp(m,s,r)) - 0.5*  special_erf(ym(m,s,r))'
+sstr = '-s + p*  special_erf(yp(m,s,r)) + (1-p)*special_erf(ym(m,s,r))'
+rstr = '-r + (1-pow(s,2))/(4*p*(1-p)*(pow(1-C,2)))'
+Cstr = '-C + sqrt(2/(pi*sigsq(s,r)))*(p*exp(-pow(yp(m,s,r),2))+(1-p)*exp(-pow(ym(m,s,r),2)))'
+
+DSargs = args(name='Hopfield')
+DSargs.pars = pars
+DSargs.varspecs = {'m': mstr, 's': sstr, 'r': rstr, 'C': Cstr}
+DSargs.fnspecs = auxfndict
+DSargs.ics = icdict
+DSargs.tdomain = [0,100]
+DSargs.pdomain = {'theta': [-0.6,0.6], 'alpha': [0.001, 20]}
+DSargs.algparams = {'init_step' :0.2, 'strictopt':False}
+
+testDS = Generator.Vode_ODEsystem(DSargs)
+
+print 'Integrating...'
+start = clock()
+testtraj = testDS.compute('testDS')
+print '  ... finished in %.3f seconds.\n' % (clock()-start)
+
+if 0:
+    plotData=testtraj.sample(dt=0.1)
+    mline=pylab.plot(plotData['t'],plotData['m'])
+    rline=pylab.plot(plotData['t'],plotData['r'])
+    Cline=pylab.plot(plotData['t'],plotData['C'])
+    sline=pylab.plot(plotData['t'],plotData['s'])
+    pylab.legend([mline,rline,Cline,sline],['m','r','C','s'])
+    show()
+
+# Set up continuation class
+PyCont = ContClass(testDS)
+
+PCargs = args(name='EQ1', type='EP-C')
+PCargs.freepars = ['alpha']
+PCargs.StepSize = 1e-2
+PCargs.MaxNumPoints = 350
+PCargs.MaxStepSize = 1.
+PCargs.LocBifPoints = 'all'
+PCargs.verbosity = 2
+PCargs.SaveEigen = True
+PCargs.MaxTestIters = 200
+PyCont.newCurve(PCargs)
+
+print 'Computing curve...'
+start = clock()
+PyCont['EQ1'].forward()
+print 'done in %.3f seconds!' % (clock()-start)
+
+if 0: 
+    PyCont.display(('alpha','m'),stability=True)
+    show()
+
+PCargs.name = 'FO1'
+PCargs.type = 'LP-C'
+PCargs.freepars = ['alpha','theta']
+PCargs.initpoint = 'EQ1:LP1'
+PCargs.StopAtPoints = ['B']
+PyCont.newCurve(PCargs)
+
+print 'Computing curve...'
+start = clock()
+PyCont['FO1'].forward()
+PyCont['FO1'].backward()
+print 'done in %.3f seconds!' % (clock()-start)
+
+PyCont['FO1'].display(('theta','alpha'),stability=True)
+show()
+
+# # Plot
+# PyCont.display(('Iapp','v'),stability=True)
+# PyCont['LC1'].display(('Iapp','v_min'),stability=True)
+
+# pylab.xlim([-25, 150])
+# PyCont.plot.fig1.axes1.axes.set_title('Bifurcation Diagram')
+# PyCont.plot.fig1.toggleAll('off', bytype=['P', 'MX'])
+
+# PyCont['LC1'].plot_cycles(normalized=True, figure='fig2', method='highlight', exclude='MX1')
+# PyCont.plot.fig2.axes1.axes.set_title('Cycles')
+
+#PyCont.plot.setLegends('_nolegend_', bytype=['P', 'MX'])
+#PyCont.plot.fig2.refresh()
+#pylab.legend()

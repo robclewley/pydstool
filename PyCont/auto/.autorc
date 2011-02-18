@@ -1,0 +1,114 @@
+[AUTO_command_aliases]
+ls		=commandLs
+cd		=commandCd
+
+shell		=commandShell
+cat		=commandCat
+wait		=commandWait
+
+copyDemo	=commandCopyDemo
+gui		=commandCreateGUI
+
+branchPoint	=commandQueryBranchPoint
+eigenvalue	=commandQueryEigenvalue
+floquet		=commandQueryFloquet
+help		=commandInteractiveHelp
+hopf		=commandQueryHopf
+iterations	=commandQueryIterations
+limitpoint	=commandQueryLimitpoint
+note		=commandQueryNote
+secondaryPeriod	=commandQuerySecondaryPeriod
+stepsize	=commandQueryStepsize
+changeConstant	=commandRunnerConfigFort2
+printConstant	=commandRunnerPrintFort2
+append		=commandAppend
+diagramAndSolutionGet	=commandParseDiagramAndSolutionFile
+clean		=commandClean
+constantsGet	=commandParseConstantsFile	
+copy		=commandCopyDataFiles
+delete		=commandDeleteDataFiles
+deleteFort	=commandDeleteFortFiles
+diagramGet	=commandParseDiagramFile
+double		=commandDouble
+demo		=commandCopyAndLoadDemo
+load		=commandRunnerLoadName
+move		=commandMoveFiles
+plot		=commandPlotter
+plot3		=commandPlotter3D
+relabel		=commandRelabel
+run		=commandRun
+save		=commandCopyFortFiles
+solutionGet	=commandParseSolutionFile
+triple		=commandTriple
+userData	=commandUserData
+quit            =commandQuit
+
+br		=commandQueryBranchPoint
+eg		=commandQueryEigenvalue
+fl		=commandQueryFloquet
+hp		=commandQueryHopf
+it		=commandQueryIterations
+lm		=commandQueryLimitpoint
+nt		=commandQueryNote
+sc		=commandQuerySecondaryPeriod
+st		=commandQueryStepsize
+ch		=commandRunnerConfigFort2
+hch             =commandRunnerConfigFort12
+pr		=commandRunnerPrintFort2
+hpr             =commandRunnerPrintFort12
+ap		=commandAppend
+bt		=commandParseDiagramAndSolutionFile
+cl		=commandClean
+cn		=commandParseConstantsFile
+cp		=commandCopyDataFiles
+dl		=commandDeleteDataFiles
+dg		=commandParseDiagramFile
+db		=commandDouble
+dm		=commandCopyAndLoadDemo
+ld		=commandRunnerLoadName
+mv		=commandMoveFiles
+pl		=commandPlotter
+#FIXME:  This doesn't match the rule we use for all other commands
+p3	        =commandPlotter3D
+rl		=commandRelabel
+rn		=commandRun
+sv		=commandCopyFortFiles
+sl		=commandParseSolutionFile
+tr		=commandTriple
+us		=commandUserData
+        
+man		=commandInteractiveHelp
+
+bp		=commandQueryBranchPoint
+ev		=commandQueryEigenvalue
+hb		=commandQueryHopf
+lp		=commandQueryHopf
+cc		=commandRunnerConfigFort2
+pc		=commandRunnerPrintFort2
+p2		=commandPlotter
+r		=commandRun
+sp		=commandQuerySecondaryPeriod
+ss		=commandQueryStepsize
+df		=commandDeleteFortFiles
+q               =commandQuit
+
+[AUTO_plotter]
+#bifurcation_symbol     = "square"
+#limit_point_symbol     = None
+#hopf_symbol            = "fillsquare"
+#period_doubling_symbol = "circle"
+#torus_symbol           = "fillcircle"
+#user_point_symbol      = None
+#error_symbol           = "crosssquare"
+
+#solution_x = [0,3,6,9]
+#solution_y = [1,4,7,10]
+#solution_column_defaults=[[0,3,6,9],[1,4,7,10],[2,5,8,11],['t','t','t','t']]
+
+[AUTO_plotter3D]
+
+#solution_x = [0,3,6,9]
+#solution_y = [1,4,7,10]
+#solution_z = [2,5,8,11]
+#solution_color = ['t','t','t','t']
+#solution_column_defaults=[[0,3,6,9],[1,4,7,10],[2,5,8,11],['t','t','t','t']]

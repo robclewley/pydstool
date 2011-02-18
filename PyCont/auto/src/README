@@ -1,0 +1,17 @@
+This directory contains the following files:
+
+README    : This file.
+autlib1.f : Auto library routines (including main program)
+autlib2.f : Auto library routines (bvp linear equation routines)
+autlib3.f : Auto library routines (interface routines)
+autlib4.f : Auto library routines (Floquet routines)
+autlib5.f : Auto library routines (HomPack)
+stdat.f   : A subroutine for starting orbits from numerical data
+eispack.f : contains EISPACK routines needed by AUTO
+autlab.f  : A utility program for rewriting AUTO data files
+86to97.f  : A utility program to convert AUTO86 Data-files 
+94to97.f  : A utility program to convert older AUTO94 Data-files 
+double.f  : A utility program for ``doubling'' solutions in q.xxx
+Makefile  : To compile the source files
+
+Type "make" to compile.

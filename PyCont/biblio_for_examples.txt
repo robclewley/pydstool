@@ -1,0 +1,19 @@
+[1] "Matcont:  A Matlab package for dynamical systems with applications to neural activity," A. Dhooge, W. Govaerts, and Y. Kuznetsov
+
+[2] "MATCONT: A MATLAB package for numerical bifurcation analysis of ODEs," A. Dhooge, W. Govaerts, and Y. Kuznetsov
+
+[3] "Numerical methods for bifurcations of dynamical equilibria," W. Govaerts
+
+[4] "Elements of applied bifurcation theory," Y. Kuznetsov
+
+[5] "Numerical continuation, and computation of normal forms," by W. Beyn et al., Chapter 4, Handbook of Dynamical Systems, Volume 2
+
+[6] "Defining functions for multiple hopf bifurcations," by W. Govaerts, J. Guckenheimer, and A. Khibnik, SIAM J. Numer. Anal., Vol. 34 (3), pp. 1269--1288, June 1997
+
+[7] "Numerical continuation of branch points of equilibria and periodic orbits," by E. J. Doedel et al., Inter. Journal of Bifurcation and Chaos, Vol. 15, No. 3, pp. 841--860, 2005.
+
+[8] "Predator migration in response to prey density: What are the consequences?" by Y. Huang et al, J. Math Biol, Vol. 43, pp. 561-581, (2001)
+
+[9] AUTO 2000 manual
+
+[10] "Continuation of periodic orbits in conservative and Hamiltonian systems" by F.J. Munoz-Almaraz et al, Physica D, Vol. 181, pp. 1-38, (2003)

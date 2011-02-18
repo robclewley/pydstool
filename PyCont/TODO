@@ -1,0 +1,197 @@
+* Test BEM method from Govaertz's (p. 63)
+
+* codim 2 bifurcation points
+    - Have more complicated option of getting p and q if not using Hopf_Bor or Fold_Bor for 
+        continuation?
+    - Implement normal form information for codim 2 bifurcation points
+
+* BiAltProd used in MATCONT? (M1, M2, M3 -- det(A1-A2+A3))
+
+* Wiki (description of algorithms (2-3 months)
+
+# User-defined functions (use PyDSTool Events...)
+    - Implement constraints on parameters
+    - State bounds (Inf or not): active?
+
+* Could have flag that turns testfuncs off if outside parameter regime?
+
+* Fix diff for HopfCurveTwo
+
+* Implement random/update/choice for bordered vectors
+
+* Check double hopf points (like single hopf points -- See PyCont_PredPrey.py)
+
+* Check gensys.haveJacobian so PyCont can use it if it exists
+
+* Fix detection of branch points for all curve types -- Note that DH points are branch points for Hopf
+curves, so H-C1 already implements branch detection (implement tangent vector for new branch in this
+case in process()).  H-C2 still does not implement this, however.  How about fold curve?  Maybe just
+put BP in EquilibriumCurve (read paper on detection and continuation of branch points)
+
+* Generalize ClosedCurve to self.curve to self.sol
+
+* Error checking for args
+
+* Check example PyCont_PredPrey.py.  When continue fold curve from ZH point, it detects the ZH point.  Should
+I just copy the ZH point info to initial point of fold curve, or let it detect it?  If I copy the info, how do
+I prevent it from detecting it?  Actually, I think I ought to just copy it in, e.g. what if I don't detect any 
+bifurcation points?  Shouldn't I have the ZH point label on the starting point??!?!?  Don't I want to know
+where the curve originated from?
+
+* Certain test functions can be used on a curve after it is computed (BP, LP, H)
+
+* Implement getArgs for curve (spits out args class with all parameters)  This will make it easy to 
+create new curve from old ones.
+
+* Do I really need to send F and C to TestFunc?  The answer to this question is whether I will use Fold and
+Hopf test functions using Jacobians from functions other than sysfunc.  My inkling is no, so I should only
+need to send C and have the test functions choose the appropriate functions for Jacobians, since sysfunc
+always exists in C.  A related issue is moving PreTestFunc from Function class to Continuation class.  This
+makes a lot more sense, but I'm not sure if it will work.  OOPS!!!  CHECK PreTestFunc FOR CASE WHERE YOU
+USE Fold_Det TO CHECK FOR BIF.  IN CONT (_compute), YOU ONLY ALL self.CorrFunc.PreTestFunc, NOT
+self.sysfunc.PreTestFunc (which is what Fold_Det uses).  !!!!!!!!!  This needs some focused thought....
+I'm back.  PreTestFunc can calculate CorrFunc.jac, which in all cases is augmented.  SO, you can just
+set sysfunc.jac to the upper left block of CorrFunc.jac.  Truth be told, do I only need to calculate 
+sysfunc.jac??!?!  Maybe...  ONE LAST THOUGHT: Each testfunc can have it's own preTestFunc based on
+its function F.  Thus, when it locates a zero for the test function, it will call its preTestFunc.
+The curve classes preTestFunc will be similar (calculate Jacobians), but then it should go through
+the combined preTF functions for all test functions used.  It is inefficient now, though, because
+if you want to locate a bif with a test func that doesn't need to call preTF, it will call it anyway.
+So what ought to happen is as you add a new test function, add it's preTF to a list and then loop
+through the list in the curve class preTF.
+
+* Implement combine curves (if two separate curve turn out to be the same curve)  OR, implement smart
+stopping criterion for a curve.  This would require some knowledge and guessing on the users part.  Problem:
+What if the curves become asymptotic to each other?  Then how the hell do I know where to connect the curves?
+Would be cool to have a little GUI slider that moves along a specific curve, giving you information as it goes.
+Then, you could select points using this slider and cut/paste curves.  Neat...
+
+* Get rid of cont_bif_points?  (It only has BP, which is complicating things a little at the moment)
+
+* CorrThreshold in compute()??
+
+* Implement Hopf curve 3 (3n+2 method)
+
+* If have EP-C and LC-C, can interpolate fixed point associated with each cycle and plot it.  Implement this.
+
+* Replace all args with pargs (in inits and stuff.   You know what I mean...)
+
+* Change implementation of tangent vectors to AUTO method (i.e. pos and neg stepsize)
+This may get rid of complication with turning tangent vectors around when going 
+backward along curve.
+
+* Save objects
+
+* Implement NumSPOut (and SPOut) for PyCont
+
+* Allow users to select test functions
+
+* Implement extensive diagnostic of numerics
+
+* Implement MX point CORRECTLY (not this UD quick fix crap)
+
+BUGS (Mostly H-C1 and H-C2 issues, which is to be expected.  Implementing Hopf curve 3 will help...):
+----
+* Example: PyCont_ABCReaction.py.  Incorrect BT point (locator messed up) when using H-C1.  Singular matrix
+using H-C2 (both found going backwards from Hopf point H1)
+
+* Fix Brusselator second branch computation bug
+
+* Check H-C1 curve in ABReaction example
+
+* Sometimes Catalytic example gives non-smooth Hopf curve using H-C2 (also in ABC)
+
+* H-C1 breaks in FitzHugh-Nagumo at H1 and H2 (and ABReaction, sometimes)
+
+* Raise warning if plot_stability=True and SaveEigen=False.  ACTUALLY, just check data to see if stability info is 
+saved for all points.  If not, raise warning and print without stability.  NOTE:  Could just
+make all point have stability info.  Actually, could generalize idea to "behaviour" info.  
+E.g., hopf curve have hopf vs. neutral saddle in plot
+
+* Implement branch argument (like AUTO) to tell PyCont to automatically use the branch
+field in data to following a new branch
+
+* Bug with cleanLabels on fold curves
+
+* Bug with starting at B point
+
+* Can't continue from MX point from AUTO (possible problem with startx?)
+
+* Fix jacobian wrt parameters (in AUTO and PyCont)
+
+* When appending pointset, lose name information
+
+* StepSize gets screwed when do forward() then backward() w/ user defined curve???
+
+* More sophisticated StepSize/MaxCorrIters modification
+
+AUTO:
+----
+* Send Floquet multipliers back to PyCont when checking for bifurcation points.  This way I can set up BifPoints 
+that can process to make sure they are valid bifurcation points.
+
+* Get rid of initpoint in LimitCycleCurve._compute.  I only need initpars (implement this)
+
+* Delete curves (CHANGE newCurve and update and init...  YUCK!  initpar, ...  BIG CHANGE)
+
+* Problems with Jacobians
+
+* Label toggling
+
+* Save 0-th eigen info?
+
+* BUG: AUTO doesn't catch all bad floquet multiplier info!!!  (See Lorenz example)
+
+* Create user-defined test function to stop at Hopf points, instead of bouncing back
+(see MorrisLecar)
+
+* Confusion with setting of initial parameters when start new continuation
+
+* Allow parameter bounds in AUTO
+
+* Switch sp.mtot to sp.ntot (Fixed bug with index storage -- Current fix stores ntot in sp.mtot)
+
+* DOESN'T USE udotps OR rldot WHEN INITPOINT IS POINTSET!!!!!  (restart data isn't being used)
+
+* Return branch points
+
+* Allow for rotation numbers besides 2*pi
+
+Plotting:
+--------
+* Change labels to TEX
+
+* Toggle labels for curves (not just legends)
+
+* Toggle labels "byname" command allow "curve:point" syntax
+
+* Clean up point and cycle by making it not a list
+
+* Might want to remove double spaces before labels and just use set_position
+
+* Bug in setLegends (issue with curve and cycle)
+
+* Clear should only remove PyCont objects (fix this up with clearall() as well)
+
+* BUG: If display() and exception occurs, then plot_cycles() or display() again w/o
+exception occuring, plot structure is messed up
+
+* Display should have a 'bytype' method for curves and exclude (like plot_cycles)
+
+* Nice to have cycles in plot structure have ordering that appear along curve
+
+* Could save KeyEvent in axes pargs, so that clean() can clean the KeyEvent if 
+something is deleted
+
+* Be able to send function as x or y values (for example, frequency = 1/_T)
+
+* If have ton of points, would be nice to specify draw points or not (DONE: However,
+make it smarter so that you can specify draw bytype or not draw bytype)
+
+* Give function to plot_cycles so that it can apply to cycles (such as slowfastpartition,
+as well as drawing of nullclines).  In highlight method, it will then cycle through and
+"animate" the nullclines and slowfastpartition.  Possible issue with this is storing of
+all of the lines and such (see key event function in Plotting.py)
+
+Documentation
+-------------

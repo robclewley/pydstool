@@ -1,0 +1,214 @@
+#include "auto_f2c.h"
+#include "auto_c.h"
+
+int main(int argc, char *argv[])
+{
+    AutoData *Data;
+    doublereal *cycle;
+    doublereal *ups, *udotps, *rldot;
+    doublereal period;
+    integer i, j;
+    doublereal u[3] = {0., 0., 0.};
+    integer ipar[4] = {0, 1, 2, 10};
+    doublereal par[4] = {280., 2.6666666666666665, 10., 0.4332};
+    
+    Data = (AutoData *)MALLOC(sizeof(AutoData));
+    
+    BlankData(Data);
+    DefaultData(Data);
+
+    Data->iap.irs = 1;
+    Data->iap.ips = 2;
+    Data->iap.ilp = 0;
+    Data->iap.ndim = 3;
+    Data->iap.nicp = 2;
+    Data->iap.ntst = 20;
+    Data->iap.ncol = 4;
+    Data->iap.isp = 0;
+    Data->iap.npr = 20;
+    Data->rap.ds = -0.5;
+    Data->rap.dsmin = 0.01;
+    Data->rap.dsmax = 25.0;
+    Data->rap.epsl = 1e-7;
+    Data->rap.epsu = 1e-7;
+    Data->rap.epss = 0.0001;
+    Data->iap.nmx = 70;
+    Data->rap.rl0 = -Inf;
+    Data->rap.rl1 = Inf;
+    
+    // Load data from lor.dat
+    FILE *fp = fopen("lor.dat","r");
+    if (fp == NULL) {
+        fprintf(stdout,"Error:  Could not open lor.dat\n");
+        exit(1);
+    }
+    cycle = (doublereal *)MALLOC(4*117*sizeof(doublereal));
+    for (j=0; j<117; j++) {
+        fscanf(fp,"%lf",&cycle[4*j]);
+        for (i=0; i<3; i++) {
+            fscanf(fp,"%lf",&cycle[1+i+j*4]);
+        }
+    }
+    fclose(fp);
+    
+    // Tweak times
+    period = cycle[4*116] - cycle[0];
+    for (i=116; i>=0; i--)
+        cycle[4*i] = (cycle[4*i] - cycle[0])/period;
+    
+    fprintf(stdout,"Period = %lf\n", period);
+    fflush(stdout);
+    
+    ups = (doublereal *)MALLOC(Data->iap.ncol*(Data->iap.ntst+1)*(Data->iap.ndim+1)*sizeof(doublereal));
+    udotps = (doublereal *)MALLOC(Data->iap.ncol*(Data->iap.ntst+1)*Data->iap.ndim*sizeof(doublereal));
+    rldot = (doublereal *)MALLOC(Data->iap.nicp*sizeof(doublereal));
+    prepare_cycle(Data, cycle, 117, ups, udotps, rldot);
+    FREE(cycle);
+        
+    Data->icp = (integer *)REALLOC(Data->icp,Data->iap.nicp*sizeof(integer));
+    Data->icp[1] = 10;
+    
+    // Create special point
+    CreateSpecialPoint(Data,9,1,u,4,ipar,par,Data->icp,ups,udotps,rldot);
+    
+    { 
+	integer nmx, npr, verbosity;
+	double ds, dsmin, dsmax;
+	integer SUCCESS = 1;
+
+    FREE(ups);
+    FREE(udotps);
+    FREE(rldot);
+     
+	nmx = Data->iap.nmx;
+	npr = Data->iap.npr;
+	ds = Data->rap.ds;
+	dsmin = Data->rap.dsmin;
+	dsmax = Data->rap.dsmax;
+	verbosity = Data->verbosity;
+
+    Data->iap.nmx = 3;
+    Data->iap.npr = 3;
+    Data->rap.ds = min(0.0001, Data->rap.ds);
+    Data->rap.dsmin = min(0.0001, Data->rap.dsmin);
+    Data->rap.dsmax = min(0.0001, Data->rap.dsmax);
+    Data->verbosity = 0;
+   
+	Data->sp[0].nfpr = 1; 
+    AUTO(Data);
+	CleanupSolution(Data);
+
+    Data->iap.nmx = nmx;
+    Data->iap.npr = npr;
+    Data->rap.ds = ds;
+    Data->rap.dsmin = dsmin;
+    Data->rap.dsmax = dsmax;
+    Data->verbosity = verbosity;
+
+    // Check for NaNs
+    for (i=0; i<Data->sp[0].nar; i++) {
+        if (isnan(Data->sp[1].u[i])) {
+            SUCCESS = 0;
+            break;
+        }
+    }
+
+	fprintf(stdout,"SUCCESS = %d\n", SUCCESS);
+	fflush(stdout);
+    if (SUCCESS) {
+        for (i=0; i<Data->sp[0].nar; i++)
+            Data->sp[0].u[i] = Data->sp[1].u[i];
+
+        for (i=0; i<Data->iap.ntst*Data->iap.ncol+1; i++)
+            for (j=0; j<Data->iap.ndim+1; j++)
+                Data->sp[0].ups[i][j] = Data->sp[1].ups[i][j];
+
+        for (i=0; i<Data->iap.ntst*Data->iap.ncol+1; i++)
+            for (j=0; j<Data->iap.ndim; j++)
+                Data->sp[0].udotps[i][j] = Data->sp[1].udotps[i][j];
+
+        for (i=0; i<Data->iap.nicp; i++)
+            Data->sp[0].rldot[i] = Data->sp[1].rldot[i];
+    }
+
+    Data->sp[0].nfpr = Data->iap.nicp;
+
+    FREE(Data->sp[1].icp);
+    FREE(Data->sp[1].u);
+    FREE(Data->sp[1].rldot);
+    FREE_DMATRIX(Data->sp[1].ups);
+    FREE_DMATRIX(Data->sp[1].udotps);
+    Data->sp[1].icp = NULL;
+    Data->sp[1].u = NULL;
+    Data->sp[1].rldot = NULL;
+    Data->sp[1].ups = NULL;
+    Data->sp[1].udotps = NULL;
+
+    Data->num_sp = 1;
+    Data->sp_len = 1;
+
+    Data->sp = (AutoSPData *)REALLOC(Data->sp, (Data->num_sp)*sizeof(AutoSPData));
+
+    CleanupAll(Data);
+    return 0;
+}
+
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+/*   lor :     The Lorenz Equations */
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+int func (integer ndim, const doublereal *u, const integer *icp,
+          const doublereal *par, integer ijac,
+          doublereal *f, doublereal *dfdu, doublereal *dfdp)
+{
+  f[0] = par[2] * (u[1] - u[0]);
+  f[1] = par[0] * u[0] - u[1] - u[0] * u[2];
+  f[2] = u[0] * u[1] - par[1] * u[2];
+
+  return 0;
+}
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+int stpnt (integer ndim, doublereal t,
+           doublereal *u, doublereal *par)
+{
+  return 0;
+}
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+int bcnd (integer ndim, const doublereal *par, const integer *icp,
+          integer nbc, const doublereal *u0, const doublereal *u1, integer ijac,
+          doublereal *fb, doublereal *dbc)
+{
+  return 0;
+}
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+int icnd (integer ndim, const doublereal *par, const integer *icp,
+          integer nint, const doublereal *u, const doublereal *uold,
+          const doublereal *udot, const doublereal *upold, integer ijac,
+          doublereal *fi, doublereal *dint)
+{
+  return 0;
+}
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+int fopt (integer ndim, const doublereal *u, const integer *icp,
+          const doublereal *par, integer ijac,
+          doublereal *fs, doublereal *dfdu, doublereal *dfdp)
+{
+  return 0;
+}
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+int pvls (integer ndim, const void *u,
+          doublereal *par)
+{
+  return 0;
+}
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+

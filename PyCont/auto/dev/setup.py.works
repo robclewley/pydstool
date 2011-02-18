@@ -1,0 +1,26 @@
+#!/sw/bin/python2.3
+#Author:    Drew LaMar
+#Date:      1 April 2006
+#$Revision: 0.2.2 $
+
+from distutils.core import setup, Extension
+import os
+
+setup(name='auto',
+      version='1.0',
+      description='AUTO module for use by PyCont in PyDSTool',
+      author='Robert Clewley, M. Drew LaMar, Erik Sherwood',
+      author_email='rclewley@macomb.cam.cornell.edu, mlamar@math.cornell.edu, sherwood@macomb.cam.cornell.edu',
+      url='http://www.sourceforge.net/projects/pydstool',
+      define_macros=[('PYTHON_MODULE', None)],
+      include_dirs=['src/include','module/include'],
+      ext_modules=[Extension('_auto',['src/auto.c', 'src/autlib1.c', 'src/autlib2.c', 'src/autlib3.c', \
+        'src/autlib4.c', 'src/autlib5.c', 'src/eispack.c', 'src/conpar.c', 'src/setubv.c', 'src/reduce.c', \
+        'src/dmatrix.c', 'src/libf2c/cabs.c', 'src/libf2c/d_lg10.c', 'src/libf2c/i_nint.c', 'src/libf2c/pow_di.c', \
+        'src/libf2c/r_lg10.c', 'src/libf2c/z_exp.c', 'src/libf2c/d_imag.c', 'src/libf2c/d_sign.c', \
+        'src/libf2c/i_dnnt.c', 'src/libf2c/pow_dd.c', 'src/libf2c/pow_ii.c', 'src/libf2c/z_abs.c', \
+        'src/libf2c/z_log.c', 'module/automod.c', 'module/interface.c', 'module/automod.i'],
+        extra_compile_args=['-w', '-DPYTHON_MODULE'])])
+        
+os.system('mv build/lib.darwin-8.6.0-PowerMacintosh-2.3/_auto.so module')
+os.system('rm -rf build')

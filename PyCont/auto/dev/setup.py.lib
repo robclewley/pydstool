@@ -1,0 +1,18 @@
+#!/sw/bin/python2.3
+#Author:    Drew LaMar
+#Date:      1 April 2006
+#$Revision: 0.2.2 $
+
+from distutils.core import setup, Extension
+
+setup(name='auto',
+      version='1.0',
+      description='AUTO module for use by PyCont in PyDSTool',
+      author='Robert Clewley, M. Drew LaMar, Erik Sherwood',
+      author_email='rclewley@macomb.cam.cornell.edu, mlamar@math.cornell.edu, sherwood@macomb.cam.cornell.edu',
+      url='http://www.sourceforge.net/projects/pydstool',
+      ext_modules=[Extension('_auto',
+        sources=[],
+        library_dirs=['lib'],
+        libraries=['auto2000','automod']
+)])

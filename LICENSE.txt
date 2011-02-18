@@ -1,0 +1,5 @@
+See __LICENSE__ in PyDSTool/__init__.py for the PyDSTool license or view it
+at the Python prompt as follows:
+
+>>> import PyDSTool
+>>> print PyDSTool.__LICENSE__

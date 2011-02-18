@@ -1,0 +1,56 @@
+<html>
+<head><title>PyDSTool v0.88</title>
+
+<body>
+<h1>PyDSTool v0.88</h1>
+
+<p>February 2011. <i>This is a beta release version.</i></p>
+
+<hr><br>
+
+<h3>Getting started</h3>
+
+<p>See the online <a href='http://pydstool.sourceforge.net'>wiki</a> site,
+particularly the GettingStarted page! Please report bugs and suggestions to this site.
+</p>
+
+<h3>Documentation</h3>
+<p>Full API documentation can be found locally <a href='./html/index.html'>here</a>, and
+further documentation and discussion is provided on the
+<a href='http://www.cam.cornell.edu/~rclewley/PyDSTool/'>wiki</a> site.</p>
+
+<h3>Tests and examples</h3>
+<p>Tests and examples can be found in the /tests/ directory. Some tests can only be run once others have
+produced their output, for instance HH_loaded.py, HH_loaded_dopri.py, imp_load_test.py. Several of the examples
+require an external compiler. An easy way to run all the tests in an appopriate order is to run the script
+'run_all_tests.py' in the /tests/ directory. There is a simple option in that file that you may need to
+edit in order to select whether the external compiler tests should be run (in case you do not have gcc
+working on your system). Note that on some platforms you will see an error report when the script tries to
+automatically close matplotlib graph windows, to the effect of:
+
+"Fatal Python error: PyEval_RestoreThread: NULL tstate".
+
+This error can be ignored. You may also have to close the plot windows yourself before the script can continue.
+This will depend on your platform and settings.</p>
+
+<p>Source files in the installation root directory also contain basic tests of their own functions. Just
+execute the files as if they were scripts.</p>
+
+<h3>Change histories</h3>
+<p>Version change histories appear in the <a href="http://jay.cam.cornell.edu/pydstool/timeline">trac</a> documentation,
+and older information is in the headers of each source file. An overview of the changes
+in a new release can be found in the SourceForge release notes.</p>
+
+<br><hr><br>
+
+<p>
+<i><h2>Credits:</h2></i>
+</p>
+<p>
+Coding and design by Robert Clewley, Erik Sherwood, Drew LaMar, and John Guckenheimer, except
+where otherwise stated in the code or documentation. (Several other
+open source codes have been redistributed here under the compatible licenses.)
+</p>
+
+</body>
+</html>

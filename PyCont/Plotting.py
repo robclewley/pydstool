@@ -1,0 +1,676 @@
+""" Plotting class and function
+
+    Drew LaMar, May 2006
+"""
+
+# ----------------------------------------------------------------------------
+# Version History:
+#   February 2007
+#       Works with SciPy 0.5.2
+#
+#   September 2006
+#       Added get method
+#       BUG FIX: refresh() now refreshes figures not axes (didn't work with axes)
+#           This is a Subplot issue.
+#       BUG FIX: set title of axes was calling pylab instead of directly
+#       Added KeyEvent class used by 'highlight' method in plot_cycles
+#
+#   June 2006
+#       Created pargs class and initializeDisplay method
+#
+# ----------------------------------------------------------------------------
+
+from PyDSTool.common import args
+from PyDSTool.matplotlib_import import *
+
+# THESE ARE REPEATS FROM CONTINUATION!  MAKE SURE AND UPDATE!!!
+all_point_types = ['P', 'RG', 'LP', 'BP', 'H', 'BT', 'ZH', 'CP', 'GH', 'DH', 'LPC', 'PD',
+                   'NS', 'MX', 'UZ', 'B']
+all_curve_types = ['EP', 'LP', 'H', 'FP', 'LC']
+
+#####
+_classes = ['pargs', 'KeyEvent']
+
+_functions = ['initializeDisplay']
+              
+__all__ = _classes + _functions
+#####
+
+class pargs(args):
+    def __getitem__(self, key):
+        if len(key.split(':')) > 1:
+            (curve, pt) = key.split(':')
+            return args.__getitem__(args.__getitem__(self, curve), pt)
+        else:
+            return args.__getitem__(self, key)
+            
+    def __repr__(self, ct=0, res=None):
+        if res is None:
+            res = []
+            
+        # This is so I can make things alphabetical
+        all_pargs = []
+        all_args = []
+        deleted = self.has_key('deleted') and self.deleted
+        if not deleted:
+            for k, v in self.iteritems():
+                if k in ['point', 'curve', 'cycle']:
+                    if v[0].get_label() != '_nolegend_':
+                        all_args.append(('Legend', v[0].get_label()))
+                elif k == 'text':
+                    if v is not None:
+                        all_args.append(('Label', v.get_text().lstrip(' ')))
+                elif k == 'type':
+                    all_args.append(('Type', self['type']))
+                elif isinstance(v, pargs):
+                    all_pargs.append((k, v))
+
+        if len(all_args) == 0 and len(all_pargs) == 0:
+            if self.has_key('deleted'):
+                res.append(ct*4*' ' + 'Deleted\n')
+            else:
+                res.append(ct*4*' ' + 'Empty\n')
+        else:
+            all_args.sort()
+            if len(all_args) > 0:
+                for n in all_args:
+                    res.append(ct*4*' ' + n[0] + ': ' + n[1] + '\n')
+                    
+            all_pargs.sort()
+            if len(all_pargs) > 0:
+                ct += 1
+                for n in all_pargs:
+                    res.append((ct-1)*4*' ' + n[0] + ':' + '\n')
+                    n[1].__repr__(ct=ct, res=res)
+                
+        if ct <= 1:
+            return reduce(lambda x, y: x+y, res)
+            
+    __str__ = __repr__
+                
+    def fromLabel(self, label, key=None):
+        point = None
+        if self.has_key('text') and self.text.get_text().lstrip(' ') == label or \
+           self.has_key('point') and self.point[0].get_label() == label or \
+           self.has_key('curve') and self.curve[0].get_label() == label:
+            return (key, self)
+        for k, v in self.iteritems():
+            if isinstance(v, pargs):
+                point = v.fromLabel(label, key=k)
+                if point is not None:
+                    break
+        return point
+        
+    def get(self, objtype, bylabel=None, byname=None, bytype=None, bylegend=None, obj=None, ct=0):
+        if objtype not in ['point', 'text', 'cycle', 'curve']:
+            raise 'Object type must be point, text, cycle, or curve'
+            
+        ct += 1
+        if isinstance(bylabel, str):
+            bylabel = [bylabel]
+        if isinstance(byname, str):
+            byname = [byname]
+        if isinstance(bytype, str):
+            bytype = [bytype]
+        if isinstance(bylegend, str):
+            bylegend = [bylegend]
+        
+        if obj is None:
+            obj = []
+        if bylabel is None and byname is None and bytype is None and bylegend is None:
+            if objtype in ['point', 'text', 'cycle']:
+                bytype = all_point_types
+            elif objtype  == 'curve':
+                bytype = all_curve_types
+        for k, v in self.iteritems():
+            if isinstance(v, pargs):
+                if v.has_key(objtype):
+                    if bylabel is not None and v.has_key('text') and v.text.get_text().lstrip(' ') in bylabel or \
+                       byname is not None and k in byname or \
+                       bytype is not None and k.strip('0123456789') in bytype or \
+                       bylegend is not None and ((v.has_key('curve') and v.curve[0].get_label() in bylegend) or (v.has_key('cycle') and v.cycle[0].get_label() in bylegend)):
+                           obj.append((k,v[objtype]))
+                v.get(objtype, bylabel=bylabel, byname=byname, bytype=bytype, bylegend=bylegend, obj=obj, ct=ct)
+                
+        if ct == 1:
+            return obj
+        
+    def toggleLabel(self, visible='on', refresh=True):
+        if self.has_key('text'):
+            self.text.set_visible(visible == 'on')
+            
+        if refresh:
+            self.refresh()
+            
+    def toggleLabels(self, visible='on', bylabel=None, byname=None, bytype=None, ct=0):
+        ct += 1
+        if isinstance(bylabel, str):
+            bylabel = [bylabel]
+        if isinstance(byname, str):
+            byname = [byname]
+        if isinstance(bytype, str):
+            bytype = [bytype]
+            
+        if bylabel is None and byname is None and bytype is None:
+            bytype = all_point_types    # Turn off all points
+        for k, v in self.iteritems():
+            if bytype is not None and k.strip('0123456789') in bytype or \
+               byname is not None and k in byname or \
+               bylabel is not None and isinstance(v, pargs) and v.has_key('text') and v.text.get_text().lstrip(' ') in bylabel:
+                v.toggleLabel(visible=visible, refresh=False)
+            elif isinstance(v, pargs):
+                v.toggleLabels(visible=visible, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
+            
+        if ct == 1:
+            self.refresh()        
+        
+    def togglePoint(self, visible='on', refresh=True):
+        if self.has_key('point'):
+            self.point[0].set_visible(visible == 'on')
+            
+        if refresh:
+            self.refresh()
+            
+    def togglePoints(self, visible='on', bylabel=None, byname=None, bytype=None, ct=0):
+        ct += 1
+        if isinstance(bylabel, str):
+            bylabel = [bylabel]
+        if isinstance(byname, str):
+            byname = [byname]
+        if isinstance(bytype, str):
+            bytype = [bytype]
+            
+        if bylabel is None and byname is None and bytype is None:
+            bytype = all_point_types    # Turn off all points
+        for k, v in self.iteritems():
+            if bytype is not None and k.strip('0123456789') in bytype or \
+               byname is not None and k in byname or \
+               bylabel is not None and isinstance(v, pargs) and v.has_key('text') and v.text.get_text().lstrip(' ') in bylabel:
+                v.togglePoint(visible=visible, refresh=False)
+            elif isinstance(v, pargs):
+                v.togglePoints(visible=visible, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
+        
+        if ct == 1:
+            self.refresh()
+        
+    def toggleCurve(self, visible='on', refresh=True):
+        if self.has_key('curve'):
+            for k, v in self.iteritems():
+                if isinstance(v, pargs):
+                    v.toggleLabel(visible=visible, refresh=False)
+                    v.togglePoint(visible=visible, refresh=False)
+            for line in self.curve:
+                line.set_visible(visible == 'on')
+                
+        if refresh:
+            self.refresh()
+                
+    def toggleCurves(self, visible='on', bylegend=None, byname=None, bytype=None, ct=0):
+        ct += 1
+        if isinstance(bylegend, str):
+            bylegend = [bylegend]
+        if isinstance(byname, str):
+            byname = [byname]
+        if isinstance(bytype, str):
+            bytype = [bytype]
+            
+        if bylegend is None and byname is None and bytype is None:
+            bytype = all_curve_types
+        for k, v in self.iteritems():
+            if bytype is not None and isinstance(v, pargs) and v.has_key('type') and v.type in bytype or \
+               byname is not None and k in byname or \
+               bylegend is not None and isinstance(v, pargs) and v.has_key('curve') and v.curve[0].get_label() in bylegend:
+                v.toggleCurve(visible=visible, refresh=False)
+            elif isinstance(v, pargs):
+                v.toggleCurves(visible=visible, bylegend=bylegend, byname=byname, bytype=bytype, ct=ct)
+
+        if ct == 1:
+            self.refresh()
+        
+    def toggleCycle(self, visible='on', refresh=True):
+        if self.has_key('cycle'):
+            for line in self.cycle:
+                line.set_visible(visible == 'on')
+                
+        if refresh:
+            self.refresh()
+                
+    def toggleCycles(self, visible='on', bylegend=None, byname=None, bytype=None, ct=0):
+        ct += 1
+        if isinstance(bylegend, str):
+            bylegend = [bylegend]
+        if isinstance(byname, str):
+            byname = [byname]
+        if isinstance(bytype, str):
+            bytype = [bytype]
+            
+        if bylegend is None and byname is None and bytype is None:
+            bytype = all_point_types
+        for k, v in self.iteritems():
+            if bytype is not None and k.strip('0123456789') in bytype or \
+               byname is not None and k in byname or \
+               bylegend is not None and isinstance(v, pargs) and v.has_key('cycle') and v.cycle[0].get_label() in bylegend:
+                v.toggleCycle(visible=visible, refresh=False)
+            elif isinstance(v, pargs):
+                v.toggleCycles(visible=visible, bylegend=bylegend, byname=byname, bytype=bytype, ct=ct)
+
+        if ct == 1:
+            self.refresh()
+            
+    def toggleAll(self, visible='on', bylabel=None, byname=None, bytype=None, ct=0):
+        ct += 1
+        if isinstance(bylabel, str):
+            bylabel = [bylabel]
+        if isinstance(byname, str):
+            byname = [byname]
+        if isinstance(bytype, str):
+            bytype = [bytype]
+            
+        if bylabel is None and byname is None and bytype is None:
+            bytype = all_point_types
+        for k, v in self.iteritems():
+            if bytype is not None and k.strip('0123456789') in bytype or \
+               byname is not None and k in byname or \
+               bylabel is not None and isinstance(v, pargs) and ((v.has_key('text') and v.text.get_text().lstrip(' ') in bylabel) or (v.has_key('curve') and v.curve[0].get_label() in bylabel) or (v.has_key('cycle') and v.cycle[0].get_label() in bylabel)):
+                v.toggleLabel(visible=visible, refresh=False)
+                v.togglePoint(visible=visible, refresh=False)
+                v.toggleCycle(visible=visible, refresh=False)
+            elif isinstance(v, pargs):
+                v.toggleAll(visible=visible, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
+
+        if ct == 1:
+            self.refresh()        
+        
+    def setLabel(self, label, refresh=True):
+        if self.has_key('text'):
+            self.text.set_text('  '+label)
+            
+        if refresh:
+            self.refresh()
+            
+    def setLabels(self, label, bylabel=None, byname=None, bytype=None, ct=0):
+        ct += 1
+        if isinstance(bylabel, str):
+            bylabel = [bylabel]
+        if isinstance(byname, str):
+            byname = [byname]
+        if isinstance(bytype, str):
+            bytype = [bytype]
+            
+        if bylabel is None and byname is None and bytype is None:
+            bytype = all_point_types    # Turn off all points
+        for k, v in self.iteritems():
+            if bytype is not None and k.strip('0123456789') in bytype or \
+               byname is not None and k in byname or \
+               bylabel is not None and isinstance(v, pargs) and v.has_key('text') and v.text.get_text().lstrip(' ') in bylabel:
+                v.setLabel(label, refresh=False)
+            elif isinstance(v, pargs):
+                v.setLabels(label, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
+            
+        if ct == 1:
+            self.refresh()
+        
+    def setLegend(self, legend, refresh=True):
+        if self.has_key('curve'):
+            for piece in self.curve:
+                piece.set_label(legend)
+        elif self.has_key('cycle'):
+            for piece in self.cycle:
+                piece.set_label(legend)
+            
+        if refresh:
+            self.refresh()
+            
+    def setLegends(self, legend, bylegend=None, byname=None, bytype=None, ct=0):
+        ct += 1
+        if isinstance(bylegend, str):
+            bylabel = [bylegend]
+        if isinstance(byname, str):
+            byname = [byname]
+        if isinstance(bytype, str):
+            bytype = [bytype]
+            
+        if bylegend is None and byname is None and bytype is None:
+            if v.has_key('curve'):
+                bytype = all_curve_types
+            else:
+                bytype = all_point_types    # Turn off all points
+        for k, v in self.iteritems():
+            if bytype is not None and isinstance(v, pargs) and ((v.has_key('curve') and v.type in bytype) or (v.has_key('cycle') and k.strip('0123456789') in bytype)) or \
+               byname is not None and k in byname or \
+               bylegend is not None and isinstance(v, pargs) and ((v.has_key('curve') and v.curve[0].get_label() in bylegend) or (v.has_key('cycle') and v.cycle[0].get_label() in bylegend)):
+                v.setLegend(legend, refresh=False)
+            elif isinstance(v, pargs):
+                v.setLegends(legend, bylegend=bylegend, byname=byname, bytype=bytype, ct=ct)
+            
+        if ct == 1:
+            self.refresh()
+        
+    def refresh(self):
+        fig = None  # Used to save current figure (reset when done)
+        
+        if not self.has_key('deleted'):
+            if 'fig' in self.keys():
+                pylab.figure(self.fig.number)
+                pylab.draw()
+            elif 'axes' in self.keys():
+                pylab.figure(self.axes.figure.number)
+                #Would like to say: pylab.axes(self.axes)  Doesn't work, though.
+                pylab.draw()
+            elif 'curve' in self.keys():
+                pylab.figure(self.curve[0].figure.number)
+                pylab.draw()
+            elif 'point' in self.keys():
+                pylab.figure(self.point[0].figure.number)
+                pylab.draw()
+            elif 'cycle' in self.keys():
+                pylab.figure(self.cycle[0].figure.number)
+                pylab.draw()
+            else:   # Only here in plot structure
+                fig = pylab.gcf()
+                for k, v in self.iteritems():
+                    if isinstance(v, pargs):
+                        v.refresh()
+                       
+        if fig is not None: # Reset to current figure
+            pylab.figure(fig.number)
+                
+    def clean(self):
+        """Cleans plotting structure (e.g. deleted)  Also gets rid of nonexisting figures
+        if they've been deleted by an outside source.  This method is a little clumsy since
+        it has to spawn a dummy plot if a plot has been deleted, but who cares, it works."""
+        deleted = []
+        for k, v in self.iteritems():
+            recursive_clean = True
+            if isinstance(v, pargs):
+                if v.has_key('deleted'):
+                    deleted.append(k)
+                    recursive_clean = False
+                elif v.has_key('fig'):
+                    fig_check = pylab.figure(v.fig.number)
+                    if fig_check != v.fig:
+                        pylab.close(fig_check)
+                        deleted.append(k)
+                        recursive_clean = False
+                elif v.has_key('axes'):
+                    try:
+                        fig_axes = pylab.axes(v.axes)
+                    except:
+                        fig_axes = None
+                        
+                    if fig_axes is None:
+                        deleted.append(k)
+                        recursive_clean = False
+                    elif fig_axes not in v.axes.figure.axes:
+                        print 'Warning:  Axes were deleted without using pylab.delaxes().'
+                        v.axes.figure.axes.append(fig_axes)
+                        pylab.draw()
+                elif v.has_key('curve'):
+                    for piece in v.curve:
+                        if piece not in piece.axes.lines:
+                            deleted.append(k)
+                            v.delete()    # Remove remaining pieces of curve in pylab
+                            recursive_clean = False
+                            break
+                elif v.has_key('cycle'):
+                    for piece in v.cycle:
+                        if piece not in piece.axes.lines:
+                            deleted.append(k)
+                            v.delete()
+                            recursive_clean = False
+                            break
+                elif v.has_key('point'):
+                    if v.point[0] not in v.point[0].axes.lines or v.text not in v.text.axes.texts:
+                        deleted.append(k)
+                        if v.text in v.text.axes.texts:
+                            v.text.axes.texts.remove(v.text)
+                        if v.point[0] in v.point[0].axes.lines:
+                            v.point[0].axes.lines.remove(v.point[0])
+                        recursive_clean = False
+                        
+                if recursive_clean:
+                    v.clean()
+                
+        for k in deleted:
+            self.pop(k)
+            
+    def clear(self, refresh=True):
+        if not self.has_key('deleted'):
+            if self.has_key('fig'):
+                pylab.figure(self.fig.number)
+                pylab.clf()
+                remove = [k for k in self.keys() if k != 'fig']
+            elif self.has_key('axes'):
+                title = self.axes.title.get_text()
+                self.axes.clear()
+                pylab.axes(self.axes)
+                pylab.title(title)
+                remove = [k for k in self.keys() if k != 'axes']                    
+                if refresh:
+                    self.refresh()
+            elif self.has_key('curve'):
+                remove = [k for k in self.keys() if k != 'curve']
+                for k in remove:
+                    if isinstance(self[k], pargs):
+                        self[k].clear(refresh=False)                    
+                if refresh:
+                    self.refresh()
+            elif self.has_key('point'):
+                if self.point[0] in self.point[0].axes.lines:
+                    self.point[0].axes.lines.remove(self.point[0])
+                if self.text in self.point[0].axes.texts:
+                    self.point[0].axes.texts.remove(self.text)
+                remove = [k for k in self.keys() if k != 'point']
+                if refresh:
+                    self.refresh()
+                self.deleted = True
+            else:
+                remove = []
+                
+            if remove != []:
+                for k in remove:
+                    self.pop(k)
+        else:
+            print 'Object is deleted.'
+
+    def clearall(self):
+        for v in self.itervalues():
+            if isinstance(v, pargs):
+                v.clear(refresh=False)
+        self.refresh()
+                
+    def delete(self, refresh=True):
+        if not self.has_key('deleted'):
+            if self.has_key('fig'):
+                self.clear(refresh=False)
+                pylab.close()
+                self.deleted = True
+            elif self.has_key('axes'):
+                self.clear(refresh=False)
+                pylab.delaxes()
+                self.deleted = True
+            elif self.has_key('curve'):
+                self.clear(refresh=False)
+                for curve in self.curve:
+                    if curve in self.curve[0].axes.lines:
+                        self.curve[0].axes.lines.remove(curve)
+                if refresh:
+                    self.refresh()
+                self.deleted = True
+            elif self.has_key('cycle'):
+                self.clear(refresh=False)
+                for cycle in self.cycle:
+                    if cycle in self.cycle[0].axes.lines:
+                        self.cycle[0].axes.lines.remove(cycle)
+                if refresh:
+                    self.refresh()
+                self.deleted = True
+            elif self.has_key('point'):
+                self.clear(refresh=refresh)
+            else:
+                for v in self.itervalues():
+                    if isinstance(v, pargs):
+                        v.delete(refresh=refresh)
+        else:
+            print 'Object is already deleted.'
+
+    def deleteall(self):
+        for v in self.itervalues():
+            if isinstance(v, pargs):
+                v.delete(refresh=False)
+        self.refresh()
+        
+class KeyEvent(object):
+    """Used in 'highlight' method of plot_cycles."""
+    def __init__(self, paxes):
+        self.curr = 0
+        self.axes = paxes.axes
+        
+        # Get list of cycles from pargs class axes
+        cycles = [thing.cycle[0] for k, thing in paxes.iteritems() if isinstance(thing, pargs) and thing.has_key('cycle')]
+        # Put in order as in axes.lines (this should be same as order along curve, or user
+        #   specified in cycles when plot_cycles was called)
+        self.cycles = []
+        for line in self.axes.lines:
+            if line in cycles:
+                self.cycles.append(line)
+        self.axes.set_title(self.cycles[0].get_label())
+        
+        self.bgd_lw = 0.2
+        self.fgd_lw = 1.5
+        for line in self.cycles:
+            line.set(linewidth=self.bgd_lw)
+        self.cycles[0].set(linewidth=self.fgd_lw)
+        pylab.draw()
+        pylab.connect('key_press_event', self.__call__)
+    
+    def __call__(self, event):
+        if event.key == 'right': self.change_curr(1)
+        elif event.key == 'left': self.change_curr(-1)
+        elif event.key == 'up': self.change_bgd(1)
+        elif event.key == 'down': self.change_bgd(-1)
+        elif event.key in ('+', '='): self.change_fgd(1)
+        elif event.key in ('-', '_'): self.change_fgd(-1)
+        
+    def change_bgd(self, up):
+        if up == 1:
+            if self.bgd_lw+0.1 > self.fgd_lw:
+                self.bgd_lw = self.fgd_lw
+            else:
+                self.bgd_lw += 0.1
+        else:
+            if self.bgd_lw-0.1 < 0:
+                self.bgd_lw = 0
+            else:
+                self.bgd_lw -= 0.1
+                
+        for ct, line in enumerate(self.cycles):
+            if ct != self.curr:
+                line.set(linewidth=self.bgd_lw)
+        pylab.draw()
+        
+        print 'Background linewidth = %f' % self.bgd_lw
+        
+    def change_fgd(self, up):
+        if up == 1:
+            self.fgd_lw += 0.1
+        else:
+            if self.fgd_lw-0.1 < self.bgd_lw:
+                self.fgd_lw = self.bgd_lw
+            else:
+                self.fgd_lw -= 0.1
+                
+        self.cycles[self.curr].set(linewidth=self.fgd_lw)
+        pylab.draw()
+        
+        print 'Foreground linewidth = %f' % self.fgd_lw
+        
+    def change_curr(self, up):
+        self.cycles[self.curr].set(linewidth=self.bgd_lw)
+        if up == 1:
+            self.curr = (self.curr+1) % len(self.cycles)
+        else:
+            self.curr = (self.curr-1) % len(self.cycles)
+        self.cycles[self.curr].set(linewidth=self.fgd_lw)
+        self.axes.set_title(self.cycles[self.curr].get_label())
+        pylab.draw()
+
+def initializeDisplay(plot, figure=None, axes=None):
+    """If figure = 'new', then it will create a new figure with name fig#"""
+    
+    plot.clean()   # Clean up plot structure
+    plot._cfl = None
+    plot._cal = None
+    
+    # Handle figure
+    if not figure:
+        if len(plot) <= 3:
+            figure = pylab.gcf()
+        else:
+            raise 'Please specify a figure.'
+        
+    cfl = None
+    if isinstance(figure, pylab.Figure):
+        for k, v in plot.iteritems():
+            if isinstance(v, pargs) and v.fig == figure:
+                cfl = k
+                break
+    elif isinstance(figure, str):
+        if figure == 'new':
+            figure = pylab.figure()
+        else:
+            cfl = figure
+            if cfl not in plot.keys():
+                plot[cfl] = pargs()
+                plot[cfl].fig = pylab.figure()
+            
+    if cfl is None:
+        cfl = 'fig1'
+        ct = 1
+        while cfl in plot.keys():
+            ct += 1
+            cfl = 'fig'+repr(ct)
+        plot[cfl] = pargs()
+        plot[cfl].fig = figure
+        
+    pylab.figure(plot[cfl].fig.number)
+    
+    # Handle axes
+    if not axes:
+        if len(plot[cfl]) <= 2:
+            axes = pylab.gca()
+        else:
+            raise 'Please specify axes.'
+    elif isinstance(axes, tuple):
+        if len(axes) == 3:
+            axes = pylab.subplot(axes[0],axes[1],axes[2])
+        else:
+            raise 'Tuple must be of length 3'
+        
+    cal = None
+    if isinstance(axes, pylab.Axes):
+        for k, v in plot[cfl].iteritems():
+            if isinstance(v, pargs) and v.axes == axes:
+                cal = k
+                break
+                
+        if cal is None:
+            cal = 'axes1'
+            ct = 1
+            while cal in plot[cfl].keys():
+                ct += 1
+                cal = 'axes'+repr(ct)
+            plot[cfl][cal] = pargs()
+            plot[cfl][cal].axes = axes
+            plot[cfl][cal].axes.set_title(cal)
+    elif isinstance(axes, str):
+        cal = axes
+        if cal not in plot[cfl].keys():
+            plot[cfl][cal] = pargs()
+            plot[cfl][cal].axes = pylab.axes()
+            plot[cfl][cal].axes.set_title(cal)
+            
+    pylab.axes(plot[cfl][cal].axes)
+    
+    plot._cfl = cfl
+    plot._cal = cal
