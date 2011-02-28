@@ -271,7 +271,7 @@ def plot_cycles(PyCont, name='UD1', meas=None):
     if meas is None and solution measure nm2 or max if specified."""
     if meas is None:
         for pt in PyCont[name].sol:
-            if pt.labels['UD']['data'].has_key('cycle'):
+            if 'UD' in pt.labels and pt.labels['UD']['data'].has_key('cycle'):
                 cycle = pt.labels['UD']['data'].cycle
                 pylab.plot(cycle['x'], cycle['y'], '-b')
     else:
@@ -280,7 +280,7 @@ def plot_cycles(PyCont, name='UD1', meas=None):
         ind = []
         if meas == 'nm2':
             for i, pt in enumerate(PyCont[name].sol):
-                if pt.labels['UD']['data'].has_key('cycle'):
+                if 'UD' in pt.labels and pt.labels['UD']['data'].has_key('cycle'):
                     cycle = pt.labels['UD']['data'].cycle
                     dt = (cycle['t'][1:]-cycle['t'][0:-1])/(cycle['t'][-1]-cycle['t'][0])
                     solmeas.append(sqrt(0.5*(sum(dt*(cycle['x'][1:]*cycle['x'][1:] + \
@@ -288,7 +288,7 @@ def plot_cycles(PyCont, name='UD1', meas=None):
                     ind.append(i)
         elif meas == 'max':
             for i, pt in enumerate(PyCont[name].sol):
-                if pt.labels['UD']['data'].has_key('cycle'):
+                if 'UD' in pt.labels and pt.labels['UD']['data'].has_key('cycle'):
                     solmeas.append(max(abs(pt.labels['UD']['data'].cycle['x'])))
                     ind.append(i)
 
