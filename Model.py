@@ -1371,9 +1371,9 @@ class Model(object):
         estruct = self.modelInfo[target]['dsi'].get('eventstruct', ics, t)
         if isinstance(target, str):
             if flagVal:
-                aList = [x[0] for x in estruct.getTermEvents()]
+                return [x[0] for x in estruct.getTermEvents()]
             else:
-                aList = [x[0] for x in estruct.getNonTermEvents()]
+                return [x[0] for x in estruct.getNonTermEvents()]
         else:
             return []
 
@@ -1409,9 +1409,9 @@ class Model(object):
         estruct = self.modelInfo[target]['dsi'].get('eventstruct', ics, t)
         if isinstance(target, str):
             if flagVal:
-                aList = [x[0] for x in estruct.getActiveEvents()]
+                return [x[0] for x in estruct.getActiveEvents()]
             else:
-                aList = [x[0] for x in estruct.getNonActiveEvents()]
+                return [x[0] for x in estruct.getNonActiveEvents()]
         else:
             return []
 
