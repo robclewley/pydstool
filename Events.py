@@ -758,13 +758,18 @@ class Event(object):
                         parDict=None, vars=None, inputs=None,
                         abseps=1e-13, eventdelay=True, globalt0=0):
         """Search a variable-linked event, or an event with supplied vars
-        dictionary, for zero crossings. (Variable-linked search not
-        applicable to low level events.)
+        dictionary and relevant parameters, for zero crossings.
+
+        (Variable-linked search not applicable to low level events.)
 
         trange=None, dt=None, checklevel=2, parDict=None, vars=None, inputs=None,
             abseps=1e-13, eventdelay=True -> (ev_t, (ev_tlo, ev_thi))
         where the lo-hi tuple is the smallest bound around ev_t (in
-        case it is None because event was not found accurately)
+        case it is None because event was not found accurately).
+
+        dt will default to 1e-3 * the time interval of the variables.
+        'eventinterval' inherited from the event will be used to separate
+        detected events.
 
         Only pass vars dictionary when event.varlinked is False.
         """
@@ -835,7 +840,7 @@ class Event(object):
             else:
                 trange = tlimits
             if dt is None:
-                dt = max(self.eventtol, 5e-3*(trange[1]-trange[0]))
+                dt = max(self.eventtol, 1e-3*(trange[1]-trange[0]))
             if dt > trange[1]-trange[0]:
                 raise ValueError('dt (eventtol if not specified) is too large'
                                  ' for trange in event %s'%self.name)
@@ -944,6 +949,8 @@ class Event(object):
         # loop through boollist and find all events unless terminating at tpos!
         tpos = -1
         eventsfound = []
+        t_last = -numpy.inf
+        t_interval = self.eventinterval
         while True:
             try:
                 tpos += boollist[tpos+1:].index(True)+1
@@ -961,10 +968,14 @@ class Event(object):
                                               parDict, varDict, inputs,
                                               globalt0=globalt0,
                                               quadratic_interp=self.quadratic)
-                if result is not None:
+                if result is not None and result[0] > t_last + t_interval:
                     eventsfound.append(result)
+                    t_last = result[0]
             else:
-                eventsfound.append((tlist[tpos], (tlist[tpos-1], tlist[tpos])))
+                result = tlist[tpos]
+                if result > t_last + t_interval:
+                    eventsfound.append((result, (tlist[tpos-1], result)))
+                    t_last = result
             if self.termFlag:  # quit searching now!
                 break
         return eventsfound
