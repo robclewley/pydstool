@@ -5,7 +5,7 @@ import numpy as np
 from PyDSTool import Pointset, Model, embed
 from PyDSTool.Trajectory import pointset_to_traj
 
-#from pylab import figure, plot
+from pylab import figure, plot
 
 #__all__ = []
 
@@ -168,7 +168,48 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
     return Pointset(coordarray=[PRCvals], coordnames=['D_phase'], indepvararray=ref_ts, indepvarname='t')
 
 
+def compare_pert(model, ref_traj_period, evname, pertcoord, pertsize, t0, settle=5,
+                 do_pert=_default_pert, fignum=None):
+    """Show perturbed and un-perturbed trajectories starting at t0, with given perturbation function
+    do_pert.
+    """
+    if not isinstance(model, Model.Model):
+        # temporarily embed into a model object
+        model = embed(model)
+    try:
+        all_pts = ref_traj_period.sample()
+    except AttributeError:
+        raise TypeError("Must pass a reference trajectory object")
+    else:
+        T = ref_traj_period.indepdomain[1]-ref_traj_period.indepdomain[0]
+    ref_ts = all_pts.indepvararray
+
+    assert t0 > ref_ts[0] and t0 < ref_ts[-1], "t0 out of range"
+    ic = do_pert(model, ref_traj_period(t0), pertcoord, pertsize)
+    model.set(ics=ic, tdata=[0,settle*T+t0])
+    model.compute(trajname='compare_pert', force=True)
+    evts = model.getTrajEventTimes('compare_pert', evname)
+    PRC_val = -np.mod(evts[-1]+t0, T)/T
+    if abs(PRC_val) > 0.5:
+        PRC_val += 1
+    print "t0 = %.6f, PRC value = %f" % (t0, PRC_val)
+
+    if fignum is not None:
+        figure(fignum)
+    plot(all_pts['t'], all_pts[pertcoord], 'g')
+    while all_pts.indepvararray[-1] < settle*T+t0:
+        # plot additional periodic cycles to compare with pert traj
+        all_pts.indepvararray += T
+        plot(all_pts['t'], all_pts[pertcoord], 'g')
+    pert_pts = model.sample('compare_pert')
+    pert_pts.indepvararray += t0
+    plot(pert_pts['t'], pert_pts[pertcoord], 'r')
+    return pert_pts
+
+
 def fix_PRC(PRC, tol=0.01):
+    """Experimental and hopefully unnecessary utility to 'fix' PRC data with phase jumps
+    of 1/2 or a whole cycle due to computational problems."""
     new_vals = []
     for ix, phase in enumerate(PRC['D_phase']):
         if phase > 0.5-tol:
