@@ -1113,6 +1113,8 @@ class Pointset(Point):
             cl = self.labels[ref1]
             cl_ixs = cl.getIndices()
             lowest_ix = ref1.start or 0
+            if lowest_ix < 0:
+                lowest_ix = len(self)+lowest_ix
             new_cl_ixs = [i-lowest_ix for i in cl_ixs]
         else:
             print "ref1 argument =", ref1
@@ -2764,11 +2766,30 @@ w_reconstructed = pointsToPointset(pointlist, 't', wp['t'])"""
     return wp, wnp, wpt, wp_part
 
 
+def test_pointset_labels(wp):
+    #wp = wp.copy()
+    wp2 = Pointset({'coorddict': {'x0': [-4.5, 2, 3], 'x1': [54, 62, 64], 'x2': [0.9, 0.8, 0.2]},
+                 'indepvardict': {'t': [10, 11, 12]},
+                 'coordtype': float64,
+                 'indepvartype': float64,
+                 'labels': {0: {'a_different': {'bif':'H'}},
+                            2: 'd'}
+                  })
+    wp.append(wp2, skipMatchingIndepvar=True)
+    assert len(wp) == 13
+    assert wp.bylabel('b')['t'][0] == 9.0
+    assert all(wp.bylabel('a')['t'] == array([3., 10.]))
+    assert wp.bylabel('d')['t'][0] == 12.0
+    assert all(wp.bylabel('a_different')['t'] == array([10.]))
+    z = wp[-5:]
+    assert z.labels.getIndices() == [1,2,4]
+
 # -----------------------------
 
 if __name__ == '__main__':
     x = test_point()
     wp, wnp, wpt, wp_part = test_pointset()
+    test_pointset_labels(wp)
     print "\n"
     print "x (point) and wp, wnp (param'd and non-param'd pointsets) are available in the global namespace,", \
           "to play with interactively now that this script has run."
