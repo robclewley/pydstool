@@ -735,7 +735,7 @@ def insertInOrder(sourcelist, inslist, return_ixs=False, abseps=0):
                         sorted_sourcelist.insert(tix, t)
                         ins_ixs.append(tix)
                 else:
-                    close_ixs.append((t,tix))
+                    close_ixs.append((t,tix-1))
         if was_array:
             if abseps > 0:
                 return array(sorted_sourcelist), ins_ixs, dict(close_ixs)
