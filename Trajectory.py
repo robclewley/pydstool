@@ -29,7 +29,7 @@ import sys
 ## Exports
 
 __all__ = ['Trajectory', 'HybridTrajectory', 'numeric_to_traj',
-           'pointset_to_traj', 'findApproxPeriod']
+           'pointset_to_traj', 'convert_ptlabel_events', 'findApproxPeriod']
 
 # -------------------------------------------------------------
 
@@ -51,6 +51,24 @@ def numeric_to_traj(vals, trajname, coordnames, indepvar=None, indepvarname='t',
     return Trajectory(trajname, vars.values(),
                       parameterized=indepvar is not None)
 
+def convert_ptlabel_events(pts):
+    """Creates an eventTimes-like dictionary from a pointset's labels.
+    (Event X time recorded in a label is recorded as "Event X")
+    """
+    ev_labels = []
+    for l in pts.labels.getLabels():
+        if 'Event ' in l:
+            ev_labels.append(l[6:])
+    event_times = {}
+    for l in ev_labels:
+        ts = []
+        ix_dict = pts.labels.by_label['Event '+l]
+        # don't use tdict in labels in case indepvararray has been re-scaled
+        for ix in ix_dict.keys():
+            ts.append(pts.indepvararray[ix])
+        ts.sort()
+        event_times[l] = ts
+    return event_times
 
 def pointset_to_traj(pts):
     """Convert a pointset into a trajectory using linear interpolation, retaining
