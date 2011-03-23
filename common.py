@@ -614,7 +614,7 @@ class Diagnostics(object):
 
     def showErrors(self):
         if len(self.errors)>0:
-            self.getErrors()
+            print self.getErrors()
 
     def getErrors(self):
         if len(self.errors)>0:
