@@ -439,6 +439,7 @@ Default 0.001.""",
               0: 'Unrecognized error code returned (see stderr output)',
             -1 : 'input is not consistent',
             -2 : 'larger nmax is needed',
+            2 : 'larger nmax is probably needed (error raised by solout)',
             -3 : 'step size becomes too small',
             -4 : 'the matrix is repeatedly singular (interrupted)',
             -8 : 'The solution exceeded a magbound (poor choice of initial step)'}
@@ -1352,7 +1353,8 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             print "  Did you change the system and not refresh the C library" \
                   + " using the forcelibrefresh() method?"
             raise
-        if int(Err) > 0:
+        if int(Err) == 1:
+            # output OK
             if self.algparams['poly_interp']:
                 rhsfn = self._solver.Rhs
                 # when Dopri can output the Rhs values alongside variable
@@ -1394,18 +1396,17 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                               modelEventStructs=self.eventstruct)
         else:
             try:
-                self.diagnostics.errors.append((E_COMPUTFAIL, (self._solver.lastTime,
-                                              self.diagnostics._errorcodes[int(Err)])))
+                diagnost_info = self.diagnostics._errorcodes[int(Err)]
             except TypeError:
-                # errcode messed up from Radau
-                print "Error information: ", Err
-                self.diagnostics.errors.append((E_COMPUTFAIL, (self._solver.lastTime,
-                                              self.diagnostics._errorcodes[0])))
+                # errcode messed up from Dopri
+                print "Error code: ", Err
+                diagnost_info = self.diagnostics._errorcodes[0]
             if self._solver.verbose:
                 info(self.diagnostics.outputStats, "Output statistics")
             self.defined = False
-            if self.diagnostics.outputStats['num_steps'] > self.algparams['max_pts']:
-                print "max_pts algorithmic parameter too small: current value is %i"%self.algparams['max_pts']
+            if len(alltData) == self.algparams['max_pts'] and alltData[-1] < tend:
+                print "max_pts algorithmic parameter too small: current " + \
+                      "value is %i"%self.algparams['max_pts']
 #                avstep = (self.algparams['init_step']+self.diagnostics.outputStats['last_step'])/2.
                 if self.diagnostics.outputStats['last_time']-tbegin > 0:
                     ms = int(round(self.algparams['max_pts'] / \
@@ -1413,7 +1414,11 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                                tbegin)*(tend-tbegin)))
                 else:
                     ms = Inf
-                print "(recommended value for this trajectory segment is estimated to be %s)"%str(ms)
+                print "(recommended value for this trajectory segment is " + \
+                      "estimated to be %s (saved in diagnostics.errors attribute))"%str(ms)
+                diagnost_info += " -- recommended value is %i" % ms
+            self.diagnostics.errors.append((E_COMPUTFAIL,
+                                    (self._solver.lastTime, diagnost_info)))
             raise PyDSTool_ExistError("No trajectory created")
 
 
