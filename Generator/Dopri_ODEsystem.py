@@ -1206,7 +1206,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             print "  Did you change the system and not refresh the C library" \
                   + " using the forcelibrefresh() method?"
             raise
-        if int(Err) == 1:
+        if int(Err) == 1 or (int(Err) == 2 and termcount == 1 and alltData[-1] == termevtimes.keys()[0]):
             # output OK
             if self.algparams['poly_interp']:
                 rhsfn = self._solver.Rhs
