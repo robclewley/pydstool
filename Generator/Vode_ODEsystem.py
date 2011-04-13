@@ -100,12 +100,9 @@ class Vode_ODEsystem(ODEsystem):
             raise NotImplementedError('Backwards integration is not implemented')
         if ics is not None:
             self.set(ics=ics)
-        # validate spec if there exists a prior trajectory computation
-        if self.defined:
-            #self.validateSpec()
-            self.validateICs()
-            self.diagnostics.clearWarnings()
-            self.diagnostics.clearErrors()
+        self.validateICs()
+        self.diagnostics.clearWarnings()
+        self.diagnostics.clearErrors()
         pnames = sortedDictKeys(self.pars)
         xnames = self._var_ixmap  # ensures correct order
         # Check i.c.'s are well defined (finite)

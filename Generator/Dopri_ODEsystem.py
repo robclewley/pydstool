@@ -867,12 +867,9 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
 #        _integMod = __import__("dop853"+self._vf_filename_ext, globals())
         if ics is not None:
             self.set(ics=ics)
-        # validate spec if there exists a prior trajectory computation
-        if self.defined:
-            #self.validateSpec()
-            self.validateICs()
-            self.diagnostics.clearWarnings()
-            self.diagnostics.clearErrors()
+        self.validateICs()
+        self.diagnostics.clearWarnings()
+        self.diagnostics.clearErrors()
         if isinstance(self.algparams['rtol'], list):
             if len(self.algparams['rtol']) != self.dimension:
                 raise ValueError('rtol list must have same length as phase dimension')
@@ -1206,7 +1203,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             print "  Did you change the system and not refresh the C library" \
                   + " using the forcelibrefresh() method?"
             raise
-        if int(Err) == 1 or (int(Err) == 2 and termcount == 1 and alltData[-1] == termevtimes.keys()[0]):
+        if int(Err) == 1 or (int(Err) == 2 and termcount == 1):
             # output OK
             if self.algparams['poly_interp']:
                 rhsfn = self._solver.Rhs

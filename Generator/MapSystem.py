@@ -423,14 +423,8 @@ class MapSystem(discGen):
                 'Python needed for this class')
         assert isinstance(self.funcspec, RHSfuncSpec), ('Map system '
                                     'requires RHSfuncSpec type to proceed')
-        if self.defined:
-            #self.validateSpec()
-##            assert remain(self.initialconditions.keys(),
-##                          self._xdatadict.keys()+self.funcspec.auxvars) == [],\
-##                    ('mismatching entries between initial conditions and '
-##                     'declared variable names')
-            self.diagnostics.clearWarnings()
-            self.diagnostics.clearErrors()
+        self.diagnostics.clearWarnings()
+        self.diagnostics.clearErrors()
         if ics is not None:
             self.set(ics=ics)
         xnames = self._var_ixmap  # ensures correct order
