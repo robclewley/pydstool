@@ -36,11 +36,11 @@ assert is_spike(traj)
 is_spike.pars.tlo = 268
 is_spike(traj)
 
-# introspect the is_spike object with info(is_spike)   
+# introspect the is_spike object with info(is_spike)
 
 assert allclose(is_spike.results.tlo, 269.98922)
 assert allclose(is_spike.results.thi, 272.0108)
 assert allclose(is_spike.results.spike_time, 270.5574)
-assert allclose(is_spike.results.spike_val, 5117.5248)
+assert allclose(is_spike.results.spike_val, 5117.07697)
 
 print "   ...passed"
