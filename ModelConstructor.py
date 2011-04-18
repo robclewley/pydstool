@@ -43,6 +43,7 @@ from parseUtils import symbolMapClass, NAMESEP, isNumericToken
 from numpy import Inf, NaN, isfinite,  array, \
      arange, zeros, ones, concatenate, swapaxes, take, \
      sometrue, alltrue, any, all
+import numpy, scipy, math # for access by user-defined code of EvMapping
 import sys, types, copy
 
 # Exports
