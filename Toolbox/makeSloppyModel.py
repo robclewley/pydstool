@@ -18,24 +18,53 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=[],
     sModelSpec = sloppyModel(modelName)
     if not silent:
         print "Building sloppy model '%s'"%modelName
+
+    # first pass to collect names
     varnames = []
+    for odeName in modelDict['odes'].keys():
+        varnames.append(odeName)
+    parnames = []
+    if 'parameters' in modelDict:
+        for parName in modelDict['parameters'].keys():
+            parnames.append(parName)
+
+    pdomains = {}
+    xdomains = {}
+    if 'domains' in modelDict:
+        for name, dom in modelDict['domains'].iteritems():
+            if name in parnames:
+                pdomains[name] = dom
+            elif name in varnames:
+                xdomains[name] = dom
+            else:
+                raise ValueError("Name %s unknown in domain specs"%name)
+
+
     for odeName, expr in modelDict['odes'].iteritems():
         if not silent:
             print 'Adding ODE: ', odeName
-        sModelSpec.add(Var(expr, odeName, specType='RHSfuncSpec'))
-        varnames.append(odeName)
+        if odeName in xdomains:
+            sModelSpec.add(Var(expr, odeName, specType='RHSfuncSpec', domain=xdomains[odeName]))
+        else:
+            sModelSpec.add(Var(expr, odeName, specType='RHSfuncSpec'))
+
     auxvarnames = []
-    for assgnName, expr in modelDict['assignments'].iteritems():
-        if not silent:
-            print 'Adding assignment: ', assgnName
-        sModelSpec.add(Var(expr, assgnName, specType='ExpFuncSpec'))
-        auxvarnames.append(assgnName)
-    parnames = []
-    for parName, val in modelDict['parameters'].iteritems():
-        if not silent:
-            print 'Adding parameter: ', parName, "=", val
-        sModelSpec.add(Par(str(val), parName))
-        parnames.append(parName)
+    if 'assignments' in modelDict:
+        for assgnName, expr in modelDict['assignments'].iteritems():
+            if not silent:
+                print 'Adding assignment: ', assgnName
+            sModelSpec.add(Var(expr, assgnName, specType='ExpFuncSpec'))
+            auxvarnames.append(assgnName)
+
+    if 'parameters' in modelDict:
+        for parName, val in modelDict['parameters'].iteritems():
+            if not silent:
+                print 'Adding parameter: ', parName, "=", val
+            if parName in pdomains:
+                sModelSpec.add(Par(str(val), parName, domain=pdomains[parName]))
+            else:
+                sModelSpec.add(Par(str(val), parName))
+
     auxfndict = {}
     for funSig, expr in modelDict['functions'].iteritems():
         assert ')' == funSig[-1]
@@ -47,6 +76,7 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=[],
             print 'Adding function: ', name, " of arguments:", args
         sModelSpec.add(Fun(expr, args, name))
         auxfndict[name] = (args, expr)
+
     if sModelSpec.freeSymbols != []:
         print "Model retains free names: " + ", ".join(sModelSpec.freeSymbols)
         print "These must be resolved in the specification before continuing."
