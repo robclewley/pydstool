@@ -2060,7 +2060,8 @@ class HybridModel(Model):
                 raise
 
 
-    def _applyStateMap(self, epochStateMaps, model_interface, traj, xdict, t0):
+    def _applyStateMap(self, epochStateMaps, model_interface,
+                       next_model_interface, traj, xdict, t0):
         # the mapping might be the ID fn
         num_maps = len(epochStateMaps)
         # apply all maps to the initial condition
@@ -2102,9 +2103,9 @@ class HybridModel(Model):
                             extinputs_ic, eventstruct, t0)
         # use update method to change dicts *in place*
         pars.update(traj._FScompatibleNamesInv(pars_temp))
-        # update MI's parameters if mapped by the event mapping
+        # update next MI's parameters if mapped by the event mapping
         # (the one corresponding to the original xdict)
-        model_interface.set('pars', pars, xdict, t0)
+        next_model_interface.set('pars', pars, xdict, t0)
         xdict.update(traj._FScompatibleNamesInv(xdict_temp))
         # No longer need the aux vars
         for xname in self.auxvars:
@@ -2535,7 +2536,7 @@ class HybridModel(Model):
                 # and current ds's pars and external inputs
                 # (previous) traj is well defined from previous run
                 pars_copy = copy.copy(self.pars)
-                self._applyStateMap(epochStateMaps, MI_prev, traj, xdict, t0)
+                self._applyStateMap(epochStateMaps, MI_prev, MI, traj, xdict, t0)
                 ## if changed last MI's event delay, then change it back.
                 for event, delay in event_delay_record.items():
                     event.eventdelay = delay
