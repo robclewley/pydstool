@@ -641,7 +641,8 @@ class Model(object):
             print 'Valid query keys are:', self._querykeys
             print "('events' key only queries model-level events, not those"
             print " inside sub-models)"
-            raise TypeError('Query key '+querykey+' is not valid')
+            if querykey != '':
+                raise TypeError('Query key '+querykey+' is not valid')
         if querykey in ['pars', 'parameters']:
             result = copy.copy(self.pars)
         elif querykey in ['ics', 'initialconditions']:
