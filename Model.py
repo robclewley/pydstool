@@ -2106,7 +2106,11 @@ class HybridModel(Model):
         pars.update(traj._FScompatibleNamesInv(pars_temp))
         # update next MI's parameters if mapped by the event mapping
         # (the one corresponding to the original xdict)
-        next_model_interface.set('pars', pars, xdict, t0)
+        try:
+            next_model_interface.set('pars', pars, xdict, t0)
+        except (PyDSTool_AttributeError, PyDSTool_ValueError):
+            # next model may not have these params, so just ignore
+            pass
         xdict.update(traj._FScompatibleNamesInv(xdict_temp))
         # No longer need the aux vars
         for xname in self.auxvars:
