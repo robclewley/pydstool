@@ -320,7 +320,7 @@ algparams = {'init_step': 0.1}
 if genTarget == 'Vode_ODEsystem':
     algparams['stiff'] = True
 sModel = makeSloppyModel('cplx_eg', sloppyModelEg, genTarget,
-                     algparams, silent=True)
+                     algParams=algparams, silent=True)
 
 print "\nAux spec:\n",
 sModel.showDef('cplx_eg', 'auxspec')
