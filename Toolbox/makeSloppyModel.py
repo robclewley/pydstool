@@ -10,8 +10,8 @@ class sloppyModel(LeafComponent):
     compatibleGens=allODEgens
     targetLangs=targetLangs
 
-def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=[],
-                    algParams={}, silent=False):
+def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
+                    algParams=None, silent=False):
     if targetGen not in allODEgens:
         print 'Valid target ODE solvers: ' + ", ".join(allODEgens)
         raise ValueError('Invalid target ODE solver')
@@ -44,7 +44,8 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=[],
         if not silent:
             print 'Adding ODE: ', odeName
         if odeName in xdomains:
-            sModelSpec.add(Var(expr, odeName, specType='RHSfuncSpec', domain=xdomains[odeName]))
+            sModelSpec.add(Var(expr, odeName, specType='RHSfuncSpec',
+                               domain=xdomains[odeName]))
         else:
             sModelSpec.add(Var(expr, odeName, specType='RHSfuncSpec'))
 
@@ -77,7 +78,9 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=[],
         sModelSpec.add(Fun(expr, args, name))
         auxfndict[name] = (args, expr)
 
-    if sModelSpec.freeSymbols != []:
+    if globalRefs is None:
+        globalRefs = []
+    if not sModelSpec.isComplete(globalRefs):
         print "Model retains free names: " + ", ".join(sModelSpec.freeSymbols)
         print "These must be resolved in the specification before continuing."
         print "If one of these is time, then include it explicitly as an"
@@ -85,6 +88,8 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=[],
         raise ValueError('Incomplete model specification')
     targetlang = theGenSpecHelper(targetGen).lang
     # single-generator model so give both same name
+    if algParams is None:
+        algParams = {}
     genName = modelName
     sModel = ModelConstructor(modelName,
                             generatorspecs={genName: {'modelspec': sModelSpec,
@@ -94,25 +99,26 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=[],
         print "Adding events with default tolerances..."
     argDict={'precise': True, 'term': True}
     evcount = 0
-    for evspec, mappingDict in modelDict['events'].iteritems():
-        if evspec[:2] == 'lt':
-            dircode = -1
-        elif evspec[:2] == 'gt':
-            dircode = 1
-        else:
-            raise ValueError("Invalid event specification: use 'lt' and 'gt'")
-        assert '(' == evspec[2], 'Invalid event specification'
-        evspec_parts = evspec[3:].replace(')','').replace(' ','').split(',')
-        evexpr = evspec_parts[0]
-        threshval = evspec_parts[1]
-        evname = 'Event'+str(evcount)
-        argDict['name'] = evname
-        ev = makeZeroCrossEvent(evexpr, dircode, argDict,
-                                   varnames, parnames, [], auxfndict, targetlang)
-        evcount += 1
-        sModel.addEvents(genName, ev)
-        evmap = makeEvMapping(mappingDict, varnames+auxvarnames, parnames)
-        sModel.mapEvent(genName, evname, genName, evmap)
+    if 'events' in modelDict:
+        for evspec, mappingDict in modelDict['events'].iteritems():
+            if evspec[:2] == 'lt':
+                dircode = -1
+            elif evspec[:2] == 'gt':
+                dircode = 1
+            else:
+                raise ValueError("Invalid event specification: use 'lt' and 'gt'")
+            assert '(' == evspec[2], 'Invalid event specification'
+            evspec_parts = evspec[3:].replace(')','').replace(' ','').split(',')
+            evexpr = evspec_parts[0]
+            threshval = evspec_parts[1]
+            evname = 'Event'+str(evcount)
+            argDict['name'] = evname
+            ev = makeZeroCrossEvent(evexpr, dircode, argDict,
+                                       varnames, parnames, [], auxfndict, targetlang)
+            evcount += 1
+            sModel.addEvents(genName, ev)
+            evmap = makeEvMapping(mappingDict, varnames+auxvarnames, parnames)
+            sModel.mapEvent(genName, evname, genName, evmap)
     if not silent:
         print "Building target model with default settings"
     return sModel.getModel()
