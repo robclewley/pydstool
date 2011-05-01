@@ -131,6 +131,12 @@ def connectIFneurons(source, target, g, vrev, IFmodelC):
     syn.add([s,I,g,vrev])
     target.add(syn)
 
+    # These event mappings work because the vector field is always the same
+    # -- it's always the same Model object used each time after an event.
+    # If vector fields change then the target estruct etc. have to be held
+    # in an evpars field so as to be able to access them here. (estruct is only
+    # the ending Model's)
+
     thresh_epmapping=EvMapping(defString="""xdict['"""+source.name+"""_V']=pdict['Vspike']
 targets = estruct.events['"""+source.name+"""_thresh'].evpars['connected']
 for targ in targets:
