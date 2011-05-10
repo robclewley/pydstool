@@ -108,8 +108,8 @@ class Interval(object):
     """
 
     def __init__(self, name, intervaltype, intervalspec=None, abseps=None):
-        if not isinstance(name, str):
-            raise PyDSTool_TypeError('Name must be a string')
+#        if not isinstance(name, str):
+#            raise PyDSTool_TypeError('Name must be a string')
         self.name = name
         try:
             self.type = _num_equivtype[intervaltype]
@@ -127,6 +127,7 @@ class Interval(object):
             self.isdiscrete = False
         self._abseps = abseps
         self.defined = False  # default value
+        self._maxexp = None  # default value, unused for singletons
         if intervalspec is not None:
             self.set(intervalspec)
         else:
@@ -282,6 +283,16 @@ class Interval(object):
         try:
             if not self.defined:
                 raise PyDSTool_ExistError('Interval undefined')
+            if self._maxexp is None and not self.issingleton:
+                try:
+                    loexp = math.log(abs(self._loval), 10)
+                except (OverflowError, ValueError):
+                    loexp = 0
+                try:
+                    hiexp = math.log(abs(self._hival), 10)
+                except (OverflowError, ValueError):
+                    hiexp = 0
+                self._maxexp = max(loexp, hiexp)
             if isinstance(val, _num_name2equivtypes[self.typestr]):
                 compval = val
                 if compareNumTypes(self.type, _int_types):
@@ -475,14 +486,17 @@ class Interval(object):
             raise ValueError('Invalid boundary spec code')
 
 
-    # Uniformly sample the interval, returning a list of points
-    # 'Strict' option forces dt to be used throughout the interval,
-    # with a final step of < dt
     def uniformSample(self, dt, strict=False, avoidendpoints=False):
-        """dt, strict=False, avoidendpoints=False -> point list.
-        Default strict = False used for auto-selection of sample rate
-          to fit interval (choice based on dt)."""
+        """Uniformly sample the interval, returning a Pointset.
 
+    'Strict' option forces dt to be used throughout the interval,
+    with a final step of < dt if not commensurate. Default strict =
+    False used for auto-selection of sample rate to fit interval
+    (choice based on dt argument).
+
+    avoidendpoints = True (default False) ensures that the first and
+    last independent variable ("t") values are not included.
+"""
         assert self.defined
         intervalsize = self._hival - self._loval
         assert isfinite(intervalsize), "Interval must be finite"
@@ -538,8 +552,8 @@ class Interval(object):
                 self.issingleton = False
                 loval = arg[0]
                 hival = arg[1]
-                assert not isnan(loval) and not isnan(hival), \
-                       "Cannot specify NaN as interval endpoint"
+                #assert not isnan(loval) and not isnan(hival), \
+                #       "Cannot specify NaN as interval endpoint"
                 if not loval < hival:
                     print "set() was passed loval = ", loval, \
                           " and hival = ", hival
@@ -556,10 +570,6 @@ class Interval(object):
                     self._loval = loval
                 else:
                     raise TypeError("Invalid interval endpoint type")
-                try:
-                    loexp = math.log(abs(loval), 10)
-                except (OverflowError, ValueError):
-                    loexp = 0
                 if compareNumTypes(type(hival), self.type):
                     self._hival = hival
                 elif compareNumTypes(self.type, _float_types):
@@ -569,11 +579,6 @@ class Interval(object):
                     self._hival = hival
                 else:
                     raise TypeError("Invalid interval endpoint type")
-                try:
-                    hiexp = math.log(abs(hival), 10)
-                except (OverflowError, ValueError):
-                    hiexp = 0
-                self._maxexp = max(loexp, hiexp)
                 self.defined = True
         elif isinstance(arg, (_int_types, _float_types)):
             assert isfinite(arg), \
@@ -587,7 +592,6 @@ class Interval(object):
             self.issingleton = True
             self._intervalstr = str(arg)
             self._loval = arg
-            self._maxexp = None  # unused for singletons
             self._hival = arg
             self.defined = True
         else:
