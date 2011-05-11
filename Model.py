@@ -993,7 +993,16 @@ class Model(object):
         try:
             traj = self.trajectories[trajname]
         except KeyError:
-            raise ValueError('No such trajectory.')
+            # a trajectory piece may have been created without
+            # the top-level trajectory ever being completed
+            # (e.g. after an unxpected error or ^C interruption)
+            ##raise ValueError('No such trajectory.')
+            l = len(trajname)
+            for m in self.registry.values():
+                # delete all matching pieces (of form trajname + '_' + <digits>
+                for n in m.trajectories.keys():
+                    if n[:l] == trajname and n[l] == '_' and n[l+1:].isdigit():
+                        m._delTraj(trajname)
         else:
             # propagate deletions down through registry
             if not isinstance(traj.modelNames, str):
