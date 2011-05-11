@@ -18,21 +18,22 @@ from copy import copy
 # which generators will specs made from these classes be compatible with
 compatGens = findGenSubClasses('ODEsystem')
 
-class compatComponent(Component):
+class compatODEComponent(Component):
     compatibleGens=compatGens
     targetLangs=targetLangs  # (from common.py) -- all are compatible with ODEs
 
-class compatLeafComponent(LeafComponent):
+class compatODELeafComponent(LeafComponent):
     compatibleGens=compatGens
     targetLangs=targetLangs  # (from common.py) -- all are compatible with ODEs
 
 # -----------------------------------------------------------------------------
 
 # basic classes -- not intended for direct use
-class channel(compatLeafComponent):
+# indicates that only ODE-based Generators are compatible
+class channel(compatODELeafComponent):
     pass
 
-class compartment(compatComponent):
+class compartment(compatODEComponent):
     pass
 
 compartment.compatibleSubcomponents=(channel,)
