@@ -166,11 +166,15 @@ class API_class(object):
                           if el != ''])
 
     def __call__(self, obj):
+        if obj.__doc__ is None:
+            doc = 'No docstring'
+        else:
+            doc = obj.__doc__
         if hasattr(obj, '__name__'):
-            return obj.__name__ + " : " + obj.__doc__ + "\n\n" + \
+            return obj.__name__ + " : " + doc + "\n\n" + \
                self._print_values(obj)
         else:
-            return obj.__doc__ + "\n\n" + self._print_values(obj)
+            return doc + "\n\n" + self._print_values(obj)
 
 API = API_class()
 
