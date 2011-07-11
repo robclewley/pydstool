@@ -1484,7 +1484,7 @@ class FuncSpec(object):
                            "'[' character invalid in Jacobian for 1D system"
                     assert ']' not in auxstr, \
                            "']' character invalid in Jacobian for 1D system"
-                    specdict_temp[specvars.values()[0]] = auxstr
+                    specdict_temp[specvars[0]] = auxstr
                 else:
                     specdict_temp = parseMatrixStrToDictStr(auxstr, specvars)
                 reusestr, body_processed_dict = self._processReusedC(specvars,
