@@ -106,7 +106,7 @@ fp_coords = find_fixedpoints(HH, n=4, jac=jac_fn,
                              'h':0.8, 'n':0.2}, eps=1e-8)
 nulls_x, nulls_y, handles = find_nullclines(HH, 'v', 'm', n=30, jac=jac_fn,
                              x_dom=HH.xdomain['v'], y_dom=HH.xdomain['m'],
-                             fps=fp_coords)
+                             fps=fp_coords, max_step=5)
 print "... finished in %.4f seconds\n" % (time.clock()-start_time)
 
 print "Fixed points for (v,m) phase plane sub-system when h=0.7 and n=0.2: "
