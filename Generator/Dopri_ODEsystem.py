@@ -343,7 +343,7 @@ class Dopri_ODEsystem(ODEsystem):
              0 : 'Unrecognized error code returned (see stderr output)',
             -1 : 'input is not consistent',
             -2 : 'larger nmax is needed',
-            2 : 'larger nmax is probably needed (error raised by solout)',
+            2 : 'larger nmax or maxevtpts is probably needed (error raised by solout)',
             -3 : 'step size becomes too small',
             -4 : 'the problem is probably stiff (interrupted)',
             -8 : 'The solution exceeded a magbound (poor choice of initial step)'}
