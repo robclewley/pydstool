@@ -124,8 +124,9 @@ fnspecs = {'testif': (['x'], 'if(x<0.0,0.0,x)'),
           }
 
 DSargs = args(name='test',
-              varspecs={'z[i]': 'for(i, 0, 1, 2*z[i+1])',
-                   'z2': '-z0'},
+              pars={'p0': 0, 'p1': 1, 'p2': 2},
+              varspecs={'z[i]': 'for(i, 0, 1, 2*z[i+1] + p[i])',
+                   'z2': '-z0 + p2'},
               fnspecs=fnspecs
               )
 tmm = Generator.Vode_ODEsystem(DSargs)
@@ -136,5 +137,5 @@ assert tmm.auxfns.testif(1.0) == 1.0
 assert tmm.auxfns.testmin(1.0, 2.0) == 1.0
 assert tmm.auxfns.testmax(1.0, 2.0) == 2.0
 assert tmm.auxfns.testmin2(1.0, 2.0) == 2.25
-
+assert tmm.Rhs(0, {'z0': 0.5, 'z1': 0.2, 'z2': 2.1})[1] == 5.2
 print "  ...passed"
