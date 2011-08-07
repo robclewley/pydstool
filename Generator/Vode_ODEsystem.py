@@ -12,8 +12,12 @@ from PyDSTool.scipy_ode import ode
 
 # Other imports
 from numpy import Inf, NaN, isfinite, sometrue, alltrue, sign, all, any, \
-     array, zeros, less_equal, transpose, concatenate, asarray, linspace, \
-     unique1d
+     array, zeros, less_equal, transpose, concatenate, asarray, linspace
+try:
+    from numpy import unique1d as unique
+except ImportError:
+    # newer version of numpy
+    from numpy import unique
 import math, random
 from copy import copy, deepcopy
 import os, platform, shutil, sys, gc
@@ -245,7 +249,7 @@ class Vode_ODEsystem(ODEsystem):
             # incorporate tmesh_special, if used, ensuring uniqueness
             if tmesh_special != []:
                 tmesh.extend(tmesh_special)
-                tmesh = list(unique1d(tmesh))
+                tmesh = list(unique(tmesh))
                 tmesh.sort()
             if len(tmesh)<=2:
                 # safety net, in case too few points in mesh
