@@ -10,7 +10,12 @@ from parseUtils import joinStrs
 from numpy import Inf, NaN, isfinite, less, greater, sometrue, alltrue, \
      searchsorted, take, argsort, array, swapaxes, asarray, zeros, transpose, \
      float64, int32, ndarray
-from scipy.optimize import minpack
+from scipy.optimize import minpack, zeros
+try:
+    newton_meth = minpack.newton
+except AttributeError:
+    # newer version of scipy
+    newton_meth = zeros.newton
 import time, sys, os
 import copy
 
@@ -23,7 +28,8 @@ _classes = []
 _functions = ['intersect', 'remain', 'union', 'cartesianProduct',
               'makeDataDict', 'makeImplicitFunc', 'orderEventData',
               'saveObjects', 'loadObjects', 'info', 'compareList',
-              'findClosestArray', 'makeMfileFunction', 'find']
+              'findClosestArray', 'find', 'makeMfileFunction',
+              'make_RHS_wrap', 'make_Jac_wrap']
 
 _mappings = ['_implicitSolveMethods', '_1DimplicitSolveMethods']
 
@@ -154,7 +160,7 @@ def makeImplicitFunc(f, x0, fprime=None, extrafargs=(), xtolval=1e-8,
             def newton_fn(t):
                 rout.start()
 ##                rerr.start()
-                res = minpack.newton(f, x0, args=(t,)+extrafargs, tol=xtolval,
+                res = newton_meth(f, x0, args=(t,)+extrafargs, tol=xtolval,
                                      maxiter=maxnumiter, fprime=fprime)
                 rout.stop()
 ##                warns = rout.stop()
@@ -196,7 +202,7 @@ def makeImplicitFunc(f, x0, fprime=None, extrafargs=(), xtolval=1e-8,
             def newton_fn(s, t):
                 rout.start()
 ##                rerr.start()
-                res = minpack.newton(f, x0, args=(t,)+extrafargs, tol=xtolval,
+                res = newton_meth(f, x0, args=(t,)+extrafargs, tol=xtolval,
                                      maxiter=maxnumiter, fprime=fprime)
                 rout.stop()
 ##                warns = rout.stop()
@@ -411,6 +417,100 @@ def orderEventData(edict, evnames=None, nonames=False, bytime=False):
             # swap back to get event names as first tuple entry
             return [(evname,t) for (t,evname) in etuplelist]
 
+## ------------------------------------------------------------
+## Generator wrapping utilities
+
+def make_RHS_wrap(gen, xdict_base, x0_names, use_gen_params=False, overflow_penalty=1e4):
+    """Return function wrapping Generator argument gen's RHS function,
+    but restricting input and output dimensions to those specified by
+    x0_names. All other variable values will be given by those in xdict_base.
+    In case of overflow or ValueError during a call to the wrapped function,
+    an overflow penalty will be used for the returned values (default 1e4).
+
+    if use_gen_params flag is set (default False)
+    then:
+      Return function has signature Rhs_wrap(x,t)
+      and takes an array or list of x state variable values and scalar t,
+      returning an array type of length len(x). The Generator's current param
+      values (at call time) will be used.
+    else:
+      Return function has signature Rhs_wrap(x,t,pdict)
+      and takes an array or list of x state variable values, scalar t, and a
+      dictionary of parameters for the Generator, returning an array type of
+      length len(x).
+
+    NB: xdict_base will be copied as it will be updated in the wrapped
+    function."""
+    var_ix_map = invertMap(gen.funcspec.vars)
+    x0_names.sort()   # ensures sorted
+    x0_ixs = [var_ix_map[xname] for xname in x0_names]
+    dim = len(x0_names)
+    xdict = xdict_base.copy()
+    if use_gen_params:
+        def Rhs_wrap(x, t):
+            xdict.update(dict(zip(x0_names, x)))
+            try:
+                return take(gen.Rhs(t, xdict, gen.pars), x0_ixs)
+            except (OverflowError, ValueError):
+                return array([overflow_penalty]*dim)
+
+    else:
+        def Rhs_wrap(x, t, pdict):
+            xdict.update(dict(zip(x0_names, x)))
+            try:
+                return take(gen.Rhs(t, xdict, pdict), x0_ixs)
+            except (OverflowError, ValueError):
+                return array([overflow_penalty]*dim)
+
+    return Rhs_wrap
+
+
+def make_Jac_wrap(gen, xdict_base, x0_names, use_gen_params=False, overflow_penalty=1e4):
+    """Return function wrapping Generator argument gen's Jacobian function,
+    but restricting input and output dimensions to those specified by
+    x0_names. All other variable values will be given by those in xdict_base.
+    In case of overflow or ValueError during a call to the wrapped function,
+    an overflow penalty will be used for the returned values (default 1e4).
+
+    if use_gen_params flag is set (default False)
+    then:
+      Return function Jac_wrap(x,t) takes an array or list of x variable
+      values and scalar t, returning a 2D array type of size len(x) by len(x).
+      The Generator's current param values (at call time) will be used.
+    else:
+      Return function Jac_wrap(x,t,pdict) takes an array or list of x variable
+      values, scalar t, and a dictionary of parameters for the Generator,
+      returning a 2D array type of size len(x) by len(x).
+
+    NB: xdict_base will be copied as it will be updated in the wrapped
+    function."""
+    if not gen.haveJacobian():
+        raise ValueError("Jacobian not defined")
+    var_ix_map = invertMap(gen.funcspec.vars)
+    x0_names.sort()   # ensures sorted
+    x0_ixs = [var_ix_map[xname] for xname in x0_names]
+    dim = len(x0_names)
+    xdict = xdict_base.copy()
+    if use_gen_params:
+        def Jac_wrap(x, t):
+            xdict.update(dict(zip(x0_names, x)))
+            try:
+                return take(take(gen.Jacobian(t, xdict, gen.pars), x0_ixs,0), x0_ixs,1)
+            except (OverflowError, ValueError):
+                return array([overflow_penalty]*dim)
+    else:
+        def Jac_wrap(x, t, pdict):
+            xdict.update(dict(zip(x0_names, x)))
+            try:
+                return take(take(gen.Jacobian(t, xdict, pdict), x0_ixs,0), x0_ixs,1)
+            except (OverflowError, ValueError):
+                return array([overflow_penalty]*dim)
+
+    return Jac_wrap
+
+
+
+## ------------------------------------------------------------
 
 def saveObjects(objlist, filename, force=False):
     """Store PyDSTool objects to file."""
@@ -522,9 +622,12 @@ def cartesianProduct(a, b):
         ret.extend([(i, j) for j in b])
     return ret
 
+# deprecated
 def makeDataDict(fieldnames, fieldvalues):
     """Zip arrays of field names and values into a dictionary.
-    For instance, to use in Generator initialization arguments."""
+    For instance, to use in Generator initialization arguments.
+
+    Deprecated as of v0.89."""
     if isinstance(fieldvalues, ndarray):
         return dict(zip(fieldnames, [a.tolist() for a in fieldvalues]))
     else:
