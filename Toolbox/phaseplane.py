@@ -13,7 +13,7 @@ from scipy.optimize import fsolve, newton
 from scipy import linspace, isfinite, sign, alltrue, sometrue, arctan
 from numpy.linalg import norm, eig
 from random import uniform
-from copy import copy
+import copy
 import sys
 
 # ----------------------------------------------------------------------------
@@ -86,10 +86,12 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
     where the handles will be null if doplot=False, or fig_handle=None
     if newfig=False.
 
+    x_null and y_null are arrays of (x,y) pairs.
+
     Note that the points returned are not guaranteed to be in any particular
     order.
     """
-    vardict = filteredDict(copy(gen.initialconditions), gen.funcspec.vars)
+    vardict = filteredDict(copy.copy(gen.initialconditions), gen.funcspec.vars)
     if fixed_vars is not None:
         vardict.update(filteredDict(gen._FScompatibleNames(dict(fixed_vars)),
                         remain(gen.funcspec.vars, [xname, yname])))
@@ -427,6 +429,8 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
     """Find fixed points of a system in a given domain,
     on the assumption that they are isolated points.
 
+    Returns list of dictionaries mapping the variable names to the values.
+
     Set t value for non-autonomous systems (default 0).
     """
     # get state variable domains if subdomain dictionary not given
@@ -465,21 +469,22 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
     # has same form, so need to use a wrapper function to convert order
     # of arguments to suit solver.
     #
-    def Rhs_wrap(x, t, pdict):
-        xdict.update(dict(zip(x0_names, x)))
-        try:
-            return take(gen.Rhs(t, xdict, pdict), x0_ixs)
-        except (OverflowError, ValueError):
-            return array([1e4]*D)
+    Rhs_wrap = make_RHS_wrap(gen, xdict, x0_names)
+##    def Rhs_wrap(x, t, pdict):
+##        xdict.update(dict(zip(x0_names, x)))
+##        try:
+##            return take(gen.Rhs(t, xdict, pdict), x0_ixs)
+##        except (OverflowError, ValueError):
+##            return array([1e4]*D)
     if gen.haveJacobian():
-        def Jac_wrap(x, t, pdict):
-            xdict.update(dict(zip(x0_names, x)))
-            try:
-                return take(take(gen.Jacobian(t, xdict, pdict), x0_ixs,0), x0_ixs,1)
-            except (OverflowError, ValueError):
-                # penalty
-                return array([[1e4]*D]*D)
-        fprime = Jac_wrap
+##        def Jac_wrap(x, t, pdict):
+##            xdict.update(dict(zip(x0_names, x)))
+##            try:
+##                return take(take(gen.Jacobian(t, xdict, pdict), x0_ixs,0), x0_ixs,1)
+##            except (OverflowError, ValueError):
+##                # penalty
+##                return array([[1e4]*D]*D)
+        fprime = make_Jac_wrap(gen, xdict, x0_names)
     elif jac is not None:
         def Jac_wrap(x, t, pdict):
             xdict.update(dict(zip(x0_names, x)))
@@ -539,7 +544,7 @@ find_steadystates = find_equilibria = find_fixedpoints
 
 def perp(v):
     """Find perpendicular vector in 2D (assumes 2D input)"""
-    vperp=copy(v)  # ensures correct return type
+    vperp=v.copy()  # ensures correct return type
     vperp[0] = v[1]
     vperp[1] = -v[0]
     return vperp
@@ -1099,7 +1104,7 @@ class phaseplane(object):
         # store copy of the actual vector definition to make sure this doesn't
         # change when things are added or removed and the vf is rebuilt --
         # otherwise all self.objects will be invalidated
-        self._vf_core_copy = copy(vf_info.ODEargs)
+        self._vf_core_copy = copy.copy(vf_info.ODEargs)
         if x_axis != '':
             assert x_axis in vf_info.ODEargs.vars
             self.x_axis = x_axis
