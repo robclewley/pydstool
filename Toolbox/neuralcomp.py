@@ -56,12 +56,12 @@ class dendr_compartment(compartment):
 class neurite_compartment(compartment):
     pass
 
-class neuron(compatComponent):
+class neuron(compatODEComponent):
     pass
 
 
 # coupling
-class synapse(compatLeafComponent):
+class synapse(compatODELeafComponent):
     pass
 
 class exc_synapse(synapse):
@@ -71,11 +71,11 @@ class inh_synapse(synapse):
     pass
 
 # point-neuron network
-class pnnetwork(compatComponent):
+class pnnetwork(compatODEComponent):
     pass
 
 # regular network
-class network(compatComponent):
+class network(compatODEComponent):
     pass
 
 soma.compatibleContainers=(neuron, pnnetwork)
