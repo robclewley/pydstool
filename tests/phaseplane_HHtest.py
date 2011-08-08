@@ -7,6 +7,7 @@ from PyDSTool import *
 from PyDSTool.Toolbox.phaseplane import *
 import time
 from copy import copy
+global plotter
 
 # ------------------------------------------------------------
 
@@ -104,10 +105,17 @@ start_time = time.clock()
 fp_coords = find_fixedpoints(HH, n=4, jac=jac_fn,
                              subdomain={'v':HH.xdomain['v'],'m':HH.xdomain['m'],
                              'h':0.8, 'n':0.2}, eps=1e-8)
-nulls_x, nulls_y, handles = find_nullclines(HH, 'v', 'm', n=30, jac=jac_fn,
+nulls_x, nulls_y = find_nullclines(HH, 'v', 'm', n=3, jac=jac_fn,
                              x_dom=HH.xdomain['v'], y_dom=HH.xdomain['m'],
-                             fps=fp_coords, max_step=5)
+                             fps=fp_coords, max_step=2)
+N_x = nullcline('v', 'm', nulls_x)
+N_y = nullcline('v', 'm', nulls_y)
 print "... finished in %.4f seconds\n" % (time.clock()-start_time)
+
+plotter.do_display=True
+plotter.plot_nullcline(N_x,'g')
+plotter.plot_nullcline(N_y,'r')
+
 
 print "Fixed points for (v,m) phase plane sub-system when h=0.7 and n=0.2: "
 print "For classification and stability, we use the fixedpoint class..."
@@ -123,5 +131,5 @@ fps.append(fixedpoint_2D(HH, Point(fp_coords[2]), coords=['v', 'm'],
 for fp in fps:
     print "F.p. at (%.5f, %.5f) is a %s and has stability %s" % (fp.point['v'],
                             fp.point['m'], fp.classification, fp.stability)
-    plot(fp.point['v'], fp.point['m'], 'ko')
+    plotter.plot_point(Point2D(fp.point.todict(), xname='v', yname='m'), 'ko')
 show()
