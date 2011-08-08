@@ -17,6 +17,11 @@ from PyDSTool.common import _seq_types, _num_types
 import PyDSTool.Redirector as redirc
 
 import numpy as np
+try:
+    from numpy import unique1d as unique
+except ImportError:
+    # newer version of numpy
+    from numpy import unique
 import matplotlib.pyplot as pp
 
 from scipy.interpolate import UnivariateSpline, InterpolatedUnivariateSpline
@@ -600,6 +605,8 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
                                 xinterval, yinterval), xtol*10)
     # max_step = 0 means do not use PyCont to improve accuracy
     if max_step != 0:
+        if not isinstance(max_step, dict):
+            max_step = {xname: max_step, yname: max_step}
         # use PyCont to improve accuracy
         # PyCont will order the points so can draw lines
         loop_step = 5
@@ -686,9 +693,13 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
                                                   P['null_curve_y'].new_sol_segment[yname]]).T,
                                             xinterval, yinterval) \
                          or num_points > max_num_points
+            # can get repetition of some points
             y_null = crop_2D(array([P['null_curve_y'].sol[xname],
                                     P['null_curve_y'].sol[yname]]).T,
                              xinterval, yinterval)
+            x_vals = y_null[:,0]
+            x_vals_unique, indices = unique(x_vals, return_index=True)
+            y_null = y_null[indices]
         # X
         if xname in do_vars:
             if len(x_null) > 1:
@@ -766,9 +777,14 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
                                                   P['null_curve_x'].new_sol_segment[yname]]).T,
                                             xinterval, yinterval) \
                          or num_points > max_num_points
+            # can get repetition of some points
             x_null = crop_2D(array([P['null_curve_x'].sol[xname],
                                     P['null_curve_x'].sol[yname]]).T,
                              xinterval, yinterval)
+            x_vals = x_null[:,0]
+            x_vals_unique, indices = unique(x_vals, return_index=True)
+            x_null = x_null[indices]
+
     return (gen._FScompatibleNamesInv(x_null), gen._FScompatibleNamesInv(y_null))
 
 
@@ -814,6 +830,17 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
             break
         if n < 3:
             raise "maxsearch too small"
+    x0_coords = np.zeros((D,n),'f')
+    x0_ixs = []
+    x0_names = []
+    ix = 0
+    # sort names by key to ensure same ordering as generator variables
+    for xname, xdom in sortedDictItems(subdomain,byvalue=False):
+        if isinstance(xdom, (tuple, list)):
+            x0_ixs.append(var_ix_map[xname])
+            x0_names.append(xname)
+            x0_coords[ix,:] = linspace(xdom[0], xdom[1], n)
+            ix += 1
     # NOTE: def Rhs(self, t, xdict, pdict) and Jacobian signature
     # has same form, so need to use a wrapper function to convert order
     # of arguments to suit solver.
@@ -850,17 +877,6 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
     # solve xdot on each starting point
     fps = []
     fp_listdict = []
-    x0_coords = zeros((D,n),'f')
-    x0_ixs = []
-    x0_names = []
-    ix = 0
-    # sort names by key to ensure same ordering as generator variables
-    for xname, xdom in sortedDictItems(subdomain,byvalue=False):
-        if isinstance(xdom, (tuple, list)):
-            x0_ixs.append(var_ix_map[xname])
-            x0_names.append(xname)
-            x0_coords[ix,:] = linspace(xdom[0], xdom[1], n)
-            ix += 1
     d_posns = base_n_counter(n,D)
     xtol = eps/10.
     for dummy_ix in xrange(n**D):
@@ -1435,7 +1451,7 @@ class fixedpoint_nD(object):
         self.description = description
 
     def _get_eigen(self):
-        evals, evecs_array = np.eig(self.D)
+        evals, evecs_array = np.linalg.eig(self.D)
         evecs_pt = []
         for i, v in enumerate(self.fp_coords):
             d = {}
@@ -3338,13 +3354,13 @@ class base_n_counter(object):
     def __init__(self, n, d):
         self._maxval = n-1
         self._d = d
-        self.counter = zeros((d,))
+        self.counter = np.zeros((d,))
 
     def inc(self):
         ix = 0
         while True:
             if ix == self._d:
-                self.counter = zeros((self._d,))
+                self.counter = np.zeros((self._d,))
                 break
             if self.counter[ix] < self._maxval:
                 self.counter[ix] += 1
@@ -3360,7 +3376,7 @@ class base_n_counter(object):
             raise IndexError("Invalid index for counter")
 
     def reset(self):
-        self.counter = zeros((self._d,))
+        self.counter = np.zeros((self._d,))
 
     def __str__(self):
         return str(self.counter.tolist())
