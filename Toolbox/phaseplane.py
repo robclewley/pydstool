@@ -46,7 +46,7 @@ _functions = ['find_nullclines', 'make_distance_to_line_auxfn',
               'make_distance_to_known_line_auxfn', 'crop_2D',
               'find_period', 'make_flow_normal_event', 'filter_NaN',
               'find_fixedpoints', 'find_steadystates', 'find_equilibria',
-              'get_perp', 'get_orthonormal', 'rotate', 'angle_to_vertical',
+              'get_perp', 'get_orthonormal', 'get_rotated', 'angle_to_vertical',
               'is_min_bracket', 'find_nearest_sample_points_by_angle',
               'closest_perp_distance_between_splines',
               'closest_perp_distance_between_sample_points',
@@ -58,7 +58,8 @@ _classes = ['distance_to_pointset', 'mesh_patch_2D', 'dx_scaled_2D',
             'phaseplane', 'fixedpoint_nD', 'fixedpoint_2D', 'nullcline',
             'Point2D', 'plotter_2D']
 
-_features = ['inflection_zone_leaf', 'inflection_zone_node']
+_features = ['inflection_zone_leaf', 'inflection_zone_node',
+             'max_curvature_zone_leaf', 'max_curvature_zone_node']
 
 __all__ = _functions + _classes + _features + ['plotter']
 
@@ -1159,9 +1160,16 @@ class nullcline(object):
     the given sample point array using all as knots, and available
     through the 'spline' attribute.
 
-    Only works for nullclines that can be written y = f(x) and that are
-    monotonically increasing or decreasing with increasing x. Future
-    versions may support non-monotonic functions.
+    Input:
+      Names are given to the x and y axis directions at initialization.
+      Third argument is the N-by-2 array of N two-dimensional data points.
+
+    N.B.: Only works for nullclines that can be written y = f(x). Future
+    versions may support non-functions.
+
+    Some functions acting on nullclines currently also rely on monotonicity
+    of y=f(x), and will verify this using the is_monotonic method before
+    proceeding. Future versions will attempt to resolve that.
     """
     def __init__(self, xname, yname, nullc_array):
         self.xname = xname
@@ -1169,18 +1177,7 @@ class nullcline(object):
         self.array = nullc_array
         # ensure monotonicity
         if not isincreasing(nullc_array[:,0]):
-            raise AssertionError("%s values must be monotonically increasing" % xname)
-        is_y_inc = isincreasing(nullc_array[:,1])
-        is_y_dec = isincreasing(nullc_array[::-1,1])
-        if not (is_y_inc or is_y_dec):
-            raise AssertionError("%s values must be monotonic" % yname)
-        # cubic spline passing through all data points
-#        self.param = linspace(0., 1., len(nullc_array))
-#        self.splinex = InterpolatedUnivariateSpline(self.param,
-#                                                   nullc_array[:,0])
-#        self.spliney = InterpolatedUnivariateSpline(self.param,
-#                                                   nullc_array[:,1])
-        # slightly different spline, parameterized only by x
+            raise AssertionError("x axis '%s' values must be monotonically increasing" % xname)
         self.spline = InterpolatedUnivariateSpline(nullc_array[:,0],
                                                    nullc_array[:,1])
 
@@ -1262,7 +1259,16 @@ class nullcline(object):
                 sample_vals = [(xdom[0],self(xdom[0]))] + sample_vals
             if xdom[1] not in self.array[:,0]:
                 sample_vals.append( (xdom[1],self(xdom[1])) )
-        return nullcline(self.xname, self.yname, np.array(sample_vals))
+        try:
+            return nullcline(self.xname, self.yname, np.array(sample_vals))
+        except:
+            print "Error cropping nullcline at sample points", sample_vals
+            raise
+
+    def is_monotonic(self):
+        is_y_inc = isincreasing(self.array[:,1])
+        is_y_dec = isincreasing(self.array[::-1,1])
+        return (is_y_inc or is_y_dec)
 
     def __copy__(self):
         return nullcline(self.xname, self.yname, self.array)
@@ -1282,7 +1288,7 @@ def get_orthonormal(v):
     vperp[1] = -v[0]
     return vperp/np.linalg.norm(vperp)
 
-def rotate(x, theta):
+def get_rotated(x, theta):
     res = copy.copy(x) # ensure same type of result as input
     z=(x[0]+x[1]*1j)*(cos(theta)+sin(theta)*1j)
     res[0] = z.real
@@ -1639,6 +1645,9 @@ class plotter_2D(object):
         self.figsize = figsize
         self.curr_fig = 1
         self.fig_directory = {}
+        # layers will permit types of plot data to be removed or restored
+        # to a given plot axes without recomputation
+        self.layers = {}
 
     def set_curr_fig(self, name):
         try:
@@ -1839,8 +1848,10 @@ def is_min_bracket(triple):
 
 def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5):
     """Tolerance measures that of Euclidean distance between the splines
-    representing the two nullcline objects.
+    representing the two nullcline objects. Assumes monotonicity of both nullclines.
     """
+    assert NullcA.is_monotonic()
+    assert NullcB.is_monotonic()
     # search interior sample points of spline A first
     dists = []
     xa_search_vals = NullcA.array[1:-1,0]
@@ -1936,13 +1947,17 @@ def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5):
             # pick a point between the two smallest d's and continue search for bracket.
             if ix_min == 0:
                 b_prime = 0.5*(a + b)
+                d_new = closest_perp_distance_on_spline(NullcA, NullcB, b_prime)
+                # does the new selection create a bracket?
+                # test bracket 1 is xa_lo, xa_new, xa_mid
+                test_bracket = (d_bracket[0], d_new, d_bracket[1])
             else:
                 # ix_min == 2
                 b_prime = 0.5*(b + c)
-            d_new = closest_perp_distance_on_spline(NullcA, NullcB, xa_new)
-            # does the new selection create a bracket?
-            # test bracket 1 is xa_lo, xa_new, xa_mid
-            test_bracket = (d_bracket[0], d_new, d_bracket[1])
+                d_new = closest_perp_distance_on_spline(NullcA, NullcB, b_prime)
+                # does the new selection create a bracket?
+                # test bracket 1 is xa_mid, xa_new, xa_hi
+                test_bracket = (d_bracket[1], d_new, d_bracket[2])
             is_brack_test, ix_min, error = is_min_bracket(test_bracket)
     return x_bracket[ix_min], d_bracket[ix_min]
 
@@ -2506,9 +2521,21 @@ class zone_node(ql_feature_node):
     """Phase plane 'zone' node of hierarchical qualitative feature abstract class.
     A zone is a bounding box in the phase plane containing a feature, grown to include
     a region that satisfies some local condition.
+
+    Must define _leaf_class for each implementation of a zone_node class
     """
+    def finish(self, target):
+        self.subfeatures = dict.fromkeys(self.results.zone_center_ixs, None)
+        for ix in self.results.zone_center_ixs:
+            feat = self._leaf_class('zone_%i'%ix, pars=self.pars)
+            feat.pars.all_zone_ixs = list(self.results.zone_center_ixs)
+            feat.pars.index = ix
+            self.subfeatures[ix] = feat
+            feat(target)
+
     def _local_init(self):
         pass
+
 
 class zone_leaf(ql_feature_leaf):
     """Phase plane 'zone' for leaf of hierarchical qualitative feature abstract class.
@@ -2526,16 +2553,120 @@ class zone_leaf(ql_feature_leaf):
 class nullcline_zone_node(zone_node):
     pass
 
+
 class nullcline_zone_leaf(zone_leaf):
-    pass
+    """Parameters to apply:
+    par: xtol
+    optional par: find_exact_center (unused)
+    """
+    def _prepare(self, nullc):
+        center_ix = self.pars.index
+        x_center_approx, y_center_approx = nullc.array[center_ix]
+        # Do we care what is the exact position of the zone's defining position?
+        try:
+            exact = self.pars.find_exact_center
+        except AttributeError:
+            # default False
+            exact = False
+        if exact:
+            raise NotImplementedError
+        else:
+            x_center = x_center_approx
+            y_center = y_center_approx
+        return center_ix, x_center, y_center
+
+    def _grow_zone_by_radius(self, center_ix, x_center, y_center, nullc, property_func):
+        raise NotImplementedError
+
+    def _grow_zone_by_width(self, center_ix, x_center, y_center, nullc, property_func):
+        """property_func must return +/- 1 or 0/1 as a function of x"""
+        try:
+            zone_width = self.pars.zone_width
+        except AttributeError:
+            zone_width = np.inf  # may fail unexpectedly
+            print "Warning: zone_width parameter defaulted to infinity"
+        min_zone_x = x_center - zone_width
+        max_zone_x = x_center + zone_width
+        # Grow domain of zone past known sample points with same property
+        # until intermediate position between sample points found
+        x_range = [np.nan, np.nan]
+        y_range = [np.nan, np.nan]
+        zone_position = self.pars.all_zone_ixs.index(center_ix)
+
+        # Left search
+        if zone_position == 0:
+            # everything to the left is already included
+            x_range[0] = max( nullc.array[0,0], min_zone_x )
+            y_range[0] = nullc(x_range[0])
+        else:
+            # all sample points with indices ix_after:center_ix (inclusive)
+            # have the same property.
+            ix_before = self.pars.all_zone_ixs[zone_position-1]
+            ix_after = ix_before + 1
+            if nullc.array[ix_after,0] < min_zone_x:
+                x_range[0] = min_zone_x
+                y_range[0] = nullc(x_range[0])
+            else:
+                # search between these points on the nullcline
+                x_range[0] = bisection(property_func, nullc.array[ix_before,0],
+                                  nullc.array[ix_after,0], xtol=self.pars.xtol)
+                y_range[0] = nullc(x_range[0])
+
+        # Right search
+        if center_ix == self.pars.all_zone_ixs[-1]:
+            # everything to the right is already included
+            x_range[1] = nullc.array[-1,0]
+            y_range[1] = nullc.array[-1,1]
+        else:
+            # all sample points with indices center_ix:ix_before (inclusive)
+            # have the same property.
+            ix_before = self.pars.all_zone_ixs[zone_position+1]
+            ix_after = ix_before + 1
+            if nullc.array[ix_before,0] > max_zone_x:
+                x_range[1] = max_zone_x
+                y_range[1] = nullc(x_range[1])
+            else:
+                # search between these points on the nullcline
+                x_range[1] = bisection(property_func, nullc.array[ix_before,0],
+                                  nullc.array[ix_after,0], xtol=self.pars.xtol)
+                y_range[1] = nullc(x_range[0])
+
+        return [np.array(x_range), np.array(y_range)]
+
 
 # Implementations
 class fixedpoint_zone(nullcline_zone_leaf):
     # needs *two* nullcline objects and a f.p. object
     pass
 
+
+# define prior to node so that can provide leaf class name to node class
+class inflection_zone_leaf(nullcline_zone_leaf):
+    """A single inflection point zone.
+
+    pars:
+      find_exact_inflection -> exact x value (not implemented yet)
+      zone_width -> positive scalar (default Inf grows to next inflection point)
+    """
+    #Only use one of zone_radius or zone_width, otherwise zone_width will be used.
+    def evaluate(self, nullc):
+        # Indices of inflection mark last known sample point having
+        # same concavity to those locally on its left in the point order
+        # from left to right.
+        center_ix, x_center, y_center = self._prepare(nullc)
+        self.results.x_center = x_center
+        self.results.y_center = y_center
+        self.results.zone = self._grow_zone_by_width(center_ix, x_center, y_center, nullc,
+                                                     nullc.concavity)
+        # if got this far, succeeded in finding a zone
+        return True
+
+
 class inflection_zone_node(nullcline_zone_node):
-    """Find all inflection point zones"""
+    """Find all inflection point zones
+    """
+    _leaf_class = inflection_zone_leaf
+
     def evaluate(self, nullc):
         """Assumes at least 2 sample points in nullcline.
         """
@@ -2576,97 +2707,17 @@ class inflection_zone_node(nullcline_zone_node):
         self.results.zone_center_ixs = np.argwhere(concs[:-1] * concs[1:] - 1).flatten()
         return len(self.results.zone_center_ixs) > 0
 
-    def finish(self, nullc):
-        self.subfeatures = dict.fromkeys(self.results.zone_center_ixs, None)
-        for ix in self.results.zone_center_ixs:
-            feat = inflection_zone_leaf('zone_%i'%ix, pars=self.pars)
-            feat.pars.all_zone_ixs = list(self.results.zone_center_ixs)
-            feat.pars.index = ix
-            self.subfeatures[ix] = feat
-            feat(nullc)
 
-
-class inflection_zone_leaf(nullcline_zone_leaf):
-    """A single inflection point zone.
-
-    pars:
-      find_exact_inflection -> exact x value (not implemented yet)
-      zone_radius -> positive scalar (default Inf grows to next inflection point)
+class max_curvature_zone_leaf(nullcline_zone_leaf):
+    """Find all zones with locally maximal curvature.
+    Optional selection of those facing up or down only:
+    par: direction (-1, 0, 1, where 0 selects either (default))
     """
-    def evaluate(self, nullc):
-        # Indices of inflection mark last known sample point having
-        # same concavity to those locally on its left in the point order
-        # from left to right.
-        center_ix = self.pars.index
-        x_center_approx, y_center_approx = nullc.array[center_ix]
-        # Do we care what is the exact position of the inflection point?
-        try:
-            exact = self.pars.find_exact_inflection
-        except AttributeError:
-            # default False
-            exact = False
-        if exact:
-            raise NotImplementedError
-        else:
-            x_center = x_center_approx
-            y_center = y_center_approx
-        try:
-            zone_radius = self.pars.zone_radius
-        except AttributeError:
-            zone_radius = np.inf
-        min_zone_x = x_center - zone_radius
-        max_zone_x = x_center + zone_radius
-        # Grow domain of zone past known sample points with same concavity
-        # until intermediate position between sample points found
-        x_range = [np.nan, np.nan]
-        y_range = [np.nan, np.nan]
-        zone_position = self.pars.all_zone_ixs.index(center_ix)
-        # Left search
-        if zone_position == 0:
-            # everything to the left is already included
-            x_range[0] = max( nullc.array[0,0], min_zone_x )
-            y_range[0] = nullc(x_range[0])
-        else:
-            # all sample points with indices ix_after:center_ix (inclusive)
-            # have the same concavity.
-            ix_before = self.pars.all_zone_ixs[zone_position-1]
-            ix_after = ix_before + 1
-            if nullc.array[ix_after,0] < min_zone_x:
-                x_range[0] = min_zone_x
-                y_range[0] = nullc(x_range[0])
-            else:
-                # search between these points on the nullcline
-                x_range[0] = bisection(nullc.concavity, nullc.array[ix_before,0],
-                                  nullc.array[ix_after,0], xtol=self.pars.xtol)
-                y_range[0] = nullc(x_range[0])
 
-        # Right search
-        if center_ix == self.pars.all_zone_ixs[-1]:
-            # everything to the right is already included
-            x_range[1] = nullc.array[-1,0]
-            y_range[1] = nullc.array[-1,1]
-        else:
-            # all sample points with indices center_ix:ix_before (inclusive)
-            # have the same concavity.
-            ix_before = self.pars.all_zone_ixs[zone_position+1]
-            ix_after = ix_before + 1
-            if nullc.array[ix_before,0] > max_zone_x:
-                x_range[1] = max_zone_x
-                y_range[1] = nullc(x_range[1])
-            else:
-                # search between these points on the nullcline
-                x_range[1] = bisection(nullc.concavity, nullc.array[ix_before,0],
-                                  nullc.array[ix_after,0], xtol=self.pars.xtol)
-                y_range[1] = nullc(x_range[0])
-
-        self.results.zone = [np.array(x_range), np.array(y_range)]
-        # if got this far, succeeded in finding a zone
-        return True
-
-class max_concavity_zone(nullcline_zone_leaf):
+class max_curvature_zone_node(nullcline_zone_node):
     pass
 
-class min_concavity_zone(nullcline_zone_leaf):
+class min_curvature_zone(nullcline_zone_leaf):
     pass
 
 
