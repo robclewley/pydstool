@@ -21,15 +21,17 @@ def makeHHneuron(name, dt, par_args, ic_args, evs=None, extra_terms='',
     hfn_str = 'ha(v)*(1-h)-hb(v)*h'
     aux_str = 'm*m*m*h'
 
+    # Testing: ptest in RHS function to test Jacobian computation of ionic with embedded aux function
+    # ptest has no numeric effect on the ionic function otherwise
     auxdict = {'ionic': (['vv', 'mm', 'hh', 'nn'],
-                              'gna*mm*mm*mm*hh*(vv-vna) + gk*nn*nn*nn*nn*(vv-vk) + gl*(vv-vl)'),
+                              'gna*mm*mm*mm*hh*ptest(0)*(vv-vna) + gk*nn*nn*nn*nn*(vv-vk) + gl*(vv-vl)'),
                'ma': (['v'], '0.32*(v+54)/(1-exp(-(v+54)/4))'),
                'mb': (['v'], '0.28*(v+27)/(exp((v+27)/5)-1)'),
                'ha': (['v'], '.128*exp(-(50+v)/18)'),
                'hb': (['v'], '4/(1+exp(-(v+27)/5))'),
                'na': (['v'], '.032*(v+52)/(1-exp(-(v+52)/5))'),
                'nb': (['v'], '.5*exp(-(57+v)/40)'),
-               'ptest': (['p'], '1+p')}
+               'ptest': (['p'], '-C+(p+C)*1')} # use model parameter in this function to test jacobian creation below
 
     DSargs = args()
     DSargs.varspecs = {'v': vfn_str, 'm': mfn_str,
@@ -87,7 +89,7 @@ ic_args = {'v_bd0': -130.0, 'v_bd1': 70.0, 'h': 0.99599864212873856,
            'm': 0.00050362509755992027, 'n': 0.00557358064026849,
            'v': -82.018860813828837}
 
-HH, ev_helper = makeHHneuron('HHtest', 0.1, par_args, ic_args)
+HH, ev_helper = makeHHneuron('HH_PP_test', 0.1, par_args, ic_args)
 HH.set(tdata=[0, 100], ics={'h':0.7, 'n': 0.2})
 
 print "Finding analytic Jacobian w.r.t. phase-plane variables v, m..."
@@ -98,6 +100,9 @@ scope = copy(HH.pars)
 scope.update({'n': HH.initialconditions['n'], 'h': HH.initialconditions['h']})
 scope.update(new_fnspecs)
 jac_fn = expr2fun(jac, ensure_args=['t'], **scope)
+
+# TEMP test for jac fn
+jac_fn(-70,.1,1)
 
 print "Use of Jacobian speeds up finding of nullclines and fixed points by"
 print "nearly a factor of two (not including time to plot results)..."
