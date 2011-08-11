@@ -478,6 +478,12 @@ def expr2fun(qexpr, ensure_args=None, **values):
     fspec = qvar.eval(**valDict)
     for fname, (fnsig, fndef) in embed_funcs.iteritems():
         qtemp = QuantSpec('q', fndef)
+        for emb_fname in embed_funcs.keys():
+            # check for embedded function names in these definitions that need
+            # prefix 'self.' for later function creation
+            if emb_fname in qtemp:
+                # replace all occurrences
+                qtemp.mapNames({emb_fname: 'self.'+emb_fname})
         new_fndef = str(qtemp.eval(**filteredDict(valDict, fnsig, neg=True)).renderForCode())
         embed_funcs[fname] = (fnsig, new_fndef)
     free.extend(remain(fspec.freeSymbols,
@@ -670,6 +676,10 @@ def _generate_subderivatives(symbols, fnspecs):
             Df = Diff(fndef, var)
             add_fnspecs[symb] = (fnsig, str(Df))
             new_free.extend(remain(Df.freeSymbols, new_free+math_globals_keys))
+    # if any auxiliary functions showed up as free names, add them to add_fnspecs
+    for f in new_free:
+        if f in fnspecs and f not in add_fnspecs:
+            add_fnspecs[f] = fnspecs[f]
     return new_free, add_fnspecs
 
 
