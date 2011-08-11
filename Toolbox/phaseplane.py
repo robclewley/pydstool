@@ -3330,9 +3330,9 @@ def _xinf_1D(xdot,x0,args=(),xddot=None,xtol=1.49012e-8):
     for a variable x in 1 dimension"""
     try:
         if xddot is None:
-            xinf_val = fsolve(xdot,x0,args,xtol=xtol)
+            xinf_val = float(fsolve(xdot,x0,args,xtol=xtol))
         else:
-            xinf_val = newton_meth(xdot,x0,fprime=xddot,args=args)
+            xinf_val = float(newton_meth(xdot,x0,fprime=xddot,args=args))
     except RuntimeError:
         xinf_val = NaN
     return xinf_val
