@@ -3311,7 +3311,7 @@ def _xinf_ND(xdot,x0,args=(),xddot=None,xtol=1.49012e-8):
     """Private function for wrapping the fsolving for x_infinity
     for a variable x in N dimensions"""
     try:
-        result = fsolve(xdot,x0,args,fprime=xddot,xtol=xtol,full_output=1)
+        result = float(fsolve(xdot,x0,args,fprime=xddot,xtol=xtol,full_output=1))
     except (ValueError, TypeError, OverflowError):
         xinf_val = NaN
     except:
