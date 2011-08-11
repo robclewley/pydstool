@@ -160,8 +160,8 @@ def makeImplicitFunc(f, x0, fprime=None, extrafargs=(), xtolval=1e-8,
             def newton_fn(t):
                 rout.start()
 ##                rerr.start()
-                res = newton_meth(f, x0, args=(t,)+extrafargs, tol=xtolval,
-                                     maxiter=maxnumiter, fprime=fprime)
+                res = float(newton_meth(f, x0, args=(t,)+extrafargs, tol=xtolval,
+                                     maxiter=maxnumiter, fprime=fprime))
                 rout.stop()
 ##                warns = rout.stop()
 ##                rerr.stop()
@@ -202,8 +202,8 @@ def makeImplicitFunc(f, x0, fprime=None, extrafargs=(), xtolval=1e-8,
             def newton_fn(s, t):
                 rout.start()
 ##                rerr.start()
-                res = newton_meth(f, x0, args=(t,)+extrafargs, tol=xtolval,
-                                     maxiter=maxnumiter, fprime=fprime)
+                res = float(newton_meth(f, x0, args=(t,)+extrafargs, tol=xtolval,
+                                     maxiter=maxnumiter, fprime=fprime))
                 rout.stop()
 ##                warns = rout.stop()
 ##                rerr.stop()
