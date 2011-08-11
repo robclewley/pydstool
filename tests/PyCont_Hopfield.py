@@ -15,14 +15,14 @@ pars = {'alpha': 0.1,
         'gamma': 0.,
         'lambda': 0.,
         'chi': 1.}
- 
+
 icdict = {'m': 1., 'r': 1, 'C': 0., 's': 0}
 
 # Set up model
 auxfndict = {'sigsq': (['s', 'r'], 'alpha*(4.*p*(1.-p)*r+pow((1.-chi)*s+lambda,2))'), \
              'yp': (['m', 's', 'r'], '(2.*(1.-p)*m-gamma*s-theta)/sqrt(2*alpha*(4*p*(1-p)*r+pow((1-chi)*s+lambda,2)))'), \
              'ym': (['m', 's', 'r'], '(2.*(-p)*m-gamma*s-theta)/sqrt(2*alpha*(4*p*(1-p)*r+pow((1-chi)*s+lambda,2)))')}
-		
+
 mstr = '-m + 0.5*special_erf(yp(m,s,r)) - 0.5*  special_erf(ym(m,s,r))'
 sstr = '-s + p*  special_erf(yp(m,s,r)) + (1-p)*special_erf(ym(m,s,r))'
 rstr = '-r + (1-pow(s,2))/(4*p*(1-p)*(pow(1-C,2)))'
@@ -72,7 +72,7 @@ start = clock()
 PyCont['EQ1'].forward()
 print 'done in %.3f seconds!' % (clock()-start)
 
-if 0: 
+if 0:
     PyCont.display(('alpha','m'),stability=True)
     show()
 
@@ -91,18 +91,3 @@ print 'done in %.3f seconds!' % (clock()-start)
 
 PyCont['FO1'].display(('theta','alpha'),stability=True)
 show()
-
-# # Plot
-# PyCont.display(('Iapp','v'),stability=True)
-# PyCont['LC1'].display(('Iapp','v_min'),stability=True)
-
-# pylab.xlim([-25, 150])
-# PyCont.plot.fig1.axes1.axes.set_title('Bifurcation Diagram')
-# PyCont.plot.fig1.toggleAll('off', bytype=['P', 'MX'])
-
-# PyCont['LC1'].plot_cycles(normalized=True, figure='fig2', method='highlight', exclude='MX1')
-# PyCont.plot.fig2.axes1.axes.set_title('Cycles')
-
-#PyCont.plot.setLegends('_nolegend_', bytype=['P', 'MX'])
-#PyCont.plot.fig2.refresh()
-#pylab.legend()
