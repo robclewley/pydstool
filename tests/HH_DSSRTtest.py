@@ -87,6 +87,12 @@ new_ics = HH.getEvents()['trough_ev'][-1]
 HH.set(ics=new_ics, tdata=[0, 50])
 traj = HH.compute('test')
 pts = traj.sample()
+# start a new trajectory from the end of the previous one to ensure really close
+# to a limit cycle, but don't use the continue option of compute so as to limit
+# number of epochs needed to be computed later
+HH.set(ics=pts[-1])
+traj = HH.compute('test')
+pts = traj.sample()
 
 ### DSSRT-related
 Dargs = args()
@@ -126,7 +132,7 @@ a = da.psi_pts
 da.calc_rankings()
 
 gamma = 3 # time scale threshold
-opt_thresh = 3
+opt_thresh = 3 # default
 min_len = 10000
 cycle_ixs = []
 for thresh in linspace(2.3,5,15):
@@ -142,6 +148,7 @@ for thresh in linspace(2.3,5,15):
 
 print "Optimum threshold was", opt_thresh, "between indices ", ixs
 da.domscales['psi'].calc_epochs(opt_thresh, gamma)
+
 epochs = da.domscales['psi'].epochs[cycle_ixs[0]:cycle_ixs[1]]
 
 t0 = epochs[0].t0
