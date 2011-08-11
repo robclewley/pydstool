@@ -32,7 +32,7 @@ all_curve_types = ['EP', 'LP', 'H', 'FP', 'LC']
 _classes = ['pargs', 'KeyEvent']
 
 _functions = ['initializeDisplay']
-              
+
 __all__ = _classes + _functions
 #####
 
@@ -43,11 +43,11 @@ class pargs(args):
             return args.__getitem__(args.__getitem__(self, curve), pt)
         else:
             return args.__getitem__(self, key)
-            
+
     def __repr__(self, ct=0, res=None):
         if res is None:
             res = []
-            
+
         # This is so I can make things alphabetical
         all_pargs = []
         all_args = []
@@ -75,19 +75,19 @@ class pargs(args):
             if len(all_args) > 0:
                 for n in all_args:
                     res.append(ct*4*' ' + n[0] + ': ' + n[1] + '\n')
-                    
+
             all_pargs.sort()
             if len(all_pargs) > 0:
                 ct += 1
                 for n in all_pargs:
                     res.append((ct-1)*4*' ' + n[0] + ':' + '\n')
                     n[1].__repr__(ct=ct, res=res)
-                
+
         if ct <= 1:
             return reduce(lambda x, y: x+y, res)
-            
+
     __str__ = __repr__
-                
+
     def fromLabel(self, label, key=None):
         point = None
         if self.has_key('text') and self.text.get_text().lstrip(' ') == label or \
@@ -100,11 +100,11 @@ class pargs(args):
                 if point is not None:
                     break
         return point
-        
+
     def get(self, objtype, bylabel=None, byname=None, bytype=None, bylegend=None, obj=None, ct=0):
         if objtype not in ['point', 'text', 'cycle', 'curve']:
             raise 'Object type must be point, text, cycle, or curve'
-            
+
         ct += 1
         if isinstance(bylabel, str):
             bylabel = [bylabel]
@@ -114,7 +114,7 @@ class pargs(args):
             bytype = [bytype]
         if isinstance(bylegend, str):
             bylegend = [bylegend]
-        
+
         if obj is None:
             obj = []
         if bylabel is None and byname is None and bytype is None and bylegend is None:
@@ -131,17 +131,17 @@ class pargs(args):
                        bylegend is not None and ((v.has_key('curve') and v.curve[0].get_label() in bylegend) or (v.has_key('cycle') and v.cycle[0].get_label() in bylegend)):
                            obj.append((k,v[objtype]))
                 v.get(objtype, bylabel=bylabel, byname=byname, bytype=bytype, bylegend=bylegend, obj=obj, ct=ct)
-                
+
         if ct == 1:
             return obj
-        
+
     def toggleLabel(self, visible='on', refresh=True):
         if self.has_key('text'):
             self.text.set_visible(visible == 'on')
-            
+
         if refresh:
             self.refresh()
-            
+
     def toggleLabels(self, visible='on', bylabel=None, byname=None, bytype=None, ct=0):
         ct += 1
         if isinstance(bylabel, str):
@@ -150,7 +150,7 @@ class pargs(args):
             byname = [byname]
         if isinstance(bytype, str):
             bytype = [bytype]
-            
+
         if bylabel is None and byname is None and bytype is None:
             bytype = all_point_types    # Turn off all points
         for k, v in self.iteritems():
@@ -160,17 +160,17 @@ class pargs(args):
                 v.toggleLabel(visible=visible, refresh=False)
             elif isinstance(v, pargs):
                 v.toggleLabels(visible=visible, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
-            
+
         if ct == 1:
-            self.refresh()        
-        
+            self.refresh()
+
     def togglePoint(self, visible='on', refresh=True):
         if self.has_key('point'):
             self.point[0].set_visible(visible == 'on')
-            
+
         if refresh:
             self.refresh()
-            
+
     def togglePoints(self, visible='on', bylabel=None, byname=None, bytype=None, ct=0):
         ct += 1
         if isinstance(bylabel, str):
@@ -179,7 +179,7 @@ class pargs(args):
             byname = [byname]
         if isinstance(bytype, str):
             bytype = [bytype]
-            
+
         if bylabel is None and byname is None and bytype is None:
             bytype = all_point_types    # Turn off all points
         for k, v in self.iteritems():
@@ -189,10 +189,10 @@ class pargs(args):
                 v.togglePoint(visible=visible, refresh=False)
             elif isinstance(v, pargs):
                 v.togglePoints(visible=visible, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
-        
+
         if ct == 1:
             self.refresh()
-        
+
     def toggleCurve(self, visible='on', refresh=True):
         if self.has_key('curve'):
             for k, v in self.iteritems():
@@ -201,10 +201,10 @@ class pargs(args):
                     v.togglePoint(visible=visible, refresh=False)
             for line in self.curve:
                 line.set_visible(visible == 'on')
-                
+
         if refresh:
             self.refresh()
-                
+
     def toggleCurves(self, visible='on', bylegend=None, byname=None, bytype=None, ct=0):
         ct += 1
         if isinstance(bylegend, str):
@@ -213,7 +213,7 @@ class pargs(args):
             byname = [byname]
         if isinstance(bytype, str):
             bytype = [bytype]
-            
+
         if bylegend is None and byname is None and bytype is None:
             bytype = all_curve_types
         for k, v in self.iteritems():
@@ -226,15 +226,15 @@ class pargs(args):
 
         if ct == 1:
             self.refresh()
-        
+
     def toggleCycle(self, visible='on', refresh=True):
         if self.has_key('cycle'):
             for line in self.cycle:
                 line.set_visible(visible == 'on')
-                
+
         if refresh:
             self.refresh()
-                
+
     def toggleCycles(self, visible='on', bylegend=None, byname=None, bytype=None, ct=0):
         ct += 1
         if isinstance(bylegend, str):
@@ -243,7 +243,7 @@ class pargs(args):
             byname = [byname]
         if isinstance(bytype, str):
             bytype = [bytype]
-            
+
         if bylegend is None and byname is None and bytype is None:
             bytype = all_point_types
         for k, v in self.iteritems():
@@ -256,7 +256,7 @@ class pargs(args):
 
         if ct == 1:
             self.refresh()
-            
+
     def toggleAll(self, visible='on', bylabel=None, byname=None, bytype=None, ct=0):
         ct += 1
         if isinstance(bylabel, str):
@@ -265,7 +265,7 @@ class pargs(args):
             byname = [byname]
         if isinstance(bytype, str):
             bytype = [bytype]
-            
+
         if bylabel is None and byname is None and bytype is None:
             bytype = all_point_types
         for k, v in self.iteritems():
@@ -279,15 +279,15 @@ class pargs(args):
                 v.toggleAll(visible=visible, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
 
         if ct == 1:
-            self.refresh()        
-        
+            self.refresh()
+
     def setLabel(self, label, refresh=True):
         if self.has_key('text'):
             self.text.set_text('  '+label)
-            
+
         if refresh:
             self.refresh()
-            
+
     def setLabels(self, label, bylabel=None, byname=None, bytype=None, ct=0):
         ct += 1
         if isinstance(bylabel, str):
@@ -296,7 +296,7 @@ class pargs(args):
             byname = [byname]
         if isinstance(bytype, str):
             bytype = [bytype]
-            
+
         if bylabel is None and byname is None and bytype is None:
             bytype = all_point_types    # Turn off all points
         for k, v in self.iteritems():
@@ -306,10 +306,10 @@ class pargs(args):
                 v.setLabel(label, refresh=False)
             elif isinstance(v, pargs):
                 v.setLabels(label, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
-            
+
         if ct == 1:
             self.refresh()
-        
+
     def setLegend(self, legend, refresh=True):
         if self.has_key('curve'):
             for piece in self.curve:
@@ -317,10 +317,10 @@ class pargs(args):
         elif self.has_key('cycle'):
             for piece in self.cycle:
                 piece.set_label(legend)
-            
+
         if refresh:
             self.refresh()
-            
+
     def setLegends(self, legend, bylegend=None, byname=None, bytype=None, ct=0):
         ct += 1
         if isinstance(bylegend, str):
@@ -329,7 +329,7 @@ class pargs(args):
             byname = [byname]
         if isinstance(bytype, str):
             bytype = [bytype]
-            
+
         if bylegend is None and byname is None and bytype is None:
             if v.has_key('curve'):
                 bytype = all_curve_types
@@ -342,13 +342,13 @@ class pargs(args):
                 v.setLegend(legend, refresh=False)
             elif isinstance(v, pargs):
                 v.setLegends(legend, bylegend=bylegend, byname=byname, bytype=bytype, ct=ct)
-            
+
         if ct == 1:
             self.refresh()
-        
+
     def refresh(self):
         fig = None  # Used to save current figure (reset when done)
-        
+
         if not self.has_key('deleted'):
             if 'fig' in self.keys():
                 pylab.figure(self.fig.number)
@@ -371,10 +371,10 @@ class pargs(args):
                 for k, v in self.iteritems():
                     if isinstance(v, pargs):
                         v.refresh()
-                       
+
         if fig is not None: # Reset to current figure
             pylab.figure(fig.number)
-                
+
     def clean(self):
         """Cleans plotting structure (e.g. deleted)  Also gets rid of nonexisting figures
         if they've been deleted by an outside source.  This method is a little clumsy since
@@ -397,7 +397,7 @@ class pargs(args):
                         fig_axes = pylab.axes(v.axes)
                     except:
                         fig_axes = None
-                        
+
                     if fig_axes is None:
                         deleted.append(k)
                         recursive_clean = False
@@ -427,13 +427,13 @@ class pargs(args):
                         if v.point[0] in v.point[0].axes.lines:
                             v.point[0].axes.lines.remove(v.point[0])
                         recursive_clean = False
-                        
+
                 if recursive_clean:
                     v.clean()
-                
+
         for k in deleted:
             self.pop(k)
-            
+
     def clear(self, refresh=True):
         if not self.has_key('deleted'):
             if self.has_key('fig'):
@@ -445,14 +445,14 @@ class pargs(args):
                 self.axes.clear()
                 pylab.axes(self.axes)
                 pylab.title(title)
-                remove = [k for k in self.keys() if k != 'axes']                    
+                remove = [k for k in self.keys() if k != 'axes']
                 if refresh:
                     self.refresh()
             elif self.has_key('curve'):
                 remove = [k for k in self.keys() if k != 'curve']
                 for k in remove:
                     if isinstance(self[k], pargs):
-                        self[k].clear(refresh=False)                    
+                        self[k].clear(refresh=False)
                 if refresh:
                     self.refresh()
             elif self.has_key('point'):
@@ -466,7 +466,7 @@ class pargs(args):
                 self.deleted = True
             else:
                 remove = []
-                
+
             if remove != []:
                 for k in remove:
                     self.pop(k)
@@ -478,7 +478,7 @@ class pargs(args):
             if isinstance(v, pargs):
                 v.clear(refresh=False)
         self.refresh()
-                
+
     def delete(self, refresh=True):
         if not self.has_key('deleted'):
             if self.has_key('fig'):
@@ -519,13 +519,13 @@ class pargs(args):
             if isinstance(v, pargs):
                 v.delete(refresh=False)
         self.refresh()
-        
+
 class KeyEvent(object):
     """Used in 'highlight' method of plot_cycles."""
     def __init__(self, paxes):
         self.curr = 0
         self.axes = paxes.axes
-        
+
         # Get list of cycles from pargs class axes
         cycles = [thing.cycle[0] for k, thing in paxes.iteritems() if isinstance(thing, pargs) and thing.has_key('cycle')]
         # Put in order as in axes.lines (this should be same as order along curve, or user
@@ -535,7 +535,7 @@ class KeyEvent(object):
             if line in cycles:
                 self.cycles.append(line)
         self.axes.set_title(self.cycles[0].get_label())
-        
+
         self.bgd_lw = 0.2
         self.fgd_lw = 1.5
         for line in self.cycles:
@@ -543,7 +543,7 @@ class KeyEvent(object):
         self.cycles[0].set(linewidth=self.fgd_lw)
         pylab.draw()
         pylab.connect('key_press_event', self.__call__)
-    
+
     def __call__(self, event):
         if event.key == 'right': self.change_curr(1)
         elif event.key == 'left': self.change_curr(-1)
@@ -551,7 +551,7 @@ class KeyEvent(object):
         elif event.key == 'down': self.change_bgd(-1)
         elif event.key in ('+', '='): self.change_fgd(1)
         elif event.key in ('-', '_'): self.change_fgd(-1)
-        
+
     def change_bgd(self, up):
         if up == 1:
             if self.bgd_lw+0.1 > self.fgd_lw:
@@ -563,14 +563,14 @@ class KeyEvent(object):
                 self.bgd_lw = 0
             else:
                 self.bgd_lw -= 0.1
-                
+
         for ct, line in enumerate(self.cycles):
             if ct != self.curr:
                 line.set(linewidth=self.bgd_lw)
         pylab.draw()
-        
+
         print 'Background linewidth = %f' % self.bgd_lw
-        
+
     def change_fgd(self, up):
         if up == 1:
             self.fgd_lw += 0.1
@@ -579,12 +579,12 @@ class KeyEvent(object):
                 self.fgd_lw = self.bgd_lw
             else:
                 self.fgd_lw -= 0.1
-                
+
         self.cycles[self.curr].set(linewidth=self.fgd_lw)
         pylab.draw()
-        
+
         print 'Foreground linewidth = %f' % self.fgd_lw
-        
+
     def change_curr(self, up):
         self.cycles[self.curr].set(linewidth=self.bgd_lw)
         if up == 1:
@@ -596,19 +596,21 @@ class KeyEvent(object):
         pylab.draw()
 
 def initializeDisplay(plot, figure=None, axes=None):
-    """If figure = 'new', then it will create a new figure with name fig#"""
-    
+    """If figure = 'new', then it will create a new figure with name fig#
+    If figure is an integer, that figure # will be selected
+    """
+
     plot.clean()   # Clean up plot structure
     plot._cfl = None
     plot._cal = None
-    
+
     # Handle figure
-    if not figure:
+    if figure is None:
         if len(plot) <= 3:
             figure = pylab.gcf()
         else:
-            raise 'Please specify a figure.'
-        
+            raise ValueError('Please specify a figure.')
+
     cfl = None
     if isinstance(figure, pylab.Figure):
         for k, v in plot.iteritems():
@@ -623,7 +625,15 @@ def initializeDisplay(plot, figure=None, axes=None):
             if cfl not in plot.keys():
                 plot[cfl] = pargs()
                 plot[cfl].fig = pylab.figure()
-            
+    elif isinstance(figure, int):
+        fighandle = pylab.figure(figure)
+        cfl = 'fig' + str(figure)
+        if cfl not in plot.keys():
+            plot[cfl] = pargs()
+            plot[cfl].fig = fighandle
+    else:
+        raise TypeError("Invalid type for figure argument")
+
     if cfl is None:
         cfl = 'fig1'
         ct = 1
@@ -632,9 +642,9 @@ def initializeDisplay(plot, figure=None, axes=None):
             cfl = 'fig'+repr(ct)
         plot[cfl] = pargs()
         plot[cfl].fig = figure
-        
+
     pylab.figure(plot[cfl].fig.number)
-    
+
     # Handle axes
     if not axes:
         if len(plot[cfl]) <= 2:
@@ -646,14 +656,14 @@ def initializeDisplay(plot, figure=None, axes=None):
             axes = pylab.subplot(axes[0],axes[1],axes[2])
         else:
             raise 'Tuple must be of length 3'
-        
+
     cal = None
     if isinstance(axes, pylab.Axes):
         for k, v in plot[cfl].iteritems():
             if isinstance(v, pargs) and v.axes == axes:
                 cal = k
                 break
-                
+
         if cal is None:
             cal = 'axes1'
             ct = 1
@@ -669,8 +679,8 @@ def initializeDisplay(plot, figure=None, axes=None):
             plot[cfl][cal] = pargs()
             plot[cfl][cal].axes = pylab.axes()
             plot[cfl][cal].axes.set_title(cal)
-            
+
     pylab.axes(plot[cfl][cal].axes)
-    
+
     plot._cfl = cfl
     plot._cal = cal
