@@ -879,7 +879,9 @@ class Trajectory(object):
 
     def getEvents(self, evnames=None, asGlobalTime=True):
         """Collect all events throughout trajectory in global time,
-        unless asGlobalTime option set to False.
+        unless asGlobalTime option set to False (default is True).
+
+        Returns a pointset.
         """
         # self.events is a dict of pointsets keyed by event name
         if evnames is None:
@@ -898,11 +900,11 @@ class Trajectory(object):
             result = {}
             # assume iterable
             assert all([ev in self.events for ev in evnames]), \
-                   "Invalid event name(s) provided %s"%str(evnames)
+                   "Invalid event name(s) provided: %s"%str(evnames)
             for evname in evnames:
                 evptset = self.events[evname]
                 result[evname] = copy.copy(evptset)
-                if asGlobalTime:
+                if asGlobalTime and self.globalt0 != 0:
                     try:
                         result[evname].indepvararray += self.globalt0
                     except AttributeError:
@@ -925,6 +927,10 @@ class Trajectory(object):
             else:
                 result = self.eventTimes[evnames]
         else:
+            if asGlobalTime:
+                t_offset = self.globalt0
+            else:
+                t_offset = 0
             # assume iterable
             assert all([ev in self.events for ev in evnames]), \
                    "Invalid event name(s) provided %s"%str(evnames)
@@ -934,10 +940,7 @@ class Trajectory(object):
                 except KeyError:
                     pass
                 else:
-                    if asGlobalTime:
-                        result[evname] = list(array(evtimes) + self.globalt0)
-                    else:
-                        result[evname] = evtimes
+                    result[evname] = list(array(evtimes) + t_offset)
         return result
 
 
