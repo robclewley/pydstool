@@ -1214,6 +1214,52 @@ class nullcline(object):
         ders = self.spline.derivatives(x)
         return ders[2]/pow(1+ders[1]*ders[1],1.5)
 
+    def curvature_at_sample_points(self):
+        """Returns array of signed scalars for each
+        x data point (knot) of the nullcline spline.
+
+        Positive values mean concave "up" in the plane.
+        Assumes nullcline is monotonic."""
+        xdata = self.array[:,0]
+        curvature = []
+        curve_fn = self.curvature
+        # interior points only in loop --
+        # end points are checked just inside boundaries
+        # separately
+        x0 = xdata[0] + 0.01*(xdata[1] - xdata[0])
+        curvature.append( curve_fn(x0) )
+        for x in xdata[1:-1]:
+            curvature.append( curve_fn(x) )
+        x1 = xdata[-1] - 0.01*(xdata[-1] - xdata[-2])
+        curvature.append( curve_fn(x1) )
+        return np.array(curvature)
+
+    def grad_curvature(self, x):
+        """Derivative of the curvature at x is returned (scalar)"""
+        ders = self.spline.derivatives(x)
+        denom1 = pow(1+ders[1]*ders[1],1.5)
+        denom2 = pow(1+ders[1]*ders[1],2.5)
+        return ders[3]/denom1 - 3*(ders[2]*ders[2]*ders[1])/denom2
+
+    def grad_curvature_at_sample_points(self):
+        """Returns array of signed scalars for each
+        x data point (knot) of the nullcline spline.
+
+        Assumes nullcline is monotonic."""
+        xdata = self.array[:,0]
+        gcurvature = []
+        gcurve_fn = self.grad_curvature
+        # interior points only in loop --
+        # end points are checked just inside boundaries
+        # separately
+        x0 = xdata[0] + 0.01*(xdata[1] - xdata[0])
+        gcurvature.append( gcurve_fn(x0) )
+        for x in xdata[1:-1]:
+            gcurvature.append( gcurve_fn(x) )
+        x1 = xdata[-1] - 0.01*(xdata[-1] - xdata[-2])
+        gcurvature.append( gcurve_fn(x1) )
+        return np.array(gcurvature)
+
     def concavity(self, x):
         """Concavity scalar +/- 1 or 0 at x is returned.
 
@@ -1232,21 +1278,23 @@ class nullcline(object):
         # interior points only in loop --
         # end points are checked just inside boundaries
         # separately
+        conc_fn = self.concavity
         x0 = xdata[0] + 0.01*(xdata[1] - xdata[0])
-        concavity.append( self.concavity(x0) )
+        concavity.append( conc_fn(x0) )
         for x in xdata[1:-1]:
-            concavity.append( self.concavity(x) )
+            concavity.append( conc_fn(x) )
         x1 = xdata[-1] - 0.01*(xdata[-1] - xdata[-2])
-        concavity.append( self.concavity(x1) )
+        concavity.append( conc_fn(x1) )
         return np.array(concavity)
 
-    def crop(self, xdom, ydom, include_endpoints=False):
+    def crop(self, xdom, ydom, include_resamples=True):
         """Returns a new Nullcline object cropped to the (x, y) domain
         given by pairs xdom and ydom.
 
-        If include_endpoints = True (default False), points at the domain
-        ends will be included in the new nullcline object regardless of whether
-        they were in the original sample point set for the cropped nullcline.
+        If include_resamples = True (default True), points at the domain
+        ends and additional sample points will be included in the new nullcline
+        object regardless of whether they were in the original sample point set
+        for the cropped nullcline.
 
         Given the assumption that nullclines are montonic functions of x,
         this guarantees a unique, contiguous piece of the nullcline is returned.
@@ -1254,15 +1302,23 @@ class nullcline(object):
         xinterval = Interval('xdom', float, xdom)
         yinterval = Interval('ydom', float, ydom)
         sample_vals = list(crop_2D(self.array, xinterval, yinterval))
-        if include_endpoints:
-            if xdom[0] not in self.array[:,0]:
-                sample_vals = [(xdom[0],self(xdom[0]))] + sample_vals
-            if xdom[1] not in self.array[:,0]:
-                sample_vals.append( (xdom[1],self(xdom[1])) )
+        if include_resamples:
+            width = xdom[1] - xdom[0]
+            new_xs = xinterval.uniformSample(dt=width*0.1)
+            tol = width*0.05
+            for x in new_xs:
+                # exclude any that are within 5% of domain extent of
+                # existing sample points
+                if np.all(abs(x - self.array[:,0])>tol):
+                    sample_vals.append((x,self(x)))
+            sample_vals = np.array(sample_vals)
+            ixs = argsort(sample_vals[:,0])  # sort by x
+            sample_vals = sample_vals[ixs]
         try:
             return nullcline(self.xname, self.yname, np.array(sample_vals))
         except:
             print "Error cropping nullcline at sample points", sample_vals
+            print "MAYBE TOO FEW VALUES SAMPLED: number was", len(sample_vals)
             raise
 
     def is_monotonic(self):
@@ -1722,6 +1778,11 @@ def find_nearest_sample_points_by_angle(thetas, phi, return_NaN=False):
     """Returns two successive indices of the angles in the array argument
     thetas, for which theta values straddle angle phi.
 
+    This function is useful if phi represents the angle from the vertical of
+    the normal to a curve's tangent line, and thetas are angles from the
+    vertical of another curve in the plane. This function can therefore help
+    find closest or furthest perpendicular distances between curves.
+
     Assumes thetas are in increasing order, and that phi is properly contained
       between min(thetas) and max(thetas) (otherwise raises a ValueError).
 
@@ -1847,8 +1908,13 @@ def is_min_bracket(triple):
 
 
 def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5):
-    """Tolerance measures that of Euclidean distance between the splines
-    representing the two nullcline objects. Assumes monotonicity of both nullclines.
+    """Measure closest perpendicular distance between two nullcline objects
+    (via their spline representations).
+    Tolerance argument measures that of Euclidean distance between the splines
+    representing the two nullclines.
+
+    Assumes monotonicity of both nullclines, which may be relaxed in future
+    versions.
     """
     assert NullcA.is_monotonic()
     assert NullcB.is_monotonic()
@@ -1868,14 +1934,14 @@ def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5):
             # switch
             xa_start_ix1, xa_start_ix2 = (xa_start_ix2, xa_start_ix1)
     else:
-        # both ix1 and ix2 would be the same, so extend search over next neighboring indices,
-        # if available
+        # both ix1 and ix2 would be the same, so extend search over next
+        # neighboring indices, if available
         xa_start_ix2 = xa_start_ix1 + 1
         xa_start_ix1 = xa_start_ix1 - 1
 
     # Minimization method from xa over given indices in NullcA.array[ix1:ix2,0]
-    # except if either is an endpoint, in which case move in until distance to NullcB becomes
-    # well-defined
+    # except if either is an endpoint, in which case move in until distance to
+    # NullcB becomes well-defined
     if xa_start_ix1 > 0:
         xa_lo = NullcA.array[xa_start_ix1,0]
     else:
@@ -2546,6 +2612,7 @@ class zone_leaf(ql_feature_leaf):
         self.results.zones = None
 
     def finish(self, target):
+        """Override this function to be called if evaluate returns True"""
         pass
 
 
@@ -2574,6 +2641,35 @@ class nullcline_zone_leaf(zone_leaf):
             x_center = x_center_approx
             y_center = y_center_approx
         return center_ix, x_center, y_center
+
+    def _set_mutex_zone_by_width(self, center_ix, x_center, y_center, nullc):
+        """Fix zone size by width or halfway to next center, if closer."""
+        try:
+            zone_width = self.pars.zone_width
+        except AttributeError:
+            raise ValueError("Must set a zone_width parameter for this feature")
+        min_zone_x = x_center - zone_width
+        max_zone_x = x_center + zone_width
+        x_range = [np.nan, np.nan]
+        y_range = [np.nan, np.nan]
+        zone_position = self.pars.all_zone_ixs.index(center_ix)
+        if zone_position == 0:
+            # everything to the left is already included
+            ix = 0
+        else:
+            ix = self.pars.all_zone_ixs[zone_position-1]
+        x_range[0] = max( 0.5*(nullc.array[ix,0]+x_center), min_zone_x )
+        y_range[0] = nullc(x_range[0])
+
+        if center_ix == self.pars.all_zone_ixs[-1]:
+            # everything to the right is already included
+            ix = -1
+        else:
+            ix = self.pars.all_zone_ixs[zone_position+1]
+        x_range[1] = min( 0.5*(nullc.array[ix,0]+x_center), max_zone_x )
+        y_range[1] = nullc(x_range[1])
+        return [np.array(x_range), np.array(y_range)]
+
 
     def _grow_zone_by_radius(self, center_ix, x_center, y_center, nullc, property_func):
         raise NotImplementedError
@@ -2608,9 +2704,22 @@ class nullcline_zone_leaf(zone_leaf):
                 y_range[0] = nullc(x_range[0])
             else:
                 # search between these points on the nullcline
-                x_range[0] = bisection(property_func, nullc.array[ix_before,0],
+                xsol = bisection(property_func, nullc.array[ix_before,0],
                                   nullc.array[ix_after,0], xtol=self.pars.xtol)
-                y_range[0] = nullc(x_range[0])
+                if abs(xsol - nullc.array[ix_before,0]) < self.pars.xtol:
+                    # corner case where zero is right at a sample point
+                    # try again with extended sample points, where available
+                    if ix_before > 0:
+                        xsol = bisection(property_func, nullc.array[ix_before-1,0],
+                                  nullc.array[ix_after,0], xtol=self.pars.xtol)
+                elif abs(xsol - nullc.array[ix_after,0]) < self.pars.xtol:
+                    # corner case where zero is right at a sample point
+                    # try again with extended sample points, where available
+                    if ix_after < len(nullc.array) - 1:
+                        xsol = bisection(property_func, nullc.array[ix_before,0],
+                                  nullc.array[ix_after+1,0], xtol=self.pars.xtol)
+                x_range[0] = xsol
+                y_range[0] = nullc(xsol)
 
         # Right search
         if center_ix == self.pars.all_zone_ixs[-1]:
@@ -2627,9 +2736,22 @@ class nullcline_zone_leaf(zone_leaf):
                 y_range[1] = nullc(x_range[1])
             else:
                 # search between these points on the nullcline
-                x_range[1] = bisection(property_func, nullc.array[ix_before,0],
+                xsol = bisection(property_func, nullc.array[ix_before,0],
                                   nullc.array[ix_after,0], xtol=self.pars.xtol)
-                y_range[1] = nullc(x_range[0])
+                if abs(xsol - nullc.array[ix_before,0]) < self.pars.xtol:
+                    # corner case where zero is right at a sample point
+                    # try again with extended sample points, where available
+                    if ix_before > 0:
+                        xsol = bisection(property_func, nullc.array[ix_before-1,0],
+                                  nullc.array[ix_after,0], xtol=self.pars.xtol)
+                elif abs(xsol - nullc.array[ix_after,0]) < self.pars.xtol:
+                    # corner case where zero is right at a sample point
+                    # try again with extended sample points, where available
+                    if ix_after < len(nullc.array) - 1:
+                        xsol = bisection(property_func, nullc.array[ix_before,0],
+                                  nullc.array[ix_after+1,0], xtol=self.pars.xtol)
+                x_range[1] = xsol
+                y_range[1] = nullc(xsol)
 
         return [np.array(x_range), np.array(y_range)]
 
@@ -2645,7 +2767,8 @@ class inflection_zone_leaf(nullcline_zone_leaf):
     """A single inflection point zone.
 
     pars:
-      find_exact_inflection -> exact x value (not implemented yet)
+      xtol --> precision of zone center finding
+      find_exact -> exact x value of inflection (not implemented yet)
       zone_width -> positive scalar (default Inf grows to next inflection point)
     """
     #Only use one of zone_radius or zone_width, otherwise zone_width will be used.
@@ -2708,14 +2831,81 @@ class inflection_zone_node(nullcline_zone_node):
         return len(self.results.zone_center_ixs) > 0
 
 
+
 class max_curvature_zone_leaf(nullcline_zone_leaf):
+    """A single zone of locally maximal curvature
+
+    pars:
+      xtol --> precision of zone center finding
+      direction (currently ignored -- looks for both)
+      find_exact -> exact x value of max curvature (not implemented yet)
+      zone_width -> positive scalar (default Inf grows to next local maximum)
+    """
+    #Only use one of zone_radius or zone_width, otherwise zone_width will be used.
+    def evaluate(self, nullc):
+        # Indices of max curvature mark last known sample point having
+        # same curvature gradient to those locally on its left in the point order
+        # from left to right.
+        center_ix, x_center, y_center = self._prepare(nullc)
+        self.results.x_center = x_center
+        self.results.y_center = y_center
+        self.results.zone = self._set_mutex_zone_by_width(center_ix, x_center,
+                                                          y_center, nullc)
+        # if got this far, succeeded in finding a zone
+        return True
+
+
+class max_curvature_zone_node(nullcline_zone_node):
     """Find all zones with locally maximal curvature.
     Optional selection of those facing up or down only:
     par: direction (-1, 0, 1, where 0 selects either (default))
     """
+    _leaf_class = max_curvature_zone_leaf
 
-class max_curvature_zone_node(nullcline_zone_node):
-    pass
+    def evaluate(self, nullc):
+        print "TEMP: curvature maximized in BOTH directions (par ignored)"
+        try:
+            dirn = self.pars.direction
+        except AttributeError:
+            dirn = 0  # both
+        gcurvature = nullc.grad_curvature_at_sample_points()
+        # find local maxima, including endpoint maxima
+        # TEMP: don't look at endpoints for now
+        # inside endpoints, look for where d/dx( curvature ) = 0
+        # look for sign changes, just like concavity signs
+        # for inflection feature
+        gsigns = np.sign( gcurvature )
+        gsign_zeros = gsigns == 0
+        while np.sometrue(gsign_zeros):
+            gsigns_list = list(gsigns)
+            # find lowest index with a zero
+            zero_ix = gsigns_list.index(0)
+            if zero_ix > 0:
+                gsigns[zero_ix] = gsigns[zero_ix-1]
+            else:
+                # replace with next non-zero value
+                try:
+                    pos_ix = gsigns_list.index(1)
+                except ValueError:
+                    # no +1's
+                    pos_ix = np.inf
+                try:
+                    neg_ix = gsigns_list.index(-1)
+                except ValueError:
+                    # no -1's
+                    neg_ix = np.inf
+                min_ix = min( pos_ix, neg_ix )
+                if isfinite(min_ix):
+                    gsigns[0] = gsigns[min_ix]
+                else:
+                    gsigns[0] = 1
+            gsign_zeros = gsigns == 0
+        # ignore changes within a single sample point of the endpoints
+        # only -1 indicate. The extra -1 subtraction ensures all the +1's
+        # become zero so that argwhere can discount those locations.
+        self.results.zone_center_ixs = np.argwhere(gsigns[:-1] * gsigns[1:] - 1).flatten()
+        return len(self.results.zone_center_ixs) > 0
+
 
 class min_curvature_zone(nullcline_zone_leaf):
     pass
