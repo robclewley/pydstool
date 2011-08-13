@@ -301,31 +301,92 @@ class Generator(object):
         elif isinstance(eventPars, str):
             self._eventPars.append(self._FScompatibleNames(eventPars))
 
-    def getEventTimes(self, globalindepvar=True):
-        """Produce dictionary of lists of all flagged events' independent
-        variable values, for each event (whether terminal or not).
+    def getEvents(self, evnames=None, asGlobalTime=True):
+        """Produce dictionary of pointsets of all flagged events' independent
+        and dependent variable values, for each event (whether terminal or not).
+        Times will be globalized if optional asGlobalTime argument is True
+        (default behavior). If a single event name is passed, only the pointset
+        is returned (not a dictionary).
+
+        evnames may be a singleton string or list of strings, or left blank to
+        return data for all events.
 
         The events are not guaranteed to be ordered by the value of the
         independent variable.
         """
-        result = {}
-        for evname in self._FScompatibleNamesInv(self.eventstruct.events.keys()):
-            result[evname] = []
-        if self.diagnostics.hasWarnings():
-            if globalindepvar:
-                t_offset = self.globalt0
+        compat_evnames = self._FScompatibleNamesInv(self.trajevents.keys())
+        if evnames is None:
+            evnames = compat_evnames
+        if asGlobalTime:
+            t_offset = self.globalt0
+        else:
+            t_offset = 0
+        if isinstance(evnames, str):
+            # singleton
+            assert evnames in compat_evnames, "Invalid event name provided: %s"%evnames
+            try:
+                result = self.trajevents[self._FScompatibleNames(evnames)]
+            except AttributeError:
+                # empty pointset
+                return None
             else:
-                t_offset = 0
-            for (w, d) in self.diagnostics.warnings:
-                if w == W_TERMEVENT or w == W_NONTERMEVENT:
-                    if isinstance(d[1], list):
-                        for evname in self._FScompatibleNamesInv(d[1]):
-                            result[evname].append(d[0]+t_offset)
-                    else:
-                        result[self._FScompatibleNamesInv(d[1])].append(d[0]+t_offset)
-        for evname in result:
-            result[evname].sort()
-        return result
+                result.indepvararray += t_offset
+                return result
+        else:
+            # assume a sequence of strings
+            assert all([ev in compat_evnames for ev in evnames]), \
+                   "Invalid event name(s) provided: %s"%str(evnames)
+            result = {}
+            for (evname, evptset) in self.trajevents.iteritems():
+                compat_evname = self._FScompatibleNamesInv(evname)
+                if compat_evname not in evnames:
+                    continue
+                result[compat_evname] = copy(evptset)
+                try:
+                    result[compat_evname].indepvararray += t_offset
+                except AttributeError:
+                    # empty pointset
+                    pass
+            return result
+
+    def getEventTimes(self, evnames=None, asGlobalTime=True):
+        """Produce dictionary of lists of all flagged events' independent
+        variable values, for each event (whether terminal or not).
+        Times will be globalized if optional asGlobalTime argument is True
+        (default behavior). If a single event name is passed, only the pointset
+        is returned (not a dictionary).
+
+        evnames may be a singleton string or list of strings, or left blank to
+        return data for all events.
+
+        The events are guaranteed to be ordered by the value of the
+        independent variable.
+        """
+        result = {}
+        if asGlobalTime:
+            t_offset = self.globalt0
+        else:
+            t_offset = 0
+        compat_evnames = self._FScompatibleNamesInv(self.trajevents.keys())
+        #if evnames is None:
+        #    pass
+        if isinstance(evnames, str):
+            # singleton
+            assert evnames in compat_evnames, "Invalid event name provided: %s"%evnames
+            return self.trajevents[self._FScompatibleNames(evnames)].indepvararray \
+                                               + t_offset
+        else:
+            # assume a sequence of strings
+            assert all([ev in compat_evnames for ev in evnames]), \
+                   "Invalid event name(s) provided: %s"%str(evnames)
+            compat_evnames = evnames
+            for (evname, evptset) in self.trajevents.iteritems():
+                compat_evname = self._FScompatibleNamesInv(evname)
+                if compat_evname not in compat_evnames:
+                    continue
+                result[compat_evname] = evptset.indepvararray + t_offset
+            return result
+
 
     def query(self, querykey=''):
         """Return info about Generator set-up.
@@ -370,26 +431,6 @@ class Generator(object):
     def get(self, key):
         """For API compatibility with ModelInterface"""
         return self._FScompatibleNamesInv(getattr(self, key))
-
-    def getEvents(self, globalindepvar=True):
-        """Produce dictionary of pointlists of all flagged events' independent
-        and dependent variable values, for each event (whether terminal or not).
-
-        The events are not guaranteed to be ordered by the value of the
-        independent variable.
-        """
-        if globalindepvar and self.globalt0 != 0:
-            result = {}
-            for (evname, evptset) in self.trajevents.iteritems():
-                result[self._FScompatibleNamesInv(evname)] = copy(evptset)
-#                try:
-#                    result[evname].indepvararray += self.globalt0
-#                except AttributeError:
-#                    # empty pointset
-#                    pass
-            return result
-        else:
-            return self._FScompatibleNamesInv(self.trajevents)
 
 
     def haveJacobian(self):
