@@ -31,7 +31,7 @@ def makeHHneuron(name, dt, par_args, ic_args, evs=None, extra_terms='',
                'hb': (['v'], '4/(1+exp(-(v+27)/5))'),
                'na': (['v'], '.032*(v+52)/(1-exp(-(v+52)/5))'),
                'nb': (['v'], '.5*exp(-(57+v)/40)'),
-               'ptest': (['p'], '-C+(p+C)*1')} # use model parameter in this function to test jacobian creation below
+               'ptest': (['p'], '-C+(1+p+C)*1')} # use model parameter in this function to test jacobian creation below
 
     DSargs = args()
     DSargs.varspecs = {'v': vfn_str, 'm': mfn_str,
@@ -100,9 +100,6 @@ scope = copy(HH.pars)
 scope.update({'n': HH.initialconditions['n'], 'h': HH.initialconditions['h']})
 scope.update(new_fnspecs)
 jac_fn = expr2fun(jac, ensure_args=['t'], **scope)
-
-# TEMP test for jac fn
-jac_fn(-70,.1,1)
 
 print "Use of Jacobian speeds up finding of nullclines and fixed points by"
 print "nearly a factor of two (not including time to plot results)..."
