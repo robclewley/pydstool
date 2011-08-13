@@ -1,5 +1,6 @@
 """
-    Test terminal and non-terminal event testing with VODE integrator.
+    Test terminal and non-terminal event testing with VODE integrator,
+    including some comparisons and tests of Euler integrator too.
 """
 
 from PyDSTool import *
@@ -35,13 +36,19 @@ thresh_ev_term = Events.makeZeroCrossEvent('w-p_thresh',
 DSargs.events = [thresh_ev_nonterm,thresh_ev_term]
 
 testODE = Vode_ODEsystem(DSargs)
+testODE_Euler = Euler_ODEsystem(DSargs)
 traj = testODE.compute('traj')
+traj2 = testODE_Euler.compute('traj')
 pts = traj.sample()
-plot(pts['t'],pts['w'])
+pts2 = traj2.sample()
+plot(pts['t'],pts['w'],'g')
+plot(pts2['t'],pts2['w'],'r')
 testODE.diagnostics.showWarnings()
 
 mon_evs_found = testODE.getEvents('monitor')
 term_evs_found = testODE.getEvents('threshold')
+# test Euler
+assert allclose(array(testODE.getEventTimes('monitor')), array(traj2.getEventTimes('monitor')), atol=1e-3)
 
 assert all(traj.getEvents('monitor') == mon_evs_found)
 assert all(traj.getEventTimes('threshold') == testODE.getEventTimes('threshold'))
