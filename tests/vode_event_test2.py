@@ -85,5 +85,5 @@ testODE.diagnostics.showWarnings()
 print "\ntraj2.indepdomain.get() => ", traj2.indepdomain.get()
 indep1 = traj2.indepdomain[1]
 assert indep1 < 1.17 and indep1 > 1.16
-mon_evs_found = testODE.getEvents()['monitor']
+mon_evs_found = testODE.getEvents('monitor')
 assert len(mon_evs_found) == 1
