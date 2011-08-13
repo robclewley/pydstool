@@ -30,14 +30,10 @@ except ImportError:
 
 
 class euler_solver(object):
-    def __init__(self, rhs, jac=None):
+    def __init__(self, rhs):
         self.f = rhs
-        # Jacobian not used
-        self.J = None
         self.y = None
         self.t = None
-        self.y0 = None
-        self.t0 = None
 
     def set_initial_value(self, y0, t0):
         self.y = y0
@@ -45,9 +41,9 @@ class euler_solver(object):
 
     def set_f_params(self, extraparams=None):
         if extraparams is None:
-            self.f_extraparams = []
+            self.f_params = []
         else:
-            self.f_extraparams = extraparams
+            self.f_params = extraparams
 
     def set_jac_params(self, extraparams=None):
         """Jacobian is not used"""
@@ -56,12 +52,14 @@ class euler_solver(object):
     def integrate(self, dt):
         """Single step"""
         self.t += dt
-        self.y = self.y + dt*self.f(self.t, self.y, self.f_extraparams)
+        self.y = self.y + dt*self.f(self.t, self.y, self.f_params)
         return 1
 
     def successful(self):
         return True
 
+def _dummy_userfunc(euler):
+    pass
 
 class Euler_ODEsystem(ODEsystem):
     """Euler method. Fixed step.
@@ -69,6 +67,18 @@ class Euler_ODEsystem(ODEsystem):
     Uses Python functional specifications only."""
 
     def __init__(self, kw):
+        if 'user_func_beforestep' in kw:
+            self.ufunc_before = kw['user_func_beforestep']
+            # delete because not covered in ODEsystem
+            del kw['user_func_beforestep']
+        else:
+            self.ufunc_before = _dummy_userfunc
+        if 'user_func_afterstep' in kw:
+            self.ufunc_after = kw['user_func_afterstep']
+            # delete because not covered in ODEsystem
+            del kw['user_func_afterstep']
+        else:
+            self.ufunc_after = _dummy_userfunc
         ODEsystem.__init__(self, kw)
         self._paraminfo = {'init_step': 'Fixed step size for time mesh.'}
         self.diagnostics._errorcodes = {1: 'Step OK'}
@@ -85,15 +95,9 @@ class Euler_ODEsystem(ODEsystem):
     def addMethods(self):
         # override to add _solver function
         ODEsystem.addMethods(self, usePsyco=HAVE_PSYCO)
-        if self.haveJacobian():
-            self._solver = euler_solver(getattr(self,self.funcspec.spec[1]),
-                            getattr(self,self.funcspec.auxfns["Jacobian"][1]))
-            self._funcreg['_solver'] = ('self',
-                 'euler_solver(getattr(self,self.funcspec.spec[1]),' \
-                   + 'getattr(self,self.funcspec.auxfns["Jacobian"][1]))')
-        else:
-            self._solver = euler_solver(getattr(self,self.funcspec.spec[1]))
-            self._funcreg['_solver'] = ('self', 'euler_solver(getattr(self,' \
+        # Jacobian ignored
+        self._solver = euler_solver(getattr(self,self.funcspec.spec[1]))
+        self._funcreg['_solver'] = ('self', 'euler_solver(getattr(self,' \
                                                   + 'self.funcspec.spec[1]))')
 
 
@@ -102,8 +106,6 @@ class Euler_ODEsystem(ODEsystem):
         s = "\n***************\nNew t, x, inputs: " + " ".join([str(s) for s in (solver.t,solver.y,ivals)])
         s += "\ndt="+str(dt)+" f_params="+str(solver.f_params)+" dx/dt="
         s += str(solver.f(solver.t, solver.y, sortedDictValues(self.pars)+ivals))
-        if solver.t > 7:
-            s += "\nfirst, max, min steps =" + str([solver.first_step, solver.max_step, solver.min_step])
         return s
 
     def compute(self, trajname, dirn='f', ics=None):
@@ -268,6 +270,8 @@ class Euler_ODEsystem(ODEsystem):
             except IndexError:
                 # empty
                 break
+            # optional user function (not a method)
+            self.ufunc_before(self)
             try:
                 errcode = solver.integrate(dt)
             except:
@@ -423,6 +427,9 @@ class Euler_ODEsystem(ODEsystem):
                     raise
                 solver.set_f_params(extralist)
                 breakwhile = not solver.successful()
+            # optional user function (not a method)
+            self.ufunc_after(self)
+
         # Check that any terminal events found terminated the code correctly
         if first_found_t is not None:
             # ... then terminal events were found.
