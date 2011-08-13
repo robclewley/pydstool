@@ -36,6 +36,18 @@ thresh_ev_term = Events.makeZeroCrossEvent('w-p_thresh',
 DSargs.events = [thresh_ev_nonterm,thresh_ev_term]
 
 testODE = Vode_ODEsystem(DSargs)
+
+# diagnostics and other possible user-defined python functions
+# for python solvers only (currently only Euler)
+##def before_func(euler):
+##    print euler.algparams['init_step']
+##
+##def after_func(euler):
+##    print euler._solver.y
+##
+##DSargs.user_func_beforestep = before_func
+##DSargs.user_func_afterstep = after_func
+
 testODE_Euler = Euler_ODEsystem(DSargs)
 traj = testODE.compute('traj')
 traj2 = testODE_Euler.compute('traj')
