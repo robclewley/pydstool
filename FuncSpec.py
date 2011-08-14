@@ -1819,7 +1819,7 @@ class FuncSpec(object):
         as well as logical operators.
         """
         qspec = QuantSpec('spec', specStr)
-        qspec.mapNames({'abs': 'fabs', 'sign': 'signum',
+        qspec.mapNames({'abs': 'fabs', 'sign': 'signum', 'mod': 'fmod',
                         'and': '&&', 'or': '||', 'not': '!',
                         'True': 1, 'False': 0,
                         'max': '__maxof', 'min': '__minof'})

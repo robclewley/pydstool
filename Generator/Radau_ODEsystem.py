@@ -1576,7 +1576,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
 
 # Register this Generator with the database
 
-symbolMapDict = {'abs': 'fabs', 'sign': 'signum'}
+symbolMapDict = {'abs': 'fabs', 'sign': 'signum', 'mod': 'fmod'}
 # in future, provide appropriate mappings for libraries math,
 # random, etc. (for now it's left to FuncSpec)
 theGenSpecHelper.add(Radau_ODEsystem, symbolMapDict, 'c')

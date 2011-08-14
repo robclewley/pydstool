@@ -1051,7 +1051,7 @@ class LowLevelEvent(Event):
                                 "pass string for 'LLfuncspec' in initialization")
         LLfuncstr = kw['LLfuncspec']
         dummyQ = QuantSpec('dummy', LLfuncstr, preserveSpace=True)
-        dummyQ.mapNames({'abs': 'fabs', 'sign': 'signum'})
+        dummyQ.mapNames({'abs': 'fabs', 'sign': 'signum', 'mod': 'fmod'})
         if dummyQ[0] != 'return':
             print "Found: ", dummyQ[0]
             print "in event specification: ", dummyQ()
