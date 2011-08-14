@@ -12,10 +12,10 @@ from PyDSTool.common import *
 from numpy import Inf, NaN, isfinite, sometrue, alltrue, sign, all, any, \
      array, zeros, less_equal, transpose, concatenate, asarray, linspace
 try:
-    from numpy import unique1d as unique
-except ImportError:
-    # newer version of numpy
     from numpy import unique
+except ImportError:
+    # older version of numpy
+    from numpy import unique1d as unique
 import math, random
 import numpy as np
 from copy import copy, deepcopy
