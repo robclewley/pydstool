@@ -104,12 +104,13 @@ jac_fn = expr2fun(jac, ensure_args=['t'], **scope)
 print "Use of Jacobian speeds up finding of nullclines and fixed points by"
 print "nearly a factor of two (not including time to plot results)..."
 start_time = time.clock()
-fp_coords = find_fixedpoints(HH, n=4, jac=jac_fn,
+fp_coords = find_fixedpoints(HH, n=4, jac=jac_fn, eps=1e-8,
                              subdomain={'v':HH.xdomain['v'],'m':HH.xdomain['m'],
-                             'h': HH.initialconditions['h'], 'n': HH.initialconditions['n']}, eps=1e-8)
-nulls_x, nulls_y = find_nullclines(HH, 'v', 'm', n=3, jac=jac_fn,
-                             x_dom=HH.xdomain['v'], y_dom=HH.xdomain['m'],
-                             fps=fp_coords, fixed_vars={'h': HH.initialconditions['h'], 'n': HH.initialconditions['n']}, max_step=0.5)
+                             'h': HH.initialconditions['h'], 'n': HH.initialconditions['n']})
+nulls_x, nulls_y = find_nullclines(HH, 'v', 'm', n=3, jac=jac_fn, eps=1e-8, max_step=1,
+                             subdomain={'v':HH.xdomain['v'],'m':HH.xdomain['m'],
+                             'h': HH.initialconditions['h'], 'n': HH.initialconditions['n']},
+                             fps=fp_coords)
 N_x = nullcline('v', 'm', nulls_x)
 N_y = nullcline('v', 'm', nulls_y)
 print "... finished in %.4f seconds\n" % (time.clock()-start_time)
@@ -124,11 +125,11 @@ print "For classification and stability, we use the fixedpoint class..."
 
 fps=[]
 fps.append(fixedpoint_2D(HH, Point(fp_coords[0]), coords=['v', 'm'],
-                         jac=jac_fn, description='bottom', eps=1e-6))
+                         jac=jac_fn, description='bottom', eps=1e-8))
 fps.append(fixedpoint_2D(HH, Point(fp_coords[1]), coords=['v', 'm'],
-                         jac=jac_fn, description='middle', eps=1e-6))
+                         jac=jac_fn, description='middle', eps=1e-8))
 fps.append(fixedpoint_2D(HH, Point(fp_coords[2]), coords=['v', 'm'],
-                         jac=jac_fn, description='top', eps=1e-6))
+                         jac=jac_fn, description='top', eps=1e-8))
 
 for fp in fps:
     print "F.p. at (%.5f, %.5f) is a %s and has stability %s" % (fp.point['v'],

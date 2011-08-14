@@ -429,8 +429,8 @@ class distance_to_pointset(object):
                         2: dict(zip(self._keys,dmax_old))}}
 
 
-def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
-                    t=0, xtol=None, fixed_vars=None, jac=None, max_step=0,
+def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
+                    t=0, eps=None, jac=None, max_step=0,
                     max_num_points=1000, only_var=None):
     """Find nullclines of a two-dimensional sub-system of the given
     Generator object gen, specified by xname and yname.
@@ -442,14 +442,14 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
 
     Optional inputs:
 
-    Restriction of x and y to sub-domains can be made using x_dom and y_dom
-    lists of [min, max] values (default to domains given in generator).
+    Restriction of x and y to sub-domains can be made using the subdomain argument.
+    subdomain may contain pairs (min, max) or singleton values that fix those state
+    variables and restrict the fixed point search to the remaining sub-system on the
+    given ranges. (default to domains given in generator). There must be exactly
+    two ranges remaining (for xname, yname) to give a two-dimensional nullcline
+    problem, unless only_var option has been used (see below).
 
-    Setting of unused variables that are fixed for 2D nullclines can be given
-      by the dict or Point fixed_vars, otherwise the Generator's initial
-      conditions will be used.
-
-    n = initial number of meshpoints for fsolve. Don't set this large if using
+    n = initial number of meshpoints for fsolve. Do not set this large if using
       PyCont, e.g. use n=3. Default is 10.
 
     Set t value for non-autonomous systems (default 0). Support for Jacobians
@@ -466,7 +466,7 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
       which this function will use as additional starting points for
       computation.
 
-    xtol sets the accuracy to which the nullclines are calculated. Default is
+    eps sets the accuracy to which the nullclines are calculated. Default is
       approx. 1e-8.
 
     only_var (variable name) requests that only the nullcline for that variable
@@ -482,7 +482,40 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
     order when PyCont is not used.
     """
     vardict = filteredDict(copy.copy(gen.initialconditions), gen.funcspec.vars)
-    if fixed_vars is not None:
+    # get state variable domains if subdomain dictionary not given
+    if subdomain is None:
+        subdomain = filteredDict(gen.xdomain, gen.funcspec.vars)
+    else:
+        subdomain = gen._FScompatibleNames(subdomain)
+        assert remain(subdomain.keys(),gen.funcspec.vars) == [] and \
+               remain(gen.funcspec.vars,subdomain.keys()) == []
+    if only_var is None:
+        do_vars = [xname, yname]
+    else:
+        assert only_var in [xname, yname], "only_var must be one of xname or yname"
+        do_vars = [only_var]
+    fixed_vars = {}
+    if xname in do_vars:
+        try:
+            x_dom = subdomain[xname]
+        except:
+            x_dom = gen.xdomain[xname]
+        if not (isfinite(x_dom[0]) and isfinite(x_dom[1])):
+            raise PyDSTool_ExistError("Must specify finite range for %s"%xname)
+    if yname in do_vars:
+        try:
+            y_dom = subdomain[yname]
+        except:
+            y_dom = gen.xdomain[yname]
+        if not (isfinite(y_dom[0]) and isfinite(y_dom[1])):
+            raise PyDSTool_ExistError("Must specify finite range for %s"%yname)
+    for varname, dom in subdomain.iteritems():
+        if isinstance(dom, (tuple,list)):
+            if not (isfinite(dom[0]) and isfinite(dom[1])):
+                raise RuntimeError("Must specify a finite range for %s" % varname)
+        else:
+            fixed_vars[varname] = dom
+    if fixed_vars != {}:
         vardict.update(filteredDict(gen._FScompatibleNames(dict(fixed_vars)),
                         remain(gen.funcspec.vars, [xname, yname])))
     var_ix_map = invertMap(gen.funcspec.vars)
@@ -491,11 +524,6 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
     yname_orig = gen._FScompatibleNamesInv(yname)
     xname = gen._FScompatibleNames(xname)
     yname = gen._FScompatibleNames(yname)
-    if only_var is None:
-        do_vars = [xname, yname]
-    else:
-        assert only_var in [xname, yname], "only_var must be one of xname or yname"
-        do_vars = [only_var]
     x_ix = var_ix_map[xname]
     y_ix = var_ix_map[yname]
     pp_vars = [xname, yname]
@@ -517,14 +545,6 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
         vardict[yname] = y
         vardict[xname] = x
         return gen.Rhs(t,vardict,gen.pars)[x_ix]
-    if x_dom is None and xname in do_vars:
-        x_dom = gen.xdomain[xname]
-        if not (isfinite(x_dom[0]) and isfinite(x_dom[1])):
-            raise PyDSTool_ExistError("Must specify finite range for %s"%xname)
-    if y_dom is None and yname in do_vars:
-        y_dom = gen.xdomain[yname]
-        if not (isfinite(y_dom[0]) and isfinite(y_dom[1])):
-            raise PyDSTool_ExistError("Must specify finite range for %s"%yname)
     if gen.haveJacobian():
         # user-supplied Jacobian if present
         def xfprime_x(x, y, t):
@@ -562,8 +582,8 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
         xfprime_y = None
         yfprime_x = None
         yfprime_y = None
-    if xtol is None:
-        xtol = 1.49012e-8
+    if eps is None:
+        eps = 1.49012e-8
     x_range = list(linspace(x_dom[0],x_dom[1],n))
     y_range = list(linspace(y_dom[0],y_dom[1],n))
     x_null_pts = []
@@ -581,9 +601,9 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
         for x0 in add_pts_x + x_range[::int(ceil(n/10.))]:
             try:
                 y_null_pts.extend([(_xinf_ND(xdot_y,x0,args=(y,t),
-                               xddot=xfprime_y,xtol=xtol),y) for y in y_range])
+                               xddot=xfprime_y,xtol=eps/10.),y) for y in y_range])
                 y_null_pts.extend([(x0,_xinf_ND(ydot_y,y,args=(x0,t),
-                               xddot=yfprime_y,xtol=xtol)) for y in y_range])
+                               xddot=yfprime_y,xtol=eps/10.)) for y in y_range])
             except (OverflowError, ZeroDivisionError):
                 rout.stop()
             except:
@@ -593,9 +613,9 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
         for y0 in add_pts_y + y_range[::int(ceil(n/10.))]:
             try:
                 x_null_pts.extend([(x,_xinf_ND(ydot_x,y0,args=(x,t),
-                               xddot=yfprime_x,xtol=xtol)) for x in x_range])
+                               xddot=yfprime_x,xtol=eps/10.)) for x in x_range])
                 x_null_pts.extend([(_xinf_ND(xdot_x,x,args=(y0,t),
-                               xddot=xfprime_x,xtol=xtol),y0) for x in x_range])
+                               xddot=xfprime_x,xtol=eps/10.),y0) for x in x_range])
             except (OverflowError, ZeroDivisionError):
                 rout.stop()
             except:
@@ -610,9 +630,9 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
     xinterval=Interval('xdom', float, [x_dom[0]-tol*xwidth, x_dom[1]+tol*xwidth])
     yinterval=Interval('ydom', float, [y_dom[0]-tol*ywidth, y_dom[1]+tol*ywidth])
     x_null = filter_close_points(crop_2D(filter_NaN(x_null_pts),
-                                xinterval, yinterval), xtol*10)
+                                xinterval, yinterval), eps*10)
     y_null = filter_close_points(crop_2D(filter_NaN(y_null_pts),
-                                xinterval, yinterval), xtol*10)
+                                xinterval, yinterval), eps*10)
     # max_step = 0 means do not use PyCont to improve accuracy
     if max_step != 0:
         add_fp_pts = array([add_pts_x, add_pts_y]).T
@@ -664,15 +684,15 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
             P = ContClass(sys_y)
             PCargs = args(name='null_curve_y', type='EP-C')
             PCargs.freepars = [xname]
-            PCargs.MinStepSize = 1e-4
-            PCargs.VarTol = PCargs.FuncTol = xtol
-            PCargs.TestTol = 1e-6
+            PCargs.MinStepSize = 1e-8
+            PCargs.VarTol = PCargs.FuncTol = eps
+            PCargs.TestTol = 1e-8
             if max_step is None:
                 PCargs.MaxStepSize = 5e-1
                 PCargs.StepSize = 1e-2
             else:
                 PCargs.MaxStepSize = max_step[xname]
-                PCargs.StepSize = max_step[xname]/2
+                PCargs.StepSize = max_step[xname]*0.5
             PCargs.MaxNumPoints = loop_step
             P.newCurve(PCargs)
             # check every loop_step points until go out of bounds
@@ -757,15 +777,15 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
             P = ContClass(sys_x)
             PCargs = args(name='null_curve_x', type='EP-C')
             PCargs.freepars = [yname]
-            PCargs.MinStepSize = 1e-4
-            PCargs.VarTol = PCargs.FuncTol = xtol
-            PCargs.TestTol = 1e-6
+            PCargs.MinStepSize = 1e-8
+            PCargs.VarTol = PCargs.FuncTol = eps
+            PCargs.TestTol = 1e-8
             if max_step is None:
                 PCargs.MaxStepSize = 5e-1
                 PCargs.StepSize = 1e-2
             else:
                 PCargs.MaxStepSize = max_step[yname]
-                PCargs.StepSize = max_step[yname]/2
+                PCargs.StepSize = max_step[yname]*0.5
             PCargs.MaxNumPoints = loop_step
             P.newCurve(PCargs)
             done = False
@@ -817,8 +837,11 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
 
 def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
                      t=0, jac=None):
-    """Find fixed points of a system in a given domain,
-    on the assumption that they are isolated points.
+    """Find fixed points of a system in a given sub-domain (dictionary),
+    on the assumption that they are isolated points. subdomain may contain
+    pairs (min, max) or singleton values that fix those state variables
+    and restrict the fixed point search to the remaining sub-system on the
+    given ranges. (default to domains given in generator).
 
     Returns list of dictionaries mapping the variable names to the values.
 
