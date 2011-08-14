@@ -25,12 +25,12 @@ def makeHHneuron(name, dt, par_args, ic_args, evs=None, extra_terms='',
     # ptest has no numeric effect on the ionic function otherwise
     auxdict = {'ionic': (['vv', 'mm', 'hh', 'nn'],
                               'gna*mm*mm*mm*hh*ptest(0)*(vv-vna) + gk*nn*nn*nn*nn*(vv-vk) + gl*(vv-vl)'),
-               'ma': (['v'], '0.32*(v+54)/(1-exp(-(v+54)/4))'),
-               'mb': (['v'], '0.28*(v+27)/(exp((v+27)/5)-1)'),
-               'ha': (['v'], '.128*exp(-(50+v)/18)'),
-               'hb': (['v'], '4/(1+exp(-(v+27)/5))'),
-               'na': (['v'], '.032*(v+52)/(1-exp(-(v+52)/5))'),
-               'nb': (['v'], '.5*exp(-(57+v)/40)'),
+               'ma': (['v'], '0.32*(v+54)/(1-exp(-(v+54)/4.0))'),
+               'mb': (['v'], '0.28*(v+27)/(exp((v+27)/5.0)-1)'),
+               'ha': (['v'], '.128*exp(-(50+v)/18.0)'),
+               'hb': (['v'], '4/(1+exp(-(v+27)/5.0))'),
+               'na': (['v'], '.032*(v+52)/(1-exp(-(v+52)/5.0))'),
+               'nb': (['v'], '.5*exp(-(57+v)/40.0)'),
                'ptest': (['p'], '-C+(1+p+C)*1')} # use model parameter in this function to test jacobian creation below
 
     DSargs = args()
@@ -106,10 +106,10 @@ print "nearly a factor of two (not including time to plot results)..."
 start_time = time.clock()
 fp_coords = find_fixedpoints(HH, n=4, jac=jac_fn,
                              subdomain={'v':HH.xdomain['v'],'m':HH.xdomain['m'],
-                             'h':0.8, 'n':0.2}, eps=1e-8)
+                             'h': HH.initialconditions['h'], 'n': HH.initialconditions['n']}, eps=1e-8)
 nulls_x, nulls_y = find_nullclines(HH, 'v', 'm', n=3, jac=jac_fn,
                              x_dom=HH.xdomain['v'], y_dom=HH.xdomain['m'],
-                             fps=fp_coords, max_step=2)
+                             fps=fp_coords, fixed_vars={'h': HH.initialconditions['h'], 'n': HH.initialconditions['n']}, max_step=0.5)
 N_x = nullcline('v', 'm', nulls_x)
 N_y = nullcline('v', 'm', nulls_y)
 print "... finished in %.4f seconds\n" % (time.clock()-start_time)
@@ -119,7 +119,7 @@ plotter.plot_nullcline(N_x,'g')
 plotter.plot_nullcline(N_y,'r')
 
 
-print "Fixed points for (v,m) phase plane sub-system when h=0.7 and n=0.2: "
+print "Fixed points for (v,m) phase plane sub-system when h=%.2f and n=%.2f: " % (HH.initialconditions['h'], HH.initialconditions['n'])
 print "For classification and stability, we use the fixedpoint class..."
 
 fps=[]
