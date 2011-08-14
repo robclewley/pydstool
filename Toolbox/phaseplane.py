@@ -4,8 +4,15 @@
     Some 2011 functionality has not yet been updated to use the plotter
     phase plane plotting manager.
 
+
+IMPORTANT NOTE DURING DEVELOPMENT:
+For now, many operations with nullclines assume that they are NOT multi-valued
+as a function of their variables, and that they are monotonic only as the x
+variable increases.
+
 R. Clewley, 2006 - 2011
 """
+
 from __future__ import division
 
 from PyDSTool import *
@@ -18,10 +25,10 @@ import PyDSTool.Redirector as redirc
 
 import numpy as np
 try:
-    from numpy import unique1d as unique
-except ImportError:
-    # newer version of numpy
     from numpy import unique
+except ImportError:
+    # older version of numpy
+    from numpy import unique1d as unique
 import matplotlib.pyplot as pp
 
 from scipy.interpolate import UnivariateSpline, InterpolatedUnivariateSpline
@@ -467,10 +474,12 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
 
 
     Output:
-        (x_null, y_null) arrays of (x,y) pairs.
+        (x_null, y_null) arrays of (x,y) pairs. Fixed points will be included if
+        they are provided (they are expected to be calculated to high enough
+        accuracy to smoothly fit with the nullcline sample points).
 
     Note that the points returned are not guaranteed to be in any particular
-    order.
+    order when PyCont is not used.
     """
     vardict = filteredDict(copy.copy(gen.initialconditions), gen.funcspec.vars)
     if fixed_vars is not None:
@@ -606,6 +615,7 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
                                 xinterval, yinterval), xtol*10)
     # max_step = 0 means do not use PyCont to improve accuracy
     if max_step != 0:
+        add_fp_pts = array([add_pts_x, add_pts_y]).T
         if not isinstance(max_step, dict):
             max_step = {xname: max_step, yname: max_step}
         # use PyCont to improve accuracy
@@ -625,8 +635,8 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
                 x_init = y_null[0,0]
                 y_init = y_null[0,1]
             elif fps is not None and len(fps) > 0:
-                x_init = fps[0][xname_orig] + 1e-5
-                y_init = fps[0][yname_orig] + 1e-5
+                x_init = fps[0][xname_orig] + 1e-4*(x_dom[1]-x_dom[0])
+                y_init = fps[0][yname_orig] + 1e-4*(y_dom[1]-y_dom[0])
             else:
                 x_init = (x_dom[0]+x_dom[1])/2.
                 y_init = (y_dom[0]+y_dom[1])/2.
@@ -655,8 +665,8 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
             PCargs = args(name='null_curve_y', type='EP-C')
             PCargs.freepars = [xname]
             PCargs.MinStepSize = 1e-4
-            PCargs.VarTol = PCargs.FuncTol = 1e-4
-            PCargs.TestTol = 1e-3
+            PCargs.VarTol = PCargs.FuncTol = xtol
+            PCargs.TestTol = 1e-6
             if max_step is None:
                 PCargs.MaxStepSize = 5e-1
                 PCargs.StepSize = 1e-2
@@ -701,6 +711,14 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
             x_vals = y_null[:,0]
             x_vals_unique, indices = unique(x_vals, return_index=True)
             y_null = y_null[indices]
+            # add fixed points to nullcline, assuming sufficient accuracy
+            # also searchsorted assumes monotonicity in x values, i.e.
+            # that the nullcline is a function of x
+            fp_ixs = np.searchsorted(x_vals_unique, add_pts_x)
+            for n, ix in enumerate(fp_ixs):
+                # +n offsets fact that n entries were already added
+                y_null = np.insert(y_null, ix+n, add_fp_pts[n], axis=0)
+
         # X
         if xname in do_vars:
             if len(x_null) > 1:
@@ -710,8 +728,8 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
                 x_init = x_null[0,0]
                 y_init = x_null[0,1]
             elif fps is not None and len(fps) > 0:
-                x_init = fps[0][xname_orig] + 1e-5
-                y_init = fps[0][yname_orig] + 1e-5
+                x_init = fps[0][xname_orig] + 1e-4*(x_dom[1]-x_dom[0])
+                y_init = fps[0][yname_orig] + 1e-4*(y_dom[1]-y_dom[0])
             else:
                 x_init = (x_dom[0]+x_dom[1])/2.
                 y_init = (y_dom[0]+y_dom[1])/2.
@@ -740,8 +758,8 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
             PCargs = args(name='null_curve_x', type='EP-C')
             PCargs.freepars = [yname]
             PCargs.MinStepSize = 1e-4
-            PCargs.VarTol = PCargs.FuncTol = 1e-4
-            PCargs.TestTol = 1e-3
+            PCargs.VarTol = PCargs.FuncTol = xtol
+            PCargs.TestTol = 1e-6
             if max_step is None:
                 PCargs.MaxStepSize = 5e-1
                 PCargs.StepSize = 1e-2
@@ -785,6 +803,13 @@ def find_nullclines(gen, xname, yname, x_dom=None, y_dom=None, fps=None, n=10,
             x_vals = x_null[:,0]
             x_vals_unique, indices = unique(x_vals, return_index=True)
             x_null = x_null[indices]
+            # add fixed points to nullcline, assuming sufficient accuracy
+            # also searchsorted assumes monotonicity in x values, i.e.
+            # that the nullcline is a function of x
+            fp_ixs = np.searchsorted(x_vals_unique, add_pts_x)
+            for n, ix in enumerate(fp_ixs):
+                # +n offsets fact that n entries were already added
+                x_null = np.insert(x_null, ix+n, add_fp_pts[n], axis=0)
 
     return (gen._FScompatibleNamesInv(x_null), gen._FScompatibleNamesInv(y_null))
 
