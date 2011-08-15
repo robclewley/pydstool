@@ -430,7 +430,7 @@ class distance_to_pointset(object):
 
 
 def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
-                    t=0, eps=None, jac=None, max_step=0,
+                    t=0, eps=None, crop_tol_pc=0.01, jac=None, max_step=0,
                     max_num_points=1000, only_var=None):
     """Find nullclines of a two-dimensional sub-system of the given
     Generator object gen, specified by xname and yname.
@@ -467,7 +467,11 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
       computation.
 
     eps sets the accuracy to which the nullclines are calculated. Default is
-      approx. 1e-8.
+      approximately 1e-8.
+
+    crop_tol_pc is the percentage (default 1%) for tolerance outside the specified
+      domain for keeping points in nullclines -- final points will be cropped with
+      this tolerance.
 
     only_var (variable name) requests that only the nullcline for that variable
       will be computed. The variable name must correspond to xname or yname.
@@ -622,13 +626,12 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 rout.stop()
                 raise
     rout.stop()
-    # 5% tolerance outside domain for keeping points in nullclines
-    # final points will be cropped to domain with this tolerance
-    tol = 0.02
     xwidth = abs(x_dom[1]-x_dom[0])
     ywidth = abs(y_dom[1]-y_dom[0])
-    xinterval=Interval('xdom', float, [x_dom[0]-tol*xwidth, x_dom[1]+tol*xwidth])
-    yinterval=Interval('ydom', float, [y_dom[0]-tol*ywidth, y_dom[1]+tol*ywidth])
+    xinterval=Interval('xdom', float, [x_dom[0]-crop_tol_pc*xwidth,
+                                       x_dom[1]+crop_tol_pc*xwidth])
+    yinterval=Interval('ydom', float, [y_dom[0]-crop_tol_pc*ywidth,
+                                       y_dom[1]+crop_tol_pc*ywidth])
     x_null = filter_close_points(crop_2D(filter_NaN(x_null_pts),
                                 xinterval, yinterval), eps*10)
     y_null = filter_close_points(crop_2D(filter_NaN(y_null_pts),
@@ -689,10 +692,10 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             PCargs.TestTol = 1e-8
             if max_step is None:
                 PCargs.MaxStepSize = 5e-1
-                PCargs.StepSize = 1e-2
+                PCargs.StepSize = 1e-6
             else:
                 PCargs.MaxStepSize = max_step[xname]
-                PCargs.StepSize = max_step[xname]*0.5
+                PCargs.StepSize = max_step[xname]*0.1
             PCargs.MaxNumPoints = loop_step
             P.newCurve(PCargs)
             # check every loop_step points until go out of bounds
@@ -782,10 +785,10 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             PCargs.TestTol = 1e-8
             if max_step is None:
                 PCargs.MaxStepSize = 5e-1
-                PCargs.StepSize = 1e-2
+                PCargs.StepSize = 1e-6
             else:
                 PCargs.MaxStepSize = max_step[yname]
-                PCargs.StepSize = max_step[yname]*0.5
+                PCargs.StepSize = max_step[yname]*0.1
             PCargs.MaxNumPoints = loop_step
             P.newCurve(PCargs)
             done = False
@@ -1353,11 +1356,12 @@ class nullcline(object):
         if include_resamples:
             width = xdom[1] - xdom[0]
             new_xs = xinterval.uniformSample(dt=width*0.1)
-            tol = width*0.05
+            tol = width*0.01
             for x in new_xs:
                 # exclude any that are within 5% of domain extent of
-                # existing sample points
-                if np.all(abs(x - self.array[:,0])>tol):
+                # existing sample points and within original point extents
+                if np.all(abs(x - self.array[:,0])>tol) and \
+                   x >= self.array[0,0] and x <= self.array[-1,0]:
                     sample_vals.append((x,self(x)))
             sample_vals = np.array(sample_vals)
             ixs = argsort(sample_vals[:,0])  # sort by x
@@ -1621,6 +1625,16 @@ class fixedpoint_2D(fixedpoint_nD):
         else:
             self.stability = 'u'
         self.degenerate = sometrue(zero_evals) or equal_evals
+
+    def toarray(self, restrict_to_coords=None):
+        """restrict_to_coords option of ordered coordinate names (default None)
+        ensures the return array only contains values of those coordinates in
+        that order. Useful for interfacing with plotting commands."""
+        if restrict_to_coords is None:
+            return self.point.coordarray
+        else:
+            ixs = self.point._map_names_to_ixs(restrict_to_coords)
+            return self.point.coordarray[ixs]
 
 
 def make_distance_to_known_line_auxfn(fname, p, dp=None, q=None):
@@ -2886,6 +2900,9 @@ class max_curvature_zone_leaf(nullcline_zone_leaf):
     pars:
       xtol --> precision of zone center finding
       direction (currently ignored -- looks for both)
+      min_curvature_pc --> percentage of the maximum curvature found at sample
+         points for which a local minimum value of curvature must meet to be
+         considered a zone.
       find_exact -> exact x value of max curvature (not implemented yet)
       zone_width -> positive scalar (default Inf grows to next local maximum)
     """
@@ -2911,7 +2928,6 @@ class max_curvature_zone_node(nullcline_zone_node):
     _leaf_class = max_curvature_zone_leaf
 
     def evaluate(self, nullc):
-        print "TEMP: curvature maximized in BOTH directions (par ignored)"
         try:
             dirn = self.pars.direction
         except AttributeError:
@@ -2951,10 +2967,35 @@ class max_curvature_zone_node(nullcline_zone_node):
         # ignore changes within a single sample point of the endpoints
         # only -1 indicate. The extra -1 subtraction ensures all the +1's
         # become zero so that argwhere can discount those locations.
-        self.results.zone_center_ixs = np.argwhere(gsigns[:-1] * gsigns[1:] - 1).flatten()
+        candidate_ixs = np.argwhere(gsigns[:-1] * gsigns[1:] - 1).flatten()
+        curvature = nullc.curvature_at_sample_points()
+        if dirn == 0:
+            max_curvature = max(abs(curvature))
+            def test(c, thresh):
+                return abs(c) > thresh
+        elif dirn == -1:
+            # concave down only
+            max_curvature = min([0, min(curvature)])
+            def test(c, thresh):
+                return c < thresh
+        elif dirn == 1:
+            # concave up only
+            max_curvature = max([0, max(curvature)])
+            def test(c, thresh):
+                return c > thresh
+        else:
+            raise ValueError("Invalid direction given")
+        try:
+            min_curvature_pc = self.pars.min_curvature_pc
+        except AttributeError:
+            min_curvature_pc = 0
+        curvature_thresh = min_curvature_pc*max_curvature
+        self.results.zone_center_ixs = np.array([ix for ix in candidate_ixs if \
+                                   test(curvature[ix], curvature_thresh)])
         return len(self.results.zone_center_ixs) > 0
 
 
+# NOT YET DEFINED
 class min_curvature_zone(nullcline_zone_leaf):
     pass
 
