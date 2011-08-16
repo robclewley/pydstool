@@ -118,6 +118,7 @@ class Continuation(object):
 
     def __init__(self, model, gen, automod, plot, args=None):
         self.curvetype = args['type']
+        self._ptlabel = self.curvetype.split('-')[0]
 
         self.model = model
         self.gensys = gen
@@ -336,7 +337,8 @@ class Continuation(object):
                                         numpoints=self.MaxNumPoints+1)
                     self.TestFuncs.append(method)
 
-                    self.BifPoints['BP'] = BranchPoint(method, iszero, stop=stop)
+                    self.BifPoints['BP'] = BranchPoint(method, iszero,
+                                                       stop=stop)
                 elif bftype is 'B':
                     method = B_Check(self.CorrFunc, self, save=True,
                                      numpoints=self.MaxNumPoints+1)
@@ -368,6 +370,7 @@ class Continuation(object):
         try:
             t = self.parsdict['time']
         except KeyError:
+            # autonomous system, t doesn't matter
             t = 0
         return self.gensys.Rhs(t, VARS, self.parsdict, asarray=True)[self.varsindices]
 
@@ -379,6 +382,7 @@ class Continuation(object):
         try:
             t = self.parsdict['time']
         except KeyError:
+            # autonomous system, t doesn't matter
             t = 0
         jacx = self.gensys.Jacobian(t, VARS, self.parsdict, asarray=True)[self.varsindices]
         jacp = self.sysfunc.diff(x0, ind=self.params)
@@ -407,46 +411,56 @@ class Continuation(object):
 
 
     def _checkForBifPoints(self):
+        # increase efficiency by preventing many self. references
+        loc = self.loc
+        # these declarations just make references
+        curve = self.curve
+        V = self.V
+        # store commonly referenced values for efficiency
+        V_loc = V[loc]
+        curve_loc = curve[loc]
         for bftype, bfinfo in self.BifPoints.iteritems():
             flag_list = []
             for i, testfunc in enumerate(bfinfo.testfuncs):
                 for k in range(testfunc.m):
-                    flag_list.append(bfinfo.flagfuncs[i](testfunc[self.loc-1][k],
-                                                         testfunc[self.loc][k]))
+                    flag_list.append(bfinfo.flagfuncs[i](testfunc[loc-1][k],
+                                                         testfunc[loc][k]))
 
             bfpoint_found = all(flag_list)
             if bfpoint_found:
                 # Locate bifurcation point
-                X, V = bfinfo.locate((self.curve[self.loc-1], self.V[self.loc-1]), \
-                                     (self.curve[self.loc], self.V[self.loc]), \
-                                     self)
+                X, V = bfinfo.locate((curve[loc-1], V[loc-1]),
+                                     (curve_loc, V_loc), self)
                 found = bfinfo.process(X,V,self)
 
                 if found:
                     # Move information one more step forward
                     if not bfinfo.stop:
-                        self.curve[self.loc+1] = self.curve[self.loc]
-                        self.V[self.loc+1] = self.V[self.loc]
+                        curve[loc+1] = curve_loc
+                        V[loc+1] = V_loc
                         for testfunc in self.TestFuncs:
-                            testfunc[self.loc+1] = testfunc[self.loc]
+                            testfunc[loc+1] = testfunc[loc]
                     else:
-                        startx = copy(self.curve[self.loc])
-                        startv = copy(self.V[self.loc])
+                        startx = copy(curve_loc)
+                        startv = copy(V_loc)
 
-                    self.curve[self.loc] = X
-                    self.V[self.loc] = V
+                    curve[loc] = X
+                    V[loc] = V
 
-                    self._savePointInfo()
-                    self.CurveInfo[self.loc] = (bftype,
-                                            {'data': bfinfo.found[-1], \
+                    self._savePointInfo(loc)
+                    self.CurveInfo[loc] = (bftype,
+                                            {'data': bfinfo.found[-1],
                                              'plot': args()})
                     if not bfinfo.stop:
                         self.loc += 1
+                        loc += 1  # update in sync with self.loc
+                        V_loc = V[loc]
+                        curve_loc = curve[loc]
                     else:
-                        self.CurveInfo[self.loc] = ('P',
-                                            {'data': args(V = todict(self, startv)), \
-                                             'startx': todict(self, startx), \
-                                             'plot': args()})
+                        self.CurveInfo[loc] = ('P',
+                                {'data': args(V = todict(self, startv)),
+                                 'startx': todict(self, startx),
+                                 'plot': args()})
                         return True
 
         # Do not stop computations
@@ -647,57 +661,57 @@ class Continuation(object):
                                                ha=ha, va=va)
 
 
-    def _savePointInfo(self):
+    def _savePointInfo(self, loc):
         """Created a function for this since it needs to be called
         both in _compute and when a bifurcation point is found.  It
         will have conditional statements for saving of Jacobian and
         eigenvalues, as well as other possible tidbits of
         information."""
-        ptlabel = self.curvetype.split('-')[0]
-        self.CurveInfo[self.loc] = (ptlabel, \
-            {'data': args(V = todict(self, self.V[self.loc]),
+        ptlabel = self._ptlabel
+        self.CurveInfo[loc] = (ptlabel, \
+            {'data': args(V = todict(self, self.V[loc]),
                           ds = self.StepSize)})
 
         # Save domain information
         if 'B' in self.LocBifPoints:
-            val = self.BifPoints['B'].testfuncs[0][self.loc][0]
+            val = self.BifPoints['B'].testfuncs[0][loc][0]
             # if val >= 0 set domain = 'inside' otherwise 'outside'
-            self.CurveInfo[self.loc][ptlabel]['domain'] = (val >= 0) \
+            self.CurveInfo[loc][ptlabel]['domain'] = (val >= 0) \
                                             and 'inside' or 'outside'
 
         # Save eigenvalue information
         if self.SaveEigen:
             # May be able to use J_coords here
-            jac = self.sysfunc.jac(self.curve[self.loc])
+            jac = self.sysfunc.jac(self.curve[loc])
             jacx = jac[:,self.coords[0]:(self.coords[-1]+1)]
             jacp = jac[:,self.params[0]:(self.params[-1]+1)]
             w, vr = linalg.eig(jacx)
-            self.CurveInfo[self.loc][ptlabel]['data'].evals = w
-            self.CurveInfo[self.loc][ptlabel]['data'].evecs = vr
+            self.CurveInfo[loc][ptlabel]['data'].evals = w
+            self.CurveInfo[loc][ptlabel]['data'].evecs = vr
 
             realpos = [real(eig) > 1e-6 for eig in w]
             realneg = [real(eig) < -1e-6 for eig in w]
             if all(realneg):
-                self.CurveInfo[self.loc][ptlabel]['stab'] = 'S'
+                self.CurveInfo[loc][ptlabel]['stab'] = 'S'
             elif all(realpos):
-                self.CurveInfo[self.loc][ptlabel]['stab'] = 'U'
+                self.CurveInfo[loc][ptlabel]['stab'] = 'U'
             else:
-                self.CurveInfo[self.loc][ptlabel]['stab'] = 'N'
+                self.CurveInfo[loc][ptlabel]['stab'] = 'N'
 
         # Save jacobian information
         if self.SaveJacobian:
             try:
-                self.CurveInfo[self.loc][ptlabel]['data'].jacx = jacx
-                self.CurveInfo[self.loc][ptlabel]['data'].jacp = jacp
+                self.CurveInfo[loc][ptlabel]['data'].jacx = jacx
+                self.CurveInfo[loc][ptlabel]['data'].jacp = jacp
             except:
-                jac = self.sysfunc.jac(self.curve[self.loc])
+                jac = self.sysfunc.jac(self.curve[loc])
                 jacx = jac[:,self.coords[0]:(self.coords[-1]+1)]
                 jacp = jac[:,self.params[0]:(self.params[-1]+1)]
-                self.CurveInfo[self.loc][ptlabel]['data'].jacx = jacx
-                self.CurveInfo[self.loc][ptlabel]['data'].jacp = jacp
+                self.CurveInfo[loc][ptlabel]['data'].jacx = jacx
+                self.CurveInfo[loc][ptlabel]['data'].jacp = jacp
 
         if ptlabel == 'UD':
-            self.CurveInfo[self.loc][ptlabel]['data'].update(self._userdata)
+            self.CurveInfo[loc][ptlabel]['data'].update(self._userdata)
 
 
     def _MoorePenrose(self, X, V):
@@ -709,11 +723,13 @@ class Continuation(object):
         diag = args()
         diag.cond = []
         diag.nrm = []
+        fun = self.CorrFunc
+        jac = self.CorrFunc.jac
         while not problem and not converged and k < self.MaxCorrIters:
-            A = self.CorrFunc.jac(X)
+            A = jac(X)
             B = r_[A,[V]]
             R = r_[matrixmultiply(A,V),0]
-            Q = r_[self.CorrFunc(X),0]
+            Q = r_[fun(X),0]
             if self.curvetype == 'UD-C' and self._userdata.has_key('problem') \
                                         and self._userdata.problem:
                 problem = 1
@@ -758,11 +774,13 @@ class Continuation(object):
         vi = zeros(len(X), float64)
         vi[ind] = 1.0
         xi = X[ind]
+        fun = self.CorrFunc
+        jac = self.CorrFunc.jac
         while not problem and not converged and k < self.MaxCorrIters:
             # Newton's method: X_{n+1} = X_{n} - W, where W = B^{-1}*Q
-            A = self.CorrFunc.jac(X)
+            A = jac(X)
             B = r_[A,[vi]]
-            Q = r_[self.CorrFunc(X), X[ind] - xi]
+            Q = r_[fun(X), X[ind] - xi]
             if self.curvetype == 'UD-C' and self._userdata.has_key('problem') \
                                         and self._userdata.problem:
                 problem = 1
@@ -802,10 +820,12 @@ class Continuation(object):
         diag = args()
         diag.cond = []
         diag.nrm = []
+        fun = self.CorrFunc
+        jac = self.CorrFunc.jac
         while not problem and not converged and k < self.MaxCorrIters:
-            A = self.CorrFunc.jac(X)
+            A = jac(X)
             B = r_[A,[V]]
-            Q = r_[self.CorrFunc(X),
+            Q = r_[fun(X),
                    matrixmultiply(X-self.curve[self.loc-1],V)-self.StepSize]
             if self.curvetype == 'UD-C' and self._userdata.has_key('problem') \
                and self._userdata.problem:
@@ -906,21 +926,27 @@ class Continuation(object):
         #   self.V[0] = v0.copy() and replace after.
         self.curve = zeros((self.MaxNumPoints+1, self.dim), float)
         self.curve[0] = x0
+
+        # curve and V are arrays and so will be copied by reference only
+        curve = self.curve
+        V = self.V
+
         converged = True
         attempts = 0
-        val = linalg.norm(self.CorrFunc(self.curve[0]))
+        val = linalg.norm(self.CorrFunc(x0))
         while val > self.FuncTol or not converged:
             try:
-                k, converged, problem, diag = self.Corrector(self.curve[0], self.V[0])
+                k, converged, problem, diag = self.Corrector(x0, v0)
             except:
                 converged = False
                 print "Error occurred in dynamical system computation"
             else:
-                val = linalg.norm(self.CorrFunc(self.curve[0]))
+                val = linalg.norm(self.CorrFunc(x0))
             attempts += 1
             if not converged and attempts >= 1:
                 # Stop continuation
                 raise PyDSTool_ExistError("Could not find starting point on curve.  Stopping continuation.")
+        # Initialize index location on curve data set
         self.loc = 0
         if self.verbosity >= 3:
             print '    Found initial point on curve.'
@@ -928,19 +954,19 @@ class Continuation(object):
         # Initialize test functions
         self._createTestFuncs()
 
-        self.CorrFunc.J_coords = self.CorrFunc.jac(self.curve[0],self.coords)
-        self.CorrFunc.J_params = self.CorrFunc.jac(self.curve[0],self.params)
+        self.CorrFunc.J_coords = self.CorrFunc.jac(x0,self.coords)
+        self.CorrFunc.J_params = self.CorrFunc.jac(x0,self.params)
         if self.TestFuncs != []:
             for testfunc in self.TestFuncs:
                 if hasattr(testfunc, 'setdata'):
-                    testfunc.setdata(self.curve[0], self.V[0])
-            self._preTestFunc(self.curve[0], self.V[0])
+                    testfunc.setdata(x0, v0)
+            self._preTestFunc(x0, v0)
             for testfunc in self.TestFuncs:
-                testfunc[self.loc] = testfunc(self.curve[0], self.V[0])
+                testfunc[self.loc] = testfunc(x0, v0)
 
         # Save initial information
-        self._savePointInfo()
-        self.CurveInfo[0] = ('P', {'data': args(V = todict(self, self.V[0])), \
+        self._savePointInfo(self.loc)
+        self.CurveInfo[0] = ('P', {'data': args(V = todict(self, v0)), \
                                    'plot': args()})
 
         # Stepsize control parameters
@@ -956,31 +982,32 @@ class Continuation(object):
         if self.curvetype == 'UD-C' and self._userdata.has_key('problem'):
             self._userdata.problem = False
 
-        while self.loc+1 < self.MaxNumPoints and not stop:
+        # de-references to improve efficiency
+        loc = self.loc  # integer, so self.loc won't get updated automatically
+        while loc+1 < self.MaxNumPoints and not stop:
             # Predictor
-            self.loc += 1
-            self.curve[self.loc] = self.curve[self.loc-1] + \
-                                   self.StepSize*self.V[self.loc-1]
-            self.V[self.loc] = self.V[self.loc-1]
+            loc += 1
+            curve[loc] = curve[loc-1] + self.StepSize*V[loc-1]
+            V[loc] = V[loc-1]
 
-            # Corrector
+            # Corrector -- update self.loc for Corrector's reference
+            self.loc = loc
             try:
-                k, converged, problem, diag = self.Corrector(self.curve[self.loc],
-                                                         self.V[self.loc])
+                k, converged, problem, diag = self.Corrector(curve[loc], V[loc])
             except:
                 problem = True
             #if self._userdata.has_key('problem'):  # Uncomment the these three lines to "find" the boundary between regions
             #    self._userdata.problem = False
             #    problem = False
             if self.verbosity >= 10:
-                print "Step #%d:" % self.loc
+                print "Step #%d:" % loc
                 print "  Corrector steps: %d/%d" % (k, self.MaxCorrIters)
                 print "  Converged: %d" % (converged and not problem)
 
             if problem:
                 stop = True
             elif not converged:
-                self.loc -= 1
+                loc -= 1
                 if self.StepSize > self.MinStepSize:
                     # Reduce stepsize and try again
                     if self.verbosity >= 3:
@@ -997,10 +1024,10 @@ class Continuation(object):
 
                 # Evaluate test functions
                 if self.TestFuncs is not None:
-                    self._preTestFunc(self.curve[self.loc], self.V[self.loc])
+                    self._preTestFunc(curve[loc], V[loc])
                     for testfunc in self.TestFuncs:
-                        testfunc[self.loc] = testfunc(self.curve[self.loc],
-                                                      self.V[self.loc])
+                        testfunc[loc] = testfunc(curve[loc],
+                                                      V[loc])
 
                 # Check for bifurcation points.
                 # If _checkForBifPoints returns True, stop loop
@@ -1008,39 +1035,41 @@ class Continuation(object):
                     stop = True
 
                 # Checks to see if curve is closed and if closed, it closes the curve
-                if self.ClosedCurve < self.loc+1 < self.MaxNumPoints and \
-                linalg.norm(self.curve[self.loc]-self.curve[0]) < self.StepSize:
+                if self.ClosedCurve < loc+1 < self.MaxNumPoints and \
+                linalg.norm(curve[loc]-curve[0]) < self.StepSize:
                     # ROB: Let me copy PointInfo information
-                    self.curve[self.loc+1] = self.curve[0]
-                    self.V[self.loc+1] = self.V[0]
+                    curve[loc+1] = curve[0]
+                    V[loc+1] = V[0]
 
                     for testfunc in self.TestFuncs:
-                        testfunc[self.loc+1] = testfunc[self.loc]
+                        testfunc[loc+1] = testfunc[loc]
 
-                    self._savePointInfo()
-                    self.loc += 1
-                    self._savePointInfo()
+                    self._savePointInfo(loc)
+                    loc += 1
+                    self._savePointInfo(loc)
 
                     closed = True
                     break
 
                 # Print information
                 if self.verbosity >= 4:
-                    print "Loc = %4d    %s = %lf" % (self.loc, self.freepars[0],
-                                                  self.curve[self.loc][-1])
+                    print "Loc = %4d    %s = %lf" % (loc, self.freepars[0],
+                                                  curve[loc][-1])
 
                 # Save information
-                self._savePointInfo()
+                self._savePointInfo(loc)
 
+        # Finish updating self.loc integer location
+        self.loc = loc
         # Save end point information
         if problem:
-            #self.CurveInfo[self.loc] = ('UD', {'data': args(V = todict(self,
-            #                            self.V[self.loc]), ds=self.StepSize)})
-            self.CurveInfo[self.loc] = ('MX', {'data': args(V = todict(self,
-                                        self.V[self.loc]), ds=self.StepSize)})
-        elif not closed and not self.CurveInfo[self.loc].has_key('P'):
-            self.CurveInfo[self.loc] = ('P', {'data': args(V = todict(self,
-                                        self.V[self.loc])), 'plot': args()})
+            #self.CurveInfo[loc] = ('UD', {'data': args(V = todict(self,
+            #                            V[self.loc]), ds=self.StepSize)})
+            self.CurveInfo[loc] = ('MX', {'data': args(V = todict(self,
+                                        V[loc]), ds=self.StepSize)})
+        elif not closed and not self.CurveInfo[loc].has_key('P'):
+            self.CurveInfo[loc] = ('P', {'data': args(V = todict(self,
+                                        V[loc])), 'plot': args()})
 
 
     def forward(self):
