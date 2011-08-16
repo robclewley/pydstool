@@ -1213,7 +1213,14 @@ class nullcline(object):
 
     Input:
       Names are given to the x and y axis directions at initialization.
-      Third argument is the N-by-2 array of N two-dimensional data points.
+      Third argument nullc_array is the N-by-2 array of N two-dimensional
+        data points.
+      The final, optional argument x_relative_scale indicates the relative
+        scale of the x values' domain compared to the y values. This is
+        used to provide a form of subjective normalization for measuring
+        curvature and other geometric properties when plotting y vs. x
+        on these scales. E.g if x values range over -50 to +50, while
+        y ranges over 0 to 1, x_relative_scale=100 is appropriate.
 
     N.B.: Only works for nullclines that can be written y = f(x). Future
     versions may support non-functions.
@@ -1222,7 +1229,7 @@ class nullcline(object):
     of y=f(x), and will verify this using the is_monotonic method before
     proceeding. Future versions will attempt to resolve that.
     """
-    def __init__(self, xname, yname, nullc_array):
+    def __init__(self, xname, yname, nullc_array, x_relative_scale=1):
         self.xname = xname
         self.yname = yname
         self.array = nullc_array
@@ -1231,6 +1238,10 @@ class nullcline(object):
             raise AssertionError("x axis '%s' values must be monotonically increasing" % xname)
         self.spline = InterpolatedUnivariateSpline(nullc_array[:,0],
                                                    nullc_array[:,1])
+        # store these precomputed values in advance for efficiency
+        self.x_relative_scale_fac = x_relative_scale
+        self.x_relative_scale_fac_2 = self.x_relative_scale_fac**2
+        self.x_relative_scale_fac_3 = self.x_relative_scale_fac**3
 
     def __call__(self, x):
         """Returns a scalar if x is scalar."""
@@ -1260,10 +1271,52 @@ class nullcline(object):
             raise ValueError("Derivative not available for endpoints or outside of spline domain")
         return tgt/np.linalg.norm(tgt)
 
-    def curvature(self, x):
-        """Signed curvature at x is returned (scalar)"""
-        ders = self.spline.derivatives(x)
-        return ders[2]/pow(1+ders[1]*ders[1],1.5)
+    def curvature(self, xdata):
+        """Signed curvature at x is returned (scalar) for scalar x,
+        otherwise array of such scalars for 1D array x.
+
+        Positive values mean concave "up" in the plane."""
+        try:
+            ders = np.array([self.spline.derivatives(x) for x in xdata])
+        except AssertionError:
+            raise ValueError("Derivative not available for endpoints or "
+                             "outside of spline domain")
+        except TypeError:
+            # singleton
+            try:
+                ders = self.spline.derivatives(xdata)
+            except AssertionError:
+                raise ValueError("Derivative not available for endpoints "
+                                 "or outside of spline domain")
+            return self.x_relative_scale_fac_2*ders[2] / \
+                   pow(1+self.x_relative_scale_fac_2*ders[1]*ders[1],1.5)
+        else:
+            return self.x_relative_scale_fac_2*ders[:,2] / \
+                   np.power(1+self.x_relative_scale_fac_2*ders[:,1]*ders[:,1],1.5)
+
+    def grad_curvature(self, xdata):
+        """Derivative of the curvature at x is returned (scalar) for scalar x,
+        otherwise array of such scalars for 1D array x."""
+        try:
+            ders = np.array([self.spline.derivatives(x) for x in xdata])
+        except AssertionError:
+            raise ValueError("Derivative not available for endpoints or "
+                             "outside of spline domain")
+        except TypeError:
+            # singleton
+            try:
+                ders = self.spline.derivatives(xdata)
+            except AssertionError:
+                raise ValueError("Derivative not available for endpoints "
+                                 "or outside of spline domain")
+            denom = pow(1+self.x_relative_scale_fac_2*ders[1]*ders[1],2.5)
+            return (ders[3]*self.x_relative_scale_fac_2*(1+self.x_relative_scale_fac_2*ders[1]*ders[1]) - \
+                   3*(self.x_relative_scale_fac_2*self.x_relative_scale_fac_2*ders[2]*ders[2]*ders[1])) / denom
+        else:
+            d1_sq = ders[:,1]*ders[:,1]
+            denom = np.power(1+self.x_relative_scale_fac_2*d1_sq,2.5)
+            return (ders[:,3]*self.x_relative_scale_fac_2*(1+self.x_relative_scale_fac_2*d1_sq) - \
+                   3*(self.x_relative_scale_fac_2*self.x_relative_scale_fac_2*ders[:,2]*ders[:,2]*ders[:,1])) / denom
 
     def curvature_at_sample_points(self):
         """Returns array of signed scalars for each
@@ -1271,72 +1324,46 @@ class nullcline(object):
 
         Positive values mean concave "up" in the plane.
         Assumes nullcline is monotonic."""
-        xdata = self.array[:,0]
-        curvature = []
-        curve_fn = self.curvature
+        xdata = self.array[:,0].copy()
         # interior points only in loop --
-        # end points are checked just inside boundaries
-        # separately
-        x0 = xdata[0] + 0.01*(xdata[1] - xdata[0])
-        curvature.append( curve_fn(x0) )
-        for x in xdata[1:-1]:
-            curvature.append( curve_fn(x) )
-        x1 = xdata[-1] - 0.01*(xdata[-1] - xdata[-2])
-        curvature.append( curve_fn(x1) )
-        return np.array(curvature)
-
-    def grad_curvature(self, x):
-        """Derivative of the curvature at x is returned (scalar)"""
-        ders = self.spline.derivatives(x)
-        denom1 = pow(1+ders[1]*ders[1],1.5)
-        denom2 = pow(1+ders[1]*ders[1],2.5)
-        return ders[3]/denom1 - 3*(ders[2]*ders[2]*ders[1])/denom2
+        # end points are checked just inside boundaries separately
+        xdata[0] += 0.01*(xdata[1] - xdata[0])
+        xdata[-1] -= 0.01*(xdata[-1] - xdata[-2])
+        return self.curvature(xdata)
 
     def grad_curvature_at_sample_points(self):
         """Returns array of signed scalars for each
         x data point (knot) of the nullcline spline.
 
         Assumes nullcline is monotonic."""
-        xdata = self.array[:,0]
-        gcurvature = []
-        gcurve_fn = self.grad_curvature
+        xdata = self.array[:,0].copy()
         # interior points only in loop --
-        # end points are checked just inside boundaries
-        # separately
-        x0 = xdata[0] + 0.01*(xdata[1] - xdata[0])
-        gcurvature.append( gcurve_fn(x0) )
-        for x in xdata[1:-1]:
-            gcurvature.append( gcurve_fn(x) )
-        x1 = xdata[-1] - 0.01*(xdata[-1] - xdata[-2])
-        gcurvature.append( gcurve_fn(x1) )
-        return np.array(gcurvature)
+        # end points are checked just inside boundaries separately
+        xdata[0] += 0.01*(xdata[1] - xdata[0])
+        xdata[-1] -= 0.01*(xdata[-1] - xdata[-2])
+        return self.grad_curvature(xdata)
 
-    def concavity(self, x):
-        """Concavity scalar +/- 1 or 0 at x is returned.
+    def concavity(self, xdata):
+        """Concavity scalar +/- 1 or 0 at x is returned for scalar x,
+        otherwise array of such scalars for 1D array x.
 
         Positive values mean concave "up" in the plane."""
-        ders = self.spline.derivatives(x)
-        return np.sign( ders[2]/pow(1+ders[1]*ders[1],1.5) )
+        return np.sign(self.curvature(xdata))
 
     def concavity_at_sample_points(self):
         """Returns array of +/- 1 or 0 scalars for each
-        x data point (knot) of the nullcline spline.
+        x data point (knot) of the nullcline spline (computed just
+        inside endpoints by 1% of distance to next innermost sample
+        point).
 
         Positive values mean concave "up" in the plane.
         Assumes nullcline is monotonic."""
-        xdata = self.array[:,0]
-        concavity = []
+        xdata = self.array[:,0].copy()
         # interior points only in loop --
-        # end points are checked just inside boundaries
-        # separately
-        conc_fn = self.concavity
-        x0 = xdata[0] + 0.01*(xdata[1] - xdata[0])
-        concavity.append( conc_fn(x0) )
-        for x in xdata[1:-1]:
-            concavity.append( conc_fn(x) )
-        x1 = xdata[-1] - 0.01*(xdata[-1] - xdata[-2])
-        concavity.append( conc_fn(x1) )
-        return np.array(concavity)
+        # end points are checked just inside boundaries separately
+        xdata[0] += 0.01*(xdata[1] - xdata[0])
+        xdata[-1] -= 0.01*(xdata[-1] - xdata[-2])
+        return self.concavity(xdata)
 
     def crop(self, xdom, ydom, include_resamples=True):
         """Returns a new Nullcline object cropped to the (x, y) domain
@@ -1353,6 +1380,8 @@ class nullcline(object):
         xinterval = Interval('xdom', float, xdom)
         yinterval = Interval('ydom', float, ydom)
         sample_vals = list(crop_2D(self.array, xinterval, yinterval))
+        if len(sample_vals) == 0:
+            raise ValueError("No nullcline sample points in given region")
         if include_resamples:
             width = xdom[1] - xdom[0]
             new_xs = xinterval.uniformSample(dt=width*0.1)
@@ -1362,7 +1391,9 @@ class nullcline(object):
                 # existing sample points and within original point extents
                 if np.all(abs(x - self.array[:,0])>tol) and \
                    x >= self.array[0,0] and x <= self.array[-1,0]:
-                    sample_vals.append((x,self(x)))
+                    y = self(x)
+                    if y in yinterval:
+                        sample_vals.append((x,y))
             sample_vals = np.array(sample_vals)
             ixs = argsort(sample_vals[:,0])  # sort by x
             sample_vals = sample_vals[ixs]
@@ -1913,10 +1944,10 @@ def closest_perp_distance_between_sample_points(NullcA, NullcB, xa, x0B, x1B,
 
 
 def closest_perp_distance_on_spline(NullcA, NullcB, xa):
-    """at point given by xa on Nullcline A"""
+    """Closest perpendicular distance to Nullcline B at point given by xa on Nullcline A"""
     global plotter
     A = Point2D(xa, NullcA(xa))
-    a_to_NullcB = NullcB.array - NullcA.array[1]
+    a_to_NullcB = NullcB.array - A
     thetas_B = np.apply_along_axis(angle_to_vertical, -1, a_to_NullcB)
     # monotonicity assumptions ensures that y coord of other nullcline
     # indicates which direction normal vector must face
@@ -1981,10 +2012,8 @@ def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5):
     assert NullcA.is_monotonic()
     assert NullcB.is_monotonic()
     # search interior sample points of spline A first
-    dists = []
     xa_search_vals = NullcA.array[1:-1,0]
-    for xa in xa_search_vals:
-        dists.append( closest_perp_distance_on_spline(NullcA, NullcB, xa) )
+    dists = [closest_perp_distance_on_spline(NullcA, NullcB, xa) for xa in xa_search_vals]
 
     xa_ix = np.argmin(dists)  # used later too to recover associated xa value used
     xa_start_ix1 = xa_ix + 1 # ignored spline endpoint
