@@ -543,9 +543,45 @@ def organize_feature_sens(feat_sens, discrete_feats=None):
 
 
 def make_opt(pnames, resfnclass, model, context, parscales=None,
-             parstep=None, parlinesearch=None,
-             stopcriterion=None, parseps=None, grad_ratio_tol=10,
+             parseps=None, parstep=None, parlinesearch=None,
+             stopcriterion=None, grad_ratio_tol=10,
              use_filter=False, verbose_level=2):
+    """Create a ParamEst manager object and an instance of an optimizer from the
+    Toolbox.optimize sub-package, returned as a pair.
+
+    Inputs:
+
+    pnames:     list of free parameters in the model
+    resfnclass: residual function class (e.g. residual_fn_context_1D exported
+                from this module)
+    model:      the model to optimize, of type Model (not a Generator)
+    context:    the context object that defines the objective function
+                criteria via "model interfaces" and their features, etc.
+    parscales:  for models that do not have parameters varying over similar
+                scales, this dictionary defines what "O(1)" change in dynamics
+                refers to for each parameter. E.g. a parameter that must change by
+                several thousand in order to make an O(1) change in model output
+                can have its scale set to 1000. This will also be the maximum
+                step size in that direction for the Scaled Line Search method, if used.
+                Defaults to 10*parseps for each parameter.
+    parseps:    dictionary to indicate what change in parameter value to use for
+                forward finite differencing, for reasons similar to those given in
+                description of the parscales argument. Default is 1e-7 for each parameter.
+    parstep:    choice of optimization algorithm stepper, defaults to
+                conjugate gradient step.CWConjugateGradientStep.
+    parlinesearch:  choice of line search method, defaults to scaled
+                    line search method line_search.ScaledLineSearch.
+    stopcriterion:  choice of stop criteria for the optimization iterations. Defaults to
+                    ftol=1e-7, gtol=1e-7, iterations_max=200.
+    grad_ratio_tol: For residual functions with poor smoothness in some directions,
+                    this parameter (default = 10) prevents those directions being used
+                    for gradient information if the ratio of residual values found during
+                    finite differencing is greater in magnitude than this tolerance value.
+                    (Experimental option only -- set very large, e.g. 1e6 to switch off).
+    use_filter:     activate use of filtering out largest directions of gradients that may
+                    be unreliable. Default is False. (Experimental option only).
+    verbose_level:  Default to 2 (high verbosity).
+    """
     parnames = copy(pnames)
     parnames.sort()
     if parscales is None:
@@ -590,10 +626,10 @@ def restrict_opt(pest, feat_list, opt, pars=None):
     if parseps is None:
         parseps = {}.fromkeys(pest.freeParNames, 1e-7)
     if parstep is None:
-        parstep = step.GradientStep()
+        parstep = step.CWConjugateGradientStep()
     if parlinesearch is None:
-        parlinesearch = ScaledLineSearch(max_step = [pest.parScales[p] for \
-                                                p in pars])
+        parlinesearch = line_search.ScaledLineSearch(max_step = \
+                                [pest.parScales[p] for p in pars])
     if stopcriterion is None:
         stopcriterion = criterion.criterion(ftol=1e-7, gtol=1e-7,
                               iterations_max=100)
