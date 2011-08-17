@@ -545,7 +545,7 @@ def organize_feature_sens(feat_sens, discrete_feats=None):
 def make_opt(pnames, resfnclass, model, context, parscales=None,
              parstep=None, parlinesearch=None,
              stopcriterion=None, parseps=None, grad_ratio_tol=10,
-             use_filter=False):
+             use_filter=False, verbose_level=2):
     parnames = copy(pnames)
     parnames.sort()
     if parscales is None:
@@ -563,7 +563,7 @@ def make_opt(pnames, resfnclass, model, context, parscales=None,
                  context=context,
                  residual_fn=resfnclass(eps=[parseps[p] for p in parnames],
                                         grad_ratio_tol=grad_ratio_tol),
-                 verbose_level=2
+                 verbose_level=verbose_level
                 )
     if parstep is None:
         parstep = step.CWConjugateGradientStep()
