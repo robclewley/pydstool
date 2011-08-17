@@ -1002,11 +1002,16 @@ class condition(object):
 
 class context(object):
     """A collection of related model interfaces that apply to a model.
-    interface_pairs are ModelInterface instance (test) and class (ref) pairs,
+    interface_pairs are a list of ModelInterface instance (test) and class (ref) pairs,
     the latter to be instantiated on a model.
+
+    Set the debug_mode attribute at any time, or as the optional argument at initializiation,
+    to ensure that any exceptions that arise from interacting model interfaces and their
+    features are fully passed back to the caller of the context containing them.
     """
-    def __init__(self, interface_pairs):
+    def __init__(self, interface_pairs, debug_mode=False):
         self.interfaces = dict(interface_pairs)
+        self.debug_mode = debug_mode
         # Determine which qt features have metrics to use to make a
         # residual function. Keep multiple views of this data for efficient
         # access in different ways.
@@ -1147,10 +1152,13 @@ class context(object):
             except KeyboardInterrupt:
                 raise
             except:
-                print "******************************************"
-                print "Problem evaluating interface", test_mi, "on ", ref_mi
-                print "  ", sys.exc_info()[0], sys.exc_info()[1]
-                new_result = False
+                if self.debug_mode:
+                    raise
+                else:
+                    print "******************************************"
+                    print "Problem evaluating interface", test_mi, "on ", ref_mi
+                    print "  ", sys.exc_info()[0], sys.exc_info()[1]
+                    new_result = False
             # must create new_res first, to ensure all interfaces are
             # evaluated (to create their results for possible post-processing)
             result = result and new_result
