@@ -31,13 +31,16 @@ is_spike = get_spike_data('one_spike', pars=args(
 # compare
 # plot(ts, vs)
 
+# assert ensures that is_spike returns True when passed the particular
+# set of data
 assert is_spike(traj)
 
+# given that it returned true, try another time for next spike
 is_spike.pars.tlo = 268
-is_spike(traj)
+assert is_spike(traj)
 
 # introspect the is_spike object with info(is_spike)
-
+# .results values now guaranteed to exist
 assert allclose(is_spike.results.tlo, 269.98922)
 assert allclose(is_spike.results.thi, 272.0108)
 assert allclose(is_spike.results.spike_time, 270.5574)
