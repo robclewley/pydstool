@@ -540,7 +540,7 @@ def organize_feature_sens(feat_sens, discrete_feats=None):
                     D_sum[f][par] = val
                     D_vec[f][par] = ra
     return D_sum, D_vec
-    
+
 
 def make_opt(pnames, resfnclass, model, context, parscales=None,
              parstep=None, parlinesearch=None,
@@ -572,7 +572,7 @@ def make_opt(pnames, resfnclass, model, context, parscales=None,
                                                 p in parnames], filter=use_filter)
     if stopcriterion is None:
         stopcriterion = criterion.criterion(ftol=1e-7, gtol=1e-7,
-                              iterations_max=100)
+                              iterations_max=200)
     return pest, optimizer.StandardOptimizer(function=pest.fn,
                     step=parstep,
                     line_search=parlinesearch,
