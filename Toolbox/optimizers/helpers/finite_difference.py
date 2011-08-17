@@ -159,16 +159,14 @@ class ForwardFiniteDifferencesCache(FiniteDifferencesCache):
         grad = np.empty(params.shape)
         res_x = self.residual(params)  # will look up cache if available
         for i in range(0, len(params)):
-            eps = self.eps[i] #* 100  # TEMP!
+            eps = self.eps[i]
             paramsa = params.copy()
             paramsa[i] += eps
             res_a = self.residual(paramsa)
-            dx = res_x - res_a
-            rx = res_x / res_a
             # filter out steps that caused non-smooth changes in gradient (as per relative change)
             # i.e. make those directions count as zero
-            filt = (abs(rx) < self.grad_ratio_tol).astype(int)
-            grad[i] = (np.linalg.norm(res_x*filt)-np.linalg.norm(res_a*filt))/eps
+            filt = (abs(res_x / res_a) < self.grad_ratio_tol).astype(int)
+            grad[i] = (np.linalg.norm(res_a*filt)-np.linalg.norm(res_x*filt))/eps
         return grad
 
     def hessian(self, params):

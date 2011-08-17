@@ -30,8 +30,12 @@ class ConjugateGradientStep(object):
     if 'direction' in state:
       oldGradient = state['gradient']
       oldStep = state['direction']
-      coeff = self.coeff_function(newGradient, oldGradient, oldStep)
-      step = - newGradient + coeff * state['direction']
+      if all(newGradient == oldGradient):
+        coeff = 0
+        step = - newGradient
+      else:
+        coeff = self.coeff_function(newGradient, oldGradient, oldStep)
+        step = - newGradient + coeff * state['direction']
     else:
       coeff = 0
       step = - newGradient
