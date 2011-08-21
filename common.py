@@ -66,7 +66,8 @@ _functions = ['isUniqueSeq', 'makeArrayIxMap', 'className',
               'invertMap', 'makeSeqUnique', 'insertInOrder',
               'sortedDictKeys', 'sortedDictValues', 'sortedDictItems',
               'sortedDictLists', 'compareNumTypes', 'diff', 'diff2',
-              'listid', 'idfn', 'noneFn', 'isincreasing', 'extent',
+              'listid', 'idfn', 'noneFn', 'isincreasing', 'ismonotonic',
+              'extent',
               'linearInterp', 'object2str', 'getSuperClasses',
               'filteredDict', 'arraymax', 'simplifyMatrixRepr',
               'makeMultilinearRegrFn', 'fit_quadratic', 'fit_quadratic_at_vertex',
@@ -1748,6 +1749,25 @@ def isincreasing(theseq, withVal=False):
             return False, theseq[pos], theseq[pos+1]
     else:
         return all(res)
+
+
+def ismonotonic(theseq, withVal=False):
+    """
+    Check whether a sequence is in strictly increasing or decreasing
+    order. The withVal option (default False) causes the function to
+    return the first two offending values that are not repeated.
+    """
+    if withVal:
+        res_incr, pos1, pos2 = isincreasing(theseq, True)
+        res_decr = isincreasing(theseq[::-1], False)
+        if res_incr or res_decr:
+            return True, None, None
+        else:
+            return False, pos1, pos2
+    else:
+        res_incr = isincreasing(theseq)
+        res_decr = isincreasing(theseq[::-1])
+        return res_incr or res_decr
 
 
 def extent(data):
