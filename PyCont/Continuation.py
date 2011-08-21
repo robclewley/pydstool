@@ -933,17 +933,17 @@ class Continuation(object):
 
         converged = True
         attempts = 0
-        val = linalg.norm(self.CorrFunc(x0))
+        val = linalg.norm(self.CorrFunc(curve[0]))
         while val > self.FuncTol or not converged:
             try:
-                k, converged, problem, diag = self.Corrector(x0, v0)
+                k, converged, problem, diag = self.Corrector(curve[0], V[0])
             except:
                 converged = False
                 print "Error occurred in dynamical system computation"
             else:
-                val = linalg.norm(self.CorrFunc(x0))
+                val = linalg.norm(self.CorrFunc(curve[0]))
             attempts += 1
-            if not converged and attempts >= 1:
+            if not converged and attempts > 1:
                 # Stop continuation
                 raise PyDSTool_ExistError("Could not find starting point on curve.  Stopping continuation.")
         # Initialize index location on curve data set
