@@ -14,6 +14,8 @@ R. Clewley, 2006 - 2011
 """
 
 from __future__ import division
+# itertools, operator used for _filter_consecutive function
+import itertools, operator
 
 from PyDSTool import *
 from PyDSTool.MProject import *
@@ -431,7 +433,7 @@ class distance_to_pointset(object):
 
 def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     t=0, eps=None, crop_tol_pc=0.01, jac=None, max_step=0,
-                    max_num_points=1000, only_var=None):
+                    max_num_points=1000, only_var=None, seed_points=None):
     """Find nullclines of a two-dimensional sub-system of the given
     Generator object gen, specified by xname and yname.
 
@@ -475,6 +477,13 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
 
     only_var (variable name) requests that only the nullcline for that variable
       will be computed. The variable name must correspond to xname or yname.
+
+    seed_points can be used if an approximate position on either nullcline is already
+      known, especially useful if there are no fixed points provided. One or more
+      seed points should be given as a list of dictionaries or Points with keys or
+      coordinates xname and yname. These should be collected as values of the
+      seed_points dictionary, whose keys (xname and/or yname) indicate which points
+      belong to which nullclines.
 
 
     Output:
@@ -592,6 +601,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
     y_range = list(linspace(y_dom[0],y_dom[1],n))
     x_null_pts = []
     y_null_pts = []
+
     if fps is not None:
         fps_FS = [gen._FScompatibleNames(fp) for fp in fps]
         add_pts_x = [fp[xname] for fp in fps_FS]
@@ -599,12 +609,36 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
     else:
         add_pts_x = []
         add_pts_y = []
+    seed_pts_x = []
+    seed_pts_y = []
+    if seed_points is not None:
+        seed_points = gen._FScompatibleNames(seed_points)
+        if yname in seed_points:
+            seed_pts_x_for_ynull = [pt[xname] for pt in seed_points[yname]]
+            seed_pts_y_for_ynull = [pt[yname] for pt in seed_points[yname]]
+        else:
+            seed_pts_x_for_ynull = []
+            seed_pts_y_for_ynull
+        if xname in seed_points:
+            seed_pts_x_for_xnull = [pt[xname] for pt in seed_points[xname]]
+            seed_pts_y_for_xnull = [pt[yname] for pt in seed_points[xname]]
+        else:
+            seed_pts_x_for_xnull = []
+            seed_pts_y_for_xnull = []
+        seed_pts_x.extend(seed_pts_x_for_xnull+seed_pts_x_for_ynull)
+        seed_pts_y.extend(seed_pts_y_for_xnull+seed_pts_y_for_ynull)
+
+    x_range = seed_pts_x + add_pts_x + x_range
+    y_range = seed_pts_y + add_pts_y + y_range
+
+    # try to improve seed points or otherwise use crappy fsolve to find some
+    # points on the nullclines.
     rout = redirc.Redirector(redirc.STDOUT)
     rout.start()
     if yname in do_vars:
-        for x0 in add_pts_x + x_range[::int(ceil(n/10.))]:
+        for x0 in x_range:
             try:
-                y_null_pts.extend([(_xinf_ND(xdot_y,x0,args=(y,t),
+                x_null_pts.extend([(_xinf_ND(xdot_y,x0,args=(y,t),
                                xddot=xfprime_y,xtol=eps/10.),y) for y in y_range])
                 y_null_pts.extend([(x0,_xinf_ND(ydot_y,y,args=(x0,t),
                                xddot=yfprime_y,xtol=eps/10.)) for y in y_range])
@@ -614,9 +648,9 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 rout.stop()
                 raise
     if xname in do_vars:
-        for y0 in add_pts_y + y_range[::int(ceil(n/10.))]:
+        for y0 in y_range:
             try:
-                x_null_pts.extend([(x,_xinf_ND(ydot_x,y0,args=(x,t),
+                y_null_pts.extend([(x,_xinf_ND(ydot_x,y0,args=(x,t),
                                xddot=yfprime_x,xtol=eps/10.)) for x in x_range])
                 x_null_pts.extend([(_xinf_ND(xdot_x,x,args=(y0,t),
                                xddot=xfprime_x,xtol=eps/10.),y0) for x in x_range])
@@ -636,6 +670,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                                 xinterval, yinterval), eps*10)
     y_null = filter_close_points(crop_2D(filter_NaN(y_null_pts),
                                 xinterval, yinterval), eps*10)
+
     # max_step = 0 means do not use PyCont to improve accuracy
     if max_step != 0:
         add_fp_pts = array([add_pts_x, add_pts_y]).T
@@ -660,6 +695,9 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             elif fps is not None and len(fps) > 0:
                 x_init = fps[0][xname_orig] + 1e-4*(x_dom[1]-x_dom[0])
                 y_init = fps[0][yname_orig] + 1e-4*(y_dom[1]-y_dom[0])
+            elif len(seed_pts_x_for_ynull) > 0:
+                x_init = seed_pts_x_for_ynull[0]
+                y_init = seed_pts_y_for_ynull[0]
             else:
                 x_init = (x_dom[0]+x_dom[1])/2.
                 y_init = (y_dom[0]+y_dom[1])/2.
@@ -753,6 +791,9 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             elif fps is not None and len(fps) > 0:
                 x_init = fps[0][xname_orig] + 1e-4*(x_dom[1]-x_dom[0])
                 y_init = fps[0][yname_orig] + 1e-4*(y_dom[1]-y_dom[0])
+            elif len(seed_pts_x_for_xnull) > 0:
+                x_init = seed_pts_x_for_xnull[0]
+                y_init = seed_pts_y_for_xnull[0]
             else:
                 x_init = (x_dom[0]+x_dom[1])/2.
                 y_init = (y_dom[0]+y_dom[1])/2.
@@ -1262,6 +1303,10 @@ class nullcline(object):
             return Pointset({self.xname: self.array[:,0],
                              self.yname: self.array[:,1]})
 
+    def sample_x_domain(self, refine=0):
+        return _sample_array_interior(self.array[:,0], 0.01,
+                                                     refine=refine)
+
     def tgt_vec(self, x):
         """Return tangent vector to an interior point of nullcline,
         normalized to length 1."""
@@ -1318,30 +1363,26 @@ class nullcline(object):
             return (ders[:,3]*self.x_relative_scale_fac_2*(1+self.x_relative_scale_fac_2*d1_sq) - \
                    3*(self.x_relative_scale_fac_2*self.x_relative_scale_fac_2*ders[:,2]*ders[:,2]*ders[:,1])) / denom
 
-    def curvature_at_sample_points(self):
+    def curvature_at_sample_points(self, refine=0):
         """Returns array of signed scalars for each
-        x data point (knot) of the nullcline spline.
+        x data point (knot) of the nullcline spline (computed just
+        inside endpoints by 1% of distance to next innermost sample
+        point).
 
         Positive values mean concave "up" in the plane.
         Assumes nullcline is monotonic."""
-        xdata = self.array[:,0].copy()
-        # interior points only in loop --
-        # end points are checked just inside boundaries separately
-        xdata[0] += 0.01*(xdata[1] - xdata[0])
-        xdata[-1] -= 0.01*(xdata[-1] - xdata[-2])
-        return self.curvature(xdata)
+        return self.curvature(_sample_array_interior(self.array[:,0], 0.01,
+                                                     refine=refine))
 
-    def grad_curvature_at_sample_points(self):
+    def grad_curvature_at_sample_points(self, refine=0):
         """Returns array of signed scalars for each
-        x data point (knot) of the nullcline spline.
+        x data point (knot) of the nullcline spline (computed just
+        inside endpoints by 1% of distance to next innermost sample
+        point).
 
         Assumes nullcline is monotonic."""
-        xdata = self.array[:,0].copy()
-        # interior points only in loop --
-        # end points are checked just inside boundaries separately
-        xdata[0] += 0.01*(xdata[1] - xdata[0])
-        xdata[-1] -= 0.01*(xdata[-1] - xdata[-2])
-        return self.grad_curvature(xdata)
+        return self.grad_curvature(_sample_array_interior(self.array[:,0],
+                                                          0.01, refine=refine))
 
     def concavity(self, xdata):
         """Concavity scalar +/- 1 or 0 at x is returned for scalar x,
@@ -1350,7 +1391,7 @@ class nullcline(object):
         Positive values mean concave "up" in the plane."""
         return np.sign(self.curvature(xdata))
 
-    def concavity_at_sample_points(self):
+    def concavity_at_sample_points(self, refine=0):
         """Returns array of +/- 1 or 0 scalars for each
         x data point (knot) of the nullcline spline (computed just
         inside endpoints by 1% of distance to next innermost sample
@@ -1358,21 +1399,20 @@ class nullcline(object):
 
         Positive values mean concave "up" in the plane.
         Assumes nullcline is monotonic."""
-        xdata = self.array[:,0].copy()
-        # interior points only in loop --
-        # end points are checked just inside boundaries separately
-        xdata[0] += 0.01*(xdata[1] - xdata[0])
-        xdata[-1] -= 0.01*(xdata[-1] - xdata[-2])
-        return self.concavity(xdata)
+        return self.concavity(_sample_array_interior(self.array[:,0], 0.01,
+                                                     refine=refine))
 
-    def crop(self, xdom, ydom, include_resamples=True):
+    def crop(self, xdom, ydom, resample_frac=0.1):
         """Returns a new Nullcline object cropped to the (x, y) domain
         given by pairs xdom and ydom.
 
-        If include_resamples = True (default True), points at the domain
+        If resample_frac > 0 (default 0.1), points at the domain
         ends and additional sample points will be included in the new nullcline
         object regardless of whether they were in the original sample point set
-        for the cropped nullcline.
+        for the cropped nullcline. New points will be selected at the rate
+        indicated, measured as a fraction of the domain width. Points that are
+        as close as 1/10th of this rate to existing sample points will be
+        excluded, to avoid ill-conditioning the spline shape in the resampling.
 
         Given the assumption that nullclines are montonic functions of x,
         this guarantees a unique, contiguous piece of the nullcline is returned.
@@ -1381,33 +1421,35 @@ class nullcline(object):
         yinterval = Interval('ydom', float, ydom)
         sample_vals = list(crop_2D(self.array, xinterval, yinterval))
         if len(sample_vals) == 0:
-            raise ValueError("No nullcline sample points in given region")
-        if include_resamples:
+            # force resampling if not already used or if too sparse
+            if resample_frac == 0 or resample_frac > 0.2:
+                resample_frac = 0.1
+            #raise ValueError("No nullcline sample points in given region")
+        if resample_frac > 0:
             width = xdom[1] - xdom[0]
-            new_xs = xinterval.uniformSample(dt=width*0.1)
-            tol = width*0.01
+            new_xs = xinterval.uniformSample(dt=width*resample_frac)
+            tol = width*resample_frac*0.1
             for x in new_xs:
                 # exclude any that are within 5% of domain extent of
                 # existing sample points and within original point extents
                 if np.all(abs(x - self.array[:,0])>tol) and \
                    x >= self.array[0,0] and x <= self.array[-1,0]:
                     y = self(x)
-                    if y in yinterval:
+                    if yinterval.contains(y) is not notcontained:
                         sample_vals.append((x,y))
             sample_vals = np.array(sample_vals)
             ixs = argsort(sample_vals[:,0])  # sort by x
             sample_vals = sample_vals[ixs]
         try:
-            return nullcline(self.xname, self.yname, np.array(sample_vals))
+            return nullcline(self.xname, self.yname, np.array(sample_vals),
+                             x_relative_scale=self.x_relative_scale_fac)
         except:
             print "Error cropping nullcline at sample points", sample_vals
             print "MAYBE TOO FEW VALUES SAMPLED: number was", len(sample_vals)
             raise
 
     def is_monotonic(self):
-        is_y_inc = isincreasing(self.array[:,1])
-        is_y_dec = isincreasing(self.array[::-1,1])
-        return (is_y_inc or is_y_dec)
+        return ismonotonic(self.array[:,1])
 
     def __copy__(self):
         return nullcline(self.xname, self.yname, self.array)
@@ -1926,7 +1968,7 @@ def closest_perp_distance_between_sample_points(NullcA, NullcB, xa, x0B, x1B,
 
     P0 = line_intersection(A, B, C, D)
     Q0 = Point2D(P0.x, NullcB(P0.x))  # project onto spline
-    theta0 = angle_to_vertical(Q0-a)
+    #theta0 = angle_to_vertical(Q0-a)
 
     plotter.plot_line_from_points(A, B, 'k-')
     plotter.plot_line_from_points(C, D, 'r--')
@@ -2000,6 +2042,25 @@ def is_min_bracket(triple):
             return False, 2, min( a-b, b-c )
 
 
+def _sample_array_interior(xdata, pc, refine=0):
+    """xdata is a 1D array.
+    """
+    # Consider moving into Interval class as a method...
+    all_xs = []
+    if refine > 0:
+        dxs = xdata[1:] - xdata[:-1]
+        refine_dxs = 1/(1.0+refine) * dxs
+        for i, x in enumerate(xdata[:-1]):
+            all_xs.extend(list(x+refine_dxs[i]*arange(0, refine+1)))
+        all_xs.append(xdata[-1])
+        xs = np.array(all_xs)
+    else:
+        xs = xdata.copy()
+    xs[0] += pc*(xs[1] - xs[0])
+    xs[-1] -= pc*(xs[-1] - xs[-2])
+    return xs
+
+
 def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5):
     """Measure closest perpendicular distance between two nullcline objects
     (via their spline representations).
@@ -2010,38 +2071,57 @@ def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5):
     versions.
     """
     assert NullcA.is_monotonic()
-    assert NullcB.is_monotonic()
-    # search interior sample points of spline A first
-    xa_search_vals = NullcA.array[1:-1,0]
+    #assert NullcB.is_monotonic()
+    if not NullcB.is_monotonic():
+        print "Warning, nullcline B is not monotonic in closest_perp_distance_between splines"
+    # search interior sample points of spline A first, and 1% inside endpoints
+    xa_search_vals = _sample_array_interior(NullcA.array[:,0], 0.01)
     dists = [closest_perp_distance_on_spline(NullcA, NullcB, xa) for xa in xa_search_vals]
 
-    xa_ix = np.argmin(dists)  # used later too to recover associated xa value used
-    xa_start_ix1 = xa_ix + 1 # ignored spline endpoint
-    other_dists = dists[:]
-    other_dists[xa_ix] = np.Inf
-    if np.any( np.isfinite( np.array(other_dists) )):
-        xa_start_ix2 = np.argmin(other_dists) + 1
-        if xa_start_ix2 < xa_start_ix1:
-            # switch
-            xa_start_ix1, xa_start_ix2 = (xa_start_ix2, xa_start_ix1)
+    if isincreasing(dists):
+        xa_start_ix1 = 0
+        xa_start_ix2 = 1
+        xa_ix = 0
+    elif isincreasing(dists[::-1]):
+        xa_start_ix1 = len(dists)-2
+        xa_start_ix2 = len(dists)-1
+        xa_ix = len(dists)-1
     else:
-        # both ix1 and ix2 would be the same, so extend search over next
-        # neighboring indices, if available
-        xa_start_ix2 = xa_start_ix1 + 1
-        xa_start_ix1 = xa_start_ix1 - 1
+        xa_ix = np.argmin(dists)  # used later too to recover associated xa value used
+        xa_start_ix1 = xa_ix + 1 # ignored spline endpoint
+        other_dists = dists[:]
+        other_dists[xa_ix] = np.Inf
+        if np.any( np.isfinite( np.array(other_dists) )):
+            xa_start_ix2 = np.argmin(other_dists) + 1
+            if xa_start_ix2 < xa_start_ix1:
+                # switch
+                xa_start_ix1, xa_start_ix2 = (xa_start_ix2, xa_start_ix1)
+        else:
+            # both ix1 and ix2 would be the same, so extend search over next
+            # neighboring indices, if available
+            xa_start_ix2 = xa_start_ix1 + 1
+            xa_start_ix1 = xa_start_ix1 - 1
 
     # Minimization method from xa over given indices in NullcA.array[ix1:ix2,0]
     # except if either is an endpoint, in which case move in until distance to
     # NullcB becomes well-defined
-    if xa_start_ix1 > 0:
-        xa_lo = NullcA.array[xa_start_ix1,0]
-    else:
-        raise NotImplementedError
+    xa_lo = xa_search_vals[xa_start_ix1]
+    d_lo = dists[xa_start_ix1]
+    xa_hi = xa_search_vals[xa_start_ix2]
+    d_hi = dists[xa_start_ix2]
 
-    if xa_start_ix2 < len(NullcA.array):
-        xa_hi = NullcA.array[xa_start_ix2,0]
-    else:
-        raise NotImplementedError
+    # Old code in case there was a problem proceeding using endpoints
+##    if xa_start_ix1 > 0:
+##        xa_lo = xa_search_vals[xa_start_ix1]
+##        d_lo = dists[xa_start_ix1]
+##    else:
+##        raise NotImplementedError
+##
+##    if xa_start_ix2 < len(NullcA.array):
+##        xa_hi = xa_search_vals[xa_start_ix2]
+##        d_hi = dists[xa_start_ix2]
+##    else:
+##        raise NotImplementedError
 
     assert xa_hi > xa_lo
 
@@ -2061,10 +2141,7 @@ def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5):
     # Begin bisection-like linearly-convergent minimization (with convergence
     # guarantee due to bracketing)
     x_bracket = (xa_lo, xa_mid, xa_hi)
-    d_bracket = (closest_perp_distance_on_spline(NullcA, NullcB, xa_lo),
-                 d_mid,
-                 closest_perp_distance_on_spline(NullcA, NullcB, xa_hi)
-                 )
+    d_bracket = (d_lo, d_mid, d_hi)
 
     is_brack, ix_min, error = is_min_bracket(d_bracket)
     #plotter.do_display = True
@@ -2107,15 +2184,17 @@ def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5):
                 d_new = closest_perp_distance_on_spline(NullcA, NullcB, b_prime)
                 # does the new selection create a bracket?
                 # test bracket 1 is xa_lo, xa_new, xa_mid
-                test_bracket = (d_bracket[0], d_new, d_bracket[1])
+                d_bracket = (d_bracket[0], d_new, d_bracket[1])
+                x_bracket = (a, b_prime, b)
             else:
                 # ix_min == 2
                 b_prime = 0.5*(b + c)
                 d_new = closest_perp_distance_on_spline(NullcA, NullcB, b_prime)
                 # does the new selection create a bracket?
                 # test bracket 1 is xa_mid, xa_new, xa_hi
-                test_bracket = (d_bracket[1], d_new, d_bracket[2])
-            is_brack_test, ix_min, error = is_min_bracket(test_bracket)
+                d_bracket = (d_bracket[1], d_new, d_bracket[2])
+                x_bracket = (b, b_prime, c)
+            is_brack_test, ix_min, error = is_min_bracket(d_bracket)
     return x_bracket[ix_min], d_bracket[ix_min]
 
 
@@ -2673,6 +2752,34 @@ def find_period(pts, thresh, dir=1, with_indices=False):
 
 # ---------------------------------------------------------------
 
+def _filter_consecutive(indices, minimize_values=None):
+    """Return index array containing no consecutive values.
+    if minimize_values option is given, this sequence must contain positions for
+    all indices in the first argument, and will be used to choose which of any
+    consecutive indices to retain in the returned sequence. Otherwise, the first
+    index will be chosen arbitrarily.
+
+    E.g. to find the *last* index of every cluster instead of the default, use
+      minimize_values=range(max_index,0,-1)
+    """
+    ## Find clusters
+    clusters = [map(operator.itemgetter(1), g) for k, g in \
+                itertools.groupby(enumerate(indices), lambda (i,x):i-x)]
+    ## Minimize on clusters
+    result = []
+    for c in clusters:
+        if len(c) == 1:
+            result.append(c[0])
+        else:
+            if minimize_values is None:
+                result.append( c[0] )
+            else:
+                mvals = np.array(minimize_values)
+                representative = np.argmin(np.array([mvals[c]]))
+                result.append( c[representative] )
+    return np.array(result)
+
+
 # Feature sub-classes
 class zone_node(ql_feature_node):
     """Phase plane 'zone' node of hierarchical qualitative feature abstract class.
@@ -2691,7 +2798,8 @@ class zone_node(ql_feature_node):
             feat(target)
 
     def _local_init(self):
-        pass
+        if not hasattr(self.pars, 'refine'):
+            self.pars.refine = 0
 
 
 class zone_leaf(ql_feature_leaf):
@@ -2714,8 +2822,8 @@ class nullcline_zone_node(zone_node):
 
 class nullcline_zone_leaf(zone_leaf):
     """Parameters to apply:
-    par: xtol
-    optional par: find_exact_center (unused)
+    pars: xtol, refine (integer, default 0)
+    optional pars: find_exact_center (unused)
     """
     def _prepare(self, nullc):
         center_ix = self.pars.index
@@ -2746,18 +2854,18 @@ class nullcline_zone_leaf(zone_leaf):
         zone_position = self.pars.all_zone_ixs.index(center_ix)
         if zone_position == 0:
             # everything to the left is already included
-            ix = 0
+            x_range[0] = max( nullc.array[0,0], min_zone_x )
         else:
             ix = self.pars.all_zone_ixs[zone_position-1]
-        x_range[0] = max( 0.5*(nullc.array[ix,0]+x_center), min_zone_x )
+            x_range[0] = max( 0.5*(nullc.array[ix,0]+x_center), min_zone_x )
         y_range[0] = nullc(x_range[0])
 
         if center_ix == self.pars.all_zone_ixs[-1]:
             # everything to the right is already included
-            ix = -1
+            x_range[1] = min( nullc.array[-1,0], max_zone_x )
         else:
             ix = self.pars.all_zone_ixs[zone_position+1]
-        x_range[1] = min( 0.5*(nullc.array[ix,0]+x_center), max_zone_x )
+            x_range[1] = min( 0.5*(nullc.array[ix,0]+x_center), max_zone_x )
         y_range[1] = nullc(x_range[1])
         return [np.array(x_range), np.array(y_range)]
 
@@ -2889,7 +2997,8 @@ class inflection_zone_node(nullcline_zone_node):
         # Concavities are -1, 0, 1 but we don't care about the signs
         # so much as their changes. To this end, replace all zeros
         # with their previous neighbor's value
-        concs = nullc.concavity_at_sample_points()
+        xarray = nullc.sample_x_domain(refine=self.pars.refine)
+        concs = nullc.concavity(xarray)
         conc_zeros = concs == 0
         while np.sometrue(conc_zeros):
             concs_list = list(concs)
@@ -2918,7 +3027,11 @@ class inflection_zone_node(nullcline_zone_node):
         # ignore changes within a single sample point of the endpoints
         # only -1 indicate. The extra -1 subtraction ensures all the +1's
         # become zero so that argwhere can discount those locations.
-        self.results.zone_center_ixs = np.argwhere(concs[:-1] * concs[1:] - 1).flatten()
+        zone_center_ixs = np.argwhere(concs[:-1] * concs[1:] - 1).flatten()
+        # restore to native x array of nullcline (in case of refinement)
+        zone_center_ixs = np.unique(nullc.array[:,0].searchsorted(xarray[zone_center_ixs]))
+        self.results.zone_center_ixs = _filter_consecutive(zone_center_ixs,
+                                                    minimize_values=concs)
         return len(self.results.zone_center_ixs) > 0
 
 
@@ -2961,7 +3074,8 @@ class max_curvature_zone_node(nullcline_zone_node):
             dirn = self.pars.direction
         except AttributeError:
             dirn = 0  # both
-        gcurvature = nullc.grad_curvature_at_sample_points()
+        xarray = nullc.sample_x_domain(refine=self.pars.refine)
+        gcurvature = nullc.grad_curvature(xarray)
         # find local maxima, including endpoint maxima
         # TEMP: don't look at endpoints for now
         # inside endpoints, look for where d/dx( curvature ) = 0
@@ -2997,7 +3111,7 @@ class max_curvature_zone_node(nullcline_zone_node):
         # only -1 indicate. The extra -1 subtraction ensures all the +1's
         # become zero so that argwhere can discount those locations.
         candidate_ixs = np.argwhere(gsigns[:-1] * gsigns[1:] - 1).flatten()
-        curvature = nullc.curvature_at_sample_points()
+        curvature = nullc.curvature(xarray)
         if dirn == 0:
             max_curvature = max(abs(curvature))
             def test(c, thresh):
@@ -3019,8 +3133,12 @@ class max_curvature_zone_node(nullcline_zone_node):
         except AttributeError:
             min_curvature_pc = 0
         curvature_thresh = min_curvature_pc*max_curvature
-        self.results.zone_center_ixs = np.array([ix for ix in candidate_ixs if \
-                                   test(curvature[ix], curvature_thresh)])
+        zone_center_ixs = [ix for ix in candidate_ixs if \
+                                   test(curvature[ix], curvature_thresh)]
+        # restore to native x array of nullcline (in case of refinement)
+        zone_center_ixs = np.unique(nullc.array[:,0].searchsorted(xarray[zone_center_ixs]))
+        self.results.zone_center_ixs = _filter_consecutive(zone_center_ixs,
+                                                    minimize_values=curvature)
         return len(self.results.zone_center_ixs) > 0
 
 
@@ -3030,11 +3148,8 @@ class min_curvature_zone(nullcline_zone_leaf):
 
 
 
-
 # ---------------------------------------------------------------
 # ANIMATION TOOLS
-
-
 
 def get_PP(gen, pt, vars, doms=None, doplot=True,
            t=0, saveplot=None, format='svg', trail_pts=None,
