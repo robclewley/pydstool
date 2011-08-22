@@ -751,7 +751,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     num_points += loop_step
                     # stop if have tried going forwards more than twice and solution is
                     # still not within domain, or if num_points exceeds max_num_points
-                    done = (num_points > 2*loop_step and not \
+                    done = (num_points > 5*loop_step and not \
                             check_bounds(array([P['null_curve_y'].new_sol_segment[xname],
                                                   P['null_curve_y'].new_sol_segment[yname]]).T,
                                             xinterval, yinterval)) \
@@ -768,7 +768,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     num_points += loop_step
                     # stop if have tried going backwards more than twice and solution is
                     # still not within domain, or if num_points exceeds max_num_points
-                    done = (num_points > 2*loop_step and not \
+                    done = (num_points > 5*loop_step and not \
                             check_bounds(array([P['null_curve_y'].new_sol_segment[xname],
                                                   P['null_curve_y'].new_sol_segment[yname]]).T,
                                             xinterval, yinterval)) \
@@ -781,7 +781,10 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             else:
                 y_null = array([P['null_curve_y'].sol[xname],
                                 P['null_curve_y'].sol[yname]]).T
-            x_vals = y_null[:,0]
+            try:
+                x_vals = y_null[:,0]
+            except IndexError:
+                raise PyDSTool_ExistError('null_curve_y failed: points were out of domain')
             x_vals_unique, indices = unique(x_vals, return_index=True)
             y_null = y_null[indices]
             # add fixed points to nullcline, assuming sufficient accuracy
@@ -856,7 +859,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     num_points += loop_step
                     # stop if have tried going forwards more than twice and solution is
                     # still not within domain, or if num_points exceeds max_num_points
-                    done = (num_points > 2*loop_step and not \
+                    done = (num_points > 5*loop_step and not \
                             check_bounds(array([P['null_curve_x'].new_sol_segment[xname],
                                                   P['null_curve_x'].new_sol_segment[yname]]).T,
                                             xinterval, yinterval)) \
@@ -873,7 +876,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     num_points += loop_step
                     # stop if have tried going backwards more than twice and solution is
                     # still not within domain, or if num_points exceeds max_num_points
-                    done = (num_points > 2*loop_step and not \
+                    done = (num_points > 5*loop_step and not \
                             check_bounds(array([P['null_curve_x'].new_sol_segment[xname],
                                                   P['null_curve_x'].new_sol_segment[yname]]).T,
                                             xinterval, yinterval)) \
@@ -886,7 +889,10 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             else:
                 x_null = array([P['null_curve_x'].sol[xname],
                                 P['null_curve_x'].sol[yname]]).T
-            x_vals = x_null[:,0]
+            try:
+                x_vals = x_null[:,0]
+            except IndexError:
+                raise PyDSTool_ExistError('null_curve_x failed: points were out of domain')
             x_vals_unique, indices = unique(x_vals, return_index=True)
             x_null = x_null[indices]
             # add fixed points to nullcline, assuming sufficient accuracy
