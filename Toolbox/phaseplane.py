@@ -433,7 +433,8 @@ class distance_to_pointset(object):
 
 def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     t=0, eps=None, crop_tol_pc=0.01, jac=None, max_step=0,
-                    max_num_points=1000, only_var=None, seed_points=None):
+                    max_num_points=1000, only_var=None, seed_points=None,
+                    strict_domains=True):
     """Find nullclines of a two-dimensional sub-system of the given
     Generator object gen, specified by xname and yname.
 
@@ -485,6 +486,9 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
       seed_points dictionary, whose keys (xname and/or yname) indicate which points
       belong to which nullclines.
 
+    strict_domains (boolean, default True) ensures all computed nullcline points are
+      cropped to lie within the given sub-domains.
+
 
     Output:
         (x_null, y_null) arrays of (x,y) pairs. Fixed points will be included if
@@ -508,20 +512,18 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
         assert only_var in [xname, yname], "only_var must be one of xname or yname"
         do_vars = [only_var]
     fixed_vars = {}
-    if xname in do_vars:
-        try:
-            x_dom = subdomain[xname]
-        except:
-            x_dom = gen.xdomain[xname]
-        if not (isfinite(x_dom[0]) and isfinite(x_dom[1])):
-            raise PyDSTool_ExistError("Must specify finite range for %s"%xname)
-    if yname in do_vars:
-        try:
-            y_dom = subdomain[yname]
-        except:
-            y_dom = gen.xdomain[yname]
-        if not (isfinite(y_dom[0]) and isfinite(y_dom[1])):
-            raise PyDSTool_ExistError("Must specify finite range for %s"%yname)
+    try:
+        x_dom = subdomain[xname]
+    except:
+        x_dom = gen.xdomain[xname]
+    if not (isfinite(x_dom[0]) and isfinite(x_dom[1])):
+        raise PyDSTool_ExistError("Must specify finite range for %s"%xname)
+    try:
+        y_dom = subdomain[yname]
+    except:
+        y_dom = gen.xdomain[yname]
+    if not (isfinite(y_dom[0]) and isfinite(y_dom[1])):
+        raise PyDSTool_ExistError("Must specify finite range for %s"%yname)
     for varname, dom in subdomain.iteritems():
         if isinstance(dom, (tuple,list)):
             if not (isfinite(dom[0]) and isfinite(dom[1])):
@@ -618,7 +620,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             seed_pts_y_for_ynull = [pt[yname] for pt in seed_points[yname]]
         else:
             seed_pts_x_for_ynull = []
-            seed_pts_y_for_ynull
+            seed_pts_y_for_ynull = []
         if xname in seed_points:
             seed_pts_x_for_xnull = [pt[xname] for pt in seed_points[xname]]
             seed_pts_y_for_xnull = [pt[yname] for pt in seed_points[xname]]
@@ -733,7 +735,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 PCargs.StepSize = 1e-6
             else:
                 PCargs.MaxStepSize = max_step[xname]
-                PCargs.StepSize = max_step[xname]*0.1
+                PCargs.StepSize = max_step[xname]*0.5
             PCargs.MaxNumPoints = loop_step
             P.newCurve(PCargs)
             # check every loop_step points until go out of bounds
@@ -747,9 +749,12 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     raise
                 else:
                     num_points += loop_step
-                    done = not check_bounds(array([P['null_curve_y'].new_sol_segment[xname],
+                    # stop if have tried going forwards more than twice and solution is
+                    # still not within domain, or if num_points exceeds max_num_points
+                    done = (num_points > 2*loop_step and not \
+                            check_bounds(array([P['null_curve_y'].new_sol_segment[xname],
                                                   P['null_curve_y'].new_sol_segment[yname]]).T,
-                                            xinterval, yinterval) \
+                                            xinterval, yinterval)) \
                           or num_points > max_num_points
             done = False
             num_points = 0
@@ -761,14 +766,21 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     raise
                 else:
                     num_points += loop_step
-                    done = not check_bounds(array([P['null_curve_y'].new_sol_segment[xname],
+                    # stop if have tried going backwards more than twice and solution is
+                    # still not within domain, or if num_points exceeds max_num_points
+                    done = (num_points > 2*loop_step and not \
+                            check_bounds(array([P['null_curve_y'].new_sol_segment[xname],
                                                   P['null_curve_y'].new_sol_segment[yname]]).T,
-                                            xinterval, yinterval) \
+                                            xinterval, yinterval)) \
                          or num_points > max_num_points
             # can get repetition of some points
-            y_null = crop_2D(array([P['null_curve_y'].sol[xname],
+            if strict_domains:
+                y_null = crop_2D(array([P['null_curve_y'].sol[xname],
                                     P['null_curve_y'].sol[yname]]).T,
                              xinterval, yinterval)
+            else:
+                y_null = array([P['null_curve_y'].sol[xname],
+                                P['null_curve_y'].sol[yname]]).T
             x_vals = y_null[:,0]
             x_vals_unique, indices = unique(x_vals, return_index=True)
             y_null = y_null[indices]
@@ -829,7 +841,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 PCargs.StepSize = 1e-6
             else:
                 PCargs.MaxStepSize = max_step[yname]
-                PCargs.StepSize = max_step[yname]*0.1
+                PCargs.StepSize = max_step[yname]*0.5
             PCargs.MaxNumPoints = loop_step
             P.newCurve(PCargs)
             done = False
@@ -842,9 +854,12 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     raise
                 else:
                     num_points += loop_step
-                    done = not check_bounds(array([P['null_curve_x'].new_sol_segment[xname],
+                    # stop if have tried going forwards more than twice and solution is
+                    # still not within domain, or if num_points exceeds max_num_points
+                    done = (num_points > 2*loop_step and not \
+                            check_bounds(array([P['null_curve_x'].new_sol_segment[xname],
                                                   P['null_curve_x'].new_sol_segment[yname]]).T,
-                                            xinterval, yinterval) \
+                                            xinterval, yinterval)) \
                          or num_points > max_num_points
             done = False
             num_points = 0
@@ -856,14 +871,21 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     raise
                 else:
                     num_points += loop_step
-                    done = not check_bounds(array([P['null_curve_x'].new_sol_segment[xname],
+                    # stop if have tried going backwards more than twice and solution is
+                    # still not within domain, or if num_points exceeds max_num_points
+                    done = (num_points > 2*loop_step and not \
+                            check_bounds(array([P['null_curve_x'].new_sol_segment[xname],
                                                   P['null_curve_x'].new_sol_segment[yname]]).T,
-                                            xinterval, yinterval) \
+                                            xinterval, yinterval)) \
                          or num_points > max_num_points
             # can get repetition of some points
-            x_null = crop_2D(array([P['null_curve_x'].sol[xname],
-                                    P['null_curve_x'].sol[yname]]).T,
+            if strict_domains:
+                x_null = crop_2D(array([P['null_curve_x'].sol[xname],
+                                        P['null_curve_x'].sol[yname]]).T,
                              xinterval, yinterval)
+            else:
+                x_null = array([P['null_curve_x'].sol[xname],
+                                P['null_curve_x'].sol[yname]]).T
             x_vals = x_null[:,0]
             x_vals_unique, indices = unique(x_vals, return_index=True)
             x_null = x_null[indices]
@@ -1887,6 +1909,7 @@ class plotter_2D(object):
         pp.plot(A[0], A[1], style)
         self.teardown()
 
+
 # global instance
 plotter = plotter_2D()
 
@@ -1899,11 +1922,11 @@ def _newton_step(Q0, nullc, A, B, phi, tol):
     Q = Q0
     while err > tol:
         # Q0 prime is a distant point on the spline's tangent line at Q0
-        Q_prime = Q + nullc.tgt_vec(Q.x)
-        plotter.plot_line_from_points(Q, Q_prime, 'b')
+        Q_prime = Q + 0.2*nullc.tgt_vec(Q.x)
+##        plotter.plot_line_from_points(Q, Q_prime, 'b')
         P1 = line_intersection(Q, Q_prime, A, B)
         Q1 = Point2D(P1.x, nullc.spline(P1.x))  # project onto spline
-        plotter.plot_point(Q1, 'ko')
+##        plotter.plot_point(Q1, 'ko')
         err = abs(phi-angle_to_vertical(Q1-A))
         Q = Q1
     return Q
@@ -1958,11 +1981,11 @@ def closest_perp_distance_between_sample_points(NullcA, NullcB, xa, x0B, x1B,
     # normal has length 1
     normal_at_a = make_vec_at_A_face_B(get_orthonormal(tgt_vec_at_a),
                                 ya, NullcB(xa))
-    plotter.plot_line_from_points(a, a+tgt_vec_at_a, 'k:')
+##    plotter.plot_line_from_points(a, a+tgt_vec_at_a, 'k:')
     phi = angle_to_vertical(normal_at_a)
 
     A = Point2D(a)
-    B = Point2D(a + normal_at_a)
+    B = Point2D(a + 0.2*normal_at_a)
     C = Point2D(x0B, NullcB(x0B))
     D = Point2D(x1B, NullcB(x1B))
 
@@ -1970,10 +1993,10 @@ def closest_perp_distance_between_sample_points(NullcA, NullcB, xa, x0B, x1B,
     Q0 = Point2D(P0.x, NullcB(P0.x))  # project onto spline
     #theta0 = angle_to_vertical(Q0-a)
 
-    plotter.plot_line_from_points(A, B, 'k-')
-    plotter.plot_line_from_points(C, D, 'r--')
-    plotter.plot_point(P0, 'gs')
-    plotter.plot_point(Q0, 'ys')
+##    plotter.plot_line_from_points(A, B, 'k-')
+##    plotter.plot_line_from_points(C, D, 'r--')
+##    plotter.plot_point(P0, 'gs')
+##    plotter.plot_point(Q0, 'ys')
 
     try:
         Q = _newton_step(Q0, NullcB, A, B, phi, newt_tol)
@@ -1998,7 +2021,7 @@ def closest_perp_distance_on_spline(NullcA, NullcB, xa):
     norm_vec_at_a = make_vec_at_A_face_B(get_orthonormal(NullcA.tgt_vec(xa)),
                                          A.y, NullcB(xa))
     phi_a = angle_to_vertical(norm_vec_at_a)
-    plotter.plot_line_from_points(A, A + norm_vec_at_a, 'k-.')
+##    plotter.plot_line_from_points(A, A + norm_vec_at_a, 'k-.')
 
     # determine closest sample points
     try:
@@ -2061,19 +2084,30 @@ def _sample_array_interior(xdata, pc, refine=0):
     return xs
 
 
-def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5):
+def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5,
+                                          strict=True):
     """Measure closest perpendicular distance between two nullcline objects
     (via their spline representations).
+
     Tolerance argument measures that of Euclidean distance between the splines
     representing the two nullclines.
+
+    strict option (default True) ensures both nullclines are monotonically
+    increasing or decreasing functions of x. If False, on nullcline A must be,
+    while nullcline B non-monotonicity will simply lead to a warning message
+    (since B plays an asymmetric role to A in the calculation, its monotonicity
+    is less critical).
 
     Assumes monotonicity of both nullclines, which may be relaxed in future
     versions.
     """
-    assert NullcA.is_monotonic()
-    #assert NullcB.is_monotonic()
-    if not NullcB.is_monotonic():
-        print "Warning, nullcline B is not monotonic in closest_perp_distance_between splines"
+    assert NullcA.is_monotonic(), "Nullcline A must be monotonic"
+    Bmon = NullcB.is_monotonic()
+    if strict:
+        assert Bmon, "Nullcline B must be monotonic"
+    else:
+        if not Bmon:
+            print "Warning: nullcline B is not monotonic in closest_perp_distance_between splines"
     # search interior sample points of spline A first, and 1% inside endpoints
     xa_search_vals = _sample_array_interior(NullcA.array[:,0], 0.01)
     dists = [closest_perp_distance_on_spline(NullcA, NullcB, xa) for xa in xa_search_vals]
@@ -2088,19 +2122,19 @@ def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5):
         xa_ix = len(dists)-1
     else:
         xa_ix = np.argmin(dists)  # used later too to recover associated xa value used
-        xa_start_ix1 = xa_ix + 1 # ignored spline endpoint
+        xa_start_ix1 = xa_ix ##+ 1 # ignored spline endpoint
         other_dists = dists[:]
         other_dists[xa_ix] = np.Inf
         if np.any( np.isfinite( np.array(other_dists) )):
-            xa_start_ix2 = np.argmin(other_dists) + 1
+            xa_start_ix2 = np.argmin(other_dists) ##+ 1
             if xa_start_ix2 < xa_start_ix1:
                 # switch
                 xa_start_ix1, xa_start_ix2 = (xa_start_ix2, xa_start_ix1)
         else:
             # both ix1 and ix2 would be the same, so extend search over next
             # neighboring indices, if available
-            xa_start_ix2 = xa_start_ix1 + 1
-            xa_start_ix1 = xa_start_ix1 - 1
+            xa_start_ix2 = min([len(dists), xa_start_ix1 + 1])
+            xa_start_ix1 = max([0,xa_start_ix1 - 1])
 
     # Minimization method from xa over given indices in NullcA.array[ix1:ix2,0]
     # except if either is an endpoint, in which case move in until distance to
@@ -2171,8 +2205,6 @@ def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5):
                 is_brack = True
                 error = d_error
                 # continue while
-            else:
-                raise AssertionError("huh?")
         else:
             # true d function may be monotonic, but must try to find a better
             # intermediate point that creates a bracket.
