@@ -943,7 +943,7 @@ class Continuation(object):
             else:
                 val = linalg.norm(self.CorrFunc(curve[0]))
             attempts += 1
-            if not converged and attempts > 1:
+            if not converged and attempts > 4:
                 # Stop continuation
                 raise PyDSTool_ExistError("Could not find starting point on curve.  Stopping continuation.")
         # Initialize index location on curve data set
