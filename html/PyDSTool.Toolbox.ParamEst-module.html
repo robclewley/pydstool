@@ -453,17 +453,20 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="make_opt"></a><span class="summary-sig-name">make_opt</span>(<span class="summary-sig-arg">pnames</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.Toolbox.ParamEst-module.html#make_opt" class="summary-sig-name">make_opt</a>(<span class="summary-sig-arg">pnames</span>,
         <span class="summary-sig-arg">resfnclass</span>,
         <span class="summary-sig-arg">model</span>,
         <span class="summary-sig-arg">context</span>,
         <span class="summary-sig-arg">parscales</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">parseps</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">parstep</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">parlinesearch</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">stopcriterion</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">parseps</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">grad_ratio_tol</span>=<span class="summary-sig-default">10</span>,
-        <span class="summary-sig-arg">use_filter</span>=<span class="summary-sig-default">False</span>)</span></td>
+        <span class="summary-sig-arg">use_filter</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">verbose_level</span>=<span class="summary-sig-default">2</span>)</span><br />
+      Create a ParamEst manager object and an instance of an optimizer from the
+Toolbox.optimize sub-package, returned as a pair.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Toolbox.ParamEst-pysrc.html#make_opt">source&nbsp;code</a></span>
             
@@ -961,6 +964,73 @@ x.ParamEst.residual_fn_context_1D'&gt;}"><code class="variable-group">{</code>&l
   </dl>
 </td></tr></table>
 </div>
+<a name="make_opt"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">make_opt</span>(<span class="sig-arg">pnames</span>,
+        <span class="sig-arg">resfnclass</span>,
+        <span class="sig-arg">model</span>,
+        <span class="sig-arg">context</span>,
+        <span class="sig-arg">parscales</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">parseps</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">parstep</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">parlinesearch</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">stopcriterion</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">grad_ratio_tol</span>=<span class="sig-default">10</span>,
+        <span class="sig-arg">use_filter</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">verbose_level</span>=<span class="sig-default">2</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Toolbox.ParamEst-pysrc.html#make_opt">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Create a ParamEst manager object and an instance of an optimizer from the
+Toolbox.optimize sub-package, returned as a pair.
+
+Inputs:
+
+pnames:     list of free parameters in the model
+resfnclass: residual function class (e.g. residual_fn_context_1D exported
+            from this module)
+model:      the model to optimize, of type Model (not a Generator)
+context:    the context object that defines the objective function
+            criteria via &quot;model interfaces&quot; and their features, etc.
+parscales:  for models that do not have parameters varying over similar
+            scales, this dictionary defines what &quot;O(1)&quot; change in dynamics
+            refers to for each parameter. E.g. a parameter that must change by
+            several thousand in order to make an O(1) change in model output
+            can have its scale set to 1000. This will also be the maximum
+            step size in that direction for the Scaled Line Search method, if used.
+            Defaults to 10*parseps for each parameter.
+parseps:    dictionary to indicate what change in parameter value to use for
+            forward finite differencing, for reasons similar to those given in
+            description of the parscales argument. Default is 1e-7 for each parameter.
+parstep:    choice of optimization algorithm stepper, defaults to
+            conjugate gradient step.CWConjugateGradientStep.
+parlinesearch:  choice of line search method, defaults to scaled
+                line search method line_search.ScaledLineSearch.
+stopcriterion:  choice of stop criteria for the optimization iterations. Defaults to
+                ftol=1e-7, gtol=1e-7, iterations_max=200.
+grad_ratio_tol: For residual functions with poor smoothness in some directions,
+                this parameter (default = 10) prevents those directions being used
+                for gradient information if the ratio of residual values found during
+                finite differencing is greater in magnitude than this tolerance value.
+                (Experimental option only -- set very large, e.g. 1e6 to switch off).
+use_filter:     activate use of filtering out largest directions of gradients that may
+                be unreliable. Default is False. (Experimental option only).
+verbose_level:  Default to 2 (high verbosity).
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
 <a name="restrict_opt"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -1265,7 +1335,7 @@ x.ParamEst.residual_fn_context_1D'&gt;<code class="variable-group">}</code>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Sat Jan 22 20:54:51 2011
+    Generated by Epydoc 3.0.1 on Fri Aug 26 22:55:52 2011
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

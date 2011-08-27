@@ -215,6 +215,52 @@ elements in target_array.</td>
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
+          <td><span class="summary-sig"><a href="PyDSTool.utils-module.html#make_RHS_wrap" class="summary-sig-name">make_RHS_wrap</a>(<span class="summary-sig-arg">gen</span>,
+        <span class="summary-sig-arg">xdict_base</span>,
+        <span class="summary-sig-arg">x0_names</span>,
+        <span class="summary-sig-arg">use_gen_params</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">overflow_penalty</span>=<span class="summary-sig-default">10000.0</span>)</span><br />
+      Return function wrapping Generator argument gen's RHS function,
+but restricting input and output dimensions to those specified by
+x0_names.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="PyDSTool.utils-pysrc.html#make_RHS_wrap">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="PyDSTool.utils-module.html#make_Jac_wrap" class="summary-sig-name">make_Jac_wrap</a>(<span class="summary-sig-arg">gen</span>,
+        <span class="summary-sig-arg">xdict_base</span>,
+        <span class="summary-sig-arg">x0_names</span>,
+        <span class="summary-sig-arg">use_gen_params</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">overflow_penalty</span>=<span class="summary-sig-default">10000.0</span>)</span><br />
+      Return function wrapping Generator argument gen's Jacobian function,
+but restricting input and output dimensions to those specified by
+x0_names.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="PyDSTool.utils-pysrc.html#make_Jac_wrap">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
           <td><span class="summary-sig"><a name="saveObjects"></a><span class="summary-sig-name">saveObjects</span>(<span class="summary-sig-arg">objlist</span>,
         <span class="summary-sig-arg">filename</span>,
         <span class="summary-sig-arg">force</span>=<span class="summary-sig-default">False</span>)</span><br />
@@ -453,7 +499,21 @@ elements in target_array.</td>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a name="API"></a><span class="summary-name">API</span> = <code title="API_class()">API_class()</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a name="targetLangs"></a><span class="summary-name">targetLangs</span> = <code title="['c', 'python', 'matlab']"><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">c</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">python</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">matlab</code><code class="variable-quote">'</code><code class="variable-group">]</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="API_class"></a><span class="summary-name">API_class</span>
     </td>
   </tr>
 <tr>
@@ -1170,6 +1230,94 @@ The 'bytime' flag (default False) only works with nonames=False and returns
   </dl>
 </td></tr></table>
 </div>
+<a name="make_RHS_wrap"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">make_RHS_wrap</span>(<span class="sig-arg">gen</span>,
+        <span class="sig-arg">xdict_base</span>,
+        <span class="sig-arg">x0_names</span>,
+        <span class="sig-arg">use_gen_params</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">overflow_penalty</span>=<span class="sig-default">10000.0</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.utils-pysrc.html#make_RHS_wrap">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Return function wrapping Generator argument gen's RHS function,
+but restricting input and output dimensions to those specified by
+x0_names. All other variable values will be given by those in xdict_base.
+In case of overflow or ValueError during a call to the wrapped function,
+an overflow penalty will be used for the returned values (default 1e4).
+
+if use_gen_params flag is set (default False)
+then:
+  Return function has signature Rhs_wrap(x,t)
+  and takes an array or list of x state variable values and scalar t,
+  returning an array type of length len(x). The Generator's current param
+  values (at call time) will be used.
+else:
+  Return function has signature Rhs_wrap(x,t,pdict)
+  and takes an array or list of x state variable values, scalar t, and a
+  dictionary of parameters for the Generator, returning an array type of
+  length len(x).
+
+NB: xdict_base will be copied as it will be updated in the wrapped
+function.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="make_Jac_wrap"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">make_Jac_wrap</span>(<span class="sig-arg">gen</span>,
+        <span class="sig-arg">xdict_base</span>,
+        <span class="sig-arg">x0_names</span>,
+        <span class="sig-arg">use_gen_params</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">overflow_penalty</span>=<span class="sig-default">10000.0</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.utils-pysrc.html#make_Jac_wrap">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Return function wrapping Generator argument gen's Jacobian function,
+but restricting input and output dimensions to those specified by
+x0_names. All other variable values will be given by those in xdict_base.
+In case of overflow or ValueError during a call to the wrapped function,
+an overflow penalty will be used for the returned values (default 1e4).
+
+if use_gen_params flag is set (default False)
+then:
+  Return function Jac_wrap(x,t) takes an array or list of x variable
+  values and scalar t, returning a 2D array type of size len(x) by len(x).
+  The Generator's current param values (at call time) will be used.
+else:
+  Return function Jac_wrap(x,t,pdict) takes an array or list of x variable
+  values, scalar t, and a dictionary of parameters for the Generator,
+  returning a 2D array type of size len(x) by len(x).
+
+NB: xdict_base will be copied as it will be updated in the wrapped
+function.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
 <a name="loadObjects"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -1272,6 +1420,7 @@ The 'bytime' flag (default False) only works with nonames=False and returns
   
   <p>Zip arrays of field names and values into a dictionary. For instance, 
   to use in Generator initialization arguments.</p>
+  <p>Deprecated as of v0.89.</p>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -1697,7 +1846,7 @@ The 'bytime' flag (default False) only works with nonames=False and returns
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Sat Jan 22 20:54:52 2011
+    Generated by Epydoc 3.0.1 on Fri Aug 26 22:55:53 2011
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
