@@ -429,9 +429,9 @@ class Continuation(object):
             bfpoint_found = all(flag_list)
             if bfpoint_found:
                 # Locate bifurcation point
-                X, V = bfinfo.locate((curve[loc-1], V[loc-1]),
+                Xval, Vval = bfinfo.locate((curve[loc-1], V[loc-1]),
                                      (curve_loc, V_loc), self)
-                found = bfinfo.process(X,V,self)
+                found = bfinfo.process(Xval, Vval, self)
 
                 if found:
                     # Move information one more step forward
@@ -444,8 +444,8 @@ class Continuation(object):
                         startx = copy(curve_loc)
                         startv = copy(V_loc)
 
-                    curve[loc] = X
-                    V[loc] = V
+                    curve[loc] = Xval
+                    V[loc] = Vval
 
                     self._savePointInfo(loc)
                     self.CurveInfo[loc] = (bftype,
@@ -1026,18 +1026,19 @@ class Continuation(object):
                 if self.TestFuncs is not None:
                     self._preTestFunc(curve[loc], V[loc])
                     for testfunc in self.TestFuncs:
-                        testfunc[loc] = testfunc(curve[loc],
-                                                      V[loc])
+                        testfunc[loc] = testfunc(curve[loc], V[loc])
 
                 # Check for bifurcation points.
                 # If _checkForBifPoints returns True, stop loop
+                # update self.loc for Corrector's reference
+                self.loc = loc
                 if self.BifPoints != {} and self._checkForBifPoints():
                     stop = True
 
                 # Checks to see if curve is closed and if closed, it closes the curve
                 if self.ClosedCurve < loc+1 < self.MaxNumPoints and \
                 linalg.norm(curve[loc]-curve[0]) < self.StepSize:
-                    # ROB: Let me copy PointInfo information
+                    # Need to be able to copy PointInfo information
                     curve[loc+1] = curve[0]
                     V[loc+1] = V[0]
 
