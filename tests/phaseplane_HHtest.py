@@ -116,8 +116,8 @@ N_y = nullcline('v', 'm', nulls_y)
 print "... finished in %.4f seconds\n" % (time.clock()-start_time)
 
 plotter.do_display=True
-plotter.plot_nullcline(N_x,'g')
-plotter.plot_nullcline(N_y,'r')
+plotter.plot_nullcline(N_x, 'g')
+plotter.plot_nullcline(N_y, 'r')
 
 
 print "Fixed points for (v,m) phase plane sub-system when h=%.2f and n=%.2f: " % (HH.initialconditions['h'], HH.initialconditions['n'])

@@ -368,23 +368,30 @@ class Generator(object):
         else:
             t_offset = 0
         compat_evnames = self._FScompatibleNamesInv(self.trajevents.keys())
-        #if evnames is None:
-        #    pass
+        if evnames is None:
+            evnames = compat_evnames
         if isinstance(evnames, str):
             # singleton
             assert evnames in compat_evnames, "Invalid event name provided: %s"%evnames
-            return self.trajevents[self._FScompatibleNames(evnames)].indepvararray \
+            try:
+                return self.trajevents[self._FScompatibleNames(evnames)].indepvararray \
                                                + t_offset
+            except AttributeError:
+                # empty pointset
+                return []
         else:
             # assume a sequence of strings
             assert all([ev in compat_evnames for ev in evnames]), \
                    "Invalid event name(s) provided: %s"%str(evnames)
-            compat_evnames = evnames
             for (evname, evptset) in self.trajevents.iteritems():
                 compat_evname = self._FScompatibleNamesInv(evname)
                 if compat_evname not in compat_evnames:
                     continue
-                result[compat_evname] = evptset.indepvararray + t_offset
+                try:
+                    result[compat_evname] = evptset.indepvararray + t_offset
+                except AttributeError:
+                    # empty pointset
+                    result[compat_evname] = []
             return result
 
 

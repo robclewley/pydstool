@@ -113,8 +113,9 @@ if __name__=='__main__':
     start = clock()
     HHtraj = HH.compute('test')
     print '  ... finished in %.3f seconds.\n' % (clock()-start)
-    evt=HH.getEventTimes()['thresh_ev']
-    assert evt == []
+    evt = HH.getEventTimes()['thresh_ev']
+    evt_same = HH.getEventTimes('thresh_ev')
+    assert evt == [] == evt_same
 
     print 'Saving Model and Trajectory...'
     saveObjects([HH, HHtraj], 'temp_HH.pkl', True)
