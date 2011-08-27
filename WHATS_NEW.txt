@@ -1,6 +1,33 @@
 Release notes: Highlights of new features
 =========================================
 
+version 0.88 26 Aug 2011
+------------------------
+
+  * Made compatible with newest numpy/scipy versions
+  * Improved efficiency of PyCont
+  * Added some improvements to phase plane analysis Toolbox.
+  * Fixed various bugs
+  * Improved API of various functions and classes
+  * Added some additional documentation
+  * Created an Euler_ODEsystem for testing and simple (e.g. demo) integrations + with support for user-defined calls before and after a step
+   * Other recent changes at http://pydstool.bzr.sourceforge.net/bzr/pydstool/changes
+
+version 0.88 18 Feb 2011
+------------------------
+
+  * New numeric_to_traj and pointset_to_traj utility functions
+  * Major improvements to intelligent expr2func (symbolic -> python function conversion)
+  * Cleanup of global imports, especially: entire numpy.random and linalg namespaces no longer imported by default
+  * Added support for 'min' and 'max' keywords in functional specifications (for ODE right-hand sides, for instance)
+
+  * Optimization tools from third-party genericOpt included - improved parameter estimation examples
+  * Numerical phase-response calculations now possible in PRC toolbox
+  * Fully-fledged DSSRT toolbox (see wiki page)
+  * New tests/demonstrations in PyDSTool/tests
+  * Improved compatibility with cross-platform use and with recent python versions and associated libraries
+  * Other bug fixes and improvements
+
 version 0.88 22 Nov 2010
 ------------------------
 
