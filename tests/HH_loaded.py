@@ -26,7 +26,7 @@ HH.set(tdata=[0, 10], pars={'C': 1.2})
 HHtraj2 = HH.compute('test2')
 plotData2 = HHtraj2.sample(dt=0.05)
 evt2=HH.getEventTimes()['thresh_ev']
-assert evt2 != []
+assert len(evt2) > 0
 
 yaxislabelstr = 'v'
 pylab.ylabel(yaxislabelstr)

@@ -73,14 +73,14 @@ if __name__=='__main__':
     assert trajdata['h_bd0'][0]==0
     assert trajdata['v_bd1'][0]==50
     assert trajdata['v_bd0'][0]==-90
-    assert HH.getEventTimes()['v_domlo'] != []
+    assert len(HH.getEventTimes()['v_domlo']) > 0
     print "Voltage hit low domain bound defined by event v_domlo:"
     print HH.getEventTimes()['v_domlo']
 
     print 'Testing continued integration, having now set voltage domain to be [-100,20]'
     HH.set(xdomain={'v':[-100,20]}, tdata=[HHtraj.indepdomain[1],50])
     HHtraj2 = HH.compute('test_cont', 'c')
-    assert HH.getEventTimes()['v_domhi'] != []
+    assert len(HH.getEventTimes()['v_domhi']) > 0
     print "Sampled this data up until the event v_domhi:"
     print HH.getEventTimes()['v_domhi']
 
