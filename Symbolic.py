@@ -99,7 +99,8 @@ math_globals['Inf'] = Inf
 math_globals['NaN'] = NaN
 
 # protected names come from parseUtils.py
-allmathnames = [a for a in protected_mathnames + protected_randomnames + ['abs', 'pow'] if not a.isupper()]
+allmathnames = [a for a in protected_mathnames + protected_randomnames + \
+                ['abs', 'pow', 'min', 'max'] if not a.isupper()]
 allmathnames_symbolic = [a.title() for a in allmathnames]
 
 # the definitions for the math names are made lower down in this file
@@ -145,7 +146,7 @@ for symb in allmathnames_symbolic:
 
 mathlookup = {}.fromkeys(protected_mathnames, 'math.')
 randomlookup = {}.fromkeys(protected_randomnames, 'random.')
-builtinlookup = {'abs': '', 'pow': ''}
+builtinlookup = {'abs': '', 'pow': '', 'max': '', 'min': ''}
 modlookup = {}
 modlookup.update(mathlookup)
 modlookup.update(randomlookup)
@@ -2509,7 +2510,7 @@ class Fun(Quantity):
     typestr = 'auxfn'
 
     def __init__(self, spec, signature, name="", domain=None, specType=None):
-        if not isinstance(signature, list):
+        if not isinstance(signature, _seq_types):
             raise TypeError("signature must be a non-empty list of strings")
         if len(signature) == 0:
             raise TypeError("signature must be a non-empty list of strings")
