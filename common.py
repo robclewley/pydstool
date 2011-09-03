@@ -71,7 +71,7 @@ _functions = ['isUniqueSeq', 'makeArrayIxMap', 'className',
               'linearInterp', 'object2str', 'getSuperClasses',
               'filteredDict', 'arraymax', 'simplifyMatrixRepr',
               'makeMultilinearRegrFn', 'fit_quadratic', 'fit_quadratic_at_vertex',
-              'fit_exponential', 'fit_diff_of_exp', 'fit_linear',
+              'fit_exponential', 'fit_diff_of_exp', 'fit_linear', 'fit_cubic',
               'smooth_pts', 'nearest_2n_indices',
               'KroghInterpolator', 'BarycentricInterpolator',
               'PiecewisePolynomial', 'make_poly_interpolated_curve',
@@ -3058,6 +3058,35 @@ class fit_quadratic_at_vertex(fit_function):
         return args(ys_fit=ys_fit, pars_fit=a, info=res,
                           results=args(peak=(self.h, self.k),
                                        f=f))
+
+class fit_cubic(fit_function):
+    """Fit a cubic function y=a*x^3+b*x^2+c*x+d to the (x,y) array data.
+    If initial parameter values = (a,b,c,d) are not given, the values
+    (1,1,1,0) will be used.
+
+    result.f is the fitted function (accepts x values).
+    """
+
+    def fn(self, x, a, b, c,d):
+        return a*x**3+b*x*x+c*x+d
+
+    def fit(self, xs, ys, pars_ic=None, opts=None):
+        if pars_ic is None:
+            if self.pars_ic is None:
+                pars_ic = array([1.,1.,1.,0.])
+            else:
+                pars_ic = self.pars_ic
+
+        res = self._do_fit(None, xs, ys, pars_ic)
+        sol = res[0]
+        a,b,c,d = sol
+        def f(x):
+            return a*x**3+b*x*x+c*x+d
+        ys_fit = f(xs)
+        return args(ys_fit=ys_fit, pars_fit=(a,b,c,d), info=res,
+                          results=args(f=f))
+
+
 
 class fit_exponential(fit_function):
     """Fit an exponential function y=a*exp(b*x) to the (x,y) array data.
