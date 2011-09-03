@@ -513,7 +513,13 @@ def make_Jac_wrap(gen, xdict_base, x0_names, use_gen_params=False, overflow_pena
 ## ------------------------------------------------------------
 
 def saveObjects(objlist, filename, force=False):
-    """Store PyDSTool objects to file."""
+    """Store PyDSTool objects to file. Argument should be a tuple or list,
+    but if a singleton non-sequence object X is given then it will be
+    saved as a list [ X ].
+
+    Some PyDSTool objects will not save using this function, and will complain
+    about attributes that do not have definitions in __main__.
+    """
 
     # passing protocol = -1 to pickle means it uses highest available
     # protocol (e.g. binary format)
@@ -545,17 +551,22 @@ def saveObjects(objlist, filename, force=False):
 
 
 
-def loadObjects(filename, namelist=[]):
-    """Retrieve PyDSTool objects from file. Returns list of objects.
+def loadObjects(filename, namelist=None):
+    """Retrieve PyDSTool objects from file. Returns list of objects. If
+    only one object X was stored, it will be returned as [X], and thus
+    you will have to index the returned list with 0 to get X itself.
 
     Optional namelist argument selects objects to return by name,
-    provided that the objects have name fields (otherwise they are ignored)."""
+    provided that the objects have name fields (otherwise they are ignored).
+    """
 
     # Since names are not intended to be unique in PyDSTool, the while
     # loop always goes to the end of the file, and pulls out *all*
     # occurrences of the names.
     if not os.path.isfile(filename):
         raise ValueError("File '" + filename + "' not found")
+    if namelist is None:
+        namelist = []
     if not isinstance(namelist, list):
         if isinstance(namelist, str):
             namelist = [copy.copy(namelist)]
