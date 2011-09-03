@@ -16,7 +16,7 @@ from PyDSTool import *
 from PyDSTool.Toolbox.neuralcomp import *
 
 # voltage is already defined as the string 'V'
-v = Var(voltage) 
+v = Var(voltage)
 
 """
 Here we use an args datatype to hold information about each channel.
@@ -29,7 +29,7 @@ NaF = args()
 NaF.g = Par('100','g')
 NaF.Erev = Par('50','vrev')
 # Here are the state variables
-NaF.m = Var('m') 
+NaF.m = Var('m')
 NaF.h = Var('h')
 # Here are the forward and backward rate equations for each gate
 # These are QuantSpec types that store the expression as a string
@@ -92,12 +92,23 @@ channel_bias = channel('Ibias')
 Ibias = Par('1.75','Ibias')
 Ib = Var(-Ibias, name='I', specType='ExpFuncSpec')
 channel_bias.add([Ibias,Ib])
-    
+
+"""
+An external current function is also specified as its own channel.
+"""
+time = Var('t')
+channel_ext = channel('Iext')
+mag_ext = Par('3', 'Iext_magfac')
+Iext_func = Fun(mag_ext*0.5*(Sin(2.124*time)+Sin(5.1*(time+0.2)))*Cos(3*pi*(time-0.1))*Min(Max(Tan(8.982*time*pi+1.3005),8),-8), ('t',), 'Iext_func')
+Iext = Var(-Iext_func(time), name='I', specType='ExpFuncSpec')
+channel_ext.add([mag_ext,Iext_func,Iext])
+
 """
 Since this is a single compartment neuron, you can choose to make a soma
 object or a point neuron object. The result is a ModelSpec object.
 """
-cell1 = makeSoma('cell1',channelList=[channel_NaF, channel_K, channel_L, channel_bias],C=1) # capacitance
+cell1 = makeSoma('cell1',channelList=[channel_NaF, channel_K, channel_L,
+                                      channel_bias, channel_ext], C=1) # capacitance
 
 """
 Algorithms for the ODE solver are passed through the ModelConstructor when you
@@ -179,3 +190,4 @@ HH_model.compute(trajname='test2',
 
 v_dat2 = HH_model.sample('test2')
 lin2 = plot(v_dat2['t'], v_dat2['V'],'r')
+show()
