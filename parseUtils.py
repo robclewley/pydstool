@@ -88,7 +88,7 @@ protected_randomnames = filter(lambda s: not s.startswith('_'), \
 builtin_auxnames = ['globalindepvar', 'initcond', 'heav', 'if',
                     'getindex', 'getbound']
 
-protected_macronames = ['for', 'if', 'max', 'min']
+protected_macronames = ['for', 'if', 'max', 'min', 'sum']
 
 reserved_keywords = ['and', 'not', 'or', 'del', 'for', 'if', 'is', 'raise',
                 'assert', 'elif', 'from', 'lambda', 'return', 'break', 'else',
@@ -106,7 +106,7 @@ convert_power_reserved_keywords = ['del', 'for', 'if', 'is', 'raise',
 protected_allnames = protected_mathnames + protected_scipynames \
                     + protected_specialfns + protected_randomnames \
                     + builtin_auxnames + protected_macronames \
-                    + ['abs', 'pow', 'min', 'max']
+                    + ['abs', 'pow', 'min', 'max', 'sum']
 
 # signature lengths for builtin auxiliary functions and macros, for
 # use by ModelSpec in eval() method (to create correct-signatured temporary
@@ -1307,7 +1307,8 @@ class parserObject(object):
                     # self.treatMultiRefs == False and '[' in specialtokens
                     # means it was probably in the ignoreToken list in __init__
                     if self.treatMultiRefs and len(tokenized)>0 \
-                            and tokenized[-1].isalnum():
+                            and (tokenized[-1].isalnum() or \
+                                 ('[' in specialtokens and not isVectorClause(specstr[scount-1:]))):
                         # then this is probably an actual multiRef
                         s = '['
                     elif '[' in specialtokens:
@@ -1368,11 +1369,13 @@ class parserObject(object):
 #                    returnstr += s
 #                    s = ''
                 if s == '[' and self.treatMultiRefs and len(tokenized)>0 \
-                        and tokenized[-1].isalnum():
+                        and (tokenized[-1].isalnum() or \
+                             ('[' in specialtokens and not isVectorClause(specstr[scount-1:]))):
                     # then this is probably an actual multiRef ...
-                    # only treat as multiRef if there's an alphanumeric
+                    # will treat as multiRef if there's an alphanumeric
                     # token directly preceding '[', e.g. z[i,0,1]
-                    # otherwise will catch array usage, e.g. [[x,y],[a,b]]
+                    # or if commas are not inside,
+                    # otherwise would catch vector usage, e.g. [[x,y],[a,b]]
                     foundtoken = False    # don't go into next clause
                     # copy the square-bracketed clause to the output
                     # verbatim, and add whole thing as a token.
@@ -1644,6 +1647,11 @@ def isHierarchicalName(s, sep=NAMESEP, treatMultiRefs=False):
     return len(s_split) > 1 and alltrue([isNameToken(t, treatMultiRefs) \
                                          for t in s_split])
 
+def isVectorClause(s):
+    brace = findEndBrace(s, '[',']')
+    if s[0] == '[' and isinstance(brace, int):
+        return ',' in s[1:brace]
+
 
 def replaceSepList(speclist):
     return [replaceSep(spec) for spec in speclist]
@@ -1897,7 +1905,8 @@ def readArgs(argstr, lbchar='(', rbchar=')'):
 
 def findEndBrace(s, lbchar='(', rbchar=')'):
     """Find position in string (or list of strings) s at which final matching
-    brace occurs (if at all)."""
+    brace occurs (if at all). If not found, returns None.
+    """
     pos = 0
     assert s[0] == lbchar, 'string argument must begin with left brace'
     stemp = s
@@ -2322,5 +2331,5 @@ def remove_indices_from_range(ixs, max_ix):
     if i0 < max_ix:
         ranges.append([i0, max_ix+1])
     elif i0 == max_ix:
-        ranges.append([i0+1])
+        ranges.append([i0])
     return ranges
