@@ -51,8 +51,14 @@ class FuncSpec(object):
     MACRO `for` SYNTAX:
 
      for(i, ilo, ihi, expr_in_i) -> list of expressions where each
-      occurrence of `[i]` is replaced with the appropriate integer
-      in square brackets.
+      occurrence of `[i]` is replaced with the appropriate integer.
+      The letter i can be replaced with any other single character.
+
+    MACRO `sum` SYNTAX:
+
+     sum(i, ilo, ihi, expr_in_i) -> an expression that sums
+      over the expression replacing any occurrence of `[i]` with
+      the appropriate integer.
     """
 
     def __init__(self, kw):
@@ -570,6 +576,10 @@ class FuncSpec(object):
 
 
     def _macroFor(self, rootstr, istr, ilo, ihi, expr_in_i):
+        """Internal utility function to build multiple instances of expression
+        'expr_in_i' where integer i has been substituted for values from ilo to ihi.
+        Returns dictionary keyed by rootstr+str(i) for each i.
+        """
         # already tested for the same number of [ and ] occurrences
         retdict = {}
         q = QuantSpec('__temp__', expr_in_i)
@@ -578,7 +588,10 @@ class FuncSpec(object):
         for ix, tok in enumerate(q):
             if tok[0] == '[':
                 eval_str = tok[1:-1]
-                eval_pieces[ix] = eval_str
+                if istr in eval_str:
+                    eval_pieces[ix] = eval_str
+                # otherwise may be a different, embedded temp index for another
+                # sum, etc., so don't touch it
         keys = eval_pieces.keys()
         keys.sort()
         ranges = remove_indices_from_range(keys, len(q.parser.tokenized)-1)
@@ -593,7 +606,7 @@ class FuncSpec(object):
                 pieces.append(''.join(q[r[0]:r[1]]))
             if ri+1 == len(ranges):
                 # last one - check if there's an eval piece placeholder to append at the end
-                if keys[-1] == r[-1]:
+                if len(keys) > 0 and keys[-1] == r[-1]:
                     pieces.append('')
                     eval_ixs.append(len(pieces)-1)
                 # else do nothing
@@ -604,10 +617,18 @@ class FuncSpec(object):
         for i in range(ilo, ihi+1):
             for k, ei in zip(keys, eval_ixs):
                 s = eval_pieces[k].replace(istr, str(i))
-                pieces[ei] = str(int(eval(s)))
+                try:
+                    pieces[ei] = str(int(eval(s)))
+                except NameError:
+                    # maybe recursive 'sum' syntax, so a different index letter
+                    pieces[ei] = s
             retdict[rootstr+str(i)] = ''.join(pieces)+'\n'
         return retdict
 
+    def _macroSum(self, istr, ilo, ihi, expr_in_i):
+        def_dict = self._macroFor('', istr, int(ilo), int(ihi), expr_in_i)
+        retstr = '(' + "+".join([term.strip() for term in def_dict.values()]) + ')'
+        return retstr
 
     # ----------------- Python specifications ----------------
 
@@ -661,7 +682,7 @@ class FuncSpec(object):
                     + "print 'Invalid var / par name %s'%name,\n" \
                     + 3*_indentstr + "print 'or bounds not well defined:'\n" \
                     + 3*_indentstr + "print ds.xdomain, ds.pdomain\n" \
-                    + 3*_indentstr + "raise RuntimeError, e",
+                    + 3*_indentstr + "raise (RuntimeError, e)",
                     '_auxfn_getbound')
         # the internal functions may be used by user-defined functions,
         # so need them to be accessible to __processTokens when parsing
@@ -1162,7 +1183,8 @@ class FuncSpec(object):
         # parse method of a parserObject.
         # This function should be replaced with an adapted version
         # of parserObject that can handle auxiliary function call
-        # parsing and the inbuilt macros.
+        # parsing and the inbuilt macros. This is some of the worst-organized
+        # code I ever wrote, early in my experience with Python. My apologies...
         returnstr = ''
         if specstr[-1] != ')':
             # temporary hack because strings not ending in ) lose their last
@@ -1345,14 +1367,14 @@ class FuncSpec(object):
                                                 aux_arrayixstr, parsinps_names,
                                                 parsinps_arrayixstr, specname)
                                 arginfo = readArgs(procstr)
-                                # advance pointer in specstr according to
-                                # how many characters were read in for the
-                                # argument list
-                                scount += len(argstr) # not arginfo[2]
                                 if not arginfo[0]:
                                     raise ValueError('Error finding '
                                             'arguments applicable to `if` '
                                             'macro')
+                                # advance pointer in specstr according to
+                                # how many tokens/characters were read in for
+                                # the argument list
+                                scount += len(argstr) # not arginfo[2]
                                 arglist = arginfo[1]
                                 assert len(arglist) == 3, ('Wrong number of'
                                                 ' arguments passed to `if`'
@@ -1362,6 +1384,29 @@ class FuncSpec(object):
                             elif s == 'for':
                                 raise ValueError('Macro '+s+' cannot '
                                         'be used here')
+                            elif s == 'sum':
+                                endargbrace = findEndBrace(specstr[scount:]) \
+                                                 + scount + 1
+                                argstr = specstr[scount:endargbrace]
+                                arginfo = readArgs(argstr)
+                                if not arginfo[0]:
+                                    raise ValueError('Error finding '
+                                            'arguments applicable to `sum` '
+                                            'macro')
+                                arglist = arginfo[1]
+                                assert len(arglist) == 4, ('Wrong number of'
+                                                ' arguments passed to `sum`'
+                                                ' macro. Expected 4')
+                                # advance pointer in specstr according to
+                                # how many tokens/characters were read in for
+                                # the argument list
+                                scount += len(argstr)
+                                # recursively process main argument
+                                returnstr += self.__processTokens(allnames,
+                                                specialtokens_temp,
+                                                self._macroSum(*arglist), var_arrayixstr,
+                                                aux_arrayixstr, parsinps_names,
+                                                parsinps_arrayixstr, specname)
                             else:
                                 # max and min just pass through
                                 returnstr += s
