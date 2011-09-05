@@ -687,7 +687,15 @@ class Generator(object):
                     raise PyDSTool_TypeError('Invalid type for xdomain spec'
                                              ' '+name)
             for name in remain(fs_args['varspecs'].keys(), self.xdomain.keys()):
-                self.xdomain[name] = [-Inf, Inf]
+                if name[-1] == ']':
+                    # for macro -- FuncSpec.py will double check for correct syntax
+                    base = name[:name.index('[')]
+                    # pull out everything in parentheses
+                    for_spec = fs_args['varspecs'][name][4:-1].replace(' ', '').split(',')
+                    for name_i in range(int(for_spec[1]), int(for_spec[2])+1):
+                        self.xdomain[base+str(name_i)] = [-Inf, Inf]
+                else:
+                    self.xdomain[name] = [-Inf, Inf]
             self.foundKeys += 1
         else:
             self.xdomain = {}
