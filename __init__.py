@@ -117,6 +117,7 @@ import pylab
 from pylab import figure, plot, show, draw, hold
 from numpy import *    # overwrites __version__
 __version__ = vernum
+del vernum
 #from numpy.linalg import *
 from copy import copy
 # note that the names with leading underscores will not be exported by
@@ -179,8 +180,8 @@ def who(typelist=None, objdict=None, verboselevel=0, returnlevel=0,
     # Model_ is an alias for PyDSTool.Model.Model
     if typelist is None:
         typelist_actual = _pyDSToolTypes
-    # hacks for taking care of class naming problems
     elif isinstance(typelist, list):
+        # hacks for taking care of class naming problems
         typelist_actual = []
         for t in typelist:
             if t == Model:
@@ -189,23 +190,32 @@ def who(typelist=None, objdict=None, verboselevel=0, returnlevel=0,
             elif t == Generator:
                 # user meant Generator.Generator, i.e. local name Generator_
                 typelist_actual.append(Generator_)
+            elif t == array:
+                # user meant numpy.ndarray
+                typelist_actual.append(numpy.ndarray)
             else:
-                if compareClassAndBases(t, _pyDSToolTypes):
-                    typelist_actual.append(t)
-                else:
-                    raise TypeError("Invalid PyDSTool object types passed")
+                typelist_actual.append(t)
+                #if compareClassAndBases(t, _pyDSToolTypes):
+                #    typelist_actual.append(t)
+                #else:
+                #    raise TypeError("Invalid PyDSTool object types passed")
     else:
-        # typelist is a singleton (type)
+        # hacks for taking care of class naming problems
+        # when typelist is a singleton (type)
         if typelist == Model:
             # user meant Model.Model, i.e. local name Model_
             typelist_actual = [Model_]
         elif typelist == Generator:
             # user meant Generator.Generator, i.e. local name Generator_
             typelist_actual = [Generator_]
-        elif compareClassAndBases(typelist, _pyDSToolTypes):
-            typelist_actual = [typelist]
+        elif typelist == array:
+            typelist_actual = [numpy.ndarray]
         else:
-            raise TypeError("Invalid PyDSTool object types passed")
+            typelist_actual = [typelist]
+        #elif compareClassAndBases(typelist, _pyDSToolTypes):
+        #    typelist_actual = [typelist]
+        #else:
+        #    raise TypeError("Invalid PyDSTool object types passed")
     for objname, obj in objdict.iteritems():
         if type(obj) not in [type, types.ClassType, types.ModuleType]:
             if compareClassAndBases(obj, typelist_actual):
