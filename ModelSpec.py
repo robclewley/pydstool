@@ -419,6 +419,9 @@ class ModelSpec(object):
 
 
     def add(self, arg, tosubcomponent=None):
+        """Add object to registry, into a specified sub component if
+        provided.
+        """
         if isinstance(arg, list):
             for obj in arg:
                 self.add(obj, tosubcomponent)
@@ -817,7 +820,27 @@ class ModelSpec(object):
 
 
     def __repr__(self):
-        return "Component " + self.name
+        return self._infostr(1)
+
+    def _infostr(self, verbose=1):
+        base_str = "Component " + self.name
+        if verbose > 0:
+            if len(self.components) > 0:
+                base_str += "\n Components: ( "
+                base_str += ", ".join([c._infostr(verbose-1) for c in self.components.values()]) + " )"
+            if len(self.variables) > 0:
+                base_str += "\n Variables: ( "
+                base_str += ", ".join([str(c) for c in self.variables.values()]) + " )"
+            if len(self.pars) > 0:
+                base_str += "\n Parameters: ( "
+                base_str += ", ".join([str(c) for c in self.pars.values()]) + " )"
+            if len(self.inputs) > 0:
+                base_str += "\n Inputs: ( "
+                base_str += ", ".join([str(c) for c in self.inputs.values()]) + " )"
+            if len(self.auxfns) > 0:
+                base_str += "\n Functions: ( "
+                base_str += ", ".join([str(c) for c in self.auxfns.values()]) + " )"
+        return base_str
 
 
     def search(self, name, component_type_order=None):
