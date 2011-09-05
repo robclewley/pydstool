@@ -397,7 +397,7 @@ class epoch(object):
                 mod_w_speed.append(m)
         return actives_w_speed, mod_w_speed
 
-    def _info_str(self, verboselevel=0):
+    def _infostr(self, verboselevel=0):
         if self.opts.use_order:
             uo_str = "(ord.)"
         else:
@@ -413,7 +413,7 @@ class epoch(object):
             return str1 + str2 + str3
 
     def info(self, verboselevel=1):
-        print self._info_str(verboselevel)
+        print self._infostr(verboselevel)
 
     def __str__(self):
         return self._info_str(0)
