@@ -8,7 +8,7 @@
 
 <ol>
 <li><a href="#1">Questions about set-up and installation</a>
-<li><a href="#2">Questions about using the classes</a>
+<li><a href="#2">Questions about using the libraries</a>
 <li><a href="#3">Questions about documentation</a>
 </ol>
 <hr>
@@ -66,7 +66,7 @@ helpful in better supporting this in the future.
 <br><hr><br>
 
 
-<a name="2"><h2>2. Questions about using the classes</h2>
+<a name="2"><h2>2. Questions about using the libraries</h2>
 
 <b>2.1 : Why do I get an error about using the carat character (^) in my function specifications?</b>
 <p>
@@ -76,6 +76,44 @@ numbers. The safest solution is to use the syntax pow(x,p) or x**p instead. PyDS
 mixture of ^, **, or pow()), and return the converted string. The target argument must be a string: '^', '**', or
 'pow'.
 </p>
+
+<b>2.2 : Is it possible to write the entire RHS in C/C++ for the Dopri
+or Radau integrators?</b>
+<p>
+Yes, but I only recommend doing it in a certain way. Python still
+needs to see what variables and parameters you are declaring. I'd
+suggest putting in at least a dummy RHS and full declarations for
+variables and params as usual. Then, before you make the Generator
+object, add the switch
+</p>
+<p>
+DSargs.nobuild = True
+</p>
+<p>
+to the arguments to the Generator initializer. The object you get back
+won't be ready to integrate but, if your Gen is called "odesys" then
+you'd do
+</p>
+<p>
+odesys.makeLibSource()
+</p>
+<p>
+and you can go edit the .c file, which might be called odesys_vf.c in
+the dopri853_temp/ directory within your local working dir. Be sure to
+follow the same argument list and return through the f_ vector. If you
+read an existing .c vector field file you'll get the idea. Obviously
+you can add any other functions and library imports you want to that
+file. Once you're finished editing you go back to the python prompt
+and run
+</p>
+<p>
+odesys.compileLib()
+</p>
+<p>
+and now you can access the RHS function you build directly using
+odesys.Rhs(<args>) and can call odesys.compute() etc. as usual.
+</p>
+
 
 
 <a name="3"><h2>3. Questions about documentation</h2>
