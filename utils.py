@@ -552,12 +552,14 @@ def saveObjects(objlist, filename, force=False):
 
 
 def loadObjects(filename, namelist=None):
-    """Retrieve PyDSTool objects from file. Returns list of objects. If
-    only one object X was stored, it will be returned as [X], and thus
-    you will have to index the returned list with 0 to get X itself.
+    """Retrieve PyDSTool objects from file. Returns list of objects
+    unless namelist option is given as a singleton string name.
+    Also, if only one object X was stored, it will be returned as [X],
+    and thus you will have to index the returned list with 0 to get X itself.
 
     Optional namelist argument selects objects to return by name,
     provided that the objects have name fields (otherwise they are ignored).
+    If namelist is a single string name then a single object is returned.
     """
 
     # Since names are not intended to be unique in PyDSTool, the while
@@ -567,8 +569,9 @@ def loadObjects(filename, namelist=None):
         raise ValueError("File '" + filename + "' not found")
     if namelist is None:
         namelist = []
+    was_singleton_name = isinstance(namelist, str)
     if not isinstance(namelist, list):
-        if isinstance(namelist, str):
+        if was_singleton_name:
             namelist = [copy.copy(namelist)]
         else:
             raise TypeError("namelist must be list of strings or singleton string")
@@ -603,7 +606,10 @@ def loadObjects(filename, namelist=None):
             print "No objects found in file"
         else:
             print "No named objects found in file"
-    return objlist
+    if was_singleton_name:
+        return objlist[0]
+    else:
+        return objlist
 
 
 def intersect(a, b):
