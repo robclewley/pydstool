@@ -100,7 +100,7 @@ math_globals['NaN'] = NaN
 
 # protected names come from parseUtils.py
 allmathnames = [a for a in protected_mathnames + protected_randomnames + \
-                ['abs', 'pow', 'min', 'max'] if not a.isupper()]
+                ['abs', 'pow', 'min', 'max', 'sum'] if not a.isupper()]
 allmathnames_symbolic = [a.title() for a in allmathnames]
 
 # the definitions for the math names are made lower down in this file
@@ -146,7 +146,7 @@ for symb in allmathnames_symbolic:
 
 mathlookup = {}.fromkeys(protected_mathnames, 'math.')
 randomlookup = {}.fromkeys(protected_randomnames, 'random.')
-builtinlookup = {'abs': '', 'pow': '', 'max': '', 'min': ''}
+builtinlookup = {'abs': '', 'pow': '', 'max': '', 'min': '', 'sum': ''}
 modlookup = {}
 modlookup.update(mathlookup)
 modlookup.update(randomlookup)
@@ -517,6 +517,7 @@ def expr2fun(qexpr, ensure_args=None, **values):
     eval_globals = math_globals.copy()
     eval_globals['max'] = QuantSpec('max', '__temp_max__')
     eval_globals['min'] = QuantSpec('min', '__temp_min__')
+    eval_globals['sum'] = QuantSpec('sum', '__temp_sum__')
     if fspec.isvector():
         # e.g. for a Jacobian or other matrix-valued function
         # expect a list of lists of Quantities (i.e., rank 2 only)
@@ -685,7 +686,10 @@ def _generate_subderivatives(symbols, fnspecs):
 
 
 def prepJacobian(varspecs, coords, fnspecs=None, max_iter_depth=20):
-    """Coordinates will be sorted.
+    """Returns a symbolic Jacobian and updated function specs to support
+    its definition from variable specifications. Only makes the Jacobian
+    with respect to the named coordinates, which will be sorted into
+    alphabetical order.
 
     """
     need_specs = filteredDict(varspecs, coords)
@@ -760,8 +764,8 @@ class QuantSpec(object):
                    and treatMultiRefs and alltrue([char not in subjectToken \
                                        for char in ['+','-','/','*','(',')']])):
             token = subjectToken.strip()
-            if token == 'for':
-                raise ValueError("Cannot use reserved macro name 'for' as a "
+            if token in ('for','sum'):
+                raise ValueError("Cannot use reserved macro name '%s' as a "%token +\
                                  "QuantSpec's name")
             else:
                 self.subjectToken = token
@@ -1561,7 +1565,7 @@ class QuantSpec(object):
             if self.isvector() and defstr_feval[0]=='(' and defstr_feval[-1]==')':
                 defstr_feval = '['+defstr_feval[1:-1]+']'
         # otherwise, continue pre-process simplified definition strings
-        for clause_type in ['if', 'max', 'min']:
+        for clause_type in ('if', 'max', 'min', 'sum'):
             if clause_type not in localfuncs:
                 continue
             # protect condition or max/min clauses from being Python-eval'd
@@ -2173,6 +2177,7 @@ class Quantity(object):
     def isvector(self):
         """Is the quantity spec of the form [a,b,c]"""
         try:
+            # minimum check necessary at this point to determine this
             return '['==self.spec.specStr[0] and ']'==self.spec.specStr[-1]
         except IndexError:
             return False
