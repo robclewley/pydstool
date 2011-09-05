@@ -824,7 +824,8 @@ class ModelSpec(object):
         """Find Quantity objects containing a component named <name>,
         of type given by the hierarchical name <comptype1.comptype2. ... .name>,
         where component_type_order = [<comptype1>, <comptype2>, ... ],
-        and <comptypeN> may be a component type or a specific component name.
+        and <comptypeN> may be a component type (as a wildcard) or a specific
+        component name.
         """
         return searchModelSpec(self, name, component_type_order)
 
