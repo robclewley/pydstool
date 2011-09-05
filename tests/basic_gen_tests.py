@@ -152,12 +152,13 @@ DSargs2 = args(name='test2',
 tm2 = Generator.Vode_ODEsystem(DSargs2)
 assert allclose(tm2.Rhs(0, {'y0':0, 'y1': 0.3, 'y2': 5}), array([-11. ,  2.3+pi,  0. ]))
 
+# show example of summing where i != p defines the sum range, and p is a special value (here, 2)
 DSargs3 = args(name='test3',
               pars={'p0': 0, 'p1': 1, 'p2': 2},
-              varspecs={'x': 'sum(i, 0, 4, sum(j, 0, 1, indexfunc([j] + p[j])))'}, #'sum(j, 0, 1, indexfunc([j] + p[j]))'}, #'sum(i, 0, 4, sum(j, 0, 1, index_func([j] + p[j])))'},
+              varspecs={'x': 'sum(i, 0, 4, sum(j, 0, 1, if([i]==2, 0, indexfunc([j] + p[j]))))'},
               fnspecs=fnspecs
               )
 tm3 = Generator.Vode_ODEsystem(DSargs3)
-assert allclose(tm3.Rhs(0, {'x': 0}), 10*pi)
+assert allclose(tm3.Rhs(0, {'x': 0}), 8*pi)
 
 print "  ...passed"
