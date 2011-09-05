@@ -1561,11 +1561,25 @@ class Pointset(Point):
     extend = append   # for intuitive compatibility!
 
 
-    def toarray(self):
+    def toarray(self, include_indepvar=False):
+        """Convert the pointset to a D x L array (one variable per row),
+        where D is the dimension of the pointset and L is its length.
+        (This is a copy of the internal attribute 'coordarray'.)
+
+        If the optional include_indepvar switch is set True (default False),
+        the first row is the independent variable, and the whole
+        array will be (D+1) x L in shape.
+        """
         if self.dimension==1:
-            return self.coordarray[0]
+            ca = copy(self.coordarray[0])
         else:
-            return self.coordarray
+            ca = copy(self.coordarray)
+        if include_indepvar:
+            ia = copy(self.indepvararray)
+            ia.shape = (1, len(ia))
+            return concatenate((ia,ca))
+        else:
+            return ca
 
 
     def todict(self, aslist=False):
