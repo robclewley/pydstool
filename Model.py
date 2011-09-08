@@ -359,7 +359,6 @@ class Model(object):
     _needKeys = ['name', 'modelInfo']
     _optionalKeys = ['ics', 'mspecdict', 'verboselevel',
                     'norm', 'tdata', 'eventPars', 'abseps']
-                       #'inputinfo']
     # query keys for 'query' method
     _querykeys = ['pars', 'parameters', 'events', 'submodels',
                   'ics', 'initialconditions', 'vars', 'variables',
@@ -484,6 +483,10 @@ class Model(object):
     def __len__(self):
         """Return number of sub-models"""
         return len(self.registry)
+
+    def sub_models(self):
+        """Return a list of all sub-model instances"""
+        return self.registry.values()
 
     def _makeDefaultVarNames(self):
         """Return default observable, internal, and auxiliary variable names
@@ -1807,7 +1810,8 @@ class NonHybridModel(Model):
 #        print "  original model tdata = [%f,%f], gen tdata = [0,%f]"%(tdata[0],tdata[1],t1-t0), " and globalt0=",t0
 
         # add remaining pars for system
-        setup_pars = {'ics': xdict, 'tdata': [0, t1-t0]} #, 'globalt0': t0}
+        setup_pars = {'ics': xdict, 'tdata': [0, t1-t0],
+                      'verbose': self.verboselevel}
         if self._abseps is not None:
             setup_pars['abseps'] = self._abseps
         try:
@@ -1873,15 +1877,6 @@ class NonHybridModel(Model):
         # eventinterval for terminal events between hybrid steps
         # ?????
         ##self.modelInfo[gen.name]['dsi'].eventstruct = copy.copy(gen.eventstruct)
-
-##            if hasattr(gen, '_solver'):
-##                # clean up memory usage after calculations in Dopri and Radau
-##                try:
-##                    gen._solver.CleanupEvents()
-##                    gen._solver.CleanupInteg()
-##                except AttributeError:
-##                    # incompatible solver, so no need to worry
-##                    pass
 
         #### Post-process trajectory segment:
         # look at warnings etc. for any terminating events that occurred
@@ -1990,6 +1985,7 @@ class NonHybridModel(Model):
         #print "Nonhybridmodel - temp removal of eventstruct non-copy"
         #traj.modelEventStructs = gen.eventstruct #copy.deepcopy(gen.eventstruct)
         self.trajectories[trajname] = traj
+
 
     def _validateRegistry(self, obsvars, intvars):
         """Validate Model's modelInfo attribute."""
