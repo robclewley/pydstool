@@ -1401,7 +1401,10 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             if self._solver.verbose:
                 info(self.diagnostics.outputStats, "Output statistics")
             self.defined = False
-            if len(alltData) == self.algparams['max_pts'] and alltData[-1] < tend:
+            # Did the solver run out of memory?
+            if (len(alltData) == self.algparams['max_pts'] or \
+                self.diagnostics.outputStats['num_steps'] >= self.algparams['max_pts']) \
+                   and alltData[-1] < tend:
                 print "max_pts algorithmic parameter too small: current " + \
                       "value is %i"%self.algparams['max_pts']
 #                avstep = (self.algparams['init_step']+self.diagnostics.outputStats['last_step'])/2.
