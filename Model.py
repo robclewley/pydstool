@@ -485,7 +485,7 @@ class Model(object):
         return len(self.registry)
 
     def sub_models(self):
-        """Return a list of all sub-model instances"""
+        """Return a list of all sub-model instances (model interfaces or generators)"""
         return self.registry.values()
 
     def _makeDefaultVarNames(self):
@@ -1676,6 +1676,12 @@ class NonHybridModel(Model):
                infodict['globalConRules'], infodict['dsi'].model.name, \
                True, None, True
 
+    def cleanupMemory(self):
+        """Clean up memory usage from past runs of a solver that is interfaced through
+        a dynamic link library. This will prevent the 'continue' integration option from
+        being accessible and will delete other data about the last integration run."""
+        self.registry.values()[0].cleanupMemory()
+
     def haveJacobian(self):
         """Returns True iff all objects in modelInfo have
         defined Jacobians."""
@@ -2125,6 +2131,12 @@ class HybridModel(Model):
                 # aux var value never put here
                 pass
 
+    def cleanupMemory(self):
+        """Clean up memory usage from past runs of a solver that is interfaced through
+        a dynamic link library. This will prevent the 'continue' integration option from
+        being accessible and will delete other data about the last integration run."""
+        for MI in self.registry.values():
+            MI.model.cleanupMemory()
 
     def _findTrajInitiator(self, end_reasons, partition_num, t0, xdict,
                               mi=None, swRules=None):
