@@ -426,6 +426,19 @@ class ODEsystem(ctsGen):
             raise NotImplementedError("This Generator does not support "
                               "calls to compute()")
 
+    def cleanupMemory(self):
+        """Clean up memory usage from past runs of a solver that is interfaced through
+        a dynamic link library. This will prevent the 'continue' integration option from
+        being accessible and will delete other data about the last integration run."""
+        if hasattr(gen, '_solver'):
+            # clean up memory usage after calculations in Dopri and Radau, or other
+            # solvers that we have interfaced to
+            try:
+                gen._solver.CleanupEvents()
+                gen._solver.CleanupInteg()
+            except AttributeError:
+                # incompatible solver, so no need to worry
+                pass
 
     def validateICs(self):
         assert hasattr(self, 'initialconditions')
