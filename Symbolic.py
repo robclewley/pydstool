@@ -764,11 +764,11 @@ class QuantSpec(object):
                    and treatMultiRefs and alltrue([char not in subjectToken \
                                        for char in ['+','-','/','*','(',')']])):
             token = subjectToken.strip()
-            if token in ('for','sum'):
-                raise ValueError("Cannot use reserved macro name '%s' as a "%token +\
-                                 "QuantSpec's name")
-            else:
-                self.subjectToken = token
+##            if token in ('for','sum'):
+##                raise ValueError("Cannot use reserved macro name '%s' as a "%token +\
+##                                 "QuantSpec's name")
+##            else:
+            self.subjectToken = token
         else:
             print "Found:",subjectToken
             raise ValueError("Invalid subject token")
