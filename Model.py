@@ -1816,20 +1816,21 @@ class NonHybridModel(Model):
 #        print "  original model tdata = [%f,%f], gen tdata = [0,%f]"%(tdata[0],tdata[1],t1-t0), " and globalt0=",t0
 
         # add remaining pars for system
-        setup_pars = {'ics': xdict, 'tdata': [0, t1-t0],
-                      'algparams': {'verbose': self.verboselevel}}
+        setup_pars = {'ics': xdict, 'tdata': [0, t1-t0]}
         if self._abseps is not None:
             setup_pars['abseps'] = self._abseps
-        try:
-            if gen.algparams['init_step'] > t1-t0:
-                if self.verboselevel > 0:
-                    print "Warning: time step too large for remaining time"\
-                          + " interval. Temporarily reducing time step to " \
-                          + "1/10th of its previous value"
-                setup_pars['algparams'].update({'init_step': (t1-t0)/10})
-        except (AttributeError, KeyError):
-            # system does not support this integration parameter
-            pass
+        if hasattr(gen, 'algparams'):
+            setup_pars['algparams'] = {'verbose': self.verboselevel}
+            try:
+                if gen.algparams['init_step'] > t1-t0:
+                    if self.verboselevel > 0:
+                        print "Warning: time step too large for remaining time"\
+                              + " interval. Temporarily reducing time step to " \
+                              + "1/10th of its previous value"
+                    setup_pars['algparams'].update({'init_step': (t1-t0)/10})
+            except (AttributeError, KeyError):
+                # system does not support this integration parameter
+                pass
         # if external inputs used, make sure any parameter-bound
         # global t0 offsets are updated in case epoch state map changed them
         if self._inputt0_par_links != {}:
