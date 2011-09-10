@@ -1308,7 +1308,10 @@ class parserObject(object):
                     # means it was probably in the ignoreToken list in __init__
                     if self.treatMultiRefs and len(tokenized)>0 \
                             and (tokenized[-1].isalnum() or \
-                                 ('[' in specialtokens and not isVectorClause(specstr[scount-1:]))):
+                                 ('[' in specialtokens and not ( \
+                                  isVectorClause(specstr[scount-1:]) or \
+                                  len(tokenized)>1 and tokenized[-2] in \
+                                  ('max', 'min', 'max_', 'min_')))):
                         # then this is probably an actual multiRef
                         s = '['
                     elif '[' in specialtokens:
