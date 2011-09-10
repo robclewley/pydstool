@@ -1817,7 +1817,7 @@ class NonHybridModel(Model):
 
         # add remaining pars for system
         setup_pars = {'ics': xdict, 'tdata': [0, t1-t0],
-                      'verbose': self.verboselevel}
+                      'algparams': {'verbose': self.verboselevel}}
         if self._abseps is not None:
             setup_pars['abseps'] = self._abseps
         try:
@@ -1826,7 +1826,7 @@ class NonHybridModel(Model):
                     print "Warning: time step too large for remaining time"\
                           + " interval. Temporarily reducing time step to " \
                           + "1/10th of its previous value"
-                setup_pars['algparams'] = {'init_step': (t1-t0)/10}
+                setup_pars['algparams'].update({'init_step': (t1-t0)/10})
         except (AttributeError, KeyError):
             # system does not support this integration parameter
             pass
