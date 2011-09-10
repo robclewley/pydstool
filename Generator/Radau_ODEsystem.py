@@ -279,19 +279,23 @@ class radau(integrator):
 
         if not isinstance(checkAux, _int_types):
             raise TypeError("checkAux must be int")
-        if checkAux not in [0,1]:
+        if checkAux not in (0,1):
             raise TypeError("checkAux must be 0 or 1")
         if checkAux == 1 and self.nAux <= 0:
             raise ValueError("checkAux cannot be 1 if nAux is 0")
 
         if not isinstance(verbose, _int_types):
             raise TypeError("verbose must be int")
-        if verbose not in [0,1]:
-            raise TypeError("verbose must be 0 or 1")
+        if verbose not in (0,1):
+            if verbose >= 2:
+                # interpret all greater values as 1
+                verbose = 1
+            else:
+                raise TypeError("verbose must be 0 or 1")
 
         if not isinstance(calcSpecTimes, _int_types):
             raise TypeError("calcSpecTimes must be int")
-        if calcSpecTimes not in [0,1]:
+        if calcSpecTimes not in (0,1):
             raise TypeError("calcSpecTimes must be 0 or 1")
         if calcSpecTimes == 1 and len(self.specTimes) <= 0:
             raise ValueError("calcSpecTimes cannot be 1 if specTimes is empty")
@@ -316,7 +320,7 @@ class radau(integrator):
         if stepSizeLB >= stepSizeUB:
             raise ValueError("stepSizeLB must be less than stepSizeUB")
 
-        if hessenberg not in [0,1]:
+        if hessenberg not in (0,1):
             raise ValueError("hessenberg must be 0 or 1")
         if hessenberg == 1 and useMass != 0:
             raise ValueError("hessenberg form cannot be used for implicit systems (mass matrix)")
@@ -325,7 +329,7 @@ class radau(integrator):
         if maxNewton <= 0:
             raise ValueError("maxNewton must be positive")
 
-        if newtonStart not in [0,1]:
+        if newtonStart not in (0,1):
             raise ValueError("newtonStart must be 0 or 1")
 
         if index1dim <= 0:
@@ -335,7 +339,7 @@ class radau(integrator):
         if index3dim != 0:
             raise ValueError("Currently index3dim must be 0")
 
-        if stepSizeStrategy not in [1,2]:
+        if stepSizeStrategy not in (1,2):
             raise ValueError("stepSizeStrategy must be 1 or 2")
 
         if DAEstructureM1 != 0:
@@ -343,9 +347,9 @@ class radau(integrator):
         if DAEstructureM2 != 0:
             raise ValueError("Currently DAEstructureM2 must be 0")
 
-        if useJac not in [0,1]:
+        if useJac not in (0,1):
             raise ValueError("useJac must be 0 or 1")
-        if useMass not in [0,1]:
+        if useMass not in (0,1):
             raise ValueError("useMass must be 0 or 1")
 
         if useJac == 1 and self.hasJac != 1:
@@ -384,42 +388,42 @@ class Radau_ODEsystem(ODEsystem):
 
     Uses C functional specifications only."""
     _paraminfo = {'rtol': 'Relative error tolerance.',
-                           'atol': 'Absolute error tolerance.',
-                           'safety': 'Safety factor in the step size prediction, default 0.9.',
-                           'max_step': 'Maximal step size, default tend-tstart.',
-                           'init_step': 'Initial step size, default is a guess computed by the function init_step.',
-                           'fac1': 'Parameter for step size selection; the new step size is chosen subject to the restriction  fac1 <= new_step/old_step <= fac2. Default value is 1.0.',
-                           'fac2': 'Parameter for step size selection; the new step size is chosen subject to the restriction  fac1 <= new_step/old_step <= fac2. Default value is 1.2.',
-                           'stepLB': '',
-                           'stepUB': '',
-                           'refine': 'Refine output by adding points interpolated using the RK4 polynomial (0, 1 or 2).',
-                           'step_strategy': """Switch for step size strategy;
+                  'atol': 'Absolute error tolerance.',
+                  'safety': 'Safety factor in the step size prediction, default 0.9.',
+                  'max_step': 'Maximal step size, default tend-tstart.',
+                  'init_step': 'Initial step size, default is a guess computed by the function init_step.',
+                  'fac1': 'Parameter for step size selection; the new step size is chosen subject to the restriction  fac1 <= new_step/old_step <= fac2. Default value is 1.0.',
+                  'fac2': 'Parameter for step size selection; the new step size is chosen subject to the restriction  fac1 <= new_step/old_step <= fac2. Default value is 1.2.',
+                  'stepLB': '',
+                  'stepUB': '',
+                  'refine': 'Refine output by adding points interpolated using the RK4 polynomial (0, 1 or 2).',
+                  'step_strategy': """Switch for step size strategy;
 If step_strategy=1  mod. predictive controller (Gustafsson).
 If step_strategy=2  classical step size control.
 The default value (for step_strategy=0) is step_strategy=1.
 the choice step_strategy=1 seems to produce safer results;
 for simple problems, the choice step_strategy=2 produces
 often slightly faster runs.""",
-                           'jac_recompute': """Decides whether the Jacobian should be recomputed;
+                  'jac_recompute': """Decides whether the Jacobian should be recomputed;
 increase jac_recompute to 0.1 say, when Jacobian evaluations
 are costly. for small systems jac_recompute should be smaller
 (0.001, say). negative jac_recompute forces the code to
 compute the Jacobian after every accepted step.
 Default 0.001.""",
-                            'newton_start': "",
-                            'newton_stop': "",
-                            'max_newton': "Maximum number of Newton iterations to take in solving the implicit system at each step (default 7)",
-                            'DAEstructureM1': "",
-                            'DAEstructureM2': "",
-                            'hessenberg': "",
-                            'index1dim': "",
-                            'index2dim': "",
-                            'index3dim': "",
-                            'use_special': "Switch for using special times",
-                            'specialtimes': "List of special times to use during integration",
-                            'check_aux': "Switch",
-                            'extraspace': ""
-                           }
+                  'newton_start': "",
+                  'newton_stop': "",
+                  'max_newton': "Maximum number of Newton iterations to take in solving the implicit system at each step (default 7)",
+                  'DAEstructureM1': "",
+                  'DAEstructureM2': "",
+                  'hessenberg': "",
+                  'index1dim': "",
+                  'index2dim': "",
+                  'index3dim': "",
+                  'use_special': "Switch for using special times",
+                  'specialtimes': "List of special times to use during integration",
+                  'check_aux': "Switch",
+                  'extraspace': ""
+                  }
 
     def __init__(self, kw):
         """Use the nobuild key to postpone building of the library, e.g. in
@@ -439,7 +443,7 @@ Default 0.001.""",
               0: 'Unrecognized error code returned (see stderr output)',
             -1 : 'input is not consistent',
             -2 : 'larger nmax is needed',
-            2 : 'larger nmax or maxevtpts is probably needed (error raised by solout)',
+             2 : 'larger nmax or maxevtpts is probably needed (error raised by solout)',
             -3 : 'step size becomes too small',
             -4 : 'the matrix is repeatedly singular (interrupted)',
             -8 : 'The solution exceeded a magbound (poor choice of initial step)'}

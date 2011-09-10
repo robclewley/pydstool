@@ -235,19 +235,23 @@ class dopri(integrator):
 
         if not isinstance(checkAux, _int_types):
             raise TypeError("checkAux must be int")
-        if checkAux not in [0,1]:
+        if checkAux not in (0,1):
             raise TypeError("checkAux must be 0 or 1")
         if checkAux == 1 and self.nAux <= 0:
             raise ValueError("checkAux cannot be 1 if nAux is 0")
 
         if not isinstance(verbose, _int_types):
             raise TypeError("verbose must be int")
-        if verbose not in [0,1]:
-            raise TypeError("verbose must be 0 or 1")
+        if verbose not in (0,1):
+            if verbose >= 2:
+                # interpret all greater values as 1
+                verbose = 1
+            else:
+                raise TypeError("verbose must be 0 or 1")
 
         if not isinstance(calcSpecTimes, _int_types):
             raise TypeError("calcSpecTimes must be int")
-        if calcSpecTimes not in [0,1]:
+        if calcSpecTimes not in (0,1):
             raise TypeError("calcSpecTimes must be 0 or 1")
         if calcSpecTimes == 1 and len(self.specTimes) <= 0:
             raise ValueError("calcSpecTimes cannot be 1 if specTimes is empty")
@@ -263,7 +267,7 @@ class dopri(integrator):
 
         if not isinstance(checkBounds, _int_types):
             raise TypeError("checkBounds must be int")
-        if checkBounds not in [0,1,2]:
+        if checkBounds not in (0,1,2):
             raise ValueError("checkBounds must be 0, 1, or 2")
 
         if not isinstance(boundsCheckMaxSteps, _int_types):
