@@ -1083,7 +1083,7 @@ class HybridTrajectory(Trajectory):
         if checklevel is None:
             checklevel = self.checklevel
         if coords is None:
-            coords = self.coordnames
+            coords = copy.copy(self.coordnames)
         else:
             if isinstance(coords, str):
                 coords = [self._FScompatibleNames(coords)]
