@@ -65,9 +65,6 @@ def makeIFneuron(name, par_args_linear, par_args_spike, rhs=None, inputs={},
                  icdict=None, evtol=None):
     allDSnames = ['linear', 'spike']
 
-    epmapping = EvMapping({"xdict['excited']": "0"})
-    # must set excited to 0 in order to meet bounds requirements of IF gen
-
     # get models
     DS_linear = makeLinearLeak('linear', rhs, par_args_linear, inputs, evtol=evtol)
     DS_spike = makeSpike('spike', par_args_spike)
@@ -79,7 +76,7 @@ def makeIFneuron(name, par_args_linear, par_args_spike, rhs=None, inputs={},
     DS_linear_info = makeModelInfoEntry(DS_linear_MI, allDSnames,
                                            [('threshold', 'spike')])
     DS_spike_info = makeModelInfoEntry(DS_spike_MI, allDSnames,
-                                          [('time', ('linear', epmapping))])
+                                          [('time', 'linear')])
     modelInfoDict = makeModelInfo([DS_linear_info, DS_spike_info])
 
     # 'excited' is an internal variable of the model, and is used to
@@ -87,8 +84,10 @@ def makeIFneuron(name, par_args_linear, par_args_spike, rhs=None, inputs={},
     # to start the calculation with
     mod_args = {'name': name,
                'modelInfo': modelInfoDict}
-    if icdict is not None:
-        mod_args['ics'] = icdict
+    # we don't need to provide ICs as long as they are provided before
+    # calling compute
+    #if icdict is not None:
+    #    mod_args['ics'] = icdict
 
     IFmodel = Model.HybridModel(mod_args)
     # No longer make this an internal variable
