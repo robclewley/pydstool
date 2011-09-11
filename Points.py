@@ -32,7 +32,7 @@ from copy import copy, deepcopy
 __all__ = ['Point', 'Pointset', 'isparameterized', 'pointsToPointset',
            'PointInfo', 'makeNonParameterized', 'arrayToPointset',
            'VarCaller', 'comparePointCoords', 'importPointset',
-           'exportPointset', 'padPointset']
+           'exportPointset', 'mergePointsets', 'padPointset']
 
 #----------------------------------------------------------------------------
 
@@ -2136,6 +2136,7 @@ def comparePointCoords(p1, p2, fussy=False):
 
 
 def isparameterized(p):
+    """Returns True if Point or Pointset p is parameterized, False otherwise"""
     return p._parameterized
 
 
@@ -2531,6 +2532,66 @@ def importPointset(xFileName, t=None, indices=None, sep=" ",
         else:
             return Pointset(indepvardict={t_name: tVals},
                             coorddict=dict(zip(varnames,xVals.T)))
+
+def mergePointsets(pts1, pts2):
+    """Merges two pointsets into a new pointset, preserving (merging) any
+    metadata in each.
+
+    In particular, if each have different accuracy tolerances, the
+    larger of the two will be used. If each have different 'checklevel' values,
+    the larger of the two will be used. Point labels will be merged. Names
+    will also be merged.
+
+    If both are parameterized, their independent variable arrays
+    must be identical. If only one is parameterized, the result will be
+    too. The two pointsets must be identical in length.
+
+    The norm associated with each pointset must be the same.
+    """
+    len1 = len(pts1)
+    len2 = len(pts2)
+    assert len1 == len2, "Pointsets must have equal length"
+    assert pts1._normord == pts2._normord, "Pointsets must use the same norm"
+    isparam1 = isparameterized(pts1)
+    isparam2 = isparameterized(pts2)
+    if isparam1 and isparam2:
+        assert pts1.indepvarname == pts2.indepvarname, \
+               "Parameterized pointsets must have identical independent variable names"
+        assert all(pts1.indepvararray == pts2.indepvararray), \
+               "Parameterized pointsets must have identical independent variable values"
+    common_coords = intersect(pts1.coordnames, pts2.coordnames)
+    for c in common_coords:
+        assert all(pts1[c] == pts2[c]), \
+           "Pointsets must not share any coordinate names whose values are not identical"
+    args = {}
+    if isparam1 or isparam2:
+        if isparam1:
+            tvals = pts1.indepvararray
+            tname = pts1.indepvarname
+        else:
+            tvals = pts2.indepvararray
+            tname = pts2.indepvarname
+        args['indepvardict'] = {tname: tvals}
+    args['checklevel'] = max(pts1.checklevel, pts2.checklevel)
+    args['tolerance'] = max(pts1._abseps, pts2._abseps)
+    if name is None:
+        if pts1.name == "":
+            name1 = "<unnamed>"
+        else:
+            name1 = pts1.name
+        if pts2.name == "":
+            name2 = "<unnamed>"
+        else:
+            name2 = pts2.name
+        args['name'] = "Merged %s:%s" % (name1, name2)
+    coorddict = pts1.todict()
+    coorddict.update(pts2.todict())
+    args['coorddict'] = coorddict
+    lab1 = deepcopy(pts1.labels)
+    lab2 = deepcopy(pts2.labels)
+    lab2.update(lab1)
+    args['labels'] = lab2
+    return Pointset(**args)
 
 
 def padPointset(pts, pinterval, value_dict, eps=None):
