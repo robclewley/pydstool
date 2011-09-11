@@ -1488,7 +1488,7 @@ class intModelInterface(ModelInterface):
     """
     def __init__(self, model, conditions=None, compatibleInterfaces=None,
                  test_traj=None):
-        """Set model which generates test trajectories from which the dictionary
+        """Set model that generates test trajectories from which the dictionary
         of conditions can be imposed on a connected model.
 
         If no conditions are specified then the model is trivially wrapped in
@@ -1502,7 +1502,7 @@ class intModelInterface(ModelInterface):
         assert isinstance(model, Model.Model), "Invalid Model object passed"
         self.model = model  #copy.deepcopy(model)  # ???
         #print "TEMP: (intModelInterface.__init__) -- should model be copied?"
-        self.test_traj = test_traj  # may be initially a temporary value, 1
+        self.test_traj = test_traj  # may be initially a temporary value, None
 
     def ensure_has_test_traj(self):
         """Cause recomputation of test trajectory if not already present in
