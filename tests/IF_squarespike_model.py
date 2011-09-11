@@ -26,8 +26,10 @@ def makeLinearLeak(name, rhs, par_args, inputs, evtol=None):
                'starttime': 0,
                'term': True
                 }
-    thresh_ev = Events.makePythonStateZeroCrossEvent('v', "p['threshval']",
-                                                  1, DS_event_args)
+    thresh_ev = Events.makeZeroCrossEvent('v - threshval', 1,
+                                          DS_event_args,
+                                          varnames=['v'],
+                                          parnames=['threshval'])
 
     DS_args = {'pars': par_args,
                'varspecs': rhs_full,
@@ -122,7 +124,7 @@ if __name__=='__main__':
 
 
     print 'Preparing plot'
-    plotData = IFmodel.sample('onespike', ['v', 'testaux'], 0.05)
+    plotData = IFmodel.sample('onespike', dt=0.05)
     plotData2 = IFmodel.sample('twospike', ['v', 'testaux'], 0.05)
     pylab.ylabel('v, testaux')
     pylab.xlabel('t')
@@ -138,6 +140,7 @@ if __name__=='__main__':
 
     print "Testing IF hybrid model as mapping ..."
     num_parts = len(IFmodel.getTrajTimePartitions('twospike'))
+    eventvals = IFmodel('onespike', range(0, num_parts+1), asmap=True)
     eventvals = IFmodel('twospike', range(0, num_parts+1), asmap=True)
     for i in range(0,num_parts+1):
         print "(v, t) at event(%i) = (%.4f, %.4f)" % (i, eventvals(i)('v'),
@@ -150,4 +153,5 @@ if __name__=='__main__':
     assert len(evtimes['threshold']) == 4, "Problem with hybrid events"
     assert allclose(evtimes['threshold'][3], 54.009, 1e-3), "Problem with hybrid events"
     assert allclose(evs['threshold'][1]['v'], -60, 1e-3), "Problem with hybrid events"
+
     show()
