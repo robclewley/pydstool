@@ -2635,6 +2635,9 @@ class HybridModel(Model):
             except (AttributeError, KeyError, ValueError):
                 # system does not support this integration parameter
                 pass
+            else:
+                # we know there's compatibility to set verbose level
+                setup_pars['algparams']['verbose'] = self.verboselevel
             model.set(**setup_pars)
             # ensure that if reusing same model as previous segment, that
             # any high level events are not reset: especially for VODE and map system
