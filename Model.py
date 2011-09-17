@@ -836,8 +836,9 @@ class Model(object):
 
     def set(self, **kw):
         """Set specific parameters of Model. These will get passed on to
-        all Generators that support these keys unless the restrictGenList
-        argument is set (only applies to keys algparams, checklevel, and abseps).
+        all Generators/sub-models that support these keys unless the
+        restrictDSList argument is set (only applies to keys algparams,
+        checklevel, and abseps).
 
         Permitted keys: 'pars', 'algparams', 'checklevel', 'abseps',
                         'ics', 'inputs', 'tdata', 'restrictDSlist',
