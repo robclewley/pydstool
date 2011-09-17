@@ -1708,12 +1708,28 @@ class FuncSpec(object):
                         + "double e2_, double *p_, double *wk_, double *xv_) {\n" \
                         + "  if (cond_) {return e1_;} else {return e2_;};\n}",
               "double __rhs_if(int cond_, double e1_, double e2_, double *p_, double *wk_, double *xv_)")
-        self.auxfns['__maxof'] = ("double __maxof(double e1_, double e2_, double *p_, double *wk_, double *xv_) {\n" \
+        self.auxfns['__maxof2'] = ("double __maxof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {\n" \
                                 + "if (e1_ > e2_) {return e1_;} else {return e2_;};\n}",
-                "double __maxof(double e1_, double e2_, double *p_, double *wk_, double *xv_)")
-        self.auxfns['__minof'] = ("double __minof(double e1_, double e2_, double *p_, double *wk_, double *xv_) {\n" \
+                "double __maxof2(double e1_, double e2_, double *p_, double *wk_, double *xv_)")
+        self.auxfns['__minof2'] = ("double __minof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {\n" \
                                 + "if (e1_ < e2_) {return e1_;} else {return e2_;};\n}",
-                "double __minof(double e1_, double e2_, double *p_, double *wk_, double *xv_)")
+                "double __minof2(double e1_, double e2_, double *p_, double *wk_, double *xv_)")
+        self.auxfns['__maxof3'] = ("double __maxof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {\n" \
+                               + "double temp_;\nif (e1_ > e2_) {temp_ = e1_;} else {temp_ = e2_;};\n" \
+                               + "if (e3_ > temp_) {return e3_;} else {return temp_;};\n}",
+                "double __maxof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_)")
+        self.auxfns['__minof3'] = ("double __minof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {\n" \
+                               + "double temp_;\nif (e1_ < e2_) {temp_ = e1_;} else {temp_ = e2_;};\n" \
+                               + "if (e3_ < temp_) {return e3_;} else {return temp_;};\n}",
+                "double __minof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_)")
+        self.auxfns['__maxof4'] = ("double __maxof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {\n" \
+                               + "double temp_;\nif (e1_ > e2_) {temp_ = e1_;} else {temp_ = e2_;};\n" \
+                               + "if (e3_ > temp_) {temp_ = e3_;};\nif (e4_ > temp_) {return e4_;} else {return temp_;};\n}",
+                "double __maxof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_)")
+        self.auxfns['__minof4'] = ("double __minof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {\n" \
+                               + "double temp_;\nif (e1_ < e2_) {temp_ = e1_;} else {temp_ = e2_;};\n" \
+                               + "if (e3_ < temp_) {temp_ = e3_;};\nif (e4_ < temp_) {return e4_;} else {return temp_;};\n}",
+                "double __minof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_)")
         # temporary placeholders for these built-ins...
         cases_ic = ""
         cases_index = ""
@@ -1830,6 +1846,7 @@ class FuncSpec(object):
                             + '/* Verbose code insert -- end */\n\n'
         specstr += (len(reusestr)>0)*"/* reused term definitions */\n" \
                    + reusestr + "\n"
+        auxdefs_parsed = {}
         # add function body
         for i in xrange(len(specnames)):
             xname = specnames[i]
@@ -1845,11 +1862,13 @@ class FuncSpec(object):
                     fbody_parsed = wrapArgInCall(fbody_parsed,
                                     'initcond', '"')
             specstr += "f_[" + str(i) + "] = " + fbody_parsed + ";\n"
+            auxdefs_parsed[xname] = fbody_parsed
         if docodeinserts and self.codeinserts['end'] != '':
             specstr += '\n/* Verbose code insert -- begin */\n' \
                     + self.codeinserts['end'] \
                     + '/* Verbose code insert -- end */\n'
         specstr += "\n" + parundefines + varundefines + inpundefines + "}\n\n"
+        self._auxdefs_parsed = auxdefs_parsed
         return (specstr, funcname)
 
 
@@ -1863,7 +1882,7 @@ class FuncSpec(object):
         """Pre-process 'if' statements and names of 'abs' and 'sign' functions,
         as well as logical operators.
         """
-        qspec = QuantSpec('spec', specStr)
+        qspec = QuantSpec('spec', specStr, treatMultiRefs=False)
         qspec.mapNames({'abs': 'fabs', 'sign': 'signum', 'mod': 'fmod',
                         'and': '&&', 'or': '||', 'not': '!',
                         'True': 1, 'False': 0,
@@ -1892,13 +1911,17 @@ class FuncSpec(object):
             ix_continue = 0
             for stmt in range(num):
                 n_ix = qtoks[n_ix+1:].index('__minof')+n_ix+1
-                new_specStr += "".join(qtoks[ix_continue:n_ix]) + '__minof('
+                new_specStr += "".join(qtoks[ix_continue:n_ix])
                 rbrace_ix = findEndBrace(qtoks[n_ix+1:])+n_ix+1
                 ix_continue = rbrace_ix+1
                 #assert qtoks[n_ix+2] == '[', "Error in min() syntax"
                 #assert qtoks[rbrace_ix-1] == ']', "Error in min() syntax"
                 #new_specStr += "".join(qtoks[n_ix+3:rbrace_ix-1]) + ")"
-                new_specStr += "".join(qtoks[n_ix+2:ix_continue])
+                num_args = qtoks[n_ix+2:ix_continue].count(',') + 1
+                if num_args > 4:
+                    raise NotImplementedError("Max of more than 4 arguments not currently supported in C")
+                new_specStr += '__minof%s(' % str(num_args)
+                new_specStr += "".join([q for q in qtoks[n_ix+2:ix_continue] if q not in ('[',']')])
             new_specStr += "".join(qtoks[ix_continue:])
             qspec = QuantSpec('spec', new_specStr)
             qtoks = qspec.parser.tokenized
@@ -1909,13 +1932,17 @@ class FuncSpec(object):
             ix_continue = 0
             for stmt in range(num):
                 n_ix = qtoks[n_ix+1:].index('__maxof')+n_ix+1
-                new_specStr += "".join(qtoks[ix_continue:n_ix]) + '__maxof('
+                new_specStr += "".join(qtoks[ix_continue:n_ix])
                 rbrace_ix = findEndBrace(qtoks[n_ix+1:])+n_ix+1
                 ix_continue = rbrace_ix+1
                 #assert qtoks[n_ix+2] == '[', "Error in max() syntax"
                 #assert qtoks[rbrace_ix-1] == ']', "Error in max() syntax"
                 #new_specStr += "".join(qtoks[n_ix+3:rbrace_ix-1]) + ")"
-                new_specStr += "".join(qtoks[n_ix+2:ix_continue])
+                num_args = qtoks[n_ix+2:ix_continue].count(',') + 1
+                if num_args > 4:
+                    raise NotImplementedError("Min of more than 4 arguments not currently supported in C")
+                new_specStr += '__maxof%s(' % str(num_args)
+                new_specStr += "".join([q for q in qtoks[n_ix+2:ix_continue] if q not in ('[',']')])
             new_specStr += "".join(qtoks[ix_continue:])
             qspec = QuantSpec('spec', new_specStr)
             qtoks = qspec.parser.tokenized
