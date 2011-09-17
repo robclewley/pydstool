@@ -43,7 +43,7 @@ def makeHHneuron(name, par_args, ic_args, vfn_str='(I-ionic(v,m,h,n,1))/C',
     DSargs['pars'] = par_args
     DSargs['fnspecs'] = auxdict
     DSargs['xdomain'] = {'v': [-130, 70], 'm': [0,1], 'h': [0,1], 'n': [0,1]}
-    DSargs['algparams'] = {'init_step': 0.1, 'max_step': 0.5}
+    DSargs['algparams'] = {'init_step': 0.05, 'max_step': 0.05}
     DSargs['checklevel'] = 0
     DSargs['ics'] = ic_args
     DSargs['name'] = name
@@ -77,8 +77,6 @@ ics = {'v':-70.0, 'm': 0, 'h': 1, 'n': 0}
 
 HH = makeHHneuron('HH_DSSRT', pars, ics)
 HH.set(tdata=[0, 150])
-
-dummy_traj = HH.compute('dummy')
 
 # ANALYSIS using DSSRT
 # set proper IC from last minimum event
@@ -135,7 +133,8 @@ gamma = 3 # time scale threshold
 opt_thresh = 3 # default
 min_len = 10000
 cycle_ixs = []
-for thresh in linspace(2.3,5,15):
+print "TEMP 2"
+for thresh in linspace(3, 3.3, 2): #linspace(2.5,2.6,2):
     print "Testing thresh", thresh
     da.domscales['psi'].calc_epochs(thresh, gamma)
     epochs = da.domscales['psi'].epochs
@@ -209,7 +208,7 @@ class regime_feature(ql_feature_leaf):
     def evaluate(self, target):
         # determine DSSRT-related info about next hybrid state to switch to,
         # and whether epoch conditions are met throughout the trajectory
-        gen = target.model.registry.values()[0]
+        gen = target.model.registry.values()[0] #sub_models()[0]
         ptsFS = target.test_traj.sample()
         Dargs = args(model=gen, inputs=self.inputs,
                  taus=self.taus, infs=self.infs, psis=self.psis_reg)
@@ -281,7 +280,9 @@ vfn_str = '(I-ionic(v,0,0,0,1))/C'
 psi_evs = make_evs(define_psi_events(['I', 'leak'], ['m', 'n'], 'v',
                      ignore_transitions=[('leave','I'), ('leave', 'leak')]),
                    pars, evtol, targetlang)
-tau_evs = make_evs(define_tau_events([], [], ['v'], 'v'), pars, evtol, targetlang)
+# don't make the evs since we put them all in nonevent_reasons
+# otherwise provide some in the ignore_transitions list
+tau_evs = [] #make_evs(define_tau_events([], [], ['v'], 'v'), pars, evtol, targetlang)
 gen_reg1 = makeHHneuron('regime1', pars, ics, vfn_str, psi_evs+tau_evs, aux_vars)
 model_reg1 = embed(gen_reg1)
 reg1 = int_regime(model_reg1)
@@ -305,7 +306,8 @@ mods = ['n']
 psi_evs = make_evs(define_psi_events(acts, mods, 'v',
                      ignore_transitions=[('leave','I'), ('leave', 'leak')]),
                    pars, evtol, targetlang)
-tau_evs = make_evs(define_tau_events([], ['m'], ['v'], 'v'), pars, evtol, targetlang)
+# don't make the evs since we put them all in nonevent_reasons
+tau_evs = [] #make_evs(define_tau_events([], ['m'], ['v'], 'v'), pars, evtol, targetlang)
 gen_reg2 = makeHHneuron('regime2', pars, ics, vfn_str, psi_evs+tau_evs, aux_vars)
 model_reg2 = embed(gen_reg2)
 reg2 = int_regime(model_reg2)
@@ -327,7 +329,8 @@ acts = ['m', 'n']
 psi_evs = make_evs(define_psi_events(acts, ['leak', 'I'], 'v',
                         ignore_transitions=[('join','I'), ('join', 'leak')]),
                    pars, evtol, targetlang)
-tau_evs = make_evs(define_tau_events(['n'], [], ['m', 'v'], 'v'), pars, evtol, targetlang)
+# don't make the evs since we put them all in nonevent_reasons
+tau_evs = [] #make_evs(define_tau_events(['n'], [], ['m', 'v'], 'v'), pars, evtol, targetlang)
 gen_reg3 = makeHHneuron('regime3', pars, ics, vfn_str, psi_evs+tau_evs, aux_vars)
 model_reg3 = embed(gen_reg3)
 reg3 = int_regime(model_reg3)
@@ -349,7 +352,8 @@ acts = ['I', 'leak', 'n']
 psi_evs = make_evs(define_psi_events(acts, ['m'], 'v',
                         ignore_transitions=[('leave','I'), ('leave', 'leak')]),
                    pars, evtol, targetlang)
-tau_evs = make_evs(define_tau_events([], ['n'], ['v'], 'v'), pars, evtol, targetlang)
+# don't make the evs since we put them all in nonevent_reasons
+tau_evs = [] #make_evs(define_tau_events([], ['n'], ['v'], 'v'), pars, evtol, targetlang)
 gen_reg4 = makeHHneuron('regime4', pars, ics, vfn_str, psi_evs+tau_evs, aux_vars)
 model_reg4 = embed(gen_reg4)
 reg4 = int_regime(model_reg4)
@@ -365,6 +369,7 @@ reg4_condition = condition({reg4_feature: True})
 reg4_MI = regime4(conditions=reg4_condition,
                   compatibleInterfaces=['int_regime'])
 
+## Combine regime sub-models into hybrid model
 all_info = []
 all_info.append(makeModelInfoEntry(reg1, all_model_names,
                     [('join_m', 'regime2')],
@@ -382,9 +387,13 @@ modelInfoDict = makeModelInfo(all_info)
 
 hybrid_HH = HybridModel({'name': 'HH_hybrid', 'modelInfo': modelInfoDict})
 hybrid_HH.compute(trajname='test', tdata=[0,40], ics=ics, verboselevel=2)
+pts_hyb=hybrid_HH.sample('test')
 
 figure()
-pts_orig=dummy_traj.sample(tlo=0,thi=20)
-plot(pts_orig['t'],pts_orig['v'])
-pts=hybrid_HH.sample('test')
-plot(pts['t'], pts['v'])
+
+HH.set(ics=filteredDict(pts_hyb[0],pts.coordnames))
+HH.set(tdata=[0,40])
+traj = HH.compute('orig')
+pts_orig = traj.sample()
+plot(pts_orig['t'],pts_orig['v'],'b')
+plot(pts_hyb['t'], pts_hyb['v'], 'g')
