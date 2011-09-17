@@ -127,7 +127,7 @@ fnspecs = {'testif': (['x'], 'if(x<0.0,0.0,x)'),
 DSargs = args(name='test',
               pars={'p0': 0, 'p1': 1, 'p2': 2},
               varspecs={'z[j]': 'for(j, 0, 1, 2*z[j+1] + p[j])',
-                   'z2': '-z0 + p2'},
+                   'z2': '-z0 + p2 + special_erfc(2.0)'},
               fnspecs=fnspecs
               )
 tmm = Generator.Vode_ODEsystem(DSargs)
