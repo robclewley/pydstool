@@ -827,15 +827,31 @@ def define_psi_events(acts_all, mods_all, focus_var, ignore_transitions=None):
                 raise ValueError("Invalid transition type: %s" % trans)
         acts_leave = [a for a in acts_all if a not in remove_acts]
         mods_join = [m for m in mods_all if m not in remove_mods]
-    act_coordlist = ", ".join(['psi_'+focus_var+'_'+c for c in acts_all])
-    act_leave_coordlist = ",".join(['psi_'+focus_var+'_'+c for c in acts_leave])
-    mod_coordlist = ", ".join(['psi_'+focus_var+'_'+c for c in mods_join])
+    act_coordlist = ['psi_'+focus_var+'_'+c for c in acts_all]
+    act_leave_coordlist = ['psi_'+focus_var+'_'+c for c in acts_leave]
+    mod_coordlist = ['psi_'+focus_var+'_'+c for c in mods_join]
     evdefs = {}
     if len(act_leave_coordlist) > 0 and len(act_coordlist) > 0:
-        act_leave_def = "max([ %s ]) / min([ %s ]) - dssrt_sigma" % (act_coordlist, act_leave_coordlist)
+        if len(act_coordlist) == 1:
+            term1 = '(' + str(act_coordlist[0]) + ')'
+        else:
+            term1 = "max( [ %s ] )" % ",".join(act_coordlist)
+        if len(act_leave_coordlist) == 1:
+            term2 = '(' + str(act_leave_coordlist[0]) + ')'
+        else:
+            term2 = "min( [ %s ] )" % ",".join(act_leave_coordlist)
+        act_leave_def = "%s / %s - dssrt_sigma" % (term1, term2)
         evdefs['act_leave_ev'] = common.args(defn=act_leave_def, dirn=1, pars=['dssrt_sigma'])
     if len(act_coordlist) > 0 and len(mod_coordlist) > 0:
-        mod_join_def = "max([ %s ]) / max([ %s ]) - dssrt_sigma" % (act_coordlist, mod_coordlist)
+        if len(act_coordlist) == 1:
+            term1 = '(' + str(act_coordlist[0]) + ')'
+        else:
+            term1 = "max( [ %s ] )" % ",".join(act_coordlist)
+        if len(mod_coordlist) == 1:
+            term2 = '(' + str(mod_coordlist[0]) + ')'
+        else:
+            term2 = "max( [ %s ] )" % ",".join(mod_coordlist)
+        mod_join_def = "%s / %s - dssrt_sigma" % (term1, term2)
         evdefs['mod_join_ev'] = common.args(defn=mod_join_def, dirn=-1, pars=['dssrt_sigma'])
     return evdefs
 
@@ -846,17 +862,27 @@ def define_tau_events(slow, fast, order1, ref):
     evdefs = {}
     if slow != []:
         slow_list = ", ".join(['tau_'+c for c in slow])
-        slow_leave_def = "min([ %s ])/%s - dssrt_gamma" % (slow_list, ref_name)
+        if len(slow) == 1:
+            slow_leave_def = "(%s)/(%s) - dssrt_gamma" % (slow_list[0], ref_name)
+        else:
+            slow_leave_def = "min([ %s ])/(%s) - dssrt_gamma" % (slow_list, ref_name)
         evdefs['slow_leave_ev'] = common.args(defn=slow_leave_def, dirn=-1, pars=['dssrt_gamma'])
     if fast != []:
         fast_list = ", ".join(['tau_'+c for c in fast])
-        fast_leave_def = "max([ %s ])/%s - 1./dssrt_gamma" % (fast_list, ref_name)
+        if len(fast) == 1:
+            fast_leave_def = "(%s)/(%s) - 1./dssrt_gamma" % (fast_list[0], ref_name)
+        else:
+            fast_leave_def = "max([ %s ])/(%s) - 1./dssrt_gamma" % (fast_list, ref_name)
         evdefs['fast_leave_ev'] = common.args(defn=fast_leave_def, dirn=1, pars=['dssrt_gamma'])
     other_o1 = common.remain(order1, ref)
     if other_o1 != []:
         o1_list = ", ".join(['tau_'+c for c in other_o1])
-        slow_join_def = "max([ %s ])/%s - dssrt_gamma" % (o1_list, ref_name)
-        fast_join_def = "min([ %s ])/%s - 1./dssrt_gamma" % (o1_list, ref_name)
+        if len(other_o1) == 1:
+            slow_join_def = "(%s)/(%s) - dssrt_gamma" % (o1_list[0], ref_name)
+            fast_join_def = "(%s)/(%s) - 1./dssrt_gamma" % (o1_list[0], ref_name)
+        else:
+            slow_join_def = "max([ %s ])/(%s) - dssrt_gamma" % (o1_list, ref_name)
+            fast_join_def = "min([ %s ])/(%s) - 1./dssrt_gamma" % (o1_list, ref_name)
         evdefs['slow_join_ev'] = common.args(defn=slow_join_def, dirn=1, pars=['dssrt_gamma'])
         evdefs['fast_join_ev'] = common.args(defn=fast_join_def, dirn=-1, pars=['dssrt_gamma'])
     return evdefs
