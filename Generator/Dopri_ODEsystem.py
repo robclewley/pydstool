@@ -516,9 +516,9 @@ class Dopri_ODEsystem(ODEsystem):
         # codes for library types (default is USERLIB, since compiler will look in standard library d
         STDLIB = 0
         USERLIB = 1
-        libinclude = dict([('math.h', STDLIB), ('stdio.h', STDLIB), ('stdlib.h', STDLIB),
-                      ('string.h', STDLIB), ('vfield.h', USERLIB), ('events.h', USERLIB),
-                      ('signum.h', USERLIB), ('maxmin.h', USERLIB)])
+        libinclude = dict([('Python.h', STDLIB), ('math.h', STDLIB), ('stdio.h', STDLIB),
+                    ('stdlib.h', STDLIB), ('string.h', STDLIB), ('vfield.h', USERLIB),
+                    ('events.h', USERLIB), ('signum.h', USERLIB), ('maxmin.h', USERLIB)])
         include_str = ''
         for libstr, libtype in libinclude.iteritems():
             if libtype == STDLIB:
@@ -565,11 +565,9 @@ double signum(double x)
 
 """
         pardefines = ""
-##        parundefines = ""
         vardefines = ""
-##        varundefines = ""
+        auxvardefines = ""
         inpdefines = ""
-##        inpundefines = ""
         # sorted version of var, par, and input names
         vnames = self._var_ixmap
         pnames = self.funcspec.pars
@@ -580,22 +578,18 @@ double signum(double x)
             p = pnames[i]
             # add to defines
             pardefines += self.funcspec._defstr+" "+p+"\tp_["+str(i)+"]\n"
-##            # add to undefines
-##            parundefines += self.funcspec._undefstr+" "+p+"\n"
         for i in xrange(self.dimension):
             v = vnames[i]
             # add to defines
             vardefines += self.funcspec._defstr+" "+v+"\tY_["+str(i)+"]\n"
-##            # add to undefines
-##            varundefines += self.funcspec._undefstr+" "+v+"\n"
+        for i, v in enumerate(self.funcspec.auxvars):
+            auxvardefines += self.funcspec._defstr+" "+v+"\t("+self.funcspec._auxdefs_parsed[v]+")\n"
         for i in xrange(len(self.funcspec.inputs)):
             inp = inames[i]
             # add to defines
             inpdefines += self.funcspec._defstr+" "+inp+"\txv_["+str(i)+"]\n"
-##            # add to undefines
-##            inpundefines += self.funcspec._undefstr+" "+inp+"\n"
-        allfilestr += "\n/* Variable, parameter, and input definitions: */ \n" \
-                      + pardefines + vardefines + inpdefines + "\n"
+        allfilestr += "\n/* Variable, aux variable, parameter, and input definitions: */ \n" \
+                      + pardefines + vardefines + auxvardefines + inpdefines + "\n"
         # preprocess event code
         allevs = ""
         if self._eventNames == []:
@@ -629,7 +623,6 @@ double signum(double x)
             allevs += evsig + evbody
             allfilestr += evsig + ";\n"
         # add signature for auxiliary functions
-
         if self.funcspec.auxfns:
             allfilestr += "\n"
             for finfo in self.funcspec.auxfns.values():
