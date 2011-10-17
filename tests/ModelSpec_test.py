@@ -8,7 +8,7 @@ from PyDSTool import *
 from PyDSTool.Toolbox.neuralcomp import *
 from copy import copy
 
-targetGen = 'Vode_ODEsystem'
+targetGen = 'Dopri_ODEsystem'
 
 # -------------------------------------------------------------------------
 
@@ -21,10 +21,12 @@ else:
 
 print "ModelSpec and neural computation toolbox tests..."
 
-def make_signal(dt, t_end, mean, stddev, num_cells):
+def make_noise_signal(dt, t_end, mean, stddev, num_cells, seed=None):
     """Helper function: Gaussian white noise at sample rate = dt for 1 or more cells,
     for a duration of t_end."""
-    N = t_end*1./dt
+    if seed is not None:
+        numpy.random.seed(seed)
+    N = eil(t_end*1./dt)
     t = linspace(0, t_end, N)
     coorddict = {}
     for cellnum in range(num_cells):
@@ -32,8 +34,52 @@ def make_signal(dt, t_end, mean, stddev, num_cells):
     vpts = Pointset(coorddict=coorddict, indepvararray=t)
     return pointset_to_vars(vpts, discrete=False)
 
+def make_biexp(tau1, tau2):
+    if tau1 == tau2:
+        def s(t):
+            return t*exp(-t/tau1)
+    else:
+        def s(t):
+            return (exp(-t/tau1) - exp(-t/tau2))/(tau1-tau2)
+    return s
+
+def convolve_biexp(sfunc, ixs, train, ts, dt, tau1, tau2):
+    tau = max([tau1, tau2])
+    max_t = 10*tau
+    sig = zeros((len(ts),),float)
+    #sig_ts = linspace(0, max(train), len(sig))
+    for i, t in enumerate(train):
+        ix = ixs[i]
+        tmax = min([t+max_t, max(ts)])
+        last_ix = argwhere(ts >= tmax)[0][0]
+        trange = ts[ix:last_ix] - t
+        gs = sfunc(trange)
+        sig[ix:ix+len(gs)] += gs
+    return sig
+
+def make_Poisson_signal(dt, t_end, mean, tau1, tau2, num_cells, seed=None):
+    """Helper function: biexponential post-synaptic conductance for a
+    Poisson spike distribution at sample rate = dt for 1 or more cells,
+    for a duration of t_end. The mean is expected number of spikes per
+    time unit."""
+    if seed is not None:
+        numpy.random.seed(seed)
+    N = ceil(t_end*1./dt)
+    t = linspace(0, t_end, N)
+    sfunc = make_biexp(tau1, tau2)
+    coorddict = {}
+    for cellnum in range(num_cells):
+        rand_vals = numpy.random.random_sample(N)
+        spike_ixs = argwhere(rand_vals < mean*dt).flatten()
+        spike_ts = t[spike_ixs]
+        f = convolve_biexp(sfunc, spike_ixs, spike_ts, t, dt, tau1, tau2)
+        coorddict['postsyn%i' % (cellnum+1)] = f
+    vpts = Pointset(coorddict=coorddict, indepvararray=t)
+    return pointset_to_vars(vpts, discrete=False)
+
+
 # largest time ever needed in model
-t_max = 200
+t_max = 200  # ms
 
 v = Var(voltage)
 ma = 0.32*(v+54)/(1-Exp(-(v+54.)/4))
@@ -94,7 +140,14 @@ channel_ICa1 = makeChannel_halfact('Ca', voltage, 'm', False,
 #Isignal_vardict = make_signal(0.1, t_max, 0, 4, 2)
 
 noisy_current = makeExtInputConductanceChannel('noise', vrev=-70, g=3)
-Isignal_vardict = make_signal(0.1, t_max, 0.5, 0.25, 2)
+Isignal_vardict = make_noise_signal(0.1, t_max, 0.5, 0.25, 2)
+
+## Example Poisson signal with on average 0.05 spikes per ms
+#Isignal_vardict = make_Poisson_signal(0.1, t_max, 0.05, 0.5, 5, 1)
+#v=Isignal_vardict['postsyn1']
+#pts = v.getDataPoints()
+#plot(pts['t'],pts['postsyn1'])
+
 
 HHcell1 = makeSoma('cell1', v, channelList=[channel_Lk1, channel_Ib1,
                    channel_Na1, channel_K1, channel_ICa1, noisy_current], C=1.5)
@@ -158,18 +211,18 @@ HHmodel_net = modelC_net.getModel()
 
 ### This test just checks that a correct model is built
 
-# verboselevel = 2
+verboselevel = 0
 # print "Computing trajectory using verbosity level %d..."%verboselevel
 ## don't extend tdata past [0, t_max]
-# HHmodel_net.compute(trajname='test',
-#                     tdata=[0, 60],
-#                     ics=ic_args_net,
-#                     verboselevel=verboselevel)
+HHmodel_net.compute(trajname='test',
+                     tdata=[0, 60],
+                     ics=ic_args_net,
+                     verboselevel=verboselevel)
 
-# v_dat = HHmodel_net.sample('test')
-# pylab.figure()
-# v1line = plot(v_dat['t'], v_dat['cell1.V'])
-# v2line = plot(v_dat['t'], v_dat['cell2.V'])
-# show()
+v_dat = HHmodel_net.sample('test')
+pylab.figure()
+v1line = plot(v_dat['t'], v_dat['cell1.V'])
+v2line = plot(v_dat['t'], v_dat['cell2.V'])
+show()
 
 print "   ... passed"
