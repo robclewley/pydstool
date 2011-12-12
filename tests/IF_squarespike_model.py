@@ -79,19 +79,13 @@ def makeIFneuron(name, par_args_linear, par_args_spike, rhs=None, inputs={},
                                           [('time', 'linear')])
     modelInfoDict = makeModelInfo([DS_linear_info, DS_spike_info])
 
-    # 'excited' is an internal variable of the model, and is used to
+    # 'excited' is an indicator variable of the model, and is used to
     # ensure that the compute() method can determine which DS
     # to start the calculation with
     mod_args = {'name': name,
                'modelInfo': modelInfoDict}
-    # we don't need to provide ICs as long as they are provided before
-    # calling compute
-    #if icdict is not None:
-    #    mod_args['ics'] = icdict
 
     IFmodel = Model.HybridModel(mod_args)
-    # No longer make this an internal variable
-    #IFmodel.forceIntVars(['excited'])
     return IFmodel
 
 
@@ -127,9 +121,9 @@ if __name__=='__main__':
     plotData2 = IFmodel.sample('twospike', ['v', 'testaux'], 0.05)
     pylab.ylabel('v, testaux')
     pylab.xlabel('t')
-    vline=plot(plotData['t'], plotData['v'])
-    vline2=plot(plotData2['t'], plotData2['v'])
-    aline=plot(plotData['t'], plotData['testaux'])
+    vline = pylab.plot(plotData['t'], plotData['v'])
+    vline2 = pylab.plot(plotData2['t'], plotData2['v'])
+    aline = pylab.plot(plotData['t'], plotData['testaux'])
 
     print "\nLast point of hybrid trajectory: "
     print "IFmodel.getEndPoint('onespike') -->\n", IFmodel.getEndPoint('onespike')
@@ -139,7 +133,7 @@ if __name__=='__main__':
 
     print "Testing IF hybrid model as mapping ..."
     num_parts = len(IFmodel.getTrajTimePartitions('twospike'))
-    eventvals = IFmodel('onespike', range(0, num_parts+1), asmap=True)
+    #eventvals = IFmodel('onespike', range(0, num_parts+1), asmap=True)
     eventvals = IFmodel('twospike', range(0, num_parts+1), asmap=True)
     for i in range(0,num_parts+1):
         print "(v, t) at event(%i) = (%.4f, %.4f)" % (i, eventvals(i)('v'),
@@ -153,4 +147,4 @@ if __name__=='__main__':
     assert allclose(evtimes['threshold'][3], 54.009, 1e-3), "Problem with hybrid events"
     assert allclose(evs['threshold'][1]['v'], -60, 1e-3), "Problem with hybrid events"
 
-    show()
+    pylab.show()
