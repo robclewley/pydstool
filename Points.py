@@ -830,6 +830,10 @@ class Pointset(Point):
                 self.labels = PointInfo(kw['labels'])
         else:
             self.labels = PointInfo()
+        if 'tags' in kw:
+            self.tags = kw['tags']
+        else:
+            self.tags = {}
         if self._parameterized:
             if do_reverse:
                 # finish the operation of reversing the reverse-order
