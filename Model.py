@@ -3098,7 +3098,7 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
                 newtest = True
             else:
                 if verboselevel >=2:
-                    print "\nx_test for '%s' @ value %f:"%(xname, icdict[xname])
+                    print "\nstate dom test for '%s' @ value %f:"%(xname, icdict[xname])
                     print "depdomain is ", MI.get('variables', xdict, t)[xname].depdomain.get()
                     print "-> test result is ", newtest
                 x_test = x_test and newtest
@@ -3117,7 +3117,7 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
                 globtest = False
             else:
                 if verboselevel >= 2:
-                    print "\ng_test for '%s' @ value %f:"%(str(gc), icdict[xname])
+                    print "\nglobal con test for '%s' @ value %f:"%(str(gc), icdict[xname])
                     print "-> test result is ", globtest
                 g_test = g_test and globtest
         if verboselevel >= 1:
@@ -3125,9 +3125,9 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
             print " ...for initial time: " + str(t_test)
             print " ...for initial state: " + str(x_test)
             print " ...for global conditions: " + str(g_test)
-        outcome[model.name]['t_test'] = t_test
-        outcome[model.name]['x_test'] = x_test
-        outcome[model.name]['g_test'] = g_test
+        outcome[model.name]['time dom. test'] = t_test
+        outcome[model.name]['state dom. test'] = x_test
+        outcome[model.name]['global con. test'] = g_test
         if t_test and x_test and g_test:
             # this t, xdict is a valid initial state for this Generator
             eligibleMI.append(infodict)
