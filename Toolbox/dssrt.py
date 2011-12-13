@@ -416,7 +416,7 @@ class epoch(object):
         print self._infostr(verboselevel)
 
     def __str__(self):
-        return self._info_str(0)
+        return self._infostr(0)
 
     __repr__ = __str__
 
