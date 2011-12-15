@@ -437,6 +437,7 @@ class Generator(object):
 
     def get(self, key):
         """For API compatibility with ModelInterface"""
+        # The symbolMapClass will make a copy of self.key!
         return self._FScompatibleNamesInv(getattr(self, key))
 
 
