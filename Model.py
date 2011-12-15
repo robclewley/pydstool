@@ -3045,9 +3045,9 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
                                    icdict.keys(), neg=True))
         # override icdict with any finite-valued generator
         # initial condition (deliberately preset in generator definition)
-        # for non-internal variables
-        for xname in allvars:
-            if xname not in xdict or xname in intersect(intvars,xdict):
+        # for non-internal and non-auxiliary variables
+        for xname in fs.vars:
+            if xname not in xdict or xname in intersect(intvars, xdict):
                 if xname in xdict and xname in intvars:
                     # ignore
                     continue
@@ -3106,6 +3106,19 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
         xdict = filteredDict(icdict, intvars, neg=True)
         MI.test_traj = numeric_to_traj(array([xdict.values()]).T, 'ic_trajpt',
                                        xdict.keys(), t)
+        # ensure that events are cleared in case global con rules in a MI
+        # check for events (for when used after trajectories computed)
+        # don't use MI.get('diagnostics', xdict, t) as that will return a copy
+        # so that clearWarnings will not propagate to underlying sub-model
+        xdict, t, I = MI._get_initiator_cache(xdict, t)
+        while True:
+            # descend into sub-models until leaf found
+            if isinstance(I, MProject.GeneratorInterface):
+                I.model.diagnostics.clearWarnings()
+                break
+            else:
+                xdict, t, I = I._get_initiator_cache(xdict, t)
+
         # !!! Currently assumes globalConRules is a list, not a Context
         # (should be upgraded to that)
         for gc in globalConRules:
