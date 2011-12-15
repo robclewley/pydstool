@@ -1283,6 +1283,7 @@ class GeneratorInterface(dsInterface):
         #self.diagnostics = common.Diagnostics()
 
     def get(self, key, ics=None, t0=0):
+        # self.model is a Generator
         return self.model.get(key)
 
     def set(self, key, value, ics=None, t0=0):
