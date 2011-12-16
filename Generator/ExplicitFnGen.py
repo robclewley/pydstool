@@ -2,7 +2,8 @@
 from __future__ import division
 
 from allimports import *
-from baseclasses import ctsGen, theGenSpecHelper
+from baseclasses import ctsGen, theGenSpecHelper, \
+     auxfn_container, _pollInputs
 from PyDSTool.utils import *
 from PyDSTool.common import *
 from PyDSTool.Interval import uncertain
@@ -10,7 +11,7 @@ from PyDSTool.Interval import uncertain
 # Other imports
 from numpy import Inf, NaN, isfinite, sometrue, alltrue, array, arange, \
      transpose, shape
-import math, random
+import math, random, types
 from copy import copy, deepcopy
 try:
     # use pscyo JIT byte-compiler optimization, if available
@@ -69,6 +70,80 @@ class ExplicitFnGen(ctsGen):
             self.variables[x] = Variable(None, self.indepvariable.depdomain,
                                          xinterval, x)
         self._generate_ixmaps()
+        self.auxfns = auxfn_container(self)
+        self.addMethods(usePsyco=HAVE_PSYCO)
+
+    def addMethods(self, usePsyco=False):
+        """Add Python-specific functions to this object's methods,
+        accelerating them with psyco, if it is available."""
+
+        # Add the auxiliary function specs to this Generator's namespace
+        for auxfnname in self.funcspec._pyauxfns:
+            fninfo = self.funcspec._pyauxfns[auxfnname]
+            if not hasattr(self, fninfo[1]):
+                # user-defined auxiliary functions
+                # (built-ins are provided explicitly)
+                try:
+                    exec fninfo[0]
+                except:
+                    print 'Error in supplied auxiliary function code'
+                self._funcreg[fninfo[1]] = ('self', fninfo[0])
+                setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]],
+                                                           self,
+                                                           self.__class__))
+                # user auxiliary function interface wrapper
+                try:
+                    uafi_code = self.funcspec._user_auxfn_interface[auxfnname]
+                    try:
+                        exec uafi_code
+                    except:
+                        print 'Error in auxiliary function wrapper'
+                        raise
+                    setattr(self.auxfns, auxfnname,
+                            types.MethodType(locals()[auxfnname], self.auxfns,
+                                         auxfn_container))
+                    self._funcreg[auxfnname] = ('', uafi_code)
+                except KeyError:
+                    # not a user-defined aux fn
+                    pass
+            # bind all the auxfns here
+            if HAVE_PSYCO and usePsyco:
+                psyco.bind(getattr(self, fninfo[1]))
+                try:
+                    psyco.bind(self.auxfns[auxfnname])
+                except KeyError:
+                    # not a user-defined aux fn
+                    pass
+        # Add the spec function to this Generator's namespace if
+        # target language is python (otherwise integrator exposes it anyway)
+        if self.funcspec.targetlang == 'python':
+            fninfo = self.funcspec.spec
+            try:
+                exec fninfo[0]
+            except:
+                print 'Error in supplied functional specification code'
+                raise
+            self._funcreg[fninfo[1]] = ('self', fninfo[0])
+            setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]],
+                                                           self,
+                                                           self.__class__))
+            if HAVE_PSYCO and usePsyco:
+                psyco.bind(getattr(self, fninfo[1]))
+            # Add the auxiliary spec function (if present) to this
+            # Generator's namespace
+            if self.funcspec.auxspec != '':
+                fninfo = self.funcspec.auxspec
+                try:
+                    exec fninfo[0]
+                except:
+                    print 'Error in supplied auxiliary variable code'
+                    raise
+                self._funcreg[fninfo[1]] = ('self', fninfo[0])
+                setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]],
+                                                           self,
+                                                           self.__class__))
+                if HAVE_PSYCO and usePsyco:
+                    psyco.bind(getattr(self, fninfo[1]))
 
 
     def compute(self, trajname, ics=None):
@@ -269,6 +344,16 @@ class ExplicitFnGen(ctsGen):
                           modelNames=self.name,
                           modelEventStructs=self.eventstruct)
 
+
+    def AuxVars(self, t, xdict, pdict=None, asarray=True):
+        """asarray is an unused, dummy argument for compatibility with
+        Model.AuxVars"""
+        x = sortedDictValues(filteredDict(xdict, self.funcspec.vars))
+        if pdict is None:
+            pdict = self.pars
+        p = sortedDictValues(pdict)
+        i = _pollInputs(sortedDictValues(self.inputs), t, self.checklevel)
+        return apply(getattr(self, self.funcspec.auxspec[1]), [t, x, p+i])
 
     def haveJacobian_pars(self):
         """Report whether generator has an explicit user-specified Jacobian
