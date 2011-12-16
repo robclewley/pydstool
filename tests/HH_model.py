@@ -16,7 +16,7 @@ from copy import copy
 def makeHHneuron(name, par_args, ic_args, evs=None, extra_terms='',
                  gentype='vode'):
     # extra_terms must not introduce new variables!
-    vfn_str = '(I'+extra_terms+'-ionic(v,m,h,n))/C'
+    vfn_str = '(Iapp'+extra_terms+'-ionic(v,m,h,n))/C'
     mfn_str = 'ma(v)*(1-m)-mb(v)*m'
     nfn_str = 'na(v)*(1-n)-nb(v)*n'
     hfn_str = 'ha(v)*(1-h)-hb(v)*h'
@@ -65,7 +65,7 @@ if __name__=='__main__':
     print '-------- Test: Hodgkin-Huxley system'
     par_args = {'gna': 100, 'gk': 80, 'gl': 0.1,
                 'vna': 50, 'vk': -100, 'vl': -67,
-                'I': 1.75, 'C': 1.0}
+                'Iapp': 1.75, 'C': 1.0}
     ic_args = {'v':-70.0, 'm': 0, 'h': 1, 'n': 0}
 
     # test single terminal event first
