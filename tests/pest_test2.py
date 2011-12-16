@@ -16,8 +16,8 @@ trange = [0, 15]
 
 par_args_HH = {'gna': 100, 'gk': 80, 'gl': 0.1,
             'vna': 50, 'vk': -100, 'vl': -67,
-            'I': 1.35, 'C': 1.0}
-# deliberately set I not quite 1.3, as used for IF neuron
+            'Iapp': 1.35, 'C': 1.0}
+# deliberately set Iapp not quite 1.3, as used for IF neuron
 ic_args_HH = {'v':-70.0, 'm': 0, 'h': 1, 'n': 0}
 HH = HH_model.makeHHneuron('goalHH', par_args_HH, ic_args_HH)
 
@@ -55,7 +55,7 @@ tableArgs = {'tdata': HH_sampleData['t'],
 HH_DataTable = Generator.LookupTable(tableArgs)
 tmesh_par = HH_sampleData['t']
 
-par_args_linear = {'I': 1.3, 'gl': 0.1, 'vl': -67, 'threshval': -60, 'C': 1.0}
+par_args_linear = {'Iapp': 1.3, 'gl': 0.1, 'vl': -67, 'threshval': -60, 'C': 1.0}
 par_args_spike = {'splen': 1.0}
 
 ## Parameter estimation for firing threshold
@@ -65,7 +65,7 @@ IFmodel_thr = IF_squarespike_model.makeIFneuron('IF_thr_fit', par_args_linear,
 
 # un-fitted IF trajectory
 IFmodel_thr.compute(trajname='orig', tdata=[0, tmesh_par[-1]],
-                        ics={'v':-70, 'excited':0})
+                        ics={'v':-70, 'excited':0}, verboselevel=2)
 orig_pdata = IFmodel_thr.sample('orig', ['v'], 0.1)
 
 
@@ -134,7 +134,7 @@ if not pestData_thr['success']:
 
 thresh_fit = pestData_thr['pars_sol']['threshval']
 
-par_args_linear = {'I': 1.3, 'gl': 0.1, 'vl': -67, 'threshval': thresh_fit,
+par_args_linear = {'Iapp': 1.3, 'gl': 0.1, 'vl': -67, 'threshval': thresh_fit,
                    'C': 1.0}
 par_args_spike = {'splen': 1.0}
 
