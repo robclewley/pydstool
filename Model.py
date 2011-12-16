@@ -2160,7 +2160,7 @@ class HybridModel(Model):
             except PyDSTool_ValueError, errinfo:
                 print errinfo
                 raise PyDSTool_ExistError('No unique eligible Model found:'
-                  ' cannot continue (check active terminal event definitions)')
+                  ' cannot continue (check active terminal event definitions or error message above)')
             mi = infodict['dsi']
             swRules = infodict['swRules']
             globalConRules = infodict['globalConRules']
@@ -3045,11 +3045,15 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
                                    icdict.keys(), neg=True))
         # override icdict with any finite-valued generator
         # initial condition (deliberately preset in generator definition)
-        # for non-internal and non-auxiliary variables
-        for xname in fs.vars:
+        # for non-internal variables, and any auxiliary variables that aren't
+        # already defined in icdict from above call to getAuxVars (must do this
+        # to prevent NaNs being passed to numeric_to_traj.
+        for xname in allvars:
             if xname not in xdict or xname in intersect(intvars, xdict):
                 if xname in xdict and xname in intvars:
                     # ignore
+                    continue
+                if xname in fs.auxvars and xname in icdict and isfinite(icdict[xname]):
                     continue
                 try:
                     if isfinite(model.icdict[xname]):
@@ -3083,7 +3087,7 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
 #        print dxdt
         for xname, x in icdict.iteritems():
             # don't count time 't' or any internal variables
-            if xname == 't' or xname in intvars:
+            if xname == 't' or xname in intvars or xname not in domtests:
                 # 't' is a special value inserted into icdict, for use
                 # in auxiliary variable evaluation at initial time, but not
                 # a regular variable so don't do domain check here.
@@ -3091,17 +3095,12 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
             xtraj = numeric_to_traj([[x], [dxdt[xname]]], 'test', [xname, 'D_'+xname], t)
 #            print "Dom test for %s in %s"%(xname, MI.model.name)
 #            print "  discrete? ", domtests[xname].isdiscrete
-            try:
-                newtest = domtests[xname](xtraj)
-            except KeyError:
-                # no domain test for this variable
-                newtest = True
-            else:
-                if verboselevel >=2:
-                    print "\nstate dom test for '%s' @ value %f:"%(xname, icdict[xname])
-                    print "depdomain is ", MI.get('variables', xdict, t)[xname].depdomain.get()
-                    print "-> test result is ", newtest
-                x_test = x_test and newtest
+            newtest = domtests[xname](xtraj)
+            if verboselevel >=2:
+                print "\nstate dom test for '%s' @ value %f:"%(xname, icdict[xname])
+                print "depdomain is ", MI.get('variables', xdict, t)[xname].depdomain.get()
+                print "-> test result is ", newtest
+            x_test = x_test and newtest
         g_test = True  # initial value
         xdict = filteredDict(icdict, intvars, neg=True)
         MI.test_traj = numeric_to_traj(array([xdict.values()]).T, 'ic_trajpt',
@@ -3154,4 +3153,3 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
                            ' to start trajectory computation')
     # only remaining possibility is a single eligible model
     return eligibleMI[0]
-
