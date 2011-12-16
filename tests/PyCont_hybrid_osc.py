@@ -1,6 +1,8 @@
 """ EXAMPLE: Hybrid system continuation -- a simple example
       Continue period of an integrate-and-fire with square spike oscillator
-    in two parameters: drive current I and leak conductance gl.
+    in two parameters: drive current Iapp and leak conductance gl.
+
+    Change PCargs.MaxNumPoints to e.g. 10 for a more serious use (but it's slow)
 
     Robert Clewley, January 2011.
 """
@@ -9,7 +11,7 @@ from PyDSTool import *
 from IF_squarespike_model import makeIFneuron
 
 # ensure I is large enough to make spikes
-par_args_linear = {'I': 1.5, 'gl': 0.1, 'vl': -67, 'threshval': -65, 'C': 1}
+par_args_linear = {'Iapp': 1.5, 'gl': 0.1, 'vl': -67, 'threshval': -65, 'C': 1}
 par_args_spike = {'splen': 0.75}
 
 IFmodel = makeIFneuron('IF_bif', par_args_linear, par_args_spike, evtol=1e-8)
@@ -31,7 +33,7 @@ PyCont = ContClass(IFmodel)
 def cont_func(C, pt, pars):
     DS = C.model
     DS.set(pars={'gl': pt['gl'],
-                 'I': pars['I']})
+                 'Iapp': pars['Iapp']})
     try:
         F = get_cycle(DS)
     except PyDSTool_ExistError:
@@ -49,10 +51,10 @@ PCargs.userpars = PyCont.gensys.query('pars')
 PCargs.userfunc = cont_func
 PCargs.FuncTol = 1e-6
 PCargs.VarTol = 1e-6
-PCargs.freepars = ['I']
-PCargs.StepSize = 1e-2
+PCargs.freepars = ['Iapp']
+PCargs.StepSize = 3e-2
 PCargs.MaxStepSize = 5e-2
-PCargs.MaxNumPoints = 4 # Make 14 for a more serious run (but slow)
+PCargs.MaxNumPoints = 4 # Make larger for a more serious run (but slow)
 PCargs.SaveJacobian = True
 PCargs.verbosity = 4
 PCargs.initpoint = {'gl': PyCont.gensys.query('pars')['gl']}
@@ -60,7 +62,8 @@ PyCont.newCurve(PCargs)
 
 print 'Computing curve...'
 PyCont['UD1'].forward()
+PyCont['UD1'].backward()
 
 # Plot
-PyCont.display(('I','gl'))
+PyCont.display(('Iapp','gl'))
 show()
