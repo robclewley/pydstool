@@ -2060,7 +2060,8 @@ class HybridModel(Model):
                     print xname, " dep domain:", traj.variables[xname_compat].depdomain.get()
                     print traj.depdomain[xname_compat].get()
                     print "indep domain:", traj.variables[xname_compat].indepdomain.get()
-                    print "Var val at t-eps %f = "%(ti_1-1e-4), traj.variables[xname_compat](ti_1-1e-4)
+                    print "Var val at t-eps %f = "%(ti_1-1e-4), \
+                           traj.variables[xname_compat](ti_1-1e-4)
                     raise
                 except:
                     print "**********"
@@ -2134,9 +2135,11 @@ class HybridModel(Model):
                 pass
 
     def cleanupMemory(self):
-        """Clean up memory usage from past runs of a solver that is interfaced through
-        a dynamic link library. This will prevent the 'continue' integration option from
-        being accessible and will delete other data about the last integration run."""
+        """Clean up memory usage from past runs of a solver that is interfaced
+        through a dynamic link library. This will prevent the 'continue'
+        integration option from being accessible and will delete other data
+        about the last integration run.
+        """
         for MI in self.registry.values():
             MI.model.cleanupMemory()
 
@@ -2160,17 +2163,19 @@ class HybridModel(Model):
             except PyDSTool_ValueError, errinfo:
                 print errinfo
                 raise PyDSTool_ExistError('No unique eligible Model found:'
-                  ' cannot continue (check active terminal event definitions or error message above)')
+                  ' cannot continue (check active terminal event definitions'
+                  ' or error message above)')
             mi = infodict['dsi']
             swRules = infodict['swRules']
             globalConRules = infodict['globalConRules']
             missing = remain(mi.get('variables', ics=xdict, t0=t0).keys(),
                           xnames+self.auxvars+self.intvars)
             if missing != []:
-                raise AssertionError('Missing initial condition specifications for %s' % str(missing))
+                raise AssertionError('Missing initial condition specifications'
+                                     ' for %s' % str(missing))
             for entry, val in xdict.iteritems():
                 if not isfinite(val):
-                    print "Warning: %s initial condition for "%mi.model.name\
+                    print "Warning: %s initial condition for "%mi.model.name \
                            + str(entry) + " = " + str(val)
             if self.verboselevel > 1:
                 print "\nStarting partition 0"
