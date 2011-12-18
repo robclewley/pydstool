@@ -147,25 +147,12 @@ a = da.psi_pts
 da.calc_rankings()
 
 gamma = 3 # time scale threshold
-opt_thresh = 3 # default
+sigma = 3 # dominance scale threshold
 min_len = 10000
 cycle_ixs = []
-# Find optimal Psi dominant scale threshold,
-# that minimizes number of epochs created
-for thresh in [3.1, 3.2]: #linspace(2.6,3.2,2):
-    print "Testing thresh", thresh
-    da.domscales['psi'].calc_epochs(thresh, gamma)
-    epochs = da.domscales['psi'].epochs
-    cycle_len, ixs = find_epoch_period(epochs)
-    if cycle_len is not None:
-        if cycle_len < min_len:
-            min_len = cycle_len
-            cycle_ixs = ixs
-            opt_thresh = thresh
-
-print "Optimum threshold was", opt_thresh, "between indices ", ixs
-da.domscales['psi'].calc_epochs(opt_thresh, gamma)
-
+da.domscales['psi'].calc_epochs(sigma, gamma)
+epochs = da.domscales['psi'].epochs
+cycle_len, cycle_ixs = find_epoch_period(epochs)
 epochs = da.domscales['psi'].epochs[cycle_ixs[0]:cycle_ixs[1]]
 
 t0 = epochs[0].t0
@@ -225,8 +212,10 @@ class regime_feature(ql_feature_leaf):
                            n='tau_v*gk*4*n*n*n*n*abs(vk-inf_v)') }
 
     def evaluate(self, target):
-        # determine DSSRT-related info about next hybrid state to switch to,
-        # and whether epoch conditions are met throughout the trajectory
+        # Determine DSSRT-related info about next hybrid state to switch to,
+        # and whether epoch conditions are met throughout the trajectory.
+        #
+        # Acquire underlying Generator from target model interface
         gen = target.model.registry.values()[0]
         ptsFS = target.test_traj.sample()
         Dargs = args(model=gen, inputs=self.inputs,
@@ -234,16 +223,8 @@ class regime_feature(ql_feature_leaf):
         da_reg = dssrt_assistant(Dargs)
         da_reg.focus_var = 'v'
         ptsFS.mapNames(gen._FScompatibleNames)
+        # copy trajectory into da
         da_reg.traj = copy(target.test_traj)
-##        # TEMP
-##        pts = da_reg.traj.sample()
-##        if len(pts) < 3:
-##            print "\n********* POINT:"
-##            print pts[0]
-#            if pts[0]['inf_v'] == -65:
-#                pts[0]['inf_v'] = -62.0
-#                print "FIXED PTS"
-#                da_reg.traj = pointset_to_traj(pts)
         da_reg.traj.mapNames(gen._FScompatibleNames)
 
         gamma = gen.pars['dssrt_gamma']
@@ -254,13 +235,13 @@ class regime_feature(ql_feature_leaf):
         da_reg.domscales['psi'].calc_epochs(sigma, gamma)
         epochs = da_reg.domscales['psi'].epochs
         epoch_reg = epochs[-1]
+
         # don't bother using timescale criterion -- not relevant to
         # this example anyway
         criteria_types = ['psi_reg'] #, 'timescale']
         # find one of these criteria from the terminal event
         # that occurred
         warns = gen.diagnostics.findWarnings(Generator.W_TERMEVENT)
-##        gen.diagnostics.showWarnings()
         if len(warns) > 0:
             term_ev = warns[-1]
             evname = term_ev[1][0]
@@ -285,20 +266,15 @@ class regime_feature(ql_feature_leaf):
                 self.results.reasons = [tran+'_'+var]
             else:
                 self.results.reasons = []
-##        if hasattr(self.pars, 'actives_ignore_change'):
-##            acts = remain(epoch_reg.actives, self.pars.actives_ignore_change)
-##            ref_acts = remain(self.pars.actives,
-##                              self.pars.actives_ignore_change)
-##        else:
+
         acts = copy(epoch_reg.actives)
         ref_acts = copy(self.pars.actives)
         test1 = len(intersect(acts, ref_acts)) == len(ref_acts)
-        if not test1:
-            print "Test 1 failed:", acts, ref_acts, "(%s)"%self
         test2 = len(intersect(epoch_reg.fast, self.pars.fast)) == \
             len(self.pars.fast)
         test3 = len(intersect(epoch_reg.slow, self.pars.slow)) == \
             len(self.pars.slow)
+
         # diagnostics
         if test1 and (not test3 or not test2):
             print "Time scale tests failed"
@@ -332,8 +308,7 @@ vfn_str1 = '(-Itot(v,0,0,0,1,1))/C'
 acts1 = ['Iapp','leak']
 mods1 = ['m', 'n']
 psi_evs1 = make_evs(define_psi_events(acts1, mods1, 'v',
-                     ignore_transitions=[('leave','Iapp'), ('leave', 'leak'),
-                                         ('join','Iapp')]),
+                     ignore_transitions=[('leave','Iapp'), ('leave', 'leak')]),
                     pars, evtol, targetlang)
 # don't make the tau_evs since we put them all in nonevent_reasons anyway,
 # otherwise provide some in the ignore_transitions list
@@ -351,7 +326,6 @@ class regime1(iface_regime):
     slow = []
 
 reg1_feature = regime_feature('regime1', pars=args(actives=acts1,
-                                                actives_ignore_change=['Iapp'],
                                                 slow=[], fast=[],
                                                 debug=debug))
 reg1_condition = condition({reg1_feature: True})
@@ -363,8 +337,7 @@ vfn_str2 = '(-Itot(v,m,h,0,1,1))/C'
 acts2 = ['Iapp', 'leak', 'm']
 mods2 = ['n']
 psi_evs2 = make_evs(define_psi_events(acts2, mods2, 'v',
-                     ignore_transitions=[('leave','Iapp'), ('leave', 'leak'),
-                                         ('join','Iapp')]),
+                     ignore_transitions=[('leave','Iapp'), ('leave', 'leak')]),
                     pars, evtol, targetlang)
 # don't make the tau_evs since we put them all in nonevent_reasons
 tau_evs2 = []
@@ -381,7 +354,6 @@ class regime2(iface_regime):
     slow = []
 
 reg2_feature = regime_feature('regime2', pars=args(actives=acts2,
-                                            actives_ignore_change=['Iapp'],
                                             slow=[], fast=['m'],
                                             debug=debug))
 reg2_condition = condition({reg2_feature: True})
@@ -463,18 +435,18 @@ modelInfoDict = makeModelInfo(all_info)
 hybrid_HH = HybridModel({'name': 'HH_hybrid', 'modelInfo': modelInfoDict})
 
 ## Compute test trajectory at original parameter values
-##hybrid_HH.compute(trajname='test', tdata=[0,40], ics=ics, verboselevel=2)
-##pts_hyb=hybrid_HH.sample('test')
-##
-##HH.set(ics=filteredDict(pts_hyb[0],pts.coordnames))
-##HH.set(tdata=[0,40])
-##traj = HH.compute('orig')
-##pts_orig = traj.sample()
-##
-##pylab.figure()
-##pylab.plot(pts_orig['t'],pts_orig['v'],'b')
-##pylab.plot(pts_hyb['t'], pts_hyb['v'], 'g')
-##pylab.title('Original (B) and hybrid (G) model voltage vs. t')
+hybrid_HH.compute(trajname='test', tdata=[0,40], ics=ics, verboselevel=2)
+pts_hyb=hybrid_HH.sample('test')
+
+HH.set(ics=filteredDict(pts_hyb[0],pts.coordnames))
+HH.set(tdata=[0,40])
+traj = HH.compute('orig')
+pts_orig = traj.sample()
+
+pylab.figure()
+pylab.plot(pts_orig['t'],pts_orig['v'],'b')
+pylab.plot(pts_hyb['t'], pts_hyb['v'], 'g')
+pylab.title('Original (B) and hybrid (G) model voltage vs. t')
 
 ## Bifurcation-like diagram, to compare at different parameter values
 print "\nComparing bifurcations of spiking onset"
