@@ -520,9 +520,13 @@ for i, bpval in enumerate(bifpar_range):
     print ".",
     sys.stdout.flush()
     hybrid_HH.set(pars={bifpar: bpval})
-    hybrid_HH.compute('hyb_bif', tdata=[0,100], ics=ics, verboselevel=0, force=True)
+    hybrid_HH.compute('hyb_bif', tdata=[0,100], ics=ics, verboselevel=0,
+                      force=True)
     period_data_hyb.append(find_period(hybrid_HH['hyb_bif']))
 
 pylab.figure()
 pylab.plot(bifpar_range, period_data_hyb, 'ko')
 pylab.plot(bifpar_range, period_data_orig, 'kx')
+print "\nDepending on your platform and pylab configuration you may need"
+print " to execute the pylab.show() command to see the plots"
+# pylab.show()
