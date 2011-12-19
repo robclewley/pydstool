@@ -3,13 +3,11 @@ from R. Clewley, Proc. ICCS 2004."""
 
 from PyDSTool import *
 from PyDSTool.Toolbox.dssrt import *
-# TEMP IMPORT
-from copy import copy
 import sys
 
 # ------------------------------------------------------------
-targetlang = 'c'
-# faster if you use 'c', provided gcc and SWIG installed
+targetlang = 'python'
+# Works much faster if you use 'c', provided gcc and SWIG installed
 # ------------------------------------------------------------
 
 Itot_defn = (['v', 'm', 'h', 'n', 'l', 'a'],
@@ -55,7 +53,13 @@ def makeHHneuron(name, par_args, ic_args, vfn_str='(-Itot(v,m,h,n,1,1))/C',
     DSargs['pars'] = par_args
     DSargs['fnspecs'] = auxdict
     DSargs['xdomain'] = {'v': [-130, 70], 'm': [0,1], 'h': [0,1], 'n': [0,1]}
-    DSargs['algparams'] = {'init_step': 0.05, 'max_step': 0.05}
+    if targetlang == 'python':
+        # init_step must be small as VODE integrator will only record
+        # at a fixed step. max_step is irrelevant for this integrator.
+        DSargs['algparams'] = {'init_step': 0.01}
+    else:
+        # adaptive step
+        DSargs['algparams'] = {'init_step': 0.1, 'max_step': 1}
     DSargs['checklevel'] = 0
     DSargs['ics'] = ic_args
     DSargs['name'] = name
@@ -210,6 +214,7 @@ class regime_feature(ql_feature_leaf):
                            leak='tau_v*gl*abs(vl-inf_v)',
                            m='tau_v*gna*3*m*m*m*h*abs(vna-inf_v)',
                            n='tau_v*gk*4*n*n*n*n*abs(vk-inf_v)') }
+    da_regimes = {}   # fill these in later
 
     def evaluate(self, target):
         # Determine DSSRT-related info about next hybrid state to switch to,
@@ -218,13 +223,41 @@ class regime_feature(ql_feature_leaf):
         # Acquire underlying Generator from target model interface
         gen = target.model.registry.values()[0]
         ptsFS = target.test_traj.sample()
-        Dargs = args(model=gen, inputs=self.inputs,
+
+        # pick up or create DSSRT assistant object for this regime
+        try:
+            da_reg = self.da_regimes[gen.name]
+        except KeyError:
+            Dargs = args(model=gen, inputs=self.inputs,
                  taus=self.taus, infs=self.infs, psis=self.psis_reg)
-        da_reg = dssrt_assistant(Dargs)
+            da_reg = dssrt_assistant(Dargs)  # SLOW, so re-use these
+            self.da_regimes[gen.name] = da_reg
+        else:
+            # reset, otherwise epochs won't be recalculated
+            da_reg.reset()
+
         da_reg.focus_var = 'v'
         ptsFS.mapNames(gen._FScompatibleNames)
-        # copy trajectory into da
-        da_reg.traj = copy(target.test_traj)
+
+        # refer to target's current trajectory in da
+        # and down-sample at an appropriate rate to minimize the slow,
+        # pure-python post-processing in the DSSRT toolbox
+        if len(ptsFS) > 100:
+            ds_fac = 6
+        elif len(ptsFS) > 20:
+            ds_fac = 2
+        else:
+            ds_fac = None
+        if ds_fac is not None:
+            new_pts = ptsFS[::ds_fac]
+            try:
+                new_pts.append(ptsFS[[-1]])
+            except:
+                # length was a multiple of 5 so final point was already in
+                pass
+            da_reg.traj = pointset_to_traj(new_pts)
+        else:
+            da_reg.traj = target.test_traj
         da_reg.traj.mapNames(gen._FScompatibleNames)
 
         gamma = gen.pars['dssrt_gamma']
@@ -233,6 +266,7 @@ class regime_feature(ql_feature_leaf):
         da_reg.make_pointsets()
         da_reg.calc_rankings()
         da_reg.domscales['psi'].calc_epochs(sigma, gamma)
+
         epochs = da_reg.domscales['psi'].epochs
         epoch_reg = epochs[-1]
 
@@ -267,8 +301,8 @@ class regime_feature(ql_feature_leaf):
             else:
                 self.results.reasons = []
 
-        acts = copy(epoch_reg.actives)
-        ref_acts = copy(self.pars.actives)
+        acts = epoch_reg.actives
+        ref_acts = self.pars.actives
         test1 = len(intersect(acts, ref_acts)) == len(ref_acts)
         test2 = len(intersect(epoch_reg.fast, self.pars.fast)) == \
             len(self.pars.fast)
@@ -458,15 +492,19 @@ period_data_orig = []
 period_data_hyb = []
 
 def max_V(traj):
+    # not used here
     return max(traj.getEvents('peak_ev')['v'])
 
 def find_period(traj):
+    """Find approximate period of oscillation using the last two
+    peak event times in voltage"""
     try:
         evs = traj.getEventTimes('peak_ev')
         return evs[-1] - evs[-2]
     except:
         return 0
 
+# Compute long runs (100 ms) to approximate a settled periodic orbit
 print "\nOriginal model",
 sys.stdout.flush()
 for bpval in bifpar_range:
