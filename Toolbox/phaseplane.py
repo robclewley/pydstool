@@ -1335,13 +1335,20 @@ class nullcline(object):
         return _sample_array_interior(self.array[:,0], 0.01,
                                                      refine=refine)
 
-    def tgt_vec(self, x):
+    def tgt_vec(self, x, rescale=False):
         """Return tangent vector to an interior point of nullcline,
-        normalized to length 1."""
+        normalized to length 1. Set rescale option (default False)
+        to return a vector rescaled according to relative x vs. y scales
+        (thus it's no longer a tangent vector in that case)."""
         try:
-            tgt = np.array((1,self.spline.derivatives(x)[1]))
+            der = self.spline(x,1)  # first deriv through option to __call__
         except AssertionError:
             raise ValueError("Derivative not available for endpoints or outside of spline domain")
+        else:
+            if rescale:
+                tgt = np.array((1, self.x_relative_scale_fac_2*der))
+            else:
+                tgt = np.array((1, der))
         return tgt/np.linalg.norm(tgt)
 
     def curvature(self, xdata):
@@ -1920,7 +1927,9 @@ class plotter_2D(object):
 plotter = plotter_2D()
 
 def _newton_step(Q0, nullc, A, B, phi, tol):
-    """Internal function for line intersection involving splines"""
+    """Internal function for line intersection involving splines.
+    Q0 is the initial point on the given nullcline. A closer approximation
+    Q on the nullcline where it intersects line AB"""
     global plotter
     # Still need to choose the 0.2 better to ensure correct scaling with A and B
 
@@ -1929,10 +1938,10 @@ def _newton_step(Q0, nullc, A, B, phi, tol):
     while err > tol:
         # Q0 prime is a distant point on the spline's tangent line at Q0
         Q_prime = Q + 0.2*nullc.tgt_vec(Q.x)
-##        plotter.plot_line_from_points(Q, Q_prime, 'b')
+        #plotter.plot_line_from_points(Q, Q_prime, 'b')
         P1 = line_intersection(Q, Q_prime, A, B)
         Q1 = Point2D(P1.x, nullc.spline(P1.x))  # project onto spline
-##        plotter.plot_point(Q1, 'ko')
+        #plotter.plot_point(Q1, 'ko')
         err = abs(phi-angle_to_vertical(Q1-A))
         Q = Q1
     return Q
@@ -1983,11 +1992,11 @@ def closest_perp_distance_between_sample_points(NullcA, NullcB, xa, x0B, x1B,
     global plotter
     ya = NullcA(xa)
     a = np.array([xa,ya])
-    tgt_vec_at_a = NullcA.tgt_vec(xa)
+    tgt_vec_at_a = NullcA.tgt_vec(xa, rescale=True)
     # normal has length 1
     normal_at_a = make_vec_at_A_face_B(get_orthonormal(tgt_vec_at_a),
                                 ya, NullcB(xa))
-##    plotter.plot_line_from_points(a, a+tgt_vec_at_a, 'k:')
+    #plotter.plot_line_from_points(a, a+tgt_vec_at_a, 'k:')
     phi = angle_to_vertical(normal_at_a)
 
     A = Point2D(a)
@@ -1999,10 +2008,10 @@ def closest_perp_distance_between_sample_points(NullcA, NullcB, xa, x0B, x1B,
     Q0 = Point2D(P0.x, NullcB(P0.x))  # project onto spline
     #theta0 = angle_to_vertical(Q0-a)
 
-##    plotter.plot_line_from_points(A, B, 'k-')
-##    plotter.plot_line_from_points(C, D, 'r--')
-##    plotter.plot_point(P0, 'gs')
-##    plotter.plot_point(Q0, 'ys')
+    #plotter.plot_line_from_points(A, B, 'k-')
+    #plotter.plot_line_from_points(C, D, 'r--')
+    #plotter.plot_point(P0, 'gs')
+    #plotter.plot_point(Q0, 'ys')
 
     try:
         Q = _newton_step(Q0, NullcB, A, B, phi, newt_tol)
@@ -2024,10 +2033,11 @@ def closest_perp_distance_on_spline(NullcA, NullcB, xa):
     # indicates which direction normal vector must face
     # ... also assumes that nullcline B is defined for all x values that
     # nullcline A is
-    norm_vec_at_a = make_vec_at_A_face_B(get_orthonormal(NullcA.tgt_vec(xa)),
+    norm_vec_at_a = make_vec_at_A_face_B(get_orthonormal( \
+                          NullcA.tgt_vec(xa, rescale=True)),
                                          A.y, NullcB(xa))
     phi_a = angle_to_vertical(norm_vec_at_a)
-##    plotter.plot_line_from_points(A, A + norm_vec_at_a, 'k-.')
+    #plotter.plot_line_from_points(A, A + norm_vec_at_a, 'k-.')
 
     # determine closest sample points
     try:
