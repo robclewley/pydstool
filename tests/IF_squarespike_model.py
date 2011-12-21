@@ -15,6 +15,8 @@ def makeLinearLeak(name, rhs, par_args, inputs, evtol=None):
     if rhs is not None:
         assert isinstance(rhs, dict)
         rhs_full.update(rhs)
+    # testaux demonstrates a simple auxiliary variable using the global
+    # independent variable built-in function
     rhs_full['testaux'] = "globalindepvar(t)-50"
     for parname in ['threshval', 'vl', 'gl', 'Iapp', 'C']:
         assert parname in par_args, "Essential pars missing"
