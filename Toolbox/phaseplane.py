@@ -434,7 +434,7 @@ class distance_to_pointset(object):
 def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     t=0, eps=None, crop_tol_pc=0.01, jac=None, max_step=0,
                     max_num_points=1000, only_var=None, seed_points=None,
-                    strict_domains=True):
+                    strict_domains=True, pycont_cache=None):
     """Find nullclines of a two-dimensional sub-system of the given
     Generator object gen, specified by xname and yname.
 
@@ -489,11 +489,19 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
     strict_domains (boolean, default True) ensures all computed nullcline points are
       cropped to lie within the given sub-domains.
 
+    pycont_cache (list of two PyCont objects, default None) can be provided to
+      improve efficiency of PyCont use, to avoid re-creation of ODE objects for
+      each call to this function. If a list of [None, None] is provided, this will
+      ensure that a list of the two PyCont objects will be returned in an additional
+      output. !!Don't use this cache if external inputs to the Generator have changed!!
 
     Output:
         (x_null, y_null) arrays of (x,y) pairs. Fixed points will be included if
         they are provided (they are expected to be calculated to high enough
         accuracy to smoothly fit with the nullcline sample points).
+
+        (optional) [P_x, P_y] list of PyCont objects, returned if
+          pycont_cache input option is used (see above).
 
     Note that the points returned are not guaranteed to be in any particular
     order when PyCont is not used.
@@ -673,8 +681,15 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
     y_null = filter_close_points(crop_2D(filter_NaN(y_null_pts),
                                 xinterval, yinterval), eps*10)
 
+    # default value for now
+    do_cache = False
     # max_step = 0 means do not use PyCont to improve accuracy
     if max_step != 0:
+        if pycont_cache is None:
+            pycont_cache = [None, None]  # dummy values
+            do_cache = False
+        else:
+            do_cache = True
         add_fp_pts = array([add_pts_x, add_pts_y]).T
         if not isinstance(max_step, dict):
             max_step = {xname: max_step, yname: max_step}
@@ -711,21 +726,28 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 y_init = y_dom[0]
             elif y_init > y_dom[1]:
                 y_init = y_dom[1]
-            sysargs_y = args(name='nulls_y', pars={xname: x_init},
+            if pycont_cache[1] is None:
+                sysargs_y = args(name='nulls_y', pars={xname: x_init},
                            ics={yname: y_init},
                            varspecs={yname: gen.funcspec._initargs['varspecs'][yname]},
                            xdomain={yname: y_dom}, pdomain={xname: x_dom})
-            if 'inputs' in gen.funcspec._initargs: # and isinstance(gen.funcspec._initargs['inputs'], dict):
-                if len(gen.funcspec._initargs['inputs']) > 0:
-                    sysargs_y['inputs'] = gen.inputs.copy()
-            if 'fnspecs' in gen.funcspec._initargs:
-                sysargs_y.update({'fnspecs':renameClashingAuxFnPars(gen.funcspec._initargs['fnspecs'], [xname])})
-            sysargs_y.pars.update(gen.pars)
-            sysargs_y.pars.update(filteredDict(vardict, [xname, yname], neg=True))
-            sysargs_y.pars['time'] = t
-            sys_y = Vode_ODEsystem(sysargs_y)
-            P = ContClass(sys_y)
-            PCargs = args(name='null_curve_y', type='EP-C')
+                if 'inputs' in gen.funcspec._initargs: # and isinstance(gen.funcspec._initargs['inputs'], dict):
+                    if len(gen.funcspec._initargs['inputs']) > 0:
+                        sysargs_y['inputs'] = gen.inputs.copy()
+                if 'fnspecs' in gen.funcspec._initargs:
+                    sysargs_y.update({'fnspecs':renameClashingAuxFnPars(gen.funcspec._initargs['fnspecs'], [xname])})
+                sysargs_y.pars.update(gen.pars)
+                sysargs_y.pars.update(filteredDict(vardict, [xname, yname], neg=True))
+                sysargs_y.pars['time'] = t
+                sys_y = Vode_ODEsystem(sysargs_y)
+                P_y = ContClass(sys_y)
+                pycont_cache[1] = P_y
+            else:
+                P_y = pycont_cache[1]
+                P_y.model.set(pars=gen.pars)
+                P_y.model.set(pars=filteredDict(vardict, [xname, yname], neg=True))
+                P_y.model.set(pars={'time': t})
+            PCargs = args(name='null_curve_y', type='EP-C', force=True)
             PCargs.freepars = [xname]
             PCargs.MinStepSize = 1e-8
             PCargs.VarTol = PCargs.FuncTol = eps
@@ -737,13 +759,13 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 PCargs.MaxStepSize = max_step[xname]
                 PCargs.StepSize = max_step[xname]*0.5
             PCargs.MaxNumPoints = loop_step
-            P.newCurve(PCargs)
+            P_y.newCurve(PCargs)
             # check every loop_step points until go out of bounds
             done = False
             num_points = 0
             while not done:
                 try:
-                    P['null_curve_y'].forward()
+                    P_y['null_curve_y'].forward()
                 except PyDSTool_ExistError:
                     print 'null_curve_y failed in forward direction'
                     raise
@@ -752,15 +774,15 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     # stop if have tried going forwards more than twice and solution is
                     # still not within domain, or if num_points exceeds max_num_points
                     done = (num_points > 5*loop_step and not \
-                            check_bounds(array([P['null_curve_y'].new_sol_segment[xname],
-                                                  P['null_curve_y'].new_sol_segment[yname]]).T,
+                            check_bounds(array([P_y['null_curve_y'].new_sol_segment[xname],
+                                                  P_y['null_curve_y'].new_sol_segment[yname]]).T,
                                             xinterval, yinterval)) \
                           or num_points > max_num_points
             done = False
             num_points = 0
             while not done:
                 try:
-                    P['null_curve_y'].backward()
+                    P_y['null_curve_y'].backward()
                 except PyDSTool_ExistError:
                     print 'null_curve_y failed in backward direction'
                     raise
@@ -769,18 +791,18 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     # stop if have tried going backwards more than twice and solution is
                     # still not within domain, or if num_points exceeds max_num_points
                     done = (num_points > 5*loop_step and not \
-                            check_bounds(array([P['null_curve_y'].new_sol_segment[xname],
-                                                  P['null_curve_y'].new_sol_segment[yname]]).T,
+                            check_bounds(array([P_y['null_curve_y'].new_sol_segment[xname],
+                                                  P_y['null_curve_y'].new_sol_segment[yname]]).T,
                                             xinterval, yinterval)) \
                          or num_points > max_num_points
             # can get repetition of some points
             if strict_domains:
-                y_null = crop_2D(array([P['null_curve_y'].sol[xname],
-                                    P['null_curve_y'].sol[yname]]).T,
+                y_null = crop_2D(array([P_y['null_curve_y'].sol[xname],
+                                    P_y['null_curve_y'].sol[yname]]).T,
                              xinterval, yinterval)
             else:
-                y_null = array([P['null_curve_y'].sol[xname],
-                                P['null_curve_y'].sol[yname]]).T
+                y_null = array([P_y['null_curve_y'].sol[xname],
+                                P_y['null_curve_y'].sol[yname]]).T
             try:
                 x_vals = y_null[:,0]
             except IndexError:
@@ -820,21 +842,28 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 y_init = y_dom[0]
             elif y_init > y_dom[1]:
                 y_init = y_dom[1]
-            sysargs_x = args(name='nulls_x', pars={yname: y_init},
+            if pycont_cache[0] is None:
+                sysargs_x = args(name='nulls_x', pars={yname: y_init},
                            ics={xname: x_init}, tdata=[t,t+1],
                            varspecs={xname: gen.funcspec._initargs['varspecs'][xname]},
                            xdomain={xname: x_dom}, pdomain={yname: y_dom})
-            if 'inputs' in gen.funcspec._initargs: # and isinstance(gen.funcspec._initargs['inputs'], dict):
-                if len(gen.funcspec._initargs['inputs']) > 0:
-                    sysargs_x['inputs'] = gen.inputs.copy()
-            if 'fnspecs' in gen.funcspec._initargs:
-                sysargs_x.update({'fnspecs': renameClashingAuxFnPars(gen.funcspec._initargs['fnspecs'], [yname])})
-            sysargs_x.pars.update(gen.pars)
-            sysargs_x.pars.update(filteredDict(vardict, [xname, yname], neg=True))
-            sysargs_x.pars['time'] = t
-            sys_x = Vode_ODEsystem(sysargs_x)
-            P = ContClass(sys_x)
-            PCargs = args(name='null_curve_x', type='EP-C')
+                if 'inputs' in gen.funcspec._initargs: # and isinstance(gen.funcspec._initargs['inputs'], dict):
+                    if len(gen.funcspec._initargs['inputs']) > 0:
+                        sysargs_x['inputs'] = gen.inputs.copy()
+                if 'fnspecs' in gen.funcspec._initargs:
+                    sysargs_x.update({'fnspecs': renameClashingAuxFnPars(gen.funcspec._initargs['fnspecs'], [yname])})
+                sysargs_x.pars.update(gen.pars)
+                sysargs_x.pars.update(filteredDict(vardict, [xname, yname], neg=True))
+                sysargs_x.pars['time'] = t
+                sys_x = Vode_ODEsystem(sysargs_x)
+                P_x = ContClass(sys_x)
+                pycont_cache[0] = P_x
+            else:
+                P_x = pycont_cache[0]
+                P_x.model.set(pars=gen.pars)
+                P_x.model.set(pars=filteredDict(vardict, [xname, yname], neg=True))
+                P_x.model.set(pars={'time': t})
+            PCargs = args(name='null_curve_x', type='EP-C', force=True)
             PCargs.freepars = [yname]
             PCargs.MinStepSize = 1e-8
             PCargs.VarTol = PCargs.FuncTol = eps
@@ -846,12 +875,12 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 PCargs.MaxStepSize = max_step[yname]
                 PCargs.StepSize = max_step[yname]*0.5
             PCargs.MaxNumPoints = loop_step
-            P.newCurve(PCargs)
+            P_x.newCurve(PCargs)
             done = False
             num_points = 0
             while not done:
                 try:
-                    P['null_curve_x'].forward()
+                    P_x['null_curve_x'].forward()
                 except PyDSTool_ExistError:
                     print 'null_curve_x failed in forward direction'
                     raise
@@ -860,15 +889,15 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     # stop if have tried going forwards more than twice and solution is
                     # still not within domain, or if num_points exceeds max_num_points
                     done = (num_points > 5*loop_step and not \
-                            check_bounds(array([P['null_curve_x'].new_sol_segment[xname],
-                                                  P['null_curve_x'].new_sol_segment[yname]]).T,
+                            check_bounds(array([P_x['null_curve_x'].new_sol_segment[xname],
+                                                  P_x['null_curve_x'].new_sol_segment[yname]]).T,
                                             xinterval, yinterval)) \
                          or num_points > max_num_points
             done = False
             num_points = 0
             while not done:
                 try:
-                    P['null_curve_x'].backward()
+                    P_x['null_curve_x'].backward()
                 except PyDSTool_ExistError:
                     print 'null_curve_x failed in backward direction'
                     raise
@@ -877,18 +906,18 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                     # stop if have tried going backwards more than twice and solution is
                     # still not within domain, or if num_points exceeds max_num_points
                     done = (num_points > 5*loop_step and not \
-                            check_bounds(array([P['null_curve_x'].new_sol_segment[xname],
-                                                  P['null_curve_x'].new_sol_segment[yname]]).T,
+                            check_bounds(array([P_x['null_curve_x'].new_sol_segment[xname],
+                                                  P_x['null_curve_x'].new_sol_segment[yname]]).T,
                                             xinterval, yinterval)) \
                          or num_points > max_num_points
             # can get repetition of some points
             if strict_domains:
-                x_null = crop_2D(array([P['null_curve_x'].sol[xname],
-                                        P['null_curve_x'].sol[yname]]).T,
+                x_null = crop_2D(array([P_x['null_curve_x'].sol[xname],
+                                        P_x['null_curve_x'].sol[yname]]).T,
                              xinterval, yinterval)
             else:
-                x_null = array([P['null_curve_x'].sol[xname],
-                                P['null_curve_x'].sol[yname]]).T
+                x_null = array([P_x['null_curve_x'].sol[xname],
+                                P_x['null_curve_x'].sol[yname]]).T
             try:
                 x_vals = x_null[:,0]
             except IndexError:
@@ -903,7 +932,10 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 # +n offsets fact that n entries were already added
                 x_null = np.insert(x_null, ix+n, add_fp_pts[n], axis=0)
 
-    return (gen._FScompatibleNamesInv(x_null), gen._FScompatibleNamesInv(y_null))
+    if do_cache:
+        return (gen._FScompatibleNamesInv(x_null), gen._FScompatibleNamesInv(y_null), pycont_cache)
+    else:
+        return (gen._FScompatibleNamesInv(x_null), gen._FScompatibleNamesInv(y_null))
 
 
 
