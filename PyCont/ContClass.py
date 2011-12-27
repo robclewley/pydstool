@@ -15,6 +15,7 @@ from PyDSTool import Point, Pointset
 from PyDSTool.common import pickle, Utility, args, filteredDict
 from PyDSTool.utils import remain
 import PyDSTool.Redirector as redirc
+from PyDSTool.errors import *
 try:
     from pylab import *
 except ImportError:
@@ -119,17 +120,28 @@ class ContClass(Utility):
         pickledself = pickle.dumps(self)
         return pickle.loads(pickledself)
 
+    def delCurve(self, curvename):
+        try:
+            del self.curves[curvename]
+        except KeyError:
+            raise KeyError("Curve %s does not exist" % curvename)
+
     def newCurve(self, initargs):
         """Create new curve with arguments specified in the dictionary initargs."""
         curvetype = initargs['type'].upper()
 
         if curvetype not in self.curve_list:
-            raise TypeError(str(curvetype) + ' not an allowable curve type')
+            raise PyDSTool_TypeError(str(curvetype) + ' not an allowable curve type')
 
         # Check name
-        if initargs['name'] in self.curves:
-            raise AttributeError('Ambiguous name field: ' + initargs['name'] \
-                                 + ' already exists')
+        cname = initargs['name']
+        if 'force' in initargs:
+            if initargs['force'] and cname in self.curves:
+                del self.curves[cname]
+
+        if cname in self.curves:
+            raise ValueError('Ambiguous name field: ' + cname \
+                           + ' already exists (use force=True to override)')
 
         # Check parameters
         if (curvetype != 'UD-C' and self.model.pars == {}) or \
@@ -209,7 +221,7 @@ class ContClass(Utility):
                 self.loadAutoMod()
             automod = self._autoMod
 
-        self.curves[initargs['name']] = self.curve_list[curvetype](self.model, self.gensys, automod, self.plot, initargs)
+        self.curves[cname] = self.curve_list[curvetype](self.model, self.gensys, automod, self.plot, initargs)
 
     # Export curve data to Matlab file format
     def exportMatlab(self, filename=None):
