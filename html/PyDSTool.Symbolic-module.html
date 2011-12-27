@@ -428,11 +428,12 @@ Robert Clewley, October 2005.
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="prepJacobian"></a><span class="summary-sig-name">prepJacobian</span>(<span class="summary-sig-arg">varspecs</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.Symbolic-module.html#prepJacobian" class="summary-sig-name">prepJacobian</a>(<span class="summary-sig-arg">varspecs</span>,
         <span class="summary-sig-arg">coords</span>,
         <span class="summary-sig-arg">fnspecs</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">max_iter_depth</span>=<span class="summary-sig-default">20</span>)</span><br />
-      Coordinates will be sorted.</td>
+      Returns a symbolic Jacobian and updated function specs to support its
+      definition from variable specifications.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Symbolic-pysrc.html#prepJacobian">source&nbsp;code</a></span>
             
@@ -814,6 +815,13 @@ Robert Clewley, October 2005.
         <a name="reserved_keywords"></a><span class="summary-name">reserved_keywords</span>
     </td>
   </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="isVectorClause"></a><span class="summary-name">isVectorClause</span>
+    </td>
+  </tr>
 <tr class="private">
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
@@ -854,7 +862,7 @@ Robert Clewley, October 2005.
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="protected_macronames"></a><span class="summary-name">protected_macronames</span> = <code title="['for', 'if', 'max', 'min']"><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">for</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">if</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">max</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">min</code><code class="variable-quote">'</code><code class="variable-group">]</code></code>
+        <a name="protected_macronames"></a><span class="summary-name">protected_macronames</span> = <code title="['for', 'if', 'max', 'min', 'sum']"><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">for</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">if</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">max</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">min</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">sum</code><code class="variable-quote">'</code><code class="variable-group">]</code></code>
     </td>
   </tr>
 <tr class="private">
@@ -1917,7 +1925,7 @@ Robert Clewley, October 2005.
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="builtinlookup"></a><span class="summary-name">builtinlookup</span> = <code title="{'abs': '', 'pow': ''}"><code class="variable-group">{</code><code class="variable-quote">'</code><code class="variable-string">abs</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">pow</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code><code class="variable-group">}</code></code>
+        <a href="PyDSTool.Symbolic-module.html#builtinlookup" class="summary-name" onclick="show_private();">builtinlookup</a> = <code title="{'abs': '', 'max': '', 'min': '', 'pow': '', 'sum': ''}"><code class="variable-group">{</code><code class="variable-quote">'</code><code class="variable-string">abs</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">max</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">min</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">pow</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-ellipsis">...</code></code>
     </td>
   </tr>
 <tr class="private">
@@ -1958,11 +1966,11 @@ Robert Clewley, October 2005.
  'if',
  'max',
  'min',
+ 'sum',
  'globalindepvar',
  'initcond',
  'heav',
- 'if',
-..."><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">for</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">if</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">max</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">min</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">globalindepvar</code><code class="variable-quote">'</code><code class="variable-ellipsis">...</code></code>
+..."><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">for</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">if</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">max</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">min</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">sum</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">globalin</code><code class="variable-ellipsis">...</code></code>
     </td>
   </tr>
 <tr class="private">
@@ -2203,6 +2211,20 @@ Robert Clewley, October 2005.
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a name="Max"></a><span class="summary-name">Max</span> = <code title="Max (ModelSpec wrapper)">Max (ModelSpec wrapper)</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="Min"></a><span class="summary-name">Min</span> = <code title="Min (ModelSpec wrapper)">Min (ModelSpec wrapper)</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a name="Modf"></a><span class="summary-name">Modf</span> = <code title="Modf (ModelSpec wrapper)">Modf (ModelSpec wrapper)</code>
     </td>
   </tr>
@@ -2309,6 +2331,13 @@ Robert Clewley, October 2005.
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a name="Sqrt"></a><span class="summary-name">Sqrt</span> = <code title="Sqrt (ModelSpec wrapper)">Sqrt (ModelSpec wrapper)</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="Sum"></a><span class="summary-name">Sum</span> = <code title="Sum (ModelSpec wrapper)">Sum (ModelSpec wrapper)</code>
     </td>
   </tr>
 <tr>
@@ -2567,7 +2596,7 @@ Robert Clewley, October 2005.
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="a"></a><span class="summary-name">a</span> = <code title="'pow'"><code class="variable-quote">'</code><code class="variable-string">pow</code><code class="variable-quote">'</code></code>
+        <a name="a"></a><span class="summary-name">a</span> = <code title="'sum'"><code class="variable-quote">'</code><code class="variable-string">sum</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 <tr class="private">
@@ -2588,7 +2617,7 @@ Robert Clewley, October 2005.
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="f"></a><span class="summary-name">f</span> = <code title="'pow'"><code class="variable-quote">'</code><code class="variable-string">pow</code><code class="variable-quote">'</code></code>
+        <a name="f"></a><span class="summary-name">f</span> = <code title="'sum'"><code class="variable-quote">'</code><code class="variable-string">sum</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 <tr class="private">
@@ -2623,14 +2652,14 @@ Robert Clewley, October 2005.
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="n"></a><span class="summary-name">n</span> = <code title="'pow'"><code class="variable-quote">'</code><code class="variable-string">pow</code><code class="variable-quote">'</code></code>
+        <a name="n"></a><span class="summary-name">n</span> = <code title="'sum'"><code class="variable-quote">'</code><code class="variable-string">sum</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 <tr class="private">
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="symb"></a><span class="summary-name">symb</span> = <code title="'Pow'"><code class="variable-quote">'</code><code class="variable-string">Pow</code><code class="variable-quote">'</code></code>
+        <a name="symb"></a><span class="summary-name">symb</span> = <code title="'Sum'"><code class="variable-quote">'</code><code class="variable-string">Sum</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 </table>
@@ -2714,6 +2743,31 @@ Robert Clewley, October 2005.
   autonomous.</p>
   <p>The arguments to the returned callable function object are given by 
   its attribute '_args', and its definition string by '_call_spec'.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="prepJacobian"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">prepJacobian</span>(<span class="sig-arg">varspecs</span>,
+        <span class="sig-arg">coords</span>,
+        <span class="sig-arg">fnspecs</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">max_iter_depth</span>=<span class="sig-default">20</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Symbolic-pysrc.html#prepJacobian">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns a symbolic Jacobian and updated function specs to support its 
+  definition from variable specifications. Only makes the Jacobian with 
+  respect to the named coordinates, which will be sorted into alphabetical 
+  order.</p>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -3316,6 +3370,24 @@ ModelSpec internal helper class: auxfnDBclass object
   </dl>
 </td></tr></table>
 </div>
+<a name="builtinlookup"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">builtinlookup</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+<code class="variable-group">{</code><code class="variable-quote">'</code><code class="variable-string">abs</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">max</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">min</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">pow</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">sum</code><code class="variable-quote">'</code><code class="variable-op">: </code><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code><code class="variable-group">}</code>
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
 <a name="modlookup"></a>
 <div class="private">
 <table class="details" border="1" cellpadding="3"
@@ -3384,10 +3456,10 @@ ModelSpec internal helper class: auxfnDBclass object
  <code class="variable-quote">'</code><code class="variable-string">if</code><code class="variable-quote">'</code><code class="variable-op">,</code>
  <code class="variable-quote">'</code><code class="variable-string">max</code><code class="variable-quote">'</code><code class="variable-op">,</code>
  <code class="variable-quote">'</code><code class="variable-string">min</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">sum</code><code class="variable-quote">'</code><code class="variable-op">,</code>
  <code class="variable-quote">'</code><code class="variable-string">globalindepvar</code><code class="variable-quote">'</code><code class="variable-op">,</code>
  <code class="variable-quote">'</code><code class="variable-string">initcond</code><code class="variable-quote">'</code><code class="variable-op">,</code>
  <code class="variable-quote">'</code><code class="variable-string">heav</code><code class="variable-quote">'</code><code class="variable-op">,</code>
- <code class="variable-quote">'</code><code class="variable-string">if</code><code class="variable-quote">'</code><code class="variable-op">,</code>
 <code class="variable-ellipsis">...</code>
 </pre></td></tr></table>
 </dd>
@@ -3841,7 +3913,7 @@ ModelSpec internal helper class: auxfnDBclass object
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Fri Aug 26 22:55:51 2011
+    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:23 2011
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

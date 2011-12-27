@@ -703,6 +703,22 @@ Includes AST code by Pearu Peterson and Ryan Gutenkunst,
       
     </td>
   </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="isVectorClause"></a><span class="summary-sig-name">isVectorClause</span>(<span class="summary-sig-arg">s</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="PyDSTool.parseUtils-pysrc.html#isVectorClause">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
@@ -929,7 +945,7 @@ Includes AST code by Pearu Peterson and Ryan Gutenkunst,
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="findEndBrace"></a><span class="summary-sig-name">findEndBrace</span>(<span class="summary-sig-arg">s</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.parseUtils-module.html#findEndBrace" class="summary-sig-name">findEndBrace</a>(<span class="summary-sig-arg">s</span>,
         <span class="summary-sig-arg">lbchar</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">(</code><code class="variable-quote">'</code></span>,
         <span class="summary-sig-arg">rbchar</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">)</code><code class="variable-quote">'</code></span>)</span><br />
       Find position in string (or list of strings) s at which final 
@@ -1677,7 +1693,7 @@ Includes AST code by Pearu Peterson and Ryan Gutenkunst,
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="protected_macronames"></a><span class="summary-name">protected_macronames</span> = <code title="['for', 'if', 'max', 'min']"><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">for</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">if</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">max</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">min</code><code class="variable-quote">'</code><code class="variable-group">]</code></code>
+        <a name="protected_macronames"></a><span class="summary-name">protected_macronames</span> = <code title="['for', 'if', 'max', 'min', 'sum']"><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">for</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">if</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">max</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">min</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">sum</code><code class="variable-quote">'</code><code class="variable-group">]</code></code>
     </td>
   </tr>
 <tr class="private">
@@ -2273,6 +2289,28 @@ Includes AST code by Pearu Peterson and Ryan Gutenkunst,
   <p>Map names in &lt;target&gt; argument using the symbolMapClass object 
   &lt;themap&gt;, returning a renamed version of the target. N.B. Only maps
   the keys of a dictionary type</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="findEndBrace"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">findEndBrace</span>(<span class="sig-arg">s</span>,
+        <span class="sig-arg">lbchar</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">(</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">rbchar</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">)</code><code class="variable-quote">'</code></span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.parseUtils-pysrc.html#findEndBrace">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Find position in string (or list of strings) s at which final matching
+  brace occurs (if at all). If not found, returns None.</p>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -3088,7 +3126,7 @@ ModelSpec internal helper class: auxfnDBclass object
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Fri Aug 26 22:55:53 2011
+    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:26 2011
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
