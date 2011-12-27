@@ -53,7 +53,7 @@ _constants = ['cont_args_list', 'cont_bif_points', 'equilibrium_args_list',
 __all__ = _classes + _constants
 #####
 
-cont_args_list = ['name','freepars','MaxNumPoints','MaxCorrIters',
+cont_args_list = ['name','force','freepars','MaxNumPoints','MaxCorrIters',
                   'MaxTestIters','MaxStepSize', 'MinStepSize', 'StepSize',
                   'VarTol','FuncTol','TestTol', 'description', 'uservars',
                   'LocBifPoints','verbosity','ClosedCurve','SaveJacobian',
@@ -299,7 +299,7 @@ class Continuation(object):
                         self.StopAtPoints = [bftype for bftype in w \
                                              if bftype in cont_bif_points]
                     elif k == 'Corrector':
-                        self.Corrector = eval('self._' + v)
+                        self.Corrector = getattr(self, '_' + v)
                     elif k != 'StopAtPoints':
                         exec('self.' + k + ' = ' + repr(v))
                 elif k not in all_args_list:
