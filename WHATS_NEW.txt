@@ -1,6 +1,21 @@
 Release notes: Highlights of new features
 =========================================
 
+version 0.88 21 Dec 2011
+------------------------
+
+ * Minor efficiency improvements to hybrid model initialization
+ * Improvements to phaseplane diagnostic tools (still work in progress)
+ * Pointset merge function added
+ * Added support for use of auxvar definitions in event functions
+ * Parsing support for new macro 'SUM' in dynamics specifications: see
+    basic_gen_tests.py
+ * Improved modular model building demonstrations in ModelSpec_test for
+    biophysical neural models, including examples for noise signals
+ * Test code cleanup
+ * Better code commenting
+ * Minor bug fixes
+
 version 0.88 26 Aug 2011
 ------------------------
 

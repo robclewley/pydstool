@@ -1,12 +1,12 @@
 """PyDSTool initialization script.
 
-Copyright (C) 2007-2010 Georgia State University
+Copyright (C) 2007-2011 Georgia State University
 
 print PyDSTool.__LICENSE__    for the terms of use.
 """
 
 __LICENSE__ = """\
-Copyright (C) 2010, Georgia State University
+Copyright (C) 2007-2011, Georgia State University
 All rights reserved.
 
 Parts of this distribution that originate from different authors are
@@ -44,8 +44,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 vernum = '0.88'
 __version__  = vernum
-__revision__ = '$Revision: 110826 $'
-__date__     = '$Date: 2011/08/26 23:20:00 $'
+__revision__ = '$Revision: 111221 $'
+__date__     = '$Date: 2011/12/21 19:50:00 $'
 
 import sys, os, gc
 
