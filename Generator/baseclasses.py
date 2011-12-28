@@ -1149,6 +1149,8 @@ class Generator(object):
                     pass
             if 'checklevel' in kw:
                 self.checklevel = kw['checklevel']
+                if hasattr(self, 'algparams'):
+                    self.algparams['checkBounds'] = kw['checklevel']
             if 'abseps' in kw:
                 self._abseps = kw['abseps']
             if remain(kw.keys(), ['globalt0', 'checklevel', 'abseps']) != []:

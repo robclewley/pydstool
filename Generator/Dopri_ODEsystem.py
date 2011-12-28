@@ -305,22 +305,22 @@ class Dopri_ODEsystem(ODEsystem):
 
     Uses C functional specifications only."""
     _paraminfo = {'rtol': 'Relative error tolerance.',
-                           'atol': 'Absolute error tolerance.',
-                           'safety': 'Safety factor in the step size prediction, default 0.9.',
-                           'fac1': 'Parameter for step size selection; the new step size is chosen subject to the restriction  fac1 <= new_step/old_step <= fac2. Default value is 0.333.',
-                           'fac2': 'Parameter for step size selection; the new step size is chosen subject to the restriction  fac1 <= new_step/old_step <= fac2. Default value is 6.0.',
-                           'beta': 'The "beta" for stabilized step size control. Larger values for beta ( <= 0.1 ) make the step size control more stable. Negative initial value provoke beta=0; default beta=0.04',
-                           'max_step': 'Maximal step size, default tend-tstart.',
-                           'init_step': 'Initial step size, default is a guess computed by the function init_step.',
-                           'refine': 'Refine output by adding points interpolated using the RK4 polynomial (0, 1 or 2).',
-                           'use_special': "Switch for using special times",
-                           'specialtimes': "List of special times to use during integration",
-                           'check_aux': "Switch",
-                           'extraspace': "",
-                           'magBound': "The largest variable magnitude before a bounds error flags (if checkBound > 0). Defaults to 1e7",
-                           'checkBounds': "Switch to check variable bounds: 0 = no check, 1 = check up to 'boundsCheckMaxSteps', 2 = check for every point",
-                           'boundsCheckMaxSteps': "Last step to bounds check if checkBound==1. Defaults to 1000."
-                           }
+                  'atol': 'Absolute error tolerance.',
+                  'safety': 'Safety factor in the step size prediction, default 0.9.',
+                  'fac1': 'Parameter for step size selection; the new step size is chosen subject to the restriction  fac1 <= new_step/old_step <= fac2. Default value is 0.333.',
+                  'fac2': 'Parameter for step size selection; the new step size is chosen subject to the restriction  fac1 <= new_step/old_step <= fac2. Default value is 6.0.',
+                  'beta': 'The "beta" for stabilized step size control. Larger values for beta ( <= 0.1 ) make the step size control more stable. Negative initial value provoke beta=0; default beta=0.04',
+                  'max_step': 'Maximal step size, default tend-tstart.',
+                  'init_step': 'Initial step size, default is a guess computed by the function init_step.',
+                  'refine': 'Refine output by adding points interpolated using the RK4 polynomial (0, 1 or 2).',
+                  'use_special': "Switch for using special times",
+                  'specialtimes': "List of special times to use during integration",
+                  'check_aux': "Switch",
+                  'extraspace': "",
+                  'magBound': "The largest variable magnitude before a bounds error flags (if checkBound > 0). Defaults to 1e7",
+                  'checkBounds': "Switch to check variable bounds: 0 = no check, 1 = check up to 'boundsCheckMaxSteps', 2 = check for every point",
+                  'boundsCheckMaxSteps': "Last step to bounds check if checkBound==1. Defaults to 1000."
+                  }
 
     def __init__(self, kw):
         """Use the nobuild key to postpone building of the library, e.g. in
@@ -1106,7 +1106,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             last_ix = -Inf
         highest_ix = X.shape[1]-1
         last_t = Inf
-        if self.algparams['checkBounds']:
+        if self.algparams['checkBounds'] > 0:
             # temp storage for repeatedly used object attributes (for lookup efficiency)
             depdomains = dict(zip(range(self.dimension),
                         [self.variables[xn].depdomain for xn in xnames]))
@@ -1128,6 +1128,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             elif last_ix >= 0 and last_ix < highest_ix:
                 # truncate data
                 last_t = alltData[last_ix]
+                print "Warning; domain bound reached (because algparams['checkBounds'] > 0)"
                 self.diagnostics.warnings.append((W_TERMSTATEBD,
                                     (last_t, xnames[offender_ix],
                                      X[offender_ix, last_ix],

@@ -1253,7 +1253,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             last_ix = -Inf
         highest_ix = X.shape[1]-1
         last_t = Inf
-        if self.algparams['checkBounds']:
+        if self.algparams['checkBounds'] > 0:
             # temp storage for repeatedly used object attributes (for lookup efficiency)
             depdomains = dict(zip(range(self.dimension),
                             [self.variables[xn].depdomain for xn in xnames]))
@@ -1275,6 +1275,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             elif last_ix >= 0 and last_ix < highest_ix:
                 # truncate data
                 last_t = alltData[last_ix]
+                print "Warning; domain bound reached (because algparams['checkBounds'] > 0)"
                 self.diagnostics.warnings.append((W_TERMSTATEBD,
                                     (last_t, xnames[offender_ix],
                                      X[offender_ix, last_ix],
