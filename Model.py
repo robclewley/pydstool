@@ -1858,6 +1858,8 @@ class NonHybridModel(Model):
             raise
         except:
             print "\nError in Generator:", gen.name
+            gen.diagnostics.showWarnings()
+            gen.diagnostics.showErrors()
             self.diagnostics.traceback = {}
             for k,v in gen.diagnostics.traceback.iteritems():
                 if isinstance(v, dict):
@@ -2624,7 +2626,6 @@ class HybridModel(Model):
 #            print "  and globalt0 = ", t0
             MI.set('tdata', [0, t1-t0], xdict, t0)
             MI.set('globalt0', t0, xdict, t0)
-
 
             # add remaining pars for system
             setup_pars = {'ics': xdict, 'algparams': {}}
