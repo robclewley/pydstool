@@ -865,9 +865,14 @@ class FuncSpec(object):
                         print "Found length %i"%specdict_check[specvars[row]]
                         raise ValueError("Mass matrix should be %sx%s"%(m,n))
             else:
+                user_parstr = makeParList(auxinfo[0])
                 # `parsinps` is always added to allow reference to own
                 # parameters
-                auxparstr = 'parsinps, ' + makeParList(auxinfo[0])
+                if user_parstr == '':
+                    # no arguments, user calls as fn()
+                    auxparstr = 'parsinps'
+                else:
+                    auxparstr = 'parsinps, ' + user_parstr
                 auxstr_py = 'def _auxfn_' + auxname + '(ds, ' + auxparstr \
                             +'):\n'
                 auxparlist = auxparstr.replace(" ","").split(",")
@@ -909,7 +914,7 @@ class FuncSpec(object):
                 raise
             auxfn_namemap['ds.'+auxname] = 'ds.'+auxfns[auxname][1]
             # prepare user-interface wrapper function (not method)
-            if specials == ['']:
+            if specials == [''] or specials == []:
                 fn_args = ''
             else:
                 fn_args = ','+','.join(specials)
