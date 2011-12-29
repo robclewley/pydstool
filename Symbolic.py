@@ -2537,55 +2537,51 @@ class Fun(Quantity):
 
     def __call__(self, *args):
         lensig = len(self.signature)
-        if len(args)>0:
-            if lensig != len(args):
-                raise ValueError("Invalid number of arguments for auxiliary function")
-            argstr = ", ".join(map(str,args))
-            if self.spec.specStr == '':
-                return QuantSpec("__result__", self.name+'('+argstr+')', specType=self.specType)
-            else:
-                # avoid name clashes for free names and bound arg names during substitution
-                argNameMapInv = {}
-                args = [copy(a) for a in args]
-                for i in range(len(args)):
-                    if isinstance(args[i], (Quantity, QuantSpec)):
-                        if args[i].freeSymbols == []:
-                            try:
-                                check_names = [args[i].name]
-                            except AttributeError:
-                                check_names = [args[i].subjectToken]
-                        else:
-                            check_names = args[i].freeSymbols
-                        #check_names = args[i].freeSymbols
-                        isection = intersect(check_names, self.signature)
-                        for name in isection:
-                            # dummy arg name
-                            newname = "__"+name+"__"
-                            while newname in argNameMapInv.keys() + \
-                                    self.signature+self.freeSymbols:
-                                # ensure unique name
-                                newname += "_"
-                            argNameMapInv[newname] = name
-                            args[i].mapNames({name:newname})
-                    elif isinstance(args[i], str):
-                        qtemp = QuantSpec("__arg__", args[i])
-                        isection = intersect(qtemp.freeSymbols, self.signature)
-                        for name in isection:
-                            # dummy arg name
-                            newname = "__"+name+"__"
-                            while newname in argNameMapInv.keys() + \
-                                    self.signature+self.freeSymbols:
-                                # ensure unique name
-                                newname += "_"
-                            argNameMapInv[newname] = name
-                            qtemp.mapNames({name:newname})
-                        args[i] = str(qtemp)
-                res = self.spec._eval(1, **dict(zip(self.signature,args)))
-                res.mapNames(argNameMapInv)
-                return res
-        else:
+        if lensig != len(args):
             raise ValueError("Invalid number of arguments for auxiliary function")
-
+        argstr = ", ".join(map(str,args))
+        if self.spec.specStr == '':
+            return QuantSpec("__result__", self.name+'('+argstr+')', specType=self.specType)
+        else:
+            # avoid name clashes for free names and bound arg names during substitution
+            argNameMapInv = {}
+            args = [copy(a) for a in args]
+            for i in range(len(args)):
+                if isinstance(args[i], (Quantity, QuantSpec)):
+                    if args[i].freeSymbols == []:
+                        try:
+                            check_names = [args[i].name]
+                        except AttributeError:
+                            check_names = [args[i].subjectToken]
+                    else:
+                        check_names = args[i].freeSymbols
+                    #check_names = args[i].freeSymbols
+                    isection = intersect(check_names, self.signature)
+                    for name in isection:
+                        # dummy arg name
+                        newname = "__"+name+"__"
+                        while newname in argNameMapInv.keys() + \
+                                self.signature+self.freeSymbols:
+                            # ensure unique name
+                            newname += "_"
+                        argNameMapInv[newname] = name
+                        args[i].mapNames({name:newname})
+                elif isinstance(args[i], str):
+                    qtemp = QuantSpec("__arg__", args[i])
+                    isection = intersect(qtemp.freeSymbols, self.signature)
+                    for name in isection:
+                        # dummy arg name
+                        newname = "__"+name+"__"
+                        while newname in argNameMapInv.keys() + \
+                                self.signature+self.freeSymbols:
+                            # ensure unique name
+                            newname += "_"
+                        argNameMapInv[newname] = name
+                        qtemp.mapNames({name:newname})
+                    args[i] = str(qtemp)
+            res = self.spec._eval(1, **dict(zip(self.signature,args)))
+            res.mapNames(argNameMapInv)
+            return res
 
 
 # -------------------------------------------------------------------------

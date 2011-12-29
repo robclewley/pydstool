@@ -137,6 +137,9 @@ print c.funcSpecDict
 
 print "\n"
 
+empty_fn = Fun('1+exp(1)', [], 'dumb_fn')
+print empty_fn()
+
 q = Par('qpar')
 y = Var(QuantSpec('rel', 'v+p'), domain=[0,1])
 g = Fun(QuantSpec('qfunc', '-1.e-05+sin(qpar)*(10.e-5-xtol)'), ['xtol'])
