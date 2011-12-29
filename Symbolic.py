@@ -2516,11 +2516,10 @@ class Fun(Quantity):
 
     def __init__(self, spec, signature, name="", domain=None, specType=None):
         if not isinstance(signature, _seq_types):
-            raise TypeError("signature must be a non-empty list of strings")
-        if len(signature) == 0:
-            raise TypeError("signature must be a non-empty list of strings")
+            raise TypeError("signature must be a list/tuple of strings")
         sigstrs = []  # allows signature to be made up of Var names, etc.
         for s in signature:
+            # signature may be empty, for function call fn()
             sigstrs.append(str(s))
             assert isNameToken(str(s)), "signature symbol %s is invalid"%s
         self.signature = sigstrs
