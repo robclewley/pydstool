@@ -904,22 +904,43 @@ class dssrt_assistant(object):
             # assume generator
             self.model = None
             self.gen = model
+        FScompatMap = self.gen._FScompatibleNames
         self.reset()
         self.gamma1 = {}
         self.gamma2 = {}
-        self.pars = self.gen.pars
+        self.pars = self.gen.pars #FScompatMap(self.gen.pars)
         if self.model is None or self.model._mspecdict is None:
-            # dict of each variable's inputs
-            inputs = kw['inputs']
+            # dict of each variable's inputs (FScompatMap will copy)
+            inputs = kw['inputs'] #FScompatMap(kw['inputs'])
+            # dummy input names such as Lk for leak channel, which
+            # has no activation variable, will not be present in
+            # the FScompatMap, so use this opportunity to update
+            # the mapping
             for k, gam_inps in inputs.items():
+                gamma1 = []
                 try:
-                    self.gamma1[k] = gam_inps.gamma1
+                    for i in gam_inps.gamma1:
+                        if '.' in i and i not in FScompatMap:
+                            i_FSc = i.replace('.','_')
+                            FScompatMap[i] = i_FSc
+                        #    gamma1.append(i_FSc)
+                        #else:
+                        gamma1.append(i)
                 except AttributeError:
-                    self.gamma1[k] = []
+                    pass
+                self.gamma1[k] = gamma1
+                gamma2 = []
                 try:
-                    self.gamma2[k] = gam_inps.gamma2
+                    for i in gam_inps.gamma2:
+                        if '.' in i and i not in FScompatMap:
+                            i_FSc = i.replace('.','_')
+                            FScompatMap[i] = i_FSc
+                        #    gamma2.append(i_FSc)
+                        #else:
+                        gamma2.append(i)
                 except AttributeError:
-                    self.gamma2[k] = []
+                    pass
+                self.gamma2[k] = gamma2
             # all_vars includes 'mock' variables
             # given by auxiliary functions
             self.all_vars = inputs.keys()
@@ -933,7 +954,7 @@ class dssrt_assistant(object):
             #self.gamma1 = ?
             #self.gamma2 = ?
             # Can expect only mspec
-            self._init_from_MSpec(self.model._mspecdict.values()[0])
+            self._init_from_MSpec(self.model._mspecdict.values()[0].modelspec)
         all_inputs = []
         for ins in self.gamma1.values() + self.gamma2.values():
             try:
@@ -941,6 +962,8 @@ class dssrt_assistant(object):
             except TypeError:
                 # ins is None
                 pass
+        self._FScompatMap = FScompatMap
+        self._FScompatMapInv = FScompatMap.inverse()
         self.all_inputs = np.unique(all_inputs).tolist()
         self.tau_refs = kw['taus']
         self.inf_refs = kw['infs']
@@ -960,8 +983,11 @@ class dssrt_assistant(object):
     def __getstate__(self):
         d = copy.copy(self.__dict__)
         del d['taus']
+        del d['taus_direct']
         del d['infs']
+        del d['infs_direct']
         del d['psis']
+        del d['psis_direct']
         return d
 
     def __setstate__(self):
@@ -972,20 +998,97 @@ class dssrt_assistant(object):
         # process these to extract whether these are parameters, expressions
         # or references to auxiliary functions and convert them to callable
         # objects
+        #
+        # also, every reference to an auxiliary variable must be mappable to
+        # a dssrt_fn_X aux function to allow direct calculating of a tau or
+        # Psi from only state variables in a Point.
+        # ... this needs a parallel set of definitions to be created
+        d = {}
+        fspecs = self.gen.funcspec._auxfnspecs
+        fn_base = 'dssrt_fn_'
+        for var, tau in self.tau_refs.items():
+            if tau is None:
+                continue
+            # signature for the aux fn is in the Generator's FuncSpec, e.g.
+            # 'Na_dssrt_fn_cond': (['m', 'h'], 'Na_g*m*m*m*h')
+            # 'Na_dssrt_fn_tauh': (['V'], '1/(0.128*exp(-(50.0+V)/18)+4/(1+exp(-(V+27.0)/5)))')
+            # for which prefix is 'Na'
+            v_hier_list = var.split('.')
+            prefix = '_'.join(v_hier_list[:-1])  # empty if no hierarchical name
+            var_postfix = v_hier_list[-1]
+            if len(prefix) > 0:
+                fname = prefix+'_'+fn_base+'tau'+var_postfix
+            else:
+                fname = fn_base+'tau'+var_postfix
+            # convert fn sig names to resolvable hierarchical names using knowledge
+            # of inputs
+            inps_to_var = self.gamma1[var] + self.gamma2[var]
+            sig = fspecs[fname][0]
+            # match sig entries to final elements of inps_to_var
+            for inp in inps_to_var:
+                inp_hier_list = inp.split('.')
+                try:
+                    ix = sig.index(inp_hier_list[-1])
+                except ValueError:
+                    # postfix not in sig
+                    pass
+                else:
+                    sig[ix] = inp
+            d[tau.replace('.','_')] = fname+'(' + ",".join(sig) + ')'
+
+        for var, inf in self.inf_refs.items():
+            if inf is None:
+                continue
+            # signature for the aux fn is in the Generator's FuncSpec, e.g.
+            # 'Na_dssrt_fn_cond': (['m', 'h'], 'Na_g*m*m*m*h')
+            # 'Na_dssrt_fn_tauh': (['V'], '1/(0.128*exp(-(50.0+V)/18)+4/(1+exp(-(V+27.0)/5)))')
+            # for which prefix is 'Na'
+            v_hier_list = var.split('.')
+            prefix = '_'.join(v_hier_list[:-1])  # empty if no hierarchical name
+            var_postfix = v_hier_list[-1]
+            if len(prefix) > 0:
+                fname = prefix+'_'+fn_base+var_postfix+'inf'
+            else:
+                fname = fn_base+var_postfix+'inf'
+            # convert fn sig names to resolvable hierarchical names using knowledge
+            # of inputs
+            inps_to_var = self.gamma1[var] + self.gamma2[var]
+            sig = fspecs[fname][0]
+            # match sig entries to final elements of inps_to_var
+            for inp in inps_to_var:
+                inp_hier_list = inp.split('.')
+                try:
+                    ix = sig.index(inp_hier_list[-1])
+                except ValueError:
+                    # postfix not in sig
+                    pass
+                else:
+                    sig[ix] = inp
+            d[inf.replace('.','_')] = fname+'(' + ",".join(sig) + ')'
+
+        self._direct_ref_mapping = parseUtils.symbolMapClass(d)
+        FScMap = self._FScompatMap
         self.taus = {}
+        self.taus_direct = {}
         for k, v in self.tau_refs.items():
-            self.taus[k] = self._process_expr(v)
+            self.taus[k], self.taus_direct[k] = self._process_expr(FScMap(v))
+
         self.infs = {}
+        self.infs_direct = {}
         for k, v in self.inf_refs.items():
-            self.infs[k] = self._process_expr(v)
+            self.infs[k], self.infs_direct[k] = self._process_expr(FScMap(v))
+
         self.psis = {}
+        self.psis_direct = {}
         for k, vdict in self.psi_refs.items():
             if vdict is None:
-                self.psis[k] = None
+                self.psis[k], self.psis_direct[k] = (None, None)
             else:
                 self.psis[k] = {}
+                self.psis_direct[k] = {}
                 for inp, psiv in vdict.items():
-                    self.psis[k][inp] = self._process_expr(psiv)
+                    self.psis[k][inp], self.psis_direct[k][inp] = \
+                                            self._process_expr(FScMap(psiv))
 
 
     def _init_from_MSpec(self, mspec):
@@ -996,34 +1099,53 @@ class dssrt_assistant(object):
 
 
     def _process_expr(self, expr):
+        """Create two Symbolic.Fun(ction) versions of the given expression:
+
+        (1) The first is intended for processing post-integration
+        pointsets to yield the dominant scale Psi quantities,
+        when the pointsets contain already-computed auxiliary variables
+        for taus, infs, etc.
+
+        (2) The second is intended for on-demand calculation of Psi's
+        when only the system's state variables are given, thus
+        taus and infs etc. must be computed this class.
+
+        The returned pair of pairs is
+         ((arg_list_signature (1), symbolic function (1)),
+          (arg_list_signature (2), symbolic function (2)))
+        unless None was passed (in which case None is returned).
+        """
         if expr is None:
             # None
-            return None
+            return (None, None)
         elif parseUtils.isNumericToken(expr):
             # numeric literal
-            return ([], Symbolic.expr2fun(expr))
+            f = Symbolic.expr2fun(expr)
+            return ( ([], f), ([], f) )
         elif expr in self.pars:
             # parameter
             val = 'refpars["%s"]' % expr
             defs = {'refpars': self.pars}
-            return ([], Symbolic.expr2fun(val, **defs))
+            f = Symbolic.expr2fun(val, **defs)
+            return ( ([], f), ([], f) )
         elif expr in self.gen.inputs:
             # input literal - turn into a function of t
-            return (['t'], Symbolic.expr2fun(expr+'(t)'))
+            f = Symbolic.expr2fun(expr+'(t)')
+            return ( (['t'], f), (['t'], f) )
         else:
             # test for valid math expression
             # - may include auxiliary function call (with arguments)
             fnames = self.gen.auxfns.keys()
-            map = dict(self.gen.auxfns.items())
-            map.update(dict(self.gen.inputs.items()))
+            themap = dict(self.gen.auxfns.items())
+            themap.update(dict(self.gen.inputs.items()))
             defs = {'refpars': self.pars}
             pnames = self.pars.keys()
             pvals = ['refpars["%s"]' % pn for pn in pnames]
 #            parmap = dict(zip(pnames,
 #                              [Symbolic.expr2fun(v, **defs) for v in pvals]))
             #val, dummies = parseUtils.replaceCallsWithDummies(expr, fnames)
-            val = expr
-            dummies = {}
+            val = expr   # retained in case revert to replaceCallsWithDummies(...)
+            #dummies = {}
             val_q = Symbolic.QuantSpec('__expr__', val)
             mapping = dict(zip(pnames, pvals))
             used_inputs = utils.intersect(val_q.parser.tokenized,
@@ -1041,17 +1163,25 @@ class dssrt_assistant(object):
 #                defs[dstr] = Symbolic.expr2fun(dspec, **map)
             #defs.update(parmap)
             #defs.update(self.pars)
-            defs.update(map)
+
+            # Every reference to an auxiliary variable must be mappable to
+            # a dssrt_fn_X aux function to allow direct calculating of a tau or
+            # Psi from only state variables in a Point.
+            val_q_direct = copy.copy(val_q)
+            val_q_direct.mapNames(self._direct_ref_mapping)
+
+            defs.update(themap)
             if val in defs:
                 # then outermost level is just a single function call
                 # which has been replaced unnecessarily by a dummy term
                 fn = copy.copy(defs[val])
                 del defs[val]
-                return (fn._args, fn)
+                return ( (fn._args, fn), (fn._args, fn) )
             else:
                 fn = Symbolic.expr2fun(str(val_q), **defs)
-                return (fn._args, fn)
-        # !! Cannot be a variable name or an auxiliary variable name !!
+                fn_direct = Symbolic.expr2fun(str(val_q_direct), **defs)
+                return ( (fn._args, fn), (fn_direct._args, fn_direct) )
+
 
     def reset(self):
         """Delete current state based on given trajectory"""
@@ -1064,6 +1194,7 @@ class dssrt_assistant(object):
         self.Is = {}
         self.pars = None
 
+
     def ensure(self):
         assert self.gen is not None, "Must have a valid generator attribute"
         assert self.traj is not None, "Must provide trajectory attribute"
@@ -1072,11 +1203,77 @@ class dssrt_assistant(object):
             self.pts = self.traj.sample()
         if self.times is None:
             self.times = self.pts.indepvararray
+        # refresh reference from generator
         self.pars = self.gen.pars
 
 
+    def calc_tau(self, target, pt):
+        """Calculate tau of target variable directly from a given single point
+        containing only the state variables.
+        """
+        ptFS = self._FScompatMap(pt)
+        try:
+            args, f = self.taus_direct[target]
+        except TypeError:
+            # entry in dict was None (can't broadcast)
+            return np.NaN
+        else:
+            try:
+                return f(**common.filteredDict(ptFS, args))
+            except:
+                print f._args
+                print f._call_spec
+                raise
+
+
+    def calc_inf(self, target, pt):
+        """Calculate inf of target variable directly from a given single point
+        containing only the state variables.
+        """
+        ptFS = self._FScompatMap(pt)
+        try:
+            args, f = self.infs_direct[target]
+        except TypeError:
+            # entry in dict was None (can't broadcast)
+            return np.NaN
+        else:
+            try:
+                return f(**common.filteredDict(ptFS, args))
+            except:
+                print f._args
+                print f._call_spec
+                raise
+
+
+    def calc_psi(self, target, pt, focus=None):
+        """Calculate Psi of focus variable w.r.t. the target variable directly
+        from a given single point containing only the state variables.
+
+        If focus is None (default) then focus_var attribute is assumed.
+        """
+        ptFS = self._FScompatMap(pt)
+        if focus is None:
+            focus = self.focus_var
+        try:
+            args, f = self.psis_direct[focus][target]
+        except TypeError:
+            # entry in dict was None (can't broadcast)
+            return np.NaN
+        except KeyError:
+            raise ValueError("Invalid focus or target variable")
+        else:
+            try:
+                return f(**common.filteredDict(ptFS, args))
+            except:
+                print f._args
+                print f._call_spec
+                raise
+
+
     def calc_taus_infs(self, focus=False):
-        """if focus=True (default False), results are only returned for the
+        """Calculate taus and infs from given trajectory.
+
+        If focus=True (default False), results are only returned for the
         variable of focus given by focus_var attribute"""
         self.ensure()
         vals = {}
@@ -1084,7 +1281,7 @@ class dssrt_assistant(object):
             vars = [self.focus_var]
         else:
             vars = self.taus.keys()
-        pts = self.pts
+        pts = self._FScompatMap(self.pts)
 #        ptvals = dict(self.pts)
 #        # permit access from external inputs or other autonomous functions
 #        ptvals['_time_'] = pts['t']
@@ -1119,14 +1316,15 @@ class dssrt_assistant(object):
 
 
     def calc_Is(self):
+        """Calculate currents from given trajectory"""
         raise NotImplementedError
 
 
     def calc_psis(self):
+        """Calculate Psis from given trajectory"""
         self.ensure()
+        FScMap = self._FScompatMap
         fv = self.focus_var
-        inf_var = 'inf_'+fv
-        tau_var = 'tau_'+fv
         if self.tau_inf_vals == {}:
             self.calc_taus_infs(focus=True)
         psi_defs = self.psis[fv]
@@ -1135,7 +1333,7 @@ class dssrt_assistant(object):
             return
         psis = {}
         all_var_inputs = self.gamma1[fv] + self.gamma2[fv]
-        pts = self.pts
+        pts = FScMap(self.pts)
         ts = pts.indepvararray.copy()
         ts.shape = (ts.shape[0],1)
         c = pts.coordarray.T
@@ -1167,6 +1365,7 @@ class dssrt_assistant(object):
                     raise
         self.psi_vals[fv] = psis
 
+
     def make_pointsets(self):
         self.ensure()
         fv = self.focus_var
@@ -1177,8 +1376,7 @@ class dssrt_assistant(object):
         base='psi_'+fv
         for inp, psis in self.psi_vals[fv].items():
             all_vals[base+'_'+inp] = psis
-        pts = Pointset(indepvararray=self.times, coorddict=all_vals)
-        self.psi_pts = pts
+        self.psi_pts = Pointset(indepvararray=self.times, coorddict=all_vals)
 
 
     def calc_rankings(self, influence_type='psi'):
