@@ -193,7 +193,9 @@ def connectWithSynapse(synname, syntypestr, source_cell, dest_cell,
                                          comp2name+'.'+voltage,
                                          syntypestr, vrev=soma1name+'.'+voltage,
                                          g=g, noauxs=noauxs,
-                                         subclass=subclass)
+                                         subclass=subclass,
+                                         gamma1={voltage: (synname+'_1',soma1name+'.'+voltage),
+                                                 synname+'_1': (voltage,)})
         channel_name = nameResolver(channel_s12, dest_cell)
         # update with globalized name
         targetChannel = addedNeuron2Name+comp2name+'.'+channel_name
@@ -203,7 +205,9 @@ def connectWithSynapse(synname, syntypestr, source_cell, dest_cell,
                                          soma1name+'.'+voltage,
                                          syntypestr, vrev=comp2name+'.'+voltage,
                                          g=g, noauxs=noauxs,
-                                         subclass=subclass)
+                                         subclass=subclass,
+                                         gamma1={voltage: (synname+'_2',comp2name+'.'+voltage),
+                                                 synname+'_2': (voltage,)})
         channel_name = nameResolver(channel_s21, source_cell)
         # update with globalized name
         targetChannel = addedNeuron1Name+soma1name+'.'+channel_name
@@ -216,7 +220,9 @@ def connectWithSynapse(synname, syntypestr, source_cell, dest_cell,
                                          addedNeuron1Name+synname+'.'+svarname,
                                          comp2name+'.'+voltage,
                                          syntypestr, vrev=vrev, g=g, noauxs=noauxs,
-                                         subclass=subclass)
+                                         subclass=subclass,
+                                         gamma1=args(voltage=(synname,),
+                                                     synname=(voltage,)))
         channel_name = nameResolver(channel_s12, dest_cell)
         # update with globalized name
         targetChannel = addedNeuron2Name+comp2name+'.'+channel_name
@@ -261,7 +267,8 @@ def connectWithSynapse(synname, syntypestr, source_cell, dest_cell,
 
 
 def makeSynapseChannel(name, gatevarname=None, voltage=voltage, typestr=None,
-                       vrev=None, g=None, noauxs=True, subclass=channel):
+                       vrev=None, g=None, noauxs=True, subclass=channel,
+                       gamma1=None, gamma2=None):
     """Make a chemical or electrical (gap junction) synapse channel in a soma.
     To select these, the typestr argument must be one of 'exc', 'inh', or 'gap'.
     For a user-defined chemical synapse use a different string name for typestr.
@@ -322,15 +329,35 @@ def makeSynapseChannel(name, gatevarname=None, voltage=voltage, typestr=None,
         shunt = Var(cond*vrevpar, 'shunt', specType='ExpFuncSpec')
         I = Var(cond*(v_pot-vrevpar), 'I', specType='ExpFuncSpec')
         if typestr == 'gap':
+            arg_list = []
+        else:
+            arg_list = [gatevarname]
+        if not isinstance(vrevpar, Par):
+            if parlist is not None:
+                avoid_pars = [str(q) for q in parlist if isinstance(q, Par)]
+            else:
+                avoid_pars = []
+            arg_list.extend(remain(vrevpar.freeSymbols, avoid_pars))
+        cond_fn = Fun(condQ(), arg_list, 'dssrt_fn_cond')
+        shunt_fn = Fun(condQ()*vrevpar, arg_list, 'dssrt_fn_shunt')
+        I_fn = Fun(condQ()*(v_pot-vrevpar), arg_list+[voltage],
+                   'dssrt_fn_I')
+        channel_s.add([gpar,I,cond,shunt,cond_fn,shunt_fn,I_fn])
+        if typestr != 'gap':
             # don't include vrevpar, which is really an already existing
             # V variable in a different cell
-            channel_s.add([gpar,I,cond,shunt])
-        else:
-            channel_s.add([gpar,vrevpar,I,cond,shunt])
+            channel_s.add([vrevpar])
+        if gamma1 is None:
+            gamma1 = {}
+        if gamma2 is None:
+            gamma2 = {}
+        channel_s.gamma1 = gamma1
+        channel_s.gamma2 = gamma2
     return channel_s
 
 
-def makeExtInputCurrentChannel(name, noauxs=True, subclass=channel):
+def makeExtInputCurrentChannel(name, noauxs=True, subclass=channel,
+                               gamma1=None, gamma2=None):
     """External input signal used directly as a current. Supply the Input having
     coordinate name 'ext_input'.
 
@@ -344,15 +371,28 @@ def makeExtInputCurrentChannel(name, noauxs=True, subclass=channel):
     if noauxs:
         channel_Iext.add([inp, I_ext])
     else:
+        arg_list = ['ext_input']
         I_cond = Var('0', 'cond', [0,Inf], specType='ExpFuncSpec')   # no conductance for this plain current
         I_shunt = Var(inp, 'shunt', specType='ExpFuncSpec')    # technically not a shunt but acts like a V-independent shunt!
-        channel_Iext.add([inp, I_ext, I_cond, I_shunt])
+        cond_fn = Fun(inp(), arg_list, 'dssrt_fn_cond')
+        shunt_fn = Fun(inp()*vrevpar, arg_list, 'dssrt_fn_shunt')
+        I_fn = Fun(inp()*(v_pot-vrevpar), arg_list+[voltage],
+                   'dssrt_fn_I')
+        channel_Iext.add([inp, I_ext, I_cond, I_shunt,
+                          cond_fn, shunt_fn, I_fn])
+        if gamma1 is not None:
+            raise ValueError("gamma1 must be None")
+        channel_Iext.gamma1 = {}
+        if gamma2 is None:
+            gamma2 = {}
+        channel_Iext.gamma2 = gamma2
     return channel_Iext
 
 
 def makeExtInputConductanceChannel(name, voltage=voltage,
                                    g=None, vrev=None,
-                                   noauxs=True, subclass=channel):
+                                   noauxs=True, subclass=channel,
+                                   gamma1=None, gamma2=None):
     """External input signal used as a conductance. Supply the Input having
     coordinate name 'ext_input'.
 
@@ -388,11 +428,30 @@ def makeExtInputConductanceChannel(name, voltage=voltage,
     else:
         I_cond = Var(gpar*inp, 'cond', [0,Inf], specType='ExpFuncSpec')   # no conductance for this plain current
         I_shunt = Var(I_cond*vrevpar, 'shunt', specType='ExpFuncSpec')    # technically not a shunt but acts like a V-independent shunt!
-        channel_Iext.add([inp, I_ext, I_cond, I_shunt, gpar, vrevpar])
+        arg_list = ['ext_input']
+        if not isinstance(vrevpar, Par):
+            if parlist is not None:
+                avoid_pars = [str(q) for q in parlist if isinstance(q, Par)]
+            else:
+                avoid_pars = []
+            arg_list.extend(remain(vrevpar.freeSymbols, avoid_pars))
+        cond_fn = Fun(gpar*inp(), arg_list, 'dssrt_fn_cond')
+        shunt_fn = Fun(gpar*inp()*vrevpar, arg_list, 'dssrt_fn_shunt')
+        I_fn = Fun(gpar*inp()*(v_pot-vrevpar), arg_list+[voltage],
+                   'dssrt_fn_I')
+        channel_Iext.add([inp, I_ext, I_cond, I_shunt, gpar, vrevpar,
+                          cond_fn, shunt_fn, I_fn])
+        if gamma1 is not None:
+            raise ValueError("gamma1 must be None")
+        channel_Iext.gamma1 = {}
+        if gamma2 is None:
+            gamma2 = {}
+        channel_Iext.gamma2 = gamma2
     return channel_Iext
 
 
-def makeBiasChannel(name, I=None, noauxs=True, subclass=channel):
+def makeBiasChannel(name, I=None, noauxs=True, subclass=channel,
+                    gamma1=None, gamma2=None):
     """Constant bias / applied current "channel".
 
     Returns a channel-type object by default, or some user-defined subclass if desired.
@@ -410,14 +469,24 @@ def makeBiasChannel(name, I=None, noauxs=True, subclass=channel):
     else:
         Ibias_cond = Var('0', 'cond', [0,Inf], specType='ExpFuncSpec')   # no conductance for this plain current
         Ibias_shunt = Var(Ibias, 'shunt', specType='ExpFuncSpec')    # technically not a shunt but acts like a V-independent shunt!
-        channel_Ib.add([Ibias,Ibias_cond,Ibias_shunt,Ib])
+        cond_fn = Fun('0', [], 'dssrt_fn_cond')
+        shunt_fn = Fun(Ibias, [], 'dssrt_fn_shunt')
+        I_fn = Fun(Ibias, [], 'dssrt_fn_I')
+        channel_Ib.add([Ibias,Ibias_cond,Ibias_shunt,Ib, cond_fn, shunt_fn, I_fn])
+        if gamma1 is not None:
+            raise ValueError("gamma1 must be None")
+        channel_Ib.gamma1 = {}
+        if gamma2 is None:
+            gamma2 = {}
+        channel_Ib.gamma2 = gamma2
     return channel_Ib
 
 
 def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
                 taus=None,spow=1,s2=None,isinstant2=False,sinf2=None,taus2=None,
                 spow2=1,vrev=None,g=None,
-                parlist=None, noauxs=True, subclass=channel):
+                parlist=None, noauxs=True, subclass=channel,
+                gamma1=None, gamma2=None):
     """Make an ionic membrane channel using the steady state and rate function formalism.
 
     i.e., that the gating variable s has a differential equation in the form:
@@ -476,12 +545,14 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
             else:
                 raise TypeError("sinf argument must be a string or a QuantSpec")
             if isinstant:
-                taus_term = Var('0', name='tau'+s)
                 if noauxs:
                     gatevar = Var(sinf_term(), name=s, domain=[0,1],
                                  specType='ExpFuncSpec')
                 else:
-                    # re-use aterm and bterm defs for efficiency
+                    taus_term = Var('0', name='tau'+s)
+                    taus_fn = Fun( '0', [v_pot], 'dssrt_fn_tau'+s )
+                    sinf_fn = Fun( sinf_term(), [v_pot],
+                                'dssrt_fn_'+s+'inf' )
                     gatevar = Var(sinf_term(), name=s, domain=[0,1],
                                  specType='ExpFuncSpec')
             else:
@@ -497,11 +568,13 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
                     gatevar = Var( (sinf_term() - s_) / taus_term(), name=s,
                                  domain=[0,1], specType='RHSfuncSpec')
                 else:
-                    # re-use aterm and bterm defs for efficiency
+                    taus_fn = Fun( taus_term(), [v_pot], 'dssrt_fn_tau'+s )
+                    sinf_fn = Fun( sinf_term(), [v_pot],
+                                'dssrt_fn_'+s+'inf' )
                     gatevar = Var( (sinf_term() - s_) / taus_term(), name=s,
                                  domain=[0,1], specType='RHSfuncSpec')
             if not noauxs:
-                declare_list.extend([taus_term,sinf_term])
+                declare_list.extend([taus_term,sinf_term,taus_fn,sinf_fn])
         declare_list.append(gatevar)
         condQ = gpar*makePowerSpec(gatevar,spow)
 
@@ -517,11 +590,14 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
         else:
             raise TypeError("sinf2 argument must be a string or a QuantSpec")
         if isinstant2:
-            taus2_term = Var('0', name='tau'+s2)
             if noauxs:
                 gatevar2 = Var(sinf2_term(), name=s2, domain=[0,1],
                               specType='ExpFuncSpec')
             else:
+                taus2_term = Var('0', name='tau'+s2)
+                taus2_fn = Fun( '0', [v_pot], 'dssrt_fn_tau'+s2 )
+                sinf2_fn = Fun( sinf2_term(), [v_pot],
+                                'dssrt_fn_'+s2+'inf' )
                 gatevar2 = Var(sinf2_term(), name=s2, domain=[0,1],
                               specType='ExpFuncSpec')
         else:
@@ -535,11 +611,14 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
                 gatevar2 = Var( (sinf2_term() - s2_) / taus2_term(), name=s2,
                               domain=[0,1], specType='RHSfuncSpec')
             else:
-                gatevar2 = Var( (sinf2_term - s2_) / taus2_term(), name=s2,
+                taus2_fn = Fun( taus2_term(), [v_pot], 'dssrt_fn_tau'+s2 )
+                sinf2_fn = Fun( sinf2_term(), [v_pot],
+                                'dssrt_fn_'+s2+'inf' )
+                gatevar2 = Var( (sinf2_term() - s2_) / taus2_term(), name=s2,
                               domain=[0,1], specType='RHSfuncSpec')
         declare_list.append(gatevar2)
         if not noauxs:
-            declare_list.extend([taus2_term, sinf2_term])
+            declare_list.extend([taus2_term, sinf2_term, taus2_fn, sinf2_fn])
         condQ = condQ * makePowerSpec(gatevar2, spow2)
 
     if noauxs:
@@ -549,7 +628,29 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
         cond = Var(condQ, 'cond', [0,Inf], specType='ExpFuncSpec')
         shunt = Var(cond*vrevpar, 'shunt', specType='ExpFuncSpec')
         I = Var(cond*(v_pot-vrevpar), 'I', specType='ExpFuncSpec')
-        declare_list.extend([I,cond,shunt])
+        if s is None:
+            arg_list = []
+        else:
+            arg_list = [s]
+        if s2 is not None:
+            arg_list.append(s2)
+        if not isinstance(vrevpar, Par):
+            if parlist is not None:
+                avoid_pars = [str(q) for q in parlist if isinstance(q, Par)]
+            else:
+                avoid_pars = []
+            arg_list.extend(remain(vrevpar.freeSymbols, avoid_pars))
+        cond_fn = Fun(condQ(), arg_list, 'dssrt_fn_cond')
+        shunt_fn = Fun(cond()*vrevpar, arg_list, 'dssrt_fn_shunt')
+        I_fn = Fun(cond()*(v_pot-vrevpar), arg_list+[voltage],
+                   'dssrt_fn_I')
+        declare_list.extend([I,cond,shunt, cond_fn, shunt_fn, I_fn])
+        if gamma1 is None:
+            gamma1 = {}
+        if gamma2 is None:
+            gamma2 = {}
+        thischannel.gamma1 = gamma1
+        thischannel.gamma2 = gamma2
     if parlist is not None:
         declare_list.extend(parlist)
     thischannel.add(declare_list)
@@ -559,7 +660,8 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
 def makeChannel_rates(name,voltage=voltage,
                       s=None,isinstant=False,arate=None,brate=None,spow=1,
                       s2=None,isinstant2=False,arate2=None,brate2=None,spow2=1,
-                      vrev=None,g=None,parlist=None,noauxs=True,subclass=channel):
+                      vrev=None,g=None,parlist=None,noauxs=True,subclass=channel,
+                      gamma1=None, gamma2=None):
     """Make an ionic membrane channel using the forward and backward rate formalism.
 
     i.e., that the gating variable s has a differential equation in the form:
@@ -626,27 +728,33 @@ def makeChannel_rates(name,voltage=voltage,
             # temporary declaration of symbol s (the argument string) as a Var
             s_ = Var(s)
             if isinstant:
-                taus_term = Var('0', name='tau'+s)
-                sinf_term = Var( aterm/(aterm+bterm), name=s+'inf')
                 if noauxs:
                     gatevar = Var( aterm()/(aterm()+bterm()), name=s,
                                  domain=[0,1], specType='ExpFuncSpec')
                 else:
-                    # re-use aterm and bterm defs for efficiency
+                    taus_term = Var('0', name='tau'+s)
+                    sinf_term = Var( aterm/(aterm+bterm), name=s+'inf')
+                    taus_fn = Fun( '0', [voltage], 'dssrt_fn_tau'+s )
+                    sinf_fn = Fun( aterm()/(aterm()+bterm()), [voltage],
+                                'dssrt_fn_'+s+'inf' )
                     gatevar = Var( aterm()/(aterm()+bterm()), name=s,
                                  domain=[0,1], specType='ExpFuncSpec')
             else:
-                taus_term = Var( 1/(aterm+bterm), name='tau'+s)
-                sinf_term = Var( aterm*taus_term, name=s+'inf')
                 if noauxs:
                     gatevar = Var( aterm()*(1-s_)-bterm()*s_, name=s,
                                  domain=[0,1], specType='RHSfuncSpec')
                 else:
-                    # re-use aterm and bterm defs for efficiency
+                    taus_term = Var( 1/(aterm+bterm), name='tau'+s)
+                    sinf_term = Var( aterm*taus_term, name=s+'inf')
+                    taus_fn = Fun( 1/(aterm()+bterm()), [voltage],
+                                   'dssrt_fn_tau'+s )
+                    sinf_fn = Fun( aterm()/(aterm()+bterm()), [voltage],
+                                'dssrt_fn_'+s+'inf' )
                     gatevar = Var( aterm()*(1-s_)-bterm()*s_, name=s,
                                  domain=[0,1], specType='RHSfuncSpec')
             if not noauxs:
-                declare_list.extend([taus_term,sinf_term,aterm,bterm])
+                declare_list.extend([taus_term,sinf_term,aterm,bterm,
+                                     taus_fn, sinf_fn])
         declare_list.append(gatevar)
         condQ = gpar*makePowerSpec(gatevar,spow)
 
@@ -674,6 +782,9 @@ def makeChannel_rates(name,voltage=voltage,
             else:
                 taus2_term = Var( '0', name='tau'+s2)
                 sinf2_term = Var( aterm2()/(aterm2()+bterm2()), name=s2+'inf')
+                taus2_fn = Fun( '0', [voltage], 'dssrt_fn_tau'+s2 )
+                sinf2_fn = Fun( aterm2()/(aterm2()+bterm2()), [voltage],
+                                'dssrt_fn_'+s2+'inf' )
                 gatevar2 = Var( aterm2()/(aterm2()+bterm2()), name=s2,
                               domain=[0,1], specType='ExpFuncSpec')
         else:
@@ -682,13 +793,17 @@ def makeChannel_rates(name,voltage=voltage,
                                domain=[0,1], specType='RHSfuncSpec')
             else:
                 taus2_term = Var( 1/(aterm2()+bterm2()), name='tau'+s2)
-                sinf2_term = Var( aterm2()*taus2_term, name=s2+'inf')
+                sinf2_term = Var( aterm2()*taus2_term(), name=s2+'inf')
+                taus2_fn = Fun( 1/(aterm2()+bterm2()), [voltage], 'dssrt_fn_tau'+s2 )
+                sinf2_fn = Fun( aterm2()/(aterm2()+bterm2()), [voltage],
+                                'dssrt_fn_'+s2+'inf' )
                 gatevar2 = Var(aterm2()*(1-s2_)-bterm2()*s2_, name=s2,
                                domain=[0,1], specType='RHSfuncSpec')
         condQ = condQ * makePowerSpec(gatevar2, spow2)
         declare_list.append(gatevar2)
         if not noauxs:
-            declare_list.extend([taus2_term, sinf2_term, aterm2, bterm2])
+            declare_list.extend([taus2_term, sinf2_term, aterm2, bterm2,
+                                 taus2_fn, sinf2_fn])
 
     if noauxs:
         I = Var(condQ*(v_pot-vrevpar), 'I', specType='ExpFuncSpec')
@@ -697,7 +812,28 @@ def makeChannel_rates(name,voltage=voltage,
         cond = Var(condQ, 'cond', [0,Inf], specType='ExpFuncSpec')
         shunt = Var(cond*vrevpar, 'shunt', specType='ExpFuncSpec')
         I = Var(cond*(v_pot-vrevpar), 'I', specType='ExpFuncSpec')
-        declare_list.extend([I,cond,shunt])
+        if s is None:
+            arg_list = []
+        else:
+            arg_list = [s]
+        if s2 is not None:
+            arg_list.append(s2)
+        if not isinstance(vrevpar, Par):
+            if parlist is not None:
+                avoid_pars = [str(q) for q in parlist if isinstance(q, Par)]
+            else:
+                avoid_pars = []
+            arg_list.extend(remain(vrevpar.freeSymbols, avoid_pars))
+        cond_fn = Fun(condQ(), arg_list, 'dssrt_fn_cond')
+        shunt_fn = Fun(cond()*vrevpar, arg_list, 'dssrt_fn_shunt')
+        I_fn = Fun(cond()*(v_pot-vrevpar), arg_list+[voltage], 'dssrt_fn_I')
+        declare_list.extend([I,cond,shunt, cond_fn, shunt_fn, I_fn])
+        if gamma1 is None:
+            gamma1 = {}
+        if gamma2 is None:
+            gamma2 = {}
+        thischannel.gamma1 = gamma1
+        thischannel.gamma2 = gamma2
     if parlist is not None:
         declare_list.extend(parlist)
     thischannel.add(declare_list)
@@ -734,7 +870,49 @@ def makeSoma(name, voltage=voltage, channelList=None, C=None, noauxs=True,
         tauv = Var(QuantSpec('tauv', '1/(C*for(%s,cond,+))'%channel_cls_name))
         vinf = Var(QuantSpec('vinf', 'for(%s,shunt,+)'%channel_cls_name + \
                                        '/for(%s,cond,+)'%channel_cls_name))
-        declare_list.extend([v,C,vinf,tauv])
+        # for each cond in channel, append signature of dssrt_fn_cond
+        arg_list_c = []
+        arg_list_s = []
+        c_sum = []
+        s_sum = []
+        dssrt_inputs = {}
+        vstr = str(voltage)
+        for c in channelList:
+            def process_targ_name(inp):
+                if inp == vstr:
+                    return inp
+                else:
+                    return c.name+'.'+inp
+            for targ, inputs in c.gamma1.items():
+                proc_targ = process_targ_name(targ)
+                if proc_targ not in dssrt_inputs:
+                    dssrt_inputs[proc_targ] = args(gamma1=[], gamma2=[])
+                dssrt_inputs[proc_targ].gamma1.extend([process_targ_name(i) \
+                                                                     for i in inputs])
+            for targ, inputs in c.gamma2.items():
+                proc_targ = process_targ_name(targ)
+                if proc_targ not in dssrt_inputs:
+                    dssrt_inputs[proc_targ] = args(gamma1=[], gamma2=[])
+                dssrt_inputs[proc_targ].gamma2.extend([process_targ_name(i) \
+                                                                     for i in inputs])
+            cond = c['dssrt_fn_cond']
+            shunt = c['dssrt_fn_shunt']
+            cond_sig = cond.signature
+            shunt_sig = shunt.signature
+            arg_list_c.extend(cond_sig)
+            arg_list_s.extend(shunt_sig)
+            c_sum.append( c.name + '.' + cond.name+'('+','.join(cond_sig)+')' )
+            s_sum.append( c.name + '.' + shunt.name+'('+','.join(shunt_sig)+')' )
+        arg_list1 = makeSeqUnique(arg_list_c)
+        arg_list1.sort()
+        arg_list2 = makeSeqUnique(arg_list_c+arg_list_s)
+        arg_list2.sort()
+        tauv_fn = Fun('1/(C*(%s))'%'+'.join(c_sum), arg_list1,
+                      'dssrt_fn_tau'+vstr)
+        vinf_fn = Fun('(%s)/(%s)'%('+'.join(s_sum), '+'.join(c_sum)),
+                      arg_list2, 'dssrt_fn_'+vstr+'inf')
+        declare_list.extend([v,C,vinf,tauv,tauv_fn,vinf_fn])
+        asoma.dssrt_inputs = dssrt_inputs
     asoma.add(declare_list)
     return asoma
 
@@ -912,7 +1090,9 @@ def makeSynapse(name, gatevar, precompartment, typestr, threshfun=None,
     if not noauxs:
         sinf = Var( alpha_/(alpha_+b), name=gatevar+'inf')
         taus = Var( 1/(alpha_+b), name='tau'+gatevar)
-        syn.add([sinf,taus])
+        sinf_fn = Fun( alpha_/(alpha_+b), [precompartment], 'dssrt_fn_'+gatevar+'inf')
+        taus_fn = Fun( 1/(alpha_+b), [precompartment], 'dssrt_fn_tau'+gatevar)
+        syn.add([sinf,taus,sinf_fn,taus_fn])
     return syn
 
 
@@ -1031,7 +1211,9 @@ def makeAdaptingSynapse(name, gatevar, adaptvar, precompartment, typestr,
         taus = Var( 1/(alpha_+b), name='tau'+gatevar)
         dinf = Var( alpha_d_/(alpha_d_+b_d), name=adaptvar+'inf')
         taud = Var( 1/(alpha_d_+b_d), name='tau'+adaptvar)
-        syn.add([sinf,taus,dinf,taud])
+        sinf_fn = Fun( )
+        taus_fn = Fun( )
+        syn.add([sinf,taus,dinf,taud,sinf_fn,taus_fn])
     return syn
 
 # -----------------------------------------------------------------------------
