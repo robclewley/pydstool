@@ -9,6 +9,7 @@ from PyDSTool.Toolbox.neuralcomp import *
 from copy import copy
 
 targetGen = 'Dopri_ODEsystem'
+noauxs = True  # would use True to create auxiliaries for dominant scale analysis
 
 # -------------------------------------------------------------------------
 
@@ -86,15 +87,35 @@ ma = 0.32*(v+54)/(1-Exp(-(v+54.)/4))
 mb = 0.28*(v+27)/(Exp((v+27.)/5)-1)
 ha = .128*Exp(-(50.+v)/18)
 hb = 4/(1+Exp(-(v+27.)/5))
+
+# gamma specifies the input set contributors for each variable involved,
+# and can be used for dominant scale analysis (see HH_DSSRT_test.py), although
+# is unused here.
+# gamma1 is for terms whose dynamics depend on itself, gamma2 is for the rest.
+# ie. in RHS for v, m appears in a voltage-dependent term, g*m^3*h*(v-vrev)
+# so m appears in gamma1 for v.
+# As m' depends on v and m, v appears in gamma1 for m.
 channel_Na1 = makeChannel_rates('Na', voltage, 'm', False, ma, mb, 3,
-                                'h', False, ha, hb, 1, vrev=50, g=100)
+                                'h', False, ha, hb, 1, vrev=50, g=100,
+                                noauxs=noauxs, gamma1=args(voltage=('m',),
+                                                           m=(voltage,)))
 
 na = .032*(v+52)/(1-Exp(-(v+52.)/5))
 nb = .5*Exp(-(57.+v)/40)
-channel_K1 = makeChannel_rates('K', voltage, 'n', False, na, nb, 4, vrev=-100, g=99)
+channel_K1 = makeChannel_rates('K', voltage, 'n', False, na, nb, 4,
+                               vrev=-100, g=99,
+                               noauxs=noauxs, gamma1=args(voltage=('n',),
+                                                          n=(voltage,)))
 
-channel_Ib1 = makeBiasChannel('Ib', 2.1)
-channel_Lk1 = makeChannel_rates('Lk', vrev=-67, g=0.1)
+# bias current input to v's RHS does not depend on v, so goes in gamma2.
+# this is the name of the parameter in this case.
+channel_Ib1 = makeBiasChannel('Ib', 2.1, noauxs=noauxs,
+                              gamma2=args(voltage=('Ibias',)))
+
+# leak current input to v's RHS does depend on v, so the input goes in gamma1.
+# this is the name of a dummy 'activation'-like variable for leak (always = 1).
+channel_Lk1 = makeChannel_rates('Lk', vrev=-67, g=0.1, noauxs=noauxs,
+                                gamma1=args(voltage=('leak',)))
 
 # Set up an intracellular Calcium store and associated slow current
 # (this is basically made up, but follows the formalism and kinetics of some
@@ -133,13 +154,17 @@ minf = 1./(1+Exp(-(v+22.)/8.5))
 taum = 16-13.1/(1+Exp(-(v+25.1)/26.4))
 channel_ICa1 = makeChannel_halfact('Ca', voltage, 'm', False,
                                    minf, taum, vrev=ECa_fun('Ca_conc'), g=0.2,
-                                   parlist=[Ca_conc_RHS, ECa_fun, ca_tau])
+                                   parlist=[Ca_conc_RHS, ECa_fun, ca_tau],
+                                   noauxs=noauxs, gamma1=args(voltage=('m'),
+                                                              m=(voltage,'Ca_Conc')))
 
 ## Alternative type of external input
-#noisy_current = makeExtInputCurrentChannel('noise')
+#noisy_current = makeExtInputCurrentChannel('noise', noauxs=noauxs,
+#                       gamma2=args(voltage=('noise',)))
 #Isignal_vardict = make_signal(0.1, t_max, 0, 4, 2)
 
-noisy_current = makeExtInputConductanceChannel('noise', vrev=-70, g=3)
+noisy_current = makeExtInputConductanceChannel('noise', vrev=-70, g=3,
+                               noauxs=noauxs, gamma2=args(voltage=('noise',)))
 Isignal_vardict = make_noise_signal(0.1, t_max, 0.5, 0.25, 2)
 
 ## Example Poisson signal with on average 0.05 spikes per ms
@@ -150,7 +175,8 @@ Isignal_vardict = make_noise_signal(0.1, t_max, 0.5, 0.25, 2)
 
 
 HHcell1 = makeSoma('cell1', v, channelList=[channel_Lk1, channel_Ib1,
-                   channel_Na1, channel_K1, channel_ICa1, noisy_current], C=1.5)
+                   channel_Na1, channel_K1, channel_ICa1, noisy_current], C=1.5,
+                   noauxs=noauxs)
 
 # copy instead of recreating everything again
 HHcell2 = copy(HHcell1)
