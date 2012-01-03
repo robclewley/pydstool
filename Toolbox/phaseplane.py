@@ -744,9 +744,10 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 pycont_cache[1] = P_y
             else:
                 P_y = pycont_cache[1]
-                P_y.model.set(pars=gen.pars)
-                P_y.model.set(pars=filteredDict(vardict, [xname, yname], neg=True))
-                P_y.model.set(pars={'time': t})
+                new_pars = gen.pars.copy()
+                new_pars.update(filteredDict(vardict, [xname, yname], neg=True))
+                new_pars['time'] = t
+                P_y.model.set(pars=new_pars)
             PCargs = args(name='null_curve_y', type='EP-C', force=True)
             PCargs.freepars = [xname]
             PCargs.MinStepSize = 1e-8
@@ -860,9 +861,10 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 pycont_cache[0] = P_x
             else:
                 P_x = pycont_cache[0]
-                P_x.model.set(pars=gen.pars)
-                P_x.model.set(pars=filteredDict(vardict, [xname, yname], neg=True))
-                P_x.model.set(pars={'time': t})
+                new_pars = gen.pars.copy()
+                new_pars.update(filteredDict(vardict, [xname, yname], neg=True))
+                new_pars['time'] = t
+                P_x.model.set(pars=new_pars)
             PCargs = args(name='null_curve_x', type='EP-C', force=True)
             PCargs.freepars = [yname]
             PCargs.MinStepSize = 1e-8
@@ -1048,10 +1050,9 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
                           gen.variables[xname].depdomain.contains(xinf_val[ix]) is not notcontained
                 if ok:
                     fps.append(xinf_val)
-                    fp_pt = dict(zip(gen._FScompatibleNamesInv(x0_names),
-                                                xinf_val))
+                    fp_pt = dict(zip(x0_names, xinf_val))
                     fp_pt.update(fixed_vars)
-                    fp_listdict.append(fp_pt)
+                    fp_listdict.append(gen._FScompatibleNamesInv(fp_pt))
         d_posns.inc()
     return tuple(fp_listdict)
 
@@ -1952,6 +1953,20 @@ class plotter_2D(object):
             return
         self.setup(figname)
         pp.plot(A[0], A[1], style)
+        self.teardown()
+
+    def plot_vline(self, x, style, figname=None):
+        if not self.do_display:
+            return
+        self.setup(figname)
+        pp.axvline(x=x, color=style[0], linestyle=style[1])
+        self.teardown()
+
+    def plot_hline(self, y, style, figname=None):
+        if not self.do_display:
+            return
+        self.setup(figname)
+        pp.axhline(y=y, color=style[0], linestyle=style[1])
         self.teardown()
 
 
