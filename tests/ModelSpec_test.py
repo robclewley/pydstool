@@ -8,7 +8,7 @@ from PyDSTool import *
 from PyDSTool.Toolbox.neuralcomp import *
 from copy import copy
 
-targetGen = 'Dopri_ODEsystem'
+targetGen = 'Vode_ODEsystem'
 noauxs = True  # would use True to create auxiliaries for dominant scale analysis
 
 # -------------------------------------------------------------------------
