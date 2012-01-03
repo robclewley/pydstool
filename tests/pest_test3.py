@@ -20,7 +20,7 @@ tdata = [0, 15]
 
 par_args_HH_goal = {'gna': 100, 'gk': 80, 'gl': 0.1,
             'vna': 50, 'vk': -100, 'vl': -67,
-            'I': 1.3, 'C': 1.0}
+            'Iapp': 1.3, 'C': 1.0}
 ic_args_HH = {'v':-68, 'm': 0, 'h': 1, 'n': 0}
 HH_goal = HH_model.makeHHneuron('goalHH', par_args_HH_goal, ic_args_HH,
             extra_terms='-0.04*(sin(9.1*t)*cos(2.6*t)+sin(5.1119*t+2))*(v-60)')
@@ -108,8 +108,8 @@ geom_interface = ext_geom_iface(goaltraj,
 ## Set up test HH model
 par_args_HH_test = {'gna': 100, 'gk': 80, 'gl': 0.12,
             'vna': 50, 'vk': -100, 'vl': -70,
-            'I': 1.34, 'C': 1.0}
-# Note that I is not the same as that for goal, even though we're not
+            'Iapp': 1.34, 'C': 1.0}
+# Note that Iapp is not the same as that for goal, even though we're not
 # optimizing this parameter. Increasing I from original 1.3 to 1.34
 # causes slow convergence.
 
