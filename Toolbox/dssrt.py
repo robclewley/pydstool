@@ -36,7 +36,7 @@ _predicates = ['is_active', 'is_inactive', 'is_modulatory',
 _functions = ['find_epoch_period', 'transition_psi', 'transition_tau',
               'get_infs', 'get_taus', 'split_pts', 'define_psi_events',
               'normalized_psis', 'define_tau_events', 'find_regime_transition',
-              'find_ep_ix', 'show_epochs', 'plot_psis',
+              'find_ep_ix', 'show_epochs', 'plot_psis', 'indent',
               'swdist', 'jaro', 'comp_seqs', 'editdist_edits',
               'MATCH', 'MISMATCH', 'APPROX', 'CLOSE', 'VCLOSE',
               'FAR', 'VFAR', 'GAP', 'get_symbol_sequence', 'tabulate_epoch_seqs']
