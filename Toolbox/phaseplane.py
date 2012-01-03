@@ -18,6 +18,7 @@ from __future__ import division
 import itertools, operator
 
 from PyDSTool import *
+from PyDSTool.errors import PyDSTool_ValueError
 from PyDSTool.MProject import *
 from PyDSTool.common import args, metric, metric_L2, metric_weighted_L2, \
      metric_float, remain, fit_quadratic, fit_exponential, fit_diff_of_exp, \
@@ -984,7 +985,7 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
         else:
             break
         if n < 3:
-            raise "maxsearch too small"
+            raise PyDSTool_ValueError("maxsearch too small")
     x0_coords = np.zeros((D,n),'f')
     x0_ixs = []
     x0_names = []
@@ -1700,7 +1701,9 @@ class fixedpoint_nD(object):
             var_ixs.append(gen.funcspec.vars.index(v))
         fp_evaluated = array(gen.Rhs(0, pt, gen.pars))[var_ixs]
         if sometrue([abs(fp_i) > eps for fp_i in fp_evaluated]):
-            raise ValueError("Given point is not a fixed point of the system at given tolerance")
+            print "Tolerance =", eps
+            print "vector field is", fp_evaluated
+            raise PyDSTool_ValueError("Given point is not a fixed point of the system at given tolerance")
         self.coordnames = pt.coordnames
         self._classify()
         self.description = description
