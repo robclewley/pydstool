@@ -2285,6 +2285,7 @@ def jaro(str1, str2, min_threshold=None):
 
 
 def tabulate_epoch_seqs(epseq1, epseq2):
+    """Create a text table of epochs"""
     str_table = []
     assert len(epseq1) == len(epseq2)
     for i in range(len(epseq1)):
