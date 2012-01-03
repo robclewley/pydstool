@@ -889,7 +889,20 @@ class symbolMapClass(object):
 
     def __call__(self, arg):
         if isinstance(arg, str):
-            return self.__getitem__(arg)
+            if arg in self.lookupDict:
+                return self.lookupDict[arg]
+            else:
+                try:
+                    po = parserObject(arg, False)
+                except:
+                    # cannot do anything to it!
+                    return arg
+                else:
+                    if len(po.tokenized) <= 1:
+                        # don't recurse, we have a single token or whitespace/CR/LF
+                        return arg
+                    else:
+                        return "".join(mapNames(self,po.tokenized))
         elif hasattr(arg, 'mapNames'):
             # Quantity or QuantSpec
             res = copy(arg)
@@ -1073,9 +1086,9 @@ class auxfnDBclass(object):
         if parserObj in self.auxnames:
             del self.auxnames[parserObj]
 
-
     def clearall(self):
         self.auxnames = {}
+
 
 # only need one of these per session
 global protected_auxnamesDB
@@ -1176,7 +1189,8 @@ class parserObject(object):
             self.usedSymbols = []
             self.freeSymbols = []
         if symbolMap is None:
-            symbolMap = symbolMapClass()
+            # dummy identity function
+            symbolMap = lambda x: x
         specialtokens = specialtoks + ['('] + self.usedSymbols
         if includeProtected:
             specialtokens.extend(protected_allnames)
@@ -1961,8 +1975,8 @@ def findEndBrace(s, lbchar='(', rbchar=')'):
         return None
 
 
-# wrap objlist into a comma separated string of str(objects)
 def makeParList(objlist, prefix=''):
+    """wrap objlist into a comma separated string of str(objects)"""
     parlist = ', '.join(map(lambda i: prefix+str(i), objlist))
     return parlist
 
@@ -2043,6 +2057,7 @@ def wrapArgInCall(source, callfn, wrapL, wrapR=None, argnums=[0],
         else:
             output += source[currpos:]
     return output
+
 
 ##def replaceCallsWithDummies(source, callfns, used_dummies=None, notFirst=False):
 ##    """Replace all function calls in source with dummy names,
@@ -2134,10 +2149,12 @@ def wrapArgInCall(source, callfn, wrapL, wrapR=None, argnums=[0],
 ##            output += source[currpos:]
 ##    return output, dummies
 
+
 def replaceCallsWithDummies(source, callfns, used_dummies=None, notFirst=False):
     """Replace all function calls in source with dummy names,
     for the functions listed in callfns. Returns a pair (new_source, d)
-    where d is a dict mapping the dummy names used to the function calls."""
+    where d is a dict mapping the dummy names used to the function calls.
+    """
     # This function used to work on lists of callfns directly, but I can't
     # see why it stopped working. So I just added this recursing part at
     # the front to reduce the problem to a singleton function name each time.
@@ -2213,7 +2230,8 @@ def replaceCallsWithDummies(source, callfns, used_dummies=None, notFirst=False):
 
 
 def addArgToCalls(source, callfns, arg, notFirst=''):
-    """Add an argument to calls in source, to the functions listed in callfns."""
+    """Add an argument to calls in source, to the functions listed in callfns.
+    """
     # This function used to work on lists of callfns directly, but I can't
     # see why it stopped working. So I just added this recursing part at
     # the front to reduce the problem to a singleton function name each time.
