@@ -1021,6 +1021,7 @@ class ModelConstructor(object):
         FScompatibleNames = {}
         FScompatibleNamesInv = {}
         genObjs = {}
+        assert len(self._generators) > 0, "No Generator descriptions found"
         for gname, geninfo in self._generators.iteritems():
             if isinstance(geninfo, args):
                 if isinstance(geninfo.modelspec, args):

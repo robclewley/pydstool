@@ -124,7 +124,8 @@ class GenTransform(object):
                 gen.modelspec[v].spec.specStr == '0']
 
     def changeTargetGen(self, target):
-        """Change target generator type"""
+        """Change target generator type. Target is a string name of the Generator
+        class."""
         self.trans_gen.target = target
 
     def changeDomain(self, obj_name, domain):
@@ -150,7 +151,7 @@ class GenTransform(object):
             raise PyDSTool_TypeError("Invalid quantity for redefinition")
         self.trans_gen.modelspec.remove(obj_name)
         if parseUtils.isHierarchicalName(obj_name):
-            parts = obj_name.split('.')
+            parts = obj_name.split(parseUtils.NAMESEP)
             parent_name = ".".join(parts[:-1])
             obj.rename(".".join(parts[1:]))
         else:
@@ -482,6 +483,7 @@ class ModelManager(object):
         # to be stored somewhere else.
         mc = ModelConstructor.ModelConstructor(mdesc.name,
                                 **common.filteredDict(dict(mdesc), filt_keys))
+        assert len(mdesc.generatorspecs) > 0, "No Generator descriptions found"
         for gdname, gd in mdesc.generatorspecs.iteritems():
             if gd.userEvents is not None:
                 mc.addEvents(gdname, gd.userEvents)
