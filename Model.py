@@ -1699,12 +1699,12 @@ class NonHybridModel(Model):
         ds = self.registry.values()[0]
         fscm = ds.get('_FScompatibleNames')
         fscmInv = ds.get('_FScompatibleNamesInv')
-        xdict_fs = fscm(xdict)
+        vars = ds.get('funcspec').vars   # FS compatible
+        x_fs = filteredDict(fscm(xdict), vars)
         # in case ds i.c.'s are different or not set yet (NaN's)
         # for purposes of auxiliary function 'initcond' calls during Rhs
         old_ics = ds.initialconditions.copy()
-        ds.initialconditions.update(xdict_fs)
-        x_fs = xdict_fs.copy()
+        ds.initialconditions.update(x_fs)
         x_fs.update(ds.initialconditions)
         # don't need to convert pdict names to FS-compatible as they sort
         # the same
@@ -1713,8 +1713,8 @@ class NonHybridModel(Model):
         if asarray:
             rhsval = array(ds.Rhs(t, x_fs, pdict))
         else:
-            rhsval = Point({'coorddict': dict(zip(fscmInv(ds.get('funcspec').vars),
-                                ds.Rhs(t, x_fs, pdict))),
+            rhsval = Point({'coorddict': dict(zip(fscmInv(vars),
+                                              ds.Rhs(t, x_fs, pdict))),
                       'coordtype': float,
                       'norm': self._normord})
         ds.initialconditions.update(old_ics)
@@ -1727,11 +1727,12 @@ class NonHybridModel(Model):
             raise PyDSTool_ExistError("Jacobian not defined")
         fscm = ds.get('_FScompatibleNames')
         fscmInv = ds.get('_FScompatibleNamesInv')
+        vars = ds.get('funcspec').vars   # FS compatible
+        x_fs = filteredDict(fscm(xdict), vars)
         # in case ds i.c.'s are different or not set yet (NaN's)
         # for purposes of auxiliary function 'initcond' calls during Rhs
         old_ics = ds.initialconditions.copy()
-        ds.initialconditions.update(xdict_fs)
-        x_fs = xdict_fs.copy()
+        ds.initialconditions.update(x_fs)
         x_fs.update(ds.initialconditions)
         # don't need to convert pdict names to FS-compatible as they sort
         # the same
@@ -1740,8 +1741,8 @@ class NonHybridModel(Model):
         if asarray:
             J = array(ds.Jacobian(t, x_fs, pdict))
         else:
-            J = Pointset({'coorddict': dict(zip(fscmInv(ds.get('funcspec').vars),
-                            ds.Jacobian(t, x_fs, pdict))),
+            J = Pointset({'coorddict': dict(zip(fscmInv(vars),
+                                         ds.Jacobian(t, x_fs, pdict))),
                          'coordtype': float,
                          'norm': self._normord})
         ds.initialconditions.update(old_ics)
@@ -1754,12 +1755,11 @@ class NonHybridModel(Model):
             raise PyDSTool_ExistError("Jacobian w.r.t. pars not defined")
         fscm = ds.get('_FScompatibleNames')
         fscmInv = ds.get('_FScompatibleNamesInv')
-        xdict_fs = fscm(xdict)
+        x_fs = filteredDict(fscm(xdict), ds.get('funcspec').vars)
         # in case ds i.c.'s are different or not set yet (NaN's)
         # for purposes of auxiliary function 'initcond' calls during Rhs
         old_ics = ds.initialconditions.copy()
-        ds.initialconditions.update(xdict_fs)
-        x_fs = xdict_fs.copy()
+        ds.initialconditions.update(x_fs)
         x_fs.update(ds.initialconditions)
         # don't need to convert pdict names to FS-compatible as they sort
         # the same
@@ -1769,7 +1769,7 @@ class NonHybridModel(Model):
             Jp = array(ds.JacobianP(t, x_fs, pdict))
         else:
             Jp = Pointset({'coorddict': dict(zip(fscmInv(ds.get('funcspec').pars),
-                            ds.JacobianP(t, x_fs, pdict))),
+                                          ds.JacobianP(t, x_fs, pdict))),
                          'coordtype': float,
                          'norm': self._normord})
         ds.initialconditions.update(old_ics)
@@ -1782,12 +1782,12 @@ class NonHybridModel(Model):
             raise PyDSTool_ExistError("Mass matrix not defined")
         fscm = ds.get('_FScompatibleNames')
         fscmInv = ds.get('_FScompatibleNamesInv')
-        xdict_fs = fscm(xdict)
+        vars = ds.get('funcspec').vars   # FS compatible
+        x_fs = filteredDict(fscm(xdict), vars)
         # in case ds i.c.'s are different or not set yet (NaN's)
         # for purposes of auxiliary function 'initcond' calls during Rhs
         old_ics = ds.initialconditions.copy()
-        ds.initialconditions.update(xdict_fs)
-        x_fs = xdict_fs.copy()
+        ds.initialconditions.update(x_fs)
         x_fs.update(ds.initialconditions)
         # don't need to convert pdict names to FS-compatible as they sort
         # the same
@@ -1796,8 +1796,8 @@ class NonHybridModel(Model):
         if asarray:
             M = array(ds.MassMatrix(t, x_fs, pdict))
         else:
-            M = Point({'coorddict': dict(zip(fscmInv(ds.get('funcspec').vars),
-                            ds.MassMatrix(t, x_fs, pdict))),
+            M = Point({'coorddict': dict(zip(fscmInv(vars),
+                                        ds.MassMatrix(t, x_fs, pdict))),
                       'coordtype': float,
                       'norm': self._normord})
         ds.initialconditions.update(old_ics)
@@ -1808,12 +1808,11 @@ class NonHybridModel(Model):
         definition (if defined)."""
         fscm = ds.get('_FScompatibleNames')
         fscmInv = ds.get('_FScompatibleNamesInv')
-        xdict_fs = fscm(xdict)
+        x_fs = filteredDict(fscm(xdict), ds.get('funcspec').vars)
         # in case ds i.c.'s are different or not set yet (NaN's)
         # for purposes of auxiliary function 'initcond' calls during Rhs
         old_ics = ds.initialconditions.copy()
-        ds.initialconditions.update(xdict_fs)
-        x_fs = xdict_fs.copy()
+        ds.initialconditions.update(x_fs)
         x_fs.update(ds.initialconditions)
         # don't need to convert pdict names to FS-compatible as they sort
         # the same
