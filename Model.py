@@ -1693,83 +1693,142 @@ class NonHybridModel(Model):
         defined Jacobians."""
         return self.registry.values()[0].haveJacobian_pars()
 
-    def Rhs(self, t, xdict, pdict, asarray=False):
+    def Rhs(self, t, xdict, pdict=None, asarray=False):
         """Direct access to a generator's Rhs function."""
+        # get Generator as 'ds'
         ds = self.registry.values()[0]
+        fscm = ds.get('_FScompatibleNames')
+        fscmInv = ds.get('_FScompatibleNamesInv')
+        xdict_fs = fscm(xdict)
         # in case ds i.c.'s are different or not set yet (NaN's)
         # for purposes of auxiliary function 'initcond' calls during Rhs
         old_ics = ds.initialconditions.copy()
-        ds.initialconditions.update(xdict)
-        x = xdict.copy()
-        x.update(ds.initialconditions)
+        ds.initialconditions.update(xdict_fs)
+        x_fs = xdict_fs.copy()
+        x_fs.update(ds.initialconditions)
+        # don't need to convert pdict names to FS-compatible as they sort
+        # the same
+        if pdict is None:
+            pdict = self.pars
         if asarray:
-            rhsval = array(ds.Rhs(t, x, pdict))
+            rhsval = array(ds.Rhs(t, x_fs, pdict))
         else:
-            rhsval = Point({'coorddict': dict(zip(ds.get('funcspec').vars,
-                                ds.Rhs(t, x, pdict))),
+            rhsval = Point({'coorddict': dict(zip(fscmInv(ds.get('funcspec').vars),
+                                ds.Rhs(t, x_fs, pdict))),
                       'coordtype': float,
                       'norm': self._normord})
         ds.initialconditions.update(old_ics)
         return rhsval
 
-    def Jacobian(self, t, xdict, pdict, asarray=False):
+    def Jacobian(self, t, xdict, pdict=None, asarray=False):
         """Direct access to a generator's Jacobian function (if defined)."""
         ds = self.registry.values()[0]
-        x = ds.initialconditions.copy()
-        x.update(xdict)
-        if ds.haveJacobian():
-            if asarray:
-                return array(ds.Jacobian(t, x, pdict))
-            else:
-                return Pointset({'coorddict': dict(zip(ds.get('funcspec').vars,
-                                ds.Jacobian(t, x, pdict))),
-                             'coordtype': float,
-                             'norm': self._normord})
-        else:
+        if not ds.haveJacobian():
             raise PyDSTool_ExistError("Jacobian not defined")
+        fscm = ds.get('_FScompatibleNames')
+        fscmInv = ds.get('_FScompatibleNamesInv')
+        # in case ds i.c.'s are different or not set yet (NaN's)
+        # for purposes of auxiliary function 'initcond' calls during Rhs
+        old_ics = ds.initialconditions.copy()
+        ds.initialconditions.update(xdict_fs)
+        x_fs = xdict_fs.copy()
+        x_fs.update(ds.initialconditions)
+        # don't need to convert pdict names to FS-compatible as they sort
+        # the same
+        if pdict is None:
+            pdict = self.pars
+        if asarray:
+            J = array(ds.Jacobian(t, x_fs, pdict))
+        else:
+            J = Pointset({'coorddict': dict(zip(fscmInv(ds.get('funcspec').vars),
+                            ds.Jacobian(t, x_fs, pdict))),
+                         'coordtype': float,
+                         'norm': self._normord})
+        ds.initialconditions.update(old_ics)
+        return J
 
-    def JacobianP(self, t, xdict, pdict, asarray=False):
+    def JacobianP(self, t, xdict, pdict=None, asarray=False):
         """Direct access to a generator's JacobianP function (if defined)."""
         ds = self.registry.values()[0]
-        x = ds.initialconditions.copy()
-        x.update(xdict)
-        if ds.haveJacobian_pars():
-            if asarray:
-                return array(ds.JacobianP(t, x, pdict))
-            else:
-                return Pointset({'coorddict': dict(zip(ds.get('funcspec').pars,
-                                ds.JacobianP(t, x, pdict))),
-                             'coordtype': float,
-                             'norm': self._normord})
-        else:
+        if not ds.haveJacobian_pars():
             raise PyDSTool_ExistError("Jacobian w.r.t. pars not defined")
+        fscm = ds.get('_FScompatibleNames')
+        fscmInv = ds.get('_FScompatibleNamesInv')
+        xdict_fs = fscm(xdict)
+        # in case ds i.c.'s are different or not set yet (NaN's)
+        # for purposes of auxiliary function 'initcond' calls during Rhs
+        old_ics = ds.initialconditions.copy()
+        ds.initialconditions.update(xdict_fs)
+        x_fs = xdict_fs.copy()
+        x_fs.update(ds.initialconditions)
+        # don't need to convert pdict names to FS-compatible as they sort
+        # the same
+        if pdict is None:
+            pdict = self.pars
+        if asarray:
+            Jp = array(ds.JacobianP(t, x_fs, pdict))
+        else:
+            Jp = Pointset({'coorddict': dict(zip(fscmInv(ds.get('funcspec').pars),
+                            ds.JacobianP(t, x_fs, pdict))),
+                         'coordtype': float,
+                         'norm': self._normord})
+        ds.initialconditions.update(old_ics)
+        return Jp
 
-    def MassMatrix(self, t, xdict, pdict, asarray=False):
+    def MassMatrix(self, t, xdict, pdict=None, asarray=False):
         """Direct access to a generator's MassMatrix function (if defined)."""
         ds = self.registry.values()[0]
-        x = ds.initialconditions.copy()
-        x.update(xdict)
+        if not ds.haveMass():
+            raise PyDSTool_ExistError("Mass matrix not defined")
+        fscm = ds.get('_FScompatibleNames')
+        fscmInv = ds.get('_FScompatibleNamesInv')
+        xdict_fs = fscm(xdict)
+        # in case ds i.c.'s are different or not set yet (NaN's)
+        # for purposes of auxiliary function 'initcond' calls during Rhs
+        old_ics = ds.initialconditions.copy()
+        ds.initialconditions.update(xdict_fs)
+        x_fs = xdict_fs.copy()
+        x_fs.update(ds.initialconditions)
+        # don't need to convert pdict names to FS-compatible as they sort
+        # the same
+        if pdict is None:
+            pdict = self.pars
         if asarray:
-            return array(ds.MassMatrix(t, x, pdict))
+            M = array(ds.MassMatrix(t, x_fs, pdict))
         else:
-            return Point({'coorddict': dict(zip(ds.get('funcspec').vars,
-                            ds.MassMatrix(t, x, pdict))),
+            M = Point({'coorddict': dict(zip(fscmInv(ds.get('funcspec').vars),
+                            ds.MassMatrix(t, x_fs, pdict))),
                       'coordtype': float,
                       'norm': self._normord})
+        ds.initialconditions.update(old_ics)
+        return M
 
-    def AuxVars(self, t, xdict, pdict, asarray=False):
+    def AuxVars(self, t, xdict, pdict=None, asarray=False):
         """Direct access to a generator's auxiliary variables
         definition (if defined)."""
-        ds = self.registry.values()[0]
-        x = ds.initialconditions.copy()
-        x.update(xdict)
+        fscm = ds.get('_FScompatibleNames')
+        fscmInv = ds.get('_FScompatibleNamesInv')
+        xdict_fs = fscm(xdict)
+        # in case ds i.c.'s are different or not set yet (NaN's)
+        # for purposes of auxiliary function 'initcond' calls during Rhs
+        old_ics = ds.initialconditions.copy()
+        ds.initialconditions.update(xdict_fs)
+        x_fs = xdict_fs.copy()
+        x_fs.update(ds.initialconditions)
+        # don't need to convert pdict names to FS-compatible as they sort
+        # the same
+        if pdict is None:
+            pdict = self.pars
         if asarray:
-            return array(ds.AuxVars(t, x, pdict))
+            A = array(ds.AuxVars(t, x_fs, pdict))
         else:
-            return Point({'coorddict': dict(zip(ds.get('funcspec').auxvars,
-                                ds.AuxVars(t, x, pdict))),
+            A = Point({'coorddict': dict(zip(fscmInv(ds.get('funcspec').auxvars),
+                                ds.AuxVars(t, x_fs, pdict))),
                       'coordtype': float,
                       'norm': self._normord})
+        ds.initialconditions.update(old_ics)
+        return A
+
 
     def compute(self, trajname, **kw):
         """Compute a trajectory out of constituent segments."""
@@ -2420,15 +2479,20 @@ class HybridModel(Model):
             result = result and model.haveJacobian_pars()
         return result
 
-    def Rhs(self, dsName, t, xdict, pdict, asarray=False):
+    def Rhs(self, dsName, t, xdict, pdict=None, asarray=False):
         """Direct access to a generator's Rhs function."""
         try:
             dsi = self.modelInfo[dsName]['dsi']
         except KeyError:
             raise ValueError("No DS named %s was found"%dsName)
+        # don't need to convert pdict names to FS-compatible as they sort
+        # the same
+        if pdict is None:
+            pdict = self.pars
         if asarray:
             return dsi.Rhs(t, xdict, pdict, asarray=True)
         else:
+            # get returns FS compatible names
             varnames = dsi.get('funcspec', xdict, t).vars
             return Point({'coorddict': dict(zip(varnames,
                                 dsi.Rhs(t, xdict, pdict))),
