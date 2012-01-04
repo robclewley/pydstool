@@ -1003,6 +1003,7 @@ class dssrt_assistant(object):
         # a dssrt_fn_X aux function to allow direct calculating of a tau or
         # Psi from only state variables in a Point.
         # ... this needs a parallel set of definitions to be created
+        direct_fail = False
         d = {}
         fspecs = self.gen.funcspec._auxfnspecs
         fn_base = 'dssrt_fn_'
@@ -1023,7 +1024,12 @@ class dssrt_assistant(object):
             # convert fn sig names to resolvable hierarchical names using knowledge
             # of inputs
             inps_to_var = self.gamma1[var] + self.gamma2[var]
-            sig = fspecs[fname][0]
+            try:
+                sig = fspecs[fname][0]
+            except KeyError:
+                # dssrt_ functions were not defined
+                self._direct_fail = True
+                break
             # match sig entries to final elements of inps_to_var
             for inp in inps_to_var:
                 inp_hier_list = inp.split('.')
@@ -1053,7 +1059,12 @@ class dssrt_assistant(object):
             # convert fn sig names to resolvable hierarchical names using knowledge
             # of inputs
             inps_to_var = self.gamma1[var] + self.gamma2[var]
-            sig = fspecs[fname][0]
+            try:
+                sig = fspecs[fname][0]
+            except KeyError:
+                # dssrt_ functions were not defined
+                self._direct_fail = True
+                break
             # match sig entries to final elements of inps_to_var
             for inp in inps_to_var:
                 inp_hier_list = inp.split('.')
@@ -1108,7 +1119,8 @@ class dssrt_assistant(object):
 
         (2) The second is intended for on-demand calculation of Psi's
         when only the system's state variables are given, thus
-        taus and infs etc. must be computed this class.
+        taus and infs etc. must be computed this class. If user did not
+        provide the dssrt_fn functions this will be ignored and not created.
 
         The returned pair of pairs is
          ((arg_list_signature (1), symbolic function (1)),
@@ -1167,8 +1179,9 @@ class dssrt_assistant(object):
             # Every reference to an auxiliary variable must be mappable to
             # a dssrt_fn_X aux function to allow direct calculating of a tau or
             # Psi from only state variables in a Point.
-            val_q_direct = copy.copy(val_q)
-            val_q_direct.mapNames(self._direct_ref_mapping)
+            if not self._direct_fail:
+                val_q_direct = copy.copy(val_q)
+                val_q_direct.mapNames(self._direct_ref_mapping)
 
             defs.update(themap)
             if val in defs:
@@ -1179,8 +1192,11 @@ class dssrt_assistant(object):
                 return ( (fn._args, fn), (fn._args, fn) )
             else:
                 fn = Symbolic.expr2fun(str(val_q), **defs)
-                fn_direct = Symbolic.expr2fun(str(val_q_direct), **defs)
-                return ( (fn._args, fn), (fn_direct._args, fn_direct) )
+                if not self._direct_fail:
+                    fn_direct = Symbolic.expr2fun(str(val_q_direct), **defs)
+                    return ( (fn._args, fn), (fn_direct._args, fn_direct) )
+                else:
+                    return ( (fn._args, fn), (None, None) )
 
 
     def reset(self):
@@ -1211,6 +1227,7 @@ class dssrt_assistant(object):
         """Calculate tau of target variable directly from a given single point
         containing only the state variables.
         """
+        assert not self._direct_fail, "Option not available"
         ptFS = self._FScompatMap(pt)
         try:
             args, f = self.taus_direct[target]
@@ -1230,6 +1247,7 @@ class dssrt_assistant(object):
         """Calculate inf of target variable directly from a given single point
         containing only the state variables.
         """
+        assert not self._direct_fail, "Option not available"
         ptFS = self._FScompatMap(pt)
         try:
             args, f = self.infs_direct[target]
@@ -1251,6 +1269,7 @@ class dssrt_assistant(object):
 
         If focus is None (default) then focus_var attribute is assumed.
         """
+        assert not self._direct_fail, "Option not available"
         ptFS = self._FScompatMap(pt)
         if focus is None:
             focus = self.focus_var
