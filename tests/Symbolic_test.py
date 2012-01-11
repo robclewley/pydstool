@@ -1,6 +1,7 @@
 from PyDSTool import *
 from PyDSTool.parseUtils import replaceCallsWithDummies, doneg, dosub
 from numpy.random import rand
+from numpy.testing.utils import assert_approx_equal
 from copy import copy
 
 assert doneg('-x-y') == 'x+y'
@@ -247,12 +248,12 @@ assert sc3
 sc4 = str(a.eval(xv=5))=='5/qv'
 print "a.eval(xv=5) == 5/q? ", sc4
 assert sc4
-sc5 = str(a.eval(xv=5,qv=q()))=='0.83333333333333337'
-print "a.eval(xv=5,qv=q()) == 0.83333333333333337? ", sc5
-assert sc5
-sc6 =str(a.eval({'xv': 10, 'qv': q()}))=='0.90909090909090906'
-print "a.eval({'xv': 10, 'qv': q()}) == 0.90909090909090906? ", sc6
-assert sc6
+sc5 = (str(a.eval(xv=5,qv=q())),'0.83333333333333337')
+assert_approx_equal(*sc5)
+print "assert_approx_equal(%s,%s)" % sc5
+sc6 = (str(a.eval({'xv': 10, 'qv': q()})),'0.90909090909090906')
+print "assert_approx_equal(%s,%s)" % sc6
+assert_approx_equal(*sc6)
 
 print "qs=QuantSpec('qsv','xsv+1')"
 print "xs=QuantSpec('xsv','3')"
