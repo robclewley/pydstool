@@ -1003,7 +1003,7 @@ class dssrt_assistant(object):
         # a dssrt_fn_X aux function to allow direct calculating of a tau or
         # Psi from only state variables in a Point.
         # ... this needs a parallel set of definitions to be created
-        direct_fail = False
+        self._direct_fail = False
         d = {}
         fspecs = self.gen.funcspec._auxfnspecs
         fn_base = 'dssrt_fn_'
