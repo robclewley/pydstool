@@ -1697,8 +1697,8 @@ class NonHybridModel(Model):
         """Direct access to a generator's Rhs function."""
         # get Generator as 'ds'
         ds = self.registry.values()[0]
-        fscm = ds.get('_FScompatibleNames')
-        fscmInv = ds.get('_FScompatibleNamesInv')
+        fscm = ds._FScompatibleNames
+        fscmInv = ds._FScompatibleNamesInv
         vars = ds.get('funcspec').vars   # FS compatible
         x_fs = filteredDict(fscm(xdict), vars)
         # in case ds i.c.'s are different or not set yet (NaN's)
@@ -1725,8 +1725,8 @@ class NonHybridModel(Model):
         ds = self.registry.values()[0]
         if not ds.haveJacobian():
             raise PyDSTool_ExistError("Jacobian not defined")
-        fscm = ds.get('_FScompatibleNames')
-        fscmInv = ds.get('_FScompatibleNamesInv')
+        fscm = ds._FScompatibleNames
+        fscmInv = ds._FScompatibleNamesInv
         vars = ds.get('funcspec').vars   # FS compatible
         x_fs = filteredDict(fscm(xdict), vars)
         # in case ds i.c.'s are different or not set yet (NaN's)
@@ -1753,8 +1753,8 @@ class NonHybridModel(Model):
         ds = self.registry.values()[0]
         if not ds.haveJacobian_pars():
             raise PyDSTool_ExistError("Jacobian w.r.t. pars not defined")
-        fscm = ds.get('_FScompatibleNames')
-        fscmInv = ds.get('_FScompatibleNamesInv')
+        fscm = ds._FScompatibleNames
+        fscmInv = ds._FScompatibleNamesInv
         x_fs = filteredDict(fscm(xdict), ds.get('funcspec').vars)
         # in case ds i.c.'s are different or not set yet (NaN's)
         # for purposes of auxiliary function 'initcond' calls during Rhs
@@ -1780,8 +1780,8 @@ class NonHybridModel(Model):
         ds = self.registry.values()[0]
         if not ds.haveMass():
             raise PyDSTool_ExistError("Mass matrix not defined")
-        fscm = ds.get('_FScompatibleNames')
-        fscmInv = ds.get('_FScompatibleNamesInv')
+        fscm = ds._FScompatibleNames
+        fscmInv = ds._FScompatibleNamesInv
         vars = ds.get('funcspec').vars   # FS compatible
         x_fs = filteredDict(fscm(xdict), vars)
         # in case ds i.c.'s are different or not set yet (NaN's)
@@ -1806,8 +1806,8 @@ class NonHybridModel(Model):
     def AuxVars(self, t, xdict, pdict=None, asarray=False):
         """Direct access to a generator's auxiliary variables
         definition (if defined)."""
-        fscm = ds.get('_FScompatibleNames')
-        fscmInv = ds.get('_FScompatibleNamesInv')
+        fscm = ds._FScompatibleNames
+        fscmInv = ds._FScompatibleNamesInv
         x_fs = filteredDict(fscm(xdict), ds.get('funcspec').vars)
         # in case ds i.c.'s are different or not set yet (NaN's)
         # for purposes of auxiliary function 'initcond' calls during Rhs
