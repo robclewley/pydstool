@@ -67,7 +67,7 @@ _functions = ['isUniqueSeq', 'makeArrayIxMap', 'className',
               'sortedDictKeys', 'sortedDictValues', 'sortedDictItems',
               'sortedDictLists', 'compareNumTypes', 'diff', 'diff2',
               'listid', 'idfn', 'noneFn', 'isincreasing', 'ismonotonic',
-              'extent',
+              'extent', 'n_sigdigs_str',
               'linearInterp', 'object2str', 'getSuperClasses',
               'filteredDict', 'arraymax', 'simplifyMatrixRepr',
               'makeMultilinearRegrFn', 'fit_quadratic', 'fit_quadratic_at_vertex',
@@ -363,6 +363,25 @@ class metric_weighted_deadzone_L2(metric):
         v = (abs(v) > self.deadzone).astype(int) * v
         self.results = v
         return norm(v)
+
+
+def n_sigdigs_str(x, n):
+    """Return a string representation of float x with n significant digits,
+    where n > 0 is an integer.
+    """
+    format = "%." + str(int(n)) + "g"
+    s = '%s' % float(format % x)
+    if '.' in s:
+        # handle trailing ".0" when not one of the sig. digits
+        pt_idx = s.index('.')
+        if s[0] == '-':
+            # pt_idx is one too large
+            if pt_idx-1 >= n:
+                return s[:pt_idx]
+        else:
+            if pt_idx >= n:
+                return s[:pt_idx]
+    return s
 
 
 class args(object):
@@ -3449,7 +3468,7 @@ class Verbose(object):
         if always is True, the report will occur on every function
         call; otherwise only on the first time the function is called
         """
-        assert(callable, func)
+        assert callable(func)
         def wrapper(*args, **kwargs):
             ret = func(*args, **kwargs)
 
