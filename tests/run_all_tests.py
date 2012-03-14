@@ -34,6 +34,25 @@ test_pycont = True
 # Continuation with auto; requires external compilers
 test_pycont_auto = True
 
+# -------------------------------------------------------
+
+# Basic PyDSTool modules
+general_list = [
+    'Interval_test',
+    'traj_gt0_test',
+    'test_bd_containment',
+    'basic_gen_tests',
+    'ModelSpec_test',
+    'numeric_diff_test',
+    'interp_piecewise_test',
+    'impfn_test',
+    'imp_load_test',
+    'expfn_test',
+    'objectdelete_test',
+    'PointInfo_test',
+    'saveload_test',
+    'test_context_spikes'
+    ]
 
 # Map generators
 map_list = [
@@ -124,22 +143,6 @@ pycont_auto_list = [
 
 do_external = any([test_dopri, test_radau, test_param_est_C, test_pycont_auto])
 
-# Basic PyDSTool modules
-general_list = [
-    'traj_gt0_test',
-    'test_bd_containment',
-    'basic_gen_tests',
-    'ModelSpec_test',
-    'numeric_diff_test',
-    'interp_piecewise_test',
-    'impfn_test',
-    'imp_load_test',
-    'expfn_test',
-    'objectdelete_test',
-    'PointInfo_test',
-    'saveload_test',
-    'test_context_spikes'
-    ]
 
 # ----------------------------------------------------------------------------
 
