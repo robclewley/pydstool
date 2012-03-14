@@ -131,9 +131,13 @@ class MDescriptor(Descriptor):
     generatorspecs should be a dictionary of gen modelspec names -> modelspecs.
     """
     _validKeys = ('changelog', 'orig_name', 'name', 'generatorspecs',
-                  'description', 'eventtol', 'abseps', 'activateAllBounds',
+                  'description', 'abseps', 'activateAllBounds',
                   'checklevel', 'tdata', 'indepvar', 'icvalues', 'parvalues',
-                  'inputs', 'unravelInfo')
+                  'inputs', 'unravelInfo',
+                  'userevents', 'userfns', 'reuseTerms',
+                  'withJac', 'withJacP',
+                  'eventtol', 'eventPars',
+                  'withStdEvts', 'stdEvtArgs')
     _defaults = {'description': '', 'indepvar': ('t', [-Inf,Inf]),
                  'checklevel': 2, 'activateAllBounds': False,
                  'generatorspecs': {}, 'icvalues': {}, 'parvalues': {},
@@ -145,11 +149,12 @@ class MDescriptor(Descriptor):
                hasattr(self.generatorspecs, 'keys')
         validated = alltrue([isinstance(gd, GDescriptor) for \
                              gd in self.generatorspecs.values()])
-        # check for consistency of internal interfaces
+        # !!!TO DO!!!
+        # Check for consistency of any internal interfaces defined
         inconsistencies = []
         return (validated, inconsistencies)
 
-    def isinstantiable(self):
+    def isinstantiable(self, verbose=False):
         valid = self.validate()[0]
         vars_i_all = True
         pars_i_all = True
@@ -164,6 +169,13 @@ class MDescriptor(Descriptor):
                           for parname, par in ms.modelspec.pars.items()])
             inps_i = alltrue([inpname in self.inputs for \
                               inpname in ms.modelspec.inputs])
+            if verbose:
+                if not vars_i:
+                    print ms.modelspec.name, "Some ICs missing"
+                if not pars_i:
+                    print ms.modelspec.name, "Some param values missing"
+                if not inps_i:
+                    print ms.modelspec.name, "Some input values missing"
             vars_i_all = vars_i_all and vars_i
             pars_i_all = pars_i_all and pars_i
             inps_i_all = inps_i_all and inps_i
@@ -224,9 +236,9 @@ class GeneratorConstructor(object):
         else:
             # ensure a list of Symbolic defs is converted to
             # the dictionary of string signatures and definitions format
-            self.userfns = Symbolic.ensureStrArgDict(copy.copy(self.userfns))
+            self.userfns = Symbolic.ensureStrArgDict(copy.copy(userfns))
         self.unravelInfo = unravelInfo   # presently just a Boolean
-        if type(targetGen)==str:
+        if isinstance(targetGen, str):
             self.targetGen = targetGen
         else:
             raise TypeError("targetGen argument must be a string")
@@ -985,7 +997,7 @@ class ModelConstructor(object):
     def createJac(self):
         for g in self._generators:
             if self.withJac[g]:
-                gspec = self._generators[g]['modelspec']
+                gspec = self._generators[g].modelspec
                 # haven't made generator yet so don't know which are the
                 # regular RHS variables
                 candidate_vars = gspec.funcSpecDict['vars']  # Quantity objects
