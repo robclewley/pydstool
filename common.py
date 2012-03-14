@@ -1295,6 +1295,11 @@ def ensurefloat(v):
         v = v.toarray()
     except AttributeError:
         pass
+    try:
+        # numeric literal as Quantity will return scalar here
+        v = v.tonumeric()
+    except AttributeError:
+        pass
     return float(v)
 
 _verify_type_names = {_all_int: 'an integer',
