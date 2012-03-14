@@ -475,7 +475,7 @@ class ModelManager(object):
             mdesc.inputs.update(inputs)
         if tdata is not None:
             mdesc.tdata = tdata
-        if not mdesc.isinstantiable():
+        if not mdesc.isinstantiable(True):
             raise ValueError("Model description incomplete: not instantiable")
         ## would like ModelConstructor to be able to deal with the remaining
         # keys of mdesc so that all the information in mdesc gets passed into
