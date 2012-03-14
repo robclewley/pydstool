@@ -32,7 +32,8 @@ from copy import copy, deepcopy
 __all__ = ['Point', 'Pointset', 'isparameterized', 'pointsToPointset',
            'PointInfo', 'makeNonParameterized', 'arrayToPointset',
            'VarCaller', 'comparePointCoords', 'importPointset',
-           'exportPointset', 'mergePointsets', 'padPointset']
+           'exportPointset', 'mergePointsets', 'padPointset',
+           'export_pointset_to_CSV']
 
 #----------------------------------------------------------------------------
 
@@ -2536,6 +2537,36 @@ def importPointset(xFileName, t=None, indices=None, sep=" ",
         else:
             return Pointset(indepvardict={t_name: tVals},
                             coorddict=dict(zip(varnames,xVals.T)))
+
+
+def export_pointset_to_CSV(filename, pts):
+    """Simple export that ignores all metadata in pts,
+    including name, tags, norm, etc.
+    Data is arranged by row only.
+
+    Independent variable is first column, if it exists in pts.
+    """
+    import csv
+    outfile = open(filename, 'w')
+    writer = csv.writer(outfile)
+
+    # header row
+    if pts._parameterized:
+        rows_header = [pts.indepvarname] + pts.coordnames
+    else:
+        rows_header = pts.coordnames
+    writer.writerow(rows_header)
+
+    # data rows
+    if pts._parameterized:
+        for i in xrange(len(pts)):
+            writer.writerow([pts.indepvararray[i]] + list(pts.coordarray[:,i]))
+    else:
+        for i in xrange(len(pts)):
+            writer.writerow(pts.coordarray[:,i])
+
+    outfile.close()
+
 
 def mergePointsets(pts1, pts2):
     """Merges two pointsets into a new pointset, preserving (merging) any
