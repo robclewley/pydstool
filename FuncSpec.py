@@ -22,7 +22,7 @@ import math, random, numpy, scipy, scipy.special
 from numpy import any
 
 __all__ = ['RHSfuncSpec', 'ImpFuncSpec', 'ExpFuncSpec', 'FuncSpec',
-           'getSpecFromFile', 'renameClashingAuxFnPars']
+           'getSpecFromFile', 'resolveClashingAuxFnPars', 'makePartialJac']
 
 # ---------------------------------------------------------------
 
@@ -772,8 +772,8 @@ class FuncSpec(object):
                         print "Found length %i"%specdict_check[specvars[row]]
                         raise ValueError("Jacobian should be %sx%s"%(m,n))
             elif auxname == 'Jacobian_pars':
-                if not compareList(auxinfo[0],['t']+self.pars):
-                    print ['t']+self.pars
+                if not compareList(auxinfo[0],['t']+self.vars):
+                    print ['t']+self.vars
                     print "Auxinfo =", auxinfo[0]
                     raise ValueError("Invalid argument list given in Jacobian.")
                 auxparlist = ["t","x","parsinps"]
@@ -782,7 +782,7 @@ class FuncSpec(object):
                 auxstr = auxinfo[1]
                 if any([pt in auxstr for pt in ('^', '**')]):
                     auxstr = convertPowers(auxstr, 'pow')
-                specvars = self.pars
+                specvars = self.vars
                 specvars.sort()
                 specdict = {}.fromkeys(self.vars)
                 if len(specvars) == len(self.vars) == 1:
@@ -1460,10 +1460,11 @@ class FuncSpec(object):
 
         if self.auxfns:
             def addParToCall(s):
-                return addArgToCalls(s, self.auxfns.keys(), "p_, wk_, xv_")
+                return addArgToCalls(self._processSpecialC(s),
+                                      self.auxfns.keys(), "p_, wk_, xv_")
             parseFunc = addParToCall
         else:
-            parseFunc = idfn
+            parseFunc = self._processSpecialC
         reused, specupdated, new_protected, order = _processReused(specnames,
                                                           specdict,
                                                           self.reuseterms,
@@ -1556,8 +1557,8 @@ class FuncSpec(object):
                 auxspec_processedDict = {auxname: body_processed}
             elif auxname == 'Jacobian_pars':
                 sig = "void jacobianParam("
-                if not compareList(auxspec[0],['t']+self.pars):
-                    print ['t']+self.pars
+                if not compareList(auxspec[0],['t']+self.vars):
+                    print ['t']+self.vars
                     print "Auxspec =", auxspec[0]
                     raise ValueError("Invalid argument list given in Jacobian.")
                 parlist = "unsigned n_, unsigned np_, double t, double *Y_,"
@@ -1568,7 +1569,7 @@ class FuncSpec(object):
                 ismat = True
 #                specials = ["t","Y_","n_","np_","wkn_","wk_"]
                 sig += parlist + " double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_)"
-                specvars = self.pars
+                specvars = self.vars
                 specvars.sort()
                 n = len(specvars)
                 if n == 0:
@@ -2352,9 +2353,52 @@ def _processReused(specnames, specdict, reuseterms, indentstr='',
 ## Public exported functions
 # ----------------------------------------------
 
-def renameClashingAuxFnPars(fnspecs, parnames):
+def makePartialJac(spec_pair, varnames, select=None):
     """Use this when parameters have been added to a modified Generator which
-    might clash with aux fn argument names. (E.g., used by find_nullclines)
+    might clash with aux fn argument names. (E.g., used by find_nullclines).
+
+    'select' option (list of varnames) selects those entries from the Jac of the varnames,
+       e.g. for constructing Jacobian w.r.t. 'parameters' using a parameter formerly
+       a variable (e.g. for find_nullclines).
+    """
+    fargs, fspec = spec_pair
+    J = QuantSpec('J', fspec)
+    # find positions of actual varnames in f argument list
+    # then extract terms from the Jacobian matrix, simplifying to a scalar if 1D
+    dim = len(varnames)
+    if J.dim == dim:
+        # nothing to do
+        return (fargs, fspec)
+    assert J.dim > dim, "Cannot add variable names to system while using its old Jacobian aux function"
+    assert remain(varnames, fargs) == [], "Invalid variable names to resolve Jacobian aux function"
+    assert fargs[0] == 't'
+    # -1 adjusts for 't' being the first argument
+    vixs = [fargs.index(v)-1 for v in varnames]
+    vixs.sort()
+    if select is None:
+        select = varnames
+        sixs = vixs
+    else:
+        sixs = [fargs.index(v)-1 for v in select]
+    if dim == 1:
+        fspec = str(J.fromvector(vixs[0]).fromvector(sixs[0]))
+    else:
+        terms = []
+        for i in vixs:
+            Ji = J.fromvector(i)
+            subterms = []
+            for j in sixs:
+                subterms.append( str(Ji.fromvector(j)) )
+            terms.append( "[" + ",".join(subterms) + "]" )
+        fspec = "[" + ",".join(terms) + "]"
+    # retain order of arguments
+    fargs_new = ['t'] + [fargs[ix+1] for ix in vixs]
+    return (fargs_new, fspec)
+
+def resolveClashingAuxFnPars(fnspecs, parnames):
+    """Use this when parameters have been added to a modified Generator which
+    might clash with aux fn argument names. (E.g., used by find_nullclines).
+    Will remove arguments that are now considered parameters by the system.
     """
     root = "__dummy__"
     new_fnspecs = {}
@@ -2366,12 +2410,12 @@ def renameClashingAuxFnPars(fnspecs, parnames):
         if common_names == []:
             new_fnspecs[fname] = (fargs, fspec)
         else:
-            qtemp = QuantSpec('temp', fspec)
-            mapdict = {}
-            for c in common_names:
-                mapdict[c] = root+c
-            symb_map = symbolMapClass(mapdict)
-            new_fnspecs[fname] = (symb_map(fargs), str(symb_map(qtemp)))
+            #qtemp = QuantSpec('temp', fspec)
+            #mapdict = {}
+            #for c in common_names:
+            #    mapdict[c] = root+c
+            #symb_map = symbolMapClass(mapdict)
+            new_fnspecs[fname] = (remain(fargs, parnames), fspec) #(symb_map(fargs), str(symb_map(qtemp)))
     return new_fnspecs
 
 
