@@ -31,10 +31,10 @@ DSargs.pars = pars
 DSargs.varspecs = {'v1': v1str, 'v2': v2str, 'p1': p1str, 'p2': p2str}
 DSargs.ics = icdict
 
-testDS = Generator.Vode_ODEsystem(DSargs)
+ode = Generator.Vode_ODEsystem(DSargs)
 
 # Set up continuation class
-PyCont = ContClass(testDS)
+PC = ContClass(ode)
 
 PCargs = args(name='EQ1', type='EP-C')
 PCargs.freepars = ['k']
@@ -43,11 +43,11 @@ PCargs.MaxNumPoints = 50
 PCargs.MaxStepSize = 1e-1
 PCargs.LocBifPoints = 'all'
 PCargs.verbosity = 2
-PyCont.newCurve(PCargs)
+PC.newCurve(PCargs)
 
 print 'Computing curve...'
 start = clock()
-PyCont['EQ1'].forward()
+PC['EQ1'].forward()
 print 'done in %.3f seconds!' % (clock()-start)
 
 PCargs.name = 'HO1'
@@ -57,11 +57,11 @@ PCargs.freepars = ['k','D']
 PCargs.MaxNumPoints = 50
 PCargs.MaxStepSize = 0.1
 PCargs.LocBifPoints = ['ZH']
-PyCont.newCurve(PCargs)
+PC.newCurve(PCargs)
 
 print 'Computing Hopf curve...'
 start = clock()
-PyCont['HO1'].forward()
+PC['HO1'].forward()
 print 'done in %.3f seconds!' % (clock()-start)
 
 PCargs = args(name = 'FO1', type = 'LP-C')
@@ -70,18 +70,18 @@ PCargs.freepars = ['k','D']
 PCargs.MaxNumPoints = 25
 PCargs.MaxStepSize = 0.1
 PCargs.LocBifPoints = 'all'
-PyCont.newCurve(PCargs)
+PC.newCurve(PCargs)
 
 print 'Computing fold curve (forward)...'
 start = clock()
-PyCont['FO1'].forward()
+PC['FO1'].forward()
 print 'done in %.3f seconds!' % (clock()-start)
 
 print 'Computing fold curve (backward)...'
 start = clock()
-PyCont['FO1'].backward()
+PC['FO1'].backward()
 print 'done in %.3f seconds!' % (clock()-start)
 
 # Plot
-PyCont.display(('k','D'))
+PC.display(('k','D'))
 show()
