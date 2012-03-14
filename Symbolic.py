@@ -109,10 +109,6 @@ inverseMathNameMap = dict(zip(allmathnames, allmathnames_symbolic))
 
 specTypes = ('RHSfuncSpec', 'ImpFuncSpec', 'ExpFuncSpec')
 
-# for temp eval replacement clauses, use these symbols to
-# demark when to end the temp replacement
-stop_symb = {'if': ',', 'max': ']', 'min': ']'}
-absorb_symb = {'if': 0, 'max': 1, 'min': 1}
 
 # --------------------------------------------------------------------------
 ### Exports
@@ -444,7 +440,7 @@ def expr2fun(qexpr, ensure_args=None, **values):
             try:
                 vs = Fun(fndef, fnsig, k)
             except:
-                raise ValueError("Only pass pairs in 'values' argument that are function definitions")
+                raise ValueError("Only pass pairs in 'values' argument that are valid function definitions")
             local_funcs[k] = Var(k)  # placeholder
             eval_at_runtime.append(k)
             for vfree in vs.freeSymbols:
@@ -1575,7 +1571,10 @@ class QuantSpec(object):
             n_ix = 0
             for stmt_ix in range(num_stmts):
                 n_ix = qtoks[n_ix:].index(clause_type) + n_ix
-                stop_ix = qtoks[n_ix:].index(stop_symb[clause_type])+n_ix+absorb_symb[clause_type]
+                if clause_type == 'if':
+                    stop_ix = qtoks[n_ix:].index(',')+n_ix
+                else:
+                    stop_ix = findEndBrace(qtoks[n_ix+1:])+n_ix+1
                 clause_original = "".join(qtoks[n_ix+2:stop_ix])
                 clause = "".join(qtemp.parser.tokenized[n_ix+2:stop_ix])
                 defstr = defstr.replace(clause,'__temp_clause__'+str(stmt_ix))
@@ -2102,6 +2101,10 @@ class Quantity(object):
                 # something --> RHSfuncSpec, but user wants this Quantity
                 # to be a different type
                 actual_spec.specType = specType
+        elif isinstance(spec, _num_types):
+            # convert numeric literals
+            token = name.strip()
+            actual_spec = QuantSpec(token, repr(spec), specType)
         else:
             raise TypeError("Invalid spec argument")
         if token == 'for':
