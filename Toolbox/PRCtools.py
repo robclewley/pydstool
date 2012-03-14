@@ -110,7 +110,8 @@ def _default_pert(model, ic, pertcoord, pertsize):
 
 
 def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
-              settle=5, verbose=False, skip=1, do_pert=_default_pert, keep_trajs=False):
+              settle=5, verbose=False, skip=1, do_pert=_default_pert,
+              keep_trajs=False, stop_at_t=np.inf, force_T=np.nan):
     """Pass a Generator or Model instance for model.
     Pass a Trajectory or Pointset for the ref_traj_period argument.
     Pass the event name in the model that indicates the periodicity.
@@ -120,6 +121,11 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
      are domain boundary conditions that need special treatment. This function
      takes four arguments (model, ic, pertcoord, pertsize) and returns the new
      point ic (not just ic[pertcoord]).
+    Use settle=0 to perform no forward integration before the time window in
+     which the perturbation will be applied (e.g. for non-cycles).
+    Use stop_at_t to calculate a partial PRC, from perturbation time 0 to this
+     value.
+    Use force_T to force the period to be whatever value you like.
 
     Note: Depending on your model, there may be regions of the PRC that are
     offset by a constant amount to the rest of the PRC. This is a "wart" that
@@ -134,25 +140,33 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
         if ref_pts[-1] != all_pts[-1]:
             # ensure last point at t=T is present
             ref_pts.append(all_pts[[-1]])
-        T = ref_traj_period.indepdomain[1]-ref_traj_period.indepdomain[0]
+        if np.isnan(force_T):
+            T = ref_traj_period.indepdomain[1]-ref_traj_period.indepdomain[0]
+        else:
+            T = force_T
     except AttributeError:
         # already passed points
         ref_pts = ref_traj_period[::skip]
         if ref_pts[-1] != ref_traj_period[-1]:
             ref_pts.append(ref_traj_period[[-1]])
-        T = ref_traj_period.indepvararray[-1]-ref_traj_period.indepvararray[0]
+        if np.isnan(force_T):
+            T = ref_traj_period.indepvararray[-1]-ref_traj_period.indepvararray[0]
+        else:
+            T = force_T
     ref_ts = ref_pts.indepvararray
     PRCvals = []
     t_off = 0
     if verbose:
         print "Period T =", T
     for i, t0 in enumerate(ref_ts):
+        if t0 > stop_at_t:
+            break
         ic = ref_pts[i]
         ic = do_pert(model, ic, pertcoord, pertsize)
         if verbose:
             print i, "of", len(ref_ts), ": t0 = ", t0, "of", T, "  t_end", settle*T+t0
             print "   ", ic
-        model.set(ics=ic, tdata=[0,settle*T+t0])
+        model.set(ics=ic.copy(), tdata=[0, (settle+1)*T+t0])
         if keep_trajs:
             model.compute(trajname='pert_%i'%i, force=True)
             evts = model.getTrajEventTimes('pert_%i'%i, evname)
@@ -165,7 +179,7 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
         if abs(val) > 0.5:
             val = val+1
         PRCvals.append(val)
-    return Pointset(coordarray=[PRCvals], coordnames=['D_phase'], indepvararray=ref_ts, indepvarname='t')
+    return Pointset(coordarray=[PRCvals], coordnames=['D_phase'], indepvararray=ref_ts[:i], indepvarname='t')
 
 
 def compare_pert(model, ref_traj_period, evname, pertcoord, pertsize, t0, settle=5,
