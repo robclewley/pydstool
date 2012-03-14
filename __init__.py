@@ -1,12 +1,12 @@
 """PyDSTool initialization script.
 
-Copyright (C) 2007-2011 Georgia State University
+Copyright (C) 2007-2012 Georgia State University
 
 print PyDSTool.__LICENSE__    for the terms of use.
 """
 
 __LICENSE__ = """\
-Copyright (C) 2007-2011, Georgia State University
+Copyright (C) 2007-2012, Georgia State University
 All rights reserved.
 
 Parts of this distribution that originate from different authors are
@@ -113,11 +113,13 @@ import numpy as npy  # alternate
 # import scipy already done at top
 import scipy as spy  # alternate
 from math import *
-import pylab
-from pylab import figure, plot, show, draw, hold
-from numpy import *    # overwrites __version__
+from matplotlib import pyplot as plt
+from matplotlib.pyplot import figure, plot, show, draw, hold
+from numpy import *    # overwrites __version__ for PyDSTool, so fix now
+# Restore PyDSTool version
 __version__ = vernum
 del vernum
+
 #from numpy.linalg import *
 from copy import copy
 # note that the names with leading underscores will not be exported by
@@ -128,9 +130,6 @@ from common import Verbose, Continuous, Discrete, targetLangs, _seq_types, \
               _real_types, _all_numpy_int, _all_numpy_float, \
               _all_numpy_complex, _all_int, _all_float, _all_complex, \
               LargestInt32, diff, diff2
-# newest version of matplotlib (Aug 2009) supports plotting individual points,
-# so no need to have this separate import override in the future
-#from matplotlib_import import *     # overwrite plot!
 from scipy import who as scipy_who
 from utils import *
 
