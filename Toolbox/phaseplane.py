@@ -553,6 +553,9 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
     pp_vars = [xname, yname]
     pp_vars.sort()
     pp_var_ix_map = invertMap(pp_vars)
+
+    # subscript refers to the component returned
+    # first letter refers to order of args
     def xdot_x(x, y, t):
         vardict[yname] = y
         vardict[xname] = x
@@ -561,25 +564,10 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
         vardict[yname] = y
         vardict[xname] = x
         return gen.Rhs(t,vardict,gen.pars)[y_ix]
-    def xdot_y(x, y, t):
-        vardict[yname] = y
-        vardict[xname] = x
-        return gen.Rhs(t,vardict,gen.pars)[y_ix]
-    def ydot_x(y, x, t):
-        vardict[yname] = y
-        vardict[xname] = x
-        return gen.Rhs(t,vardict,gen.pars)[x_ix]
     if gen.haveJacobian():
         # user-supplied Jacobian if present
+        # subscript refers to the component returned
         def xfprime_x(x, y, t):
-            vardict[xname] = x
-            vardict[yname] = y
-            return gen.Jacobian(t, vardict, gen.pars)[x_ix]
-        def xfprime_y(x, y, t):
-            vardict[xname] = x
-            vardict[yname] = y
-            return gen.Jacobian(t, vardict, gen.pars)[y_ix]
-        def yfprime_x(y, x, t):
             vardict[xname] = x
             vardict[yname] = y
             return gen.Jacobian(t, vardict, gen.pars)[x_ix]
@@ -589,29 +577,23 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             return gen.Jacobian(t, vardict, gen.pars)[y_ix]
     elif jac is not None:
         # assumes **args-compatible signature!
+        # subscript refers to the component returned
         xix = pp_var_ix_map[xname]
         yix = pp_var_ix_map[yname]
-        # x will be first argument to these
-        xfprime_x = lambda x, y, t: array(jac(**{'t': t, xname: x,
-                                      yname: y})[xix])
-        xfprime_y = lambda x, y, t: array(jac(**{'t': t, xname: x,
-                                      yname: y})[yix])
-        # y will be first argument to these
-        yfprime_x = lambda y, x, t: array(jac(**{'t': t, xname: x,
-                                      yname: y})[xix])
-        yfprime_y = lambda y, x, t: array(jac(**{'t': t, xname: x,
-                                      yname: y})[yix])
+        xfprime_x = lambda x, y, t: array(jac(**{'t': t, xname: float(x),
+                                      yname: float(y)})[xix])
+        yfprime_y = lambda y, x, t: array(jac(**{'t': t, xname: float(x),
+                                      yname: float(y)})[yix])
     else:
         xfprime_x = None
-        xfprime_y = None
-        yfprime_x = None
         yfprime_y = None
+
     if eps is None:
         eps = 1.49012e-8
-    x_range = list(linspace(x_dom[0],x_dom[1],n))
-    y_range = list(linspace(y_dom[0],y_dom[1],n))
-    x_null_pts = []
-    y_null_pts = []
+
+    # ranges for initial search for nullcline points
+    x_range = list(linspace(gen.xdomain[xname][0],gen.xdomain[xname][1],n))
+    y_range = list(linspace(gen.xdomain[yname][0],gen.xdomain[yname][1],n))
 
     if fps is not None:
         fps_FS = [gen._FScompatibleNames(fp) for fp in fps]
@@ -620,8 +602,17 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
     else:
         add_pts_x = []
         add_pts_y = []
+
+    x_null_pts = []
+    y_null_pts = []
+
     seed_pts_x = []
     seed_pts_y = []
+    if x_dom != gen.xdomain[xname] or y_dom != gen.xdomain[yname]:
+        # user sub-domains - make sure there's at least one start point inside
+        seed_pts_x.append( 0.5*(x_dom[0]+x_dom[1]) )
+        seed_pts_y.append( 0.5*(y_dom[0]+y_dom[1]) )
+
     if seed_points is not None:
         seed_points = gen._FScompatibleNames(seed_points)
         if yname in seed_points:
@@ -638,6 +629,9 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             seed_pts_y_for_xnull = []
         seed_pts_x.extend(seed_pts_x_for_xnull+seed_pts_x_for_ynull)
         seed_pts_y.extend(seed_pts_y_for_xnull+seed_pts_y_for_ynull)
+    else:
+        seed_pts_x_for_ynull = seed_pts_x_for_xnull = []
+        seed_pts_y_for_ynull = seed_pts_y_for_xnull = []
 
     x_range = seed_pts_x + add_pts_x + x_range
     y_range = seed_pts_y + add_pts_y + y_range
@@ -649,8 +643,8 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
     if yname in do_vars:
         for x0 in x_range:
             try:
-                x_null_pts.extend([(_xinf_ND(xdot_y,x0,args=(y,t),
-                               xddot=xfprime_y,xtol=eps/10.),y) for y in y_range])
+                x_null_pts.extend([(_xinf_ND(xdot_x,x0,args=(y,t),
+                               xddot=xfprime_x,xtol=eps/10.),y) for y in y_range])
                 y_null_pts.extend([(x0,_xinf_ND(ydot_y,y,args=(x0,t),
                                xddot=yfprime_y,xtol=eps/10.)) for y in y_range])
             except (OverflowError, ZeroDivisionError):
@@ -661,26 +655,46 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
     if xname in do_vars:
         for y0 in y_range:
             try:
-                y_null_pts.extend([(x,_xinf_ND(ydot_x,y0,args=(x,t),
-                               xddot=yfprime_x,xtol=eps/10.)) for x in x_range])
                 x_null_pts.extend([(_xinf_ND(xdot_x,x,args=(y0,t),
                                xddot=xfprime_x,xtol=eps/10.),y0) for x in x_range])
+                y_null_pts.extend([(x,_xinf_ND(ydot_y,y0,args=(x,t),
+                               xddot=yfprime_y,xtol=eps/10.)) for x in x_range])
             except (OverflowError, ZeroDivisionError):
                 rout.stop()
             except:
                 rout.stop()
                 raise
     rout.stop()
+
+    # intervals based on user specs (if different to inherent variable domains)
     xwidth = abs(x_dom[1]-x_dom[0])
     ywidth = abs(y_dom[1]-y_dom[0])
     xinterval=Interval('xdom', float, [x_dom[0]-crop_tol_pc*xwidth,
                                        x_dom[1]+crop_tol_pc*xwidth])
     yinterval=Interval('ydom', float, [y_dom[0]-crop_tol_pc*ywidth,
                                        y_dom[1]+crop_tol_pc*ywidth])
-    x_null = filter_close_points(crop_2D(filter_NaN(x_null_pts),
+
+    x_null_fsolve = filter_close_points(crop_2D(filter_NaN(x_null_pts),
                                 xinterval, yinterval), eps*10)
-    y_null = filter_close_points(crop_2D(filter_NaN(y_null_pts),
+    y_null_fsolve = filter_close_points(crop_2D(filter_NaN(y_null_pts),
                                 xinterval, yinterval), eps*10)
+
+    # intervals based on inherent variable domains
+    if x_dom == gen.xdomain[xname]:
+        x_null_inh = []
+        y_null_inh = []
+    else:
+        x_dom_inh = gen.xdomain[xname]
+        y_dom_inh = gen.xdomain[yname]
+        xinterval_inh = Interval('xdom', float, [x_dom_inh[0], x_dom_inh[1]])
+        yinterval_inh = Interval('ydom', float, [y_dom_inh[0], y_dom_inh[1]])
+        x_null_inh = filter_close_points(crop_2D(filter_NaN(x_null_pts),
+                                xinterval_inh, yinterval_inh), eps*10)
+        x_null_inh.sort(1)
+        y_null_inh = filter_close_points(crop_2D(filter_NaN(y_null_pts),
+                                xinterval_inh, yinterval_inh), eps*10)
+        y_null_inh.sort(0)
+
 
     # default value for now
     do_cache = False
@@ -702,43 +716,70 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
         # with multiple starting points
         # - also, the following assumes more than one point was already added to
         # these lists
+
         # Y
         if yname in do_vars:
-            if len(y_null) > 1:
-                x_init = y_null[1,0]
-                y_init = y_null[1,1]
-            elif len(y_null) == 1:
-                x_init = y_null[0,0]
-                y_init = y_null[0,1]
-            elif fps is not None and len(fps) > 0:
+            # set up a prioritized list of starting points
+            x_init_priority_list = []
+            y_init_priority_list = []
+            if fps is not None and len(fps) > 0:
                 x_init = fps[0][xname_orig] + 1e-4*(x_dom[1]-x_dom[0])
                 y_init = fps[0][yname_orig] + 1e-4*(y_dom[1]-y_dom[0])
-            elif len(seed_pts_x_for_ynull) > 0:
-                x_init = seed_pts_x_for_ynull[0]
-                y_init = seed_pts_y_for_ynull[0]
-            else:
-                x_init = (x_dom[0]+x_dom[1])/2.
-                y_init = (y_dom[0]+y_dom[1])/2.
-            if x_init < x_dom[0]:
-                x_init = x_dom[0]
-            elif x_init > x_dom[1]:
-                x_init = x_dom[1]
-            if y_init < y_dom[0]:
-                y_init = y_dom[0]
-            elif y_init > y_dom[1]:
-                y_init = y_dom[1]
+                x_init_priority_list.append(x_init)
+                y_init_priority_list.append(y_init)
+            if len(y_null_fsolve) > 0:
+                # get an initial point from user-specified sub-domain
+                index = int(len(y_null_fsolve)/2.)
+                x_init, y_init = y_null_fsolve[index]
+                x_init_priority_list.append(x_init)
+                y_init_priority_list.append(y_init)
+            x_init_priority_list.extend( seed_pts_x_for_ynull )
+            y_init_priority_list.extend( seed_pts_y_for_ynull )
+            if len(y_null_inh) > 0:
+                old_indices = []
+                for ratio in (0.25, 0.5, 0.75):
+                    index = int(len(y_null_inh)*ratio)
+                    if index in old_indices:
+                        continue
+                    else:
+                        old_indices.append(index)
+                    x_init, y_init = y_null_inh[index]
+                    x_init_priority_list.append(x_init)
+                    y_init_priority_list.append(y_init)
+            # lowest priority: domain midpoint
+            x_init_priority_list.append( (x_dom[0]+x_dom[1])/2. )
+            y_init_priority_list.append( (y_dom[0]+y_dom[1])/2. )
+
+            # initialize starting point
+            x_init = x_init_priority_list[0]
+            y_init = y_init_priority_list[0]
+
+            max_tries = min(len(x_init_priority_list), 4)
+
             if pycont_cache[1] is None:
                 sysargs_y = args(name='nulls_y', pars={xname: x_init},
                            ics={yname: y_init},
                            varspecs={yname: gen.funcspec._initargs['varspecs'][yname]},
-                           xdomain={yname: y_dom}, pdomain={xname: x_dom})
+                           xdomain={yname: gen.xdomain[yname]}, pdomain={xname: gen.xdomain[xname]})
                 if 'inputs' in gen.funcspec._initargs: # and isinstance(gen.funcspec._initargs['inputs'], dict):
                     if len(gen.funcspec._initargs['inputs']) > 0:
                         sysargs_y['inputs'] = gen.inputs.copy()
-                if 'fnspecs' in gen.funcspec._initargs:
-                    sysargs_y.update({'fnspecs':renameClashingAuxFnPars(gen.funcspec._initargs['fnspecs'], [xname])})
                 sysargs_y.pars.update(gen.pars)
                 sysargs_y.pars.update(filteredDict(vardict, [xname, yname], neg=True))
+                if 'fnspecs' in gen.funcspec._initargs:
+                    old_fnspecs = gen.funcspec._initargs['fnspecs']
+                    fnspecs = resolveClashingAuxFnPars(old_fnspecs, sysargs_y.pars.keys())
+                    # TEMP
+                    del fnspecs['Jacobian']
+##                    # process any Jacobian functions to remove un-needed terms
+##                    if 'Jacobian' in fnspecs:
+##                        fnspecs['Jacobian'] = makePartialJac(fnspecs['Jacobian'], [yname])
+##                    if 'Jacobian_pars' in fnspecs:
+##                        fnspecs['Jacobian_pars'] = makePartialJac(fnspecs['Jacobian_pars'], [yname])
+##                    elif 'Jacobian' in fnspecs:
+##                        old_fargs, J_par_spec = makePartialJac(old_fnspecs['Jacobian'], [yname], [xname])
+##                        fnspecs['Jacobian_pars'] = (fnspecs['Jacobian'][0], J_par_spec)
+                    sysargs_y.update({'fnspecs': fnspecs})
                 sysargs_y.pars['time'] = t
                 sys_y = Vode_ODEsystem(sysargs_y)
                 P_y = ContClass(sys_y)
@@ -752,8 +793,8 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             PCargs = args(name='null_curve_y', type='EP-C', force=True)
             PCargs.freepars = [xname]
             PCargs.MinStepSize = 1e-8
-            PCargs.VarTol = PCargs.FuncTol = eps
-            PCargs.TestTol = 1e-8
+            PCargs.VarTol = PCargs.FuncTol = eps*10
+            PCargs.TestTol = eps
             if max_step is None:
                 PCargs.MaxStepSize = 5e-1
                 PCargs.StepSize = 1e-6
@@ -761,42 +802,101 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 PCargs.MaxStepSize = max_step[xname]
                 PCargs.StepSize = max_step[xname]*0.5
             PCargs.MaxNumPoints = loop_step
+            PCargs.MaxCorrIters = 8
+            #PCargs.verbosity = 100
             P_y.newCurve(PCargs)
-            # check every loop_step points until go out of bounds
+
+            # Continue, checking every loop_step points until go out of bounds
+            # FORWARD ###########
             done = False
             num_points = 0
+            in_subdom = x_init in xinterval and y_init in yinterval
+            tries = 0
             while not done:
                 try:
                     P_y['null_curve_y'].forward()
                 except PyDSTool_ExistError:
-                    print 'null_curve_y failed in forward direction'
-                    raise
+                    tries += 1
+                    if tries == max_tries:
+                        print 'null_curve_y failed in forward direction'
+                        raise
+                    else:
+                        # try a different starting point
+                        x_init = x_init_priority_list[tries]
+                        y_init = y_init_priority_list[tries]
+                        sys_y.set(pars={xname: x_init}, ics={yname: y_init})
                 else:
                     num_points += loop_step
-                    # stop if have tried going forwards more than twice and solution is
-                    # still not within domain, or if num_points exceeds max_num_points
-                    done = (num_points > 5*loop_step and not \
+                    # stop if have tried going forwards too much and solution becomes
+                    # outside of sub-domains, or if num_points exceeds max_num_points
+                    if in_subdom:
+                        done = (num_points > 5*loop_step or num_points > max_num_points)
+                        done = done and not \
                             check_bounds(array([P_y['null_curve_y'].new_sol_segment[xname],
-                                                  P_y['null_curve_y'].new_sol_segment[yname]]).T,
-                                            xinterval, yinterval)) \
-                          or num_points > max_num_points
+                                                P_y['null_curve_y'].new_sol_segment[yname]]).T,
+                                         xinterval, yinterval)
+                        #print "\n", "TEMP in subdom"
+                        y_null_part = crop_2D(array([P_y['null_curve_y'].sol[xname],
+                                                     P_y['null_curve_y'].sol[yname]]).T,
+                                              xinterval, yinterval)
+                        #print num_points
+                        #if len(y_null_part)>0:
+                        #    print y_null_part[0], y_null_part[-1]
+                        #else:
+                        #    print "No y_null_part"
+                    else:
+                        # did not start in sub-domain and still not yet found
+                        # it during continuation
+                        y_null_part = crop_2D(array([P_y['null_curve_y'].sol[xname],
+                                                     P_y['null_curve_y'].sol[yname]]).T,
+                                              xinterval, yinterval)
+                        #print "\n", "TEMP not in subdom"
+                        #print num_points
+                        #if len(y_null_part)>0:
+                        #    print y_null_part[0], y_null_part[-1]
+                        #else:
+                        #    print "No y_null_part"
+                        in_subom = len(y_null_part)>0
+                        done = num_points > 15*loop_step
+
+            # BACKWARD ###########
             done = False
             num_points = 0
+            in_subdom = x_init in xinterval and y_init in yinterval
+            tries = 0
             while not done:
                 try:
                     P_y['null_curve_y'].backward()
                 except PyDSTool_ExistError:
-                    print 'null_curve_y failed in backward direction'
-                    raise
+                    tries += 1
+                    if tries == max_tries:
+                        print 'null_curve_y failed in backward direction'
+                        raise
+                    else:
+                        # try a different starting point
+                        x_init = x_init_priority_list[tries]
+                        y_init = y_init_priority_list[tries]
+                        sys_y.set(pars={xname: x_init}, ics={yname: y_init})
                 else:
                     num_points += loop_step
-                    # stop if have tried going backwards more than twice and solution is
-                    # still not within domain, or if num_points exceeds max_num_points
-                    done = (num_points > 5*loop_step and not \
+                    # stop if have tried going backwards too much and solution becomes
+                    # outside of sub-domain, or if num_points exceeds max_num_points
+                    if in_subdom:
+                        done = (num_points > 5*loop_step or num_points > max_num_points)
+                        done = done and not \
                             check_bounds(array([P_y['null_curve_y'].new_sol_segment[xname],
-                                                  P_y['null_curve_y'].new_sol_segment[yname]]).T,
-                                            xinterval, yinterval)) \
-                         or num_points > max_num_points
+                                                P_y['null_curve_y'].new_sol_segment[yname]]).T,
+                                         xinterval, yinterval)
+                    else:
+                        # did not start in sub-domain and still not yet found
+                        # it during continuation
+                        y_null_part = crop_2D(array([P_y['null_curve_y'].sol[xname],
+                                                     P_y['null_curve_y'].sol[yname]]).T,
+                                              xinterval, yinterval)
+                        in_subom = len(y_null_part)>0
+                        done = num_points > 15*loop_step
+
+            # overwrite y_null from fsolve, pre-PyCont
             # can get repetition of some points
             if strict_domains:
                 y_null = crop_2D(array([P_y['null_curve_y'].sol[xname],
@@ -821,41 +921,67 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
 
         # X
         if xname in do_vars:
-            if len(x_null) > 1:
-                x_init = x_null[1,0]
-                y_init = x_null[1,1]
-            elif len(x_null) == 1:
-                x_init = x_null[0,0]
-                y_init = x_null[0,1]
-            elif fps is not None and len(fps) > 0:
+            # set up a prioritized list of starting points
+            x_init_priority_list = []
+            y_init_priority_list = []
+            if fps is not None and len(fps) > 0:
                 x_init = fps[0][xname_orig] + 1e-4*(x_dom[1]-x_dom[0])
                 y_init = fps[0][yname_orig] + 1e-4*(y_dom[1]-y_dom[0])
-            elif len(seed_pts_x_for_xnull) > 0:
-                x_init = seed_pts_x_for_xnull[0]
-                y_init = seed_pts_y_for_xnull[0]
-            else:
-                x_init = (x_dom[0]+x_dom[1])/2.
-                y_init = (y_dom[0]+y_dom[1])/2.
-            if x_init < x_dom[0]:
-                x_init = x_dom[0]
-            elif x_init > x_dom[1]:
-                x_init = x_dom[1]
-            if y_init < y_dom[0]:
-                y_init = y_dom[0]
-            elif y_init > y_dom[1]:
-                y_init = y_dom[1]
+                x_init_priority_list.append(x_init)
+                y_init_priority_list.append(y_init)
+            if len(x_null_fsolve) > 0:
+                # get an initial point from user-specified sub-domain
+                index = int(len(x_null_fsolve)/2.)
+                x_init, y_init = x_null_fsolve[index]
+                x_init_priority_list.append(x_init)
+                y_init_priority_list.append(y_init)
+            x_init_priority_list.extend( seed_pts_x_for_xnull )
+            y_init_priority_list.extend( seed_pts_y_for_xnull )
+            if len(x_null_inh) > 0:
+                old_indices = []
+                for ratio in (0.25, 0.5, 0.75):
+                    index = int(len(x_null_inh)*ratio)
+                    if index in old_indices:
+                        continue
+                    else:
+                        old_indices.append(index)
+                    x_init, y_init = x_null_inh[index]
+                    x_init_priority_list.append(x_init)
+                    y_init_priority_list.append(y_init)
+            # lowest priority: domain midpoint
+            x_init_priority_list.append( (x_dom[0]+x_dom[1])/2. )
+            y_init_priority_list.append( (y_dom[0]+y_dom[1])/2. )
+
+            # initialize starting point
+            x_init = x_init_priority_list[0]
+            y_init = y_init_priority_list[0]
+
+            max_tries = min(len(x_init_priority_list), 4)
+
             if pycont_cache[0] is None:
                 sysargs_x = args(name='nulls_x', pars={yname: y_init},
                            ics={xname: x_init}, tdata=[t,t+1],
                            varspecs={xname: gen.funcspec._initargs['varspecs'][xname]},
-                           xdomain={xname: x_dom}, pdomain={yname: y_dom})
+                           xdomain={xname: gen.xdomain[xname]}, pdomain={yname: gen.xdomain[yname]})
                 if 'inputs' in gen.funcspec._initargs: # and isinstance(gen.funcspec._initargs['inputs'], dict):
                     if len(gen.funcspec._initargs['inputs']) > 0:
                         sysargs_x['inputs'] = gen.inputs.copy()
-                if 'fnspecs' in gen.funcspec._initargs:
-                    sysargs_x.update({'fnspecs': renameClashingAuxFnPars(gen.funcspec._initargs['fnspecs'], [yname])})
                 sysargs_x.pars.update(gen.pars)
                 sysargs_x.pars.update(filteredDict(vardict, [xname, yname], neg=True))
+                if 'fnspecs' in gen.funcspec._initargs:
+                    old_fnspecs = gen.funcspec._initargs['fnspecs']
+                    fnspecs = resolveClashingAuxFnPars(old_fnspecs, sysargs_x.pars.keys())
+                    # TEMP
+                    del fnspecs['Jacobian']
+                    # process any Jacobian functions to remove un-needed terms
+##                    if 'Jacobian' in fnspecs:
+##                        fnspecs['Jacobian'] = makePartialJac(fnspecs['Jacobian'], [xname])
+##                    if 'Jacobian_pars' in fnspecs:
+##                        fnspecs['Jacobian_pars'] = makePartialJac(fnspecs['Jacobian_pars'], [xname])
+##                    elif 'Jacobian' in fnspecs:
+##                        old_fargs, J_par_spec = makePartialJac(old_fnspecs['Jacobian'], [xname], [yname])
+##                        fnspecs['Jacobian_pars'] = (fnspecs['Jacobian'][0], J_par_spec)
+                    sysargs_x.update({'fnspecs': fnspecs})
                 sysargs_x.pars['time'] = t
                 sys_x = Vode_ODEsystem(sysargs_x)
                 P_x = ContClass(sys_x)
@@ -869,8 +995,8 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             PCargs = args(name='null_curve_x', type='EP-C', force=True)
             PCargs.freepars = [yname]
             PCargs.MinStepSize = 1e-8
-            PCargs.VarTol = PCargs.FuncTol = eps
-            PCargs.TestTol = 1e-8
+            PCargs.VarTol = PCargs.FuncTol = eps*10
+            PCargs.TestTol = eps
             if max_step is None:
                 PCargs.MaxStepSize = 5e-1
                 PCargs.StepSize = 1e-6
@@ -878,15 +1004,27 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 PCargs.MaxStepSize = max_step[yname]
                 PCargs.StepSize = max_step[yname]*0.5
             PCargs.MaxNumPoints = loop_step
+            PCargs.MaxCorrIters = 8
+            #PCargs.verbosity = 100
+
             P_x.newCurve(PCargs)
             done = False
             num_points = 0
+            in_subdom = x_init in xinterval and y_init in yinterval
+            tries = 0
             while not done:
                 try:
                     P_x['null_curve_x'].forward()
                 except PyDSTool_ExistError:
-                    print 'null_curve_x failed in forward direction'
-                    raise
+                    tries += 1
+                    if tries == max_tries:
+                        print 'null_curve_x failed in forward direction'
+                        raise
+                    else:
+                        # try a different starting point
+                        x_init = x_init_priority_list[tries]
+                        y_init = y_init_priority_list[tries]
+                        sys_x.set(pars={yname: y_init}, ics={xname: x_init})
                 else:
                     num_points += loop_step
                     # stop if have tried going forwards more than twice and solution is
@@ -898,12 +1036,21 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                          or num_points > max_num_points
             done = False
             num_points = 0
+            in_subdom = x_init in xinterval and y_init in yinterval
+            tries = 0
             while not done:
                 try:
                     P_x['null_curve_x'].backward()
                 except PyDSTool_ExistError:
-                    print 'null_curve_x failed in backward direction'
-                    raise
+                    tries += 1
+                    if tries == max_tries:
+                        print 'null_curve_x failed in backward direction'
+                        raise
+                    else:
+                        # try a different starting point
+                        x_init = x_init_priority_list[tries]
+                        y_init = y_init_priority_list[tries]
+                        sys_x.set(pars={yname: y_init}, ics={xname: x_init})
                 else:
                     num_points += loop_step
                     # stop if have tried going backwards more than twice and solution is
@@ -913,6 +1060,8 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                                                   P_x['null_curve_x'].new_sol_segment[yname]]).T,
                                             xinterval, yinterval)) \
                          or num_points > max_num_points
+
+            # overwrite x_null from fsolve, pre-PyCont
             # can get repetition of some points
             if strict_domains:
                 x_null = crop_2D(array([P_x['null_curve_x'].sol[xname],
@@ -935,6 +1084,9 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 # +n offsets fact that n entries were already added
                 x_null = np.insert(x_null, ix+n, add_fp_pts[n], axis=0)
 
+    else:
+        x_null = x_null_fsolve
+        y_null = y_null_fsolve
     if do_cache:
         return (gen._FScompatibleNamesInv(x_null), gen._FScompatibleNamesInv(y_null), pycont_cache)
     else:
@@ -990,9 +1142,11 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
     x0_ixs = []
     x0_names = []
     ix = 0
+    xintervals = []
     # sort names by key to ensure same ordering as generator variables
-    for xname, xdom in sortedDictItems(subdomain,byvalue=False):
+    for xname, xdom in sortedDictItems(subdomain, byvalue=False):
         if isinstance(xdom, (tuple, list)):
+            xintervals.append( Interval('xdom', float, subdomain[xname]) )
             x0_ixs.append(var_ix_map[xname])
             x0_names.append(xname)
             x0_coords[ix,:] = linspace(xdom[0], xdom[1], n)
@@ -1002,20 +1156,7 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
     # of arguments to suit solver.
     #
     Rhs_wrap = make_RHS_wrap(gen, xdict, x0_names)
-##    def Rhs_wrap(x, t, pdict):
-##        xdict.update(dict(zip(x0_names, x)))
-##        try:
-##            return take(gen.Rhs(t, xdict, pdict), x0_ixs)
-##        except (OverflowError, ValueError):
-##            return array([1e4]*D)
     if gen.haveJacobian():
-##        def Jac_wrap(x, t, pdict):
-##            xdict.update(dict(zip(x0_names, x)))
-##            try:
-##                return take(take(gen.Jacobian(t, xdict, pdict), x0_ixs,0), x0_ixs,1)
-##            except (OverflowError, ValueError):
-##                # penalty
-##                return array([[1e4]*D]*D)
         fprime = make_Jac_wrap(gen, xdict, x0_names)
     elif jac is not None:
         def Jac_wrap(x, t, pdict):
@@ -1030,6 +1171,7 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
         fprime = Jac_wrap
     else:
         fprime = None
+
     # solve xdot on each starting point
     fps = []
     fp_listdict = []
@@ -1040,6 +1182,8 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
         res = fsolve(Rhs_wrap,x0,(t,gen.pars),xtol=xtol,
                           fprime=fprime,full_output=True)
         xinf_val = res[0]
+        if D == 1:
+            xinf_val = array([xinf_val])
         # treat f.p.s within epsilon (2-norm) of each other as identical
         if alltrue(isfinite(xinf_val)):
             if len(fps) == 0 or not sometrue([norm(fp-xinf_val)<eps for fp in fps]):
@@ -1048,7 +1192,7 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
                 if ok:
                     for ix, xname in enumerate(x0_names):
                         ok = ok and \
-                          gen.variables[xname].depdomain.contains(xinf_val[ix]) is not notcontained
+                          xintervals[ix].contains(xinf_val[ix]) is not notcontained
                 if ok:
                     fps.append(xinf_val)
                     fp_pt = dict(zip(x0_names, xinf_val))
@@ -1671,13 +1815,16 @@ class fixedpoint_nD(object):
         self.jac = jac
         jac_test_arg = filteredDict(pt, self.fp_coords)
         jac_test_arg['t'] = 0
-        try:
-            self.D = asarray(jac(**jac_test_arg))
-        except:
-            # placeholder
-            raise
+        if hasattr(jac, '_namemap'):
+            # jac made with expr2fun
+            self.D = asarray(jac.alt_call(jac_test_arg))
         else:
-            assert self.D.shape == (self.dimension, self.dimension)
+            try:
+                self.D = asarray(jac(**jac_test_arg))
+            except:
+                # placeholder
+                raise
+        assert self.D.shape == (self.dimension, self.dimension)
         assert normord > 0
         self.normord = normord
         assert pt._normord == normord, "Mismatching norm order for point"
@@ -1698,8 +1845,8 @@ class fixedpoint_nD(object):
         # assume autonomous system
         var_ixs = []
         for v in self.fp_coords:
-            var_ixs.append(gen.funcspec.vars.index(v))
-        fp_evaluated = array(gen.Rhs(0, pt, gen.pars))[var_ixs]
+            var_ixs.append(gen.query('vars').index(v))
+        fp_evaluated = array(gen.Rhs(0, gen._FScompatibleNames(pt), gen.pars))[var_ixs]
         if sometrue([abs(fp_i) > eps for fp_i in fp_evaluated]):
             print "Tolerance =", eps
             print "vector field is", fp_evaluated
@@ -3832,15 +3979,16 @@ def _xinf_ND(xdot,x0,args=(),xddot=None,xtol=1.49012e-8):
     """Private function for wrapping the fsolving for x_infinity
     for a variable x in N dimensions"""
     try:
-        result = float(fsolve(xdot,x0,args,fprime=xddot,xtol=xtol,full_output=1))
+        result = fsolve(xdot,x0,args,fprime=xddot,xtol=xtol,full_output=1)
     except (ValueError, TypeError, OverflowError):
         xinf_val = NaN
     except:
         print "Error in fsolve:", sys.exc_info()[0], sys.exc_info()[1]
         xinf_val = NaN
     else:
-        if result[2] == 1:
-            xinf_val = result[0]
+        if result[2] in (1,2,3): #,4,5):
+            # 4,5 means "not making good progress" (see fsolve docstring)
+            xinf_val = float(result[0])
         else:
             xinf_val = NaN
     return xinf_val
