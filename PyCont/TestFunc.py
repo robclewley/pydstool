@@ -98,6 +98,7 @@ class Function(object):
             J[:,i] = (self.func(x0+eps*ei)-self.func(x0-eps*ei))/(2*eps)
         return J
 
+
     def numhess(self, x0, ind1=None, ind2=None):
         """Computes second derivative using 2nd order centered finite difference scheme.
         MAKE MORE EFFICIENT IN FUTURE (i.e. when an index is in both ind1 and ind2)
@@ -131,6 +132,7 @@ class Function(object):
                     H[:,i,j] = (self.func(x0+eps*(ei+ej)) - self.func(x0+eps*(ei-ej)) - \
                         self.func(x0+eps*(ej-ei)) + self.func(x0-eps*(ei+ej)))/(4*eps*eps)
         return H
+
 
 class TestFunc(Function):
     """You need to define the function yourself within an inherited class."""
