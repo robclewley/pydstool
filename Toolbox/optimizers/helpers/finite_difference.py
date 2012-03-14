@@ -4,12 +4,16 @@ from PyDSTool import common
 import numpy as np
 
 class FiniteDifferencesFunction(object):
-    pass
+    def residual(p, extra_args=None):
+        raise NotImplementedError("Define in concrete sub-class")
 
 class ForwardFiniteDifferences(FiniteDifferencesFunction):
     """
     A function that will be able to computes its derivatives with a forward difference formula
     """
+    def __call__(self, params):
+        return np.linalg.norm(self.residual(params))
+
     def __init__(self, eps=1e-7, *args, **kwargs):
         """
         Creates the function :
@@ -25,9 +29,11 @@ class ForwardFiniteDifferences(FiniteDifferencesFunction):
         grad = np.empty(params.shape)
         curValue = self(params)
         for i in range(0, len(params)):
+            eps = self.eps[i]
+            #inveps = self.inveps[i]
             paramsb = params.copy()
-            paramsb[i] += self.eps
-            grad[i] = self.inveps * (self(paramsb) - curValue)
+            paramsb[i] += eps
+            grad[i] = (self(paramsb) - curValue) / eps
         return grad
 
     def hessian(self, params):
@@ -37,9 +43,11 @@ class ForwardFiniteDifferences(FiniteDifferencesFunction):
         hess = np.empty((len(params), len(params)))
         curGrad = self.gradient(params)
         for i in range(0, len(params)):
+            eps = self.eps[i]
+            #inveps = self.inveps[i]
             paramsb = params.copy()
-            paramsb[i] -= self.eps
-            hess[i] = -self.inveps * (self.gradient(paramsb) - curGrad)
+            paramsb[i] -= eps
+            hess[i] = - (self.gradient(paramsb) - curGrad) / eps
         return hess
 
     def hessianvect(self, params):
@@ -100,6 +108,9 @@ class FiniteDifferencesCache(FiniteDifferencesFunction):
     with a non-explicit derivative. Uses a cache to save recomputation
     of most recent values.
     """
+    def __call__(self, params):
+        return np.linalg.norm(self.residual(params))
+
     def __init__(self, eps=1e-7, *args, **kwargs):
         """
         Creates the function :
@@ -141,9 +152,6 @@ class ForwardFiniteDifferencesCache(FiniteDifferencesCache):
     A function that will be able to computes its derivatives with a
     forward difference formula.
     """
-    def __call__(self, params):
-        return np.linalg.norm(self.residual(params))
-
     def jacobian(self, params, extra_args=None):
         """
         Computes the jacobian of the function
