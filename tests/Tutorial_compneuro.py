@@ -173,7 +173,7 @@ HH_model.compute(trajname='test',
 
 v_dat = HH_model.sample('test')
 plt.figure()
-plt.plot(v_dat['t'], v_dat['V'],'b')
+plt.plot(v_dat['t'], v_dat['V'], 'b', label="Ibias=1.75")
 
 """
 Now you can change parameter values/initial conditions and recompute
@@ -190,5 +190,8 @@ HH_model.compute(trajname='test2',
                  )
 
 v_dat2 = HH_model.sample('test2')
-plt.plot(v_dat2['t'], v_dat2['V'],'r')
+plt.plot(v_dat2['t'], v_dat2['V'], 'r', label="Ibias=2.75")
+plt.xlabel("t")
+plt.ylabel("V")
+plt.legend()
 plt.show()
