@@ -69,7 +69,6 @@ try:
 except ValueError, e:
     print " ", e
 
-print "sin_var.getDataPoints() => ", sin_var.getDataPoints()
 print "sin_var([0., 0.5*math.pi, math.pi]) => ", sin_var([0., 0.5*math.pi,
                                                           math.pi])
 
