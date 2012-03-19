@@ -55,6 +55,7 @@ from numpy import Inf, NaN, isfinite, sign, abs, array, arange, \
 from numpy import sometrue, alltrue, any, all
 import copy
 from time import clock
+import pprint
 
 __all__ = ['Model', 'HybridModel', 'NonHybridModel',
            'boundary_containment', 'boundary_containment_by_postproc',
@@ -345,16 +346,6 @@ class Model(object):
     """
     General-purpose Hybrid Model abstract class.
 
-    obsvars and intvars are dictionaries model variable
-    declarations must be of the form `name: valtype`, where
-    valtype is float or int. obsvars specifies the observable
-    variables for this model, which must be present in all
-    trajectory segments (regardless of which other variables are
-    specified in those segments). intvars specifies
-    non-observable (internal) variables for the model, which
-    may or may not be present in trajectory segments, depending
-    on reductions, etc., that are present in the sub-model (e.g.
-    generator) that determines the trajectory segment.
     """
     _needKeys = ['name', 'modelInfo']
     _optionalKeys = ['ics', 'mspecdict', 'verboselevel',
@@ -1326,12 +1317,21 @@ class Model(object):
                    tlo=None, thi=None, doEvents=True, precise=False):
         """Uniformly sample the named trajectory over range indicated,
         including any event points. (e.g. use this call for plotting purposes.)
+        Outputs a Pointset from the trajectory over a given range.
 
-        precise=False attempts to use the underlying mesh of the trajectory
-        to return a Pointset more quickly. Currently, this can only be used
-        for trajectories that have a single segment.
+        Arguments:
 
-        If dt is not given, the underlying time mesh is used, if available.
+          trajname   Name of stored trajectory to sample
+          coords     (optional) list of variable names to include in output
+          dt         (optional) step size to use in sampling of independent variable
+                     If not given, the underlying time mesh is used, if available.
+          tlo        (optional) Start value for independent variable, default 0
+          thi        (optional) End value for independent variable, default last value
+          doEvents   (optional) include any event points in output, default True
+          precise    (optional) The default value, False, causes an attempt to use
+                     the underlying mesh of the trajectory to return a Pointset more
+                     quickly. Currently, this can only be used for trajectories that
+                     have a single segment (non-hybrid).
         """
         try:
             return self.trajectories[trajname].sample(coords, dt, tlo, thi,
@@ -1340,20 +1340,16 @@ class Model(object):
             raise
 
 
-    def showModelInfo(self, dsName=None, returnInfo=False, verbosity=0):
-        """Display information about named sub-model"""
+    def _infostr(self, dsName=None, verbosity=0):
+        """Return string information about named sub-model (if given by dsName)
+        at given verbosity level (default 0)"""
+        pp = pprint.PrettyPrinter(indent=3)
         if dsName is None:
-            if returnInfo:
-                result = {}
-            else:
-                print "Sub-models defined in model " + self.name
+            result = {}
+            res_str = "Sub-models defined in model %s:\n" % self.name
             for name, infodict in self.modelInfo.iteritems():
-                if returnInfo:
-                    result[name] = infodict['dsi'].model._infostr(verbosity)
-                else:
-                    print infodict['dsi'].model
-            if returnInfo:
-                return result
+                result[name] = infodict['dsi'].model._infostr(verbosity)
+            return res_str + pp.pprint(result)
         else:
             # return more information for a single sub-model
             try:
@@ -1361,10 +1357,7 @@ class Model(object):
                       "Event mapping info:\n" + str(self.modelInfo[dsName]['swRules'])}
             except KeyError:
                 raise NameError("Sub-model %s not found in model"%dsName)
-            if returnInfo:
-                return result
-            else:
-                info(result)
+            return "Sub-model %s:\n" % dsName + pp.print(result)
 
     def showDSEventInfo(self, target, verbosity=1, ics=None, t=0):
         # call to eventstruct prints info to stdout
@@ -1694,7 +1687,16 @@ class NonHybridModel(Model):
         return self.registry.values()[0].haveJacobian_pars()
 
     def Rhs(self, t, xdict, pdict=None, asarray=False):
-        """Direct access to a generator's Rhs function."""
+        """Direct access to a generator's Rhs function.
+        Parameters:
+
+          t        time (can use 0 for an autonomous system)
+          xdict    state dictionary or Point.
+          pdict    parameter dictionary or Point
+                   (optional, default current parameters)
+          asarray  (Bool, optional, default False) If true, will return an array
+                   in state name alphabetical order, else a Point
+        """
         # get Generator as 'ds'
         ds = self.registry.values()[0]
         fscm = ds._FScompatibleNames
@@ -1721,7 +1723,17 @@ class NonHybridModel(Model):
         return rhsval
 
     def Jacobian(self, t, xdict, pdict=None, asarray=False):
-        """Direct access to a generator's Jacobian function (if defined)."""
+        """Direct access to a generator's Jacobian function (if defined).
+
+        Arguments:
+
+          t        time (can use 0 for an autonomous system)
+          xdict    state dictionary or Point.
+          pdict    parameter dictionary or Point
+                   (optional, default current parameters)
+          asarray  (Bool, optional, default False) If true, will return an array
+                   in state name alphabetical order, else a Point
+        """
         ds = self.registry.values()[0]
         if not ds.haveJacobian():
             raise PyDSTool_ExistError("Jacobian not defined")
@@ -1749,7 +1761,17 @@ class NonHybridModel(Model):
         return J
 
     def JacobianP(self, t, xdict, pdict=None, asarray=False):
-        """Direct access to a generator's JacobianP function (if defined)."""
+        """Direct access to a generator's JacobianP function (if defined).
+
+        Arguments:
+
+          t        time (can use 0 for an autonomous system)
+          xdict    state dictionary or Point.
+          pdict    parameter dictionary or Point
+                   (optional, default current parameters)
+          asarray  (Bool, optional, default False) If true, will return an array
+                   in state name alphabetical order, else a Point
+        """
         ds = self.registry.values()[0]
         if not ds.haveJacobian_pars():
             raise PyDSTool_ExistError("Jacobian w.r.t. pars not defined")
@@ -1776,7 +1798,17 @@ class NonHybridModel(Model):
         return Jp
 
     def MassMatrix(self, t, xdict, pdict=None, asarray=False):
-        """Direct access to a generator's MassMatrix function (if defined)."""
+        """Direct access to a generator's MassMatrix function (if defined).
+
+        Arguments:
+
+          t        time (can use 0 for an autonomous system)
+          xdict    state dictionary or Point.
+          pdict    parameter dictionary or Point
+                   (optional, default current parameters)
+          asarray  (Bool, optional, default False) If true, will return an array
+                   in state name alphabetical order, else a Point
+        """
         ds = self.registry.values()[0]
         if not ds.haveMass():
             raise PyDSTool_ExistError("Mass matrix not defined")
@@ -1805,7 +1837,17 @@ class NonHybridModel(Model):
 
     def AuxVars(self, t, xdict, pdict=None, asarray=False):
         """Direct access to a generator's auxiliary variables
-        definition (if defined)."""
+        definition (if defined).
+
+        Arguments:
+
+          t        time (can use 0 for an autonomous system)
+          xdict    state dictionary or Point.
+          pdict    parameter dictionary or Point
+                   (optional, default current parameters)
+          asarray  (Bool, optional, default False) If true, will return an array
+                   in state name alphabetical order, else a Point
+        """
         fscm = ds._FScompatibleNames
         fscmInv = ds._FScompatibleNamesInv
         x_fs = filteredDict(fscm(xdict), ds.get('funcspec').vars)
@@ -1830,7 +1872,19 @@ class NonHybridModel(Model):
 
 
     def compute(self, trajname, **kw):
-        """Compute a trajectory out of constituent segments."""
+        """Compute a non-hybrid trajectory. Returns a Trajectory object.
+
+        Arguments (non-keyword):
+          trajname   Name of trajectory to create (string)
+
+        Arguments (keyword only, all optional):
+          force      (Bool, default False) - force overwrite of any trajectory
+                     stored in this object with the same name
+          verboselevel  (int, default 0)
+          ics        initial conditions dict or Point
+          pars       parameters dict or Point
+          tdata      time data (interval as sequence of 2 numeric values)
+        """
         tdata, t0_global, t1_global, force_overwrite = \
                 Model._prepareCompute(self, trajname, **kw)
         if self.icdict == {}:
@@ -2479,7 +2533,17 @@ class HybridModel(Model):
         return result
 
     def Rhs(self, dsName, t, xdict, pdict=None, asarray=False):
-        """Direct access to a generator's Rhs function."""
+        """Direct access to a sub-model generator's Rhs function.
+        Arguments:
+
+          dsName   Name of a sub-model
+          t        time (can use 0 for an autonomous system)
+          xdict    state dictionary or Point.
+          pdict    parameter dictionary or Point
+                   (optional, default current parameters)
+          asarray  (Bool, optional, default False) If true, will return an array
+                   in state name alphabetical order, else a Point
+        """
         try:
             dsi = self.modelInfo[dsName]['dsi']
         except KeyError:
@@ -2498,12 +2562,26 @@ class HybridModel(Model):
                       'coordtype': float,
                       'norm': self._normord})
 
-    def Jacobian(self, dsName, t, xdict, pdict, asarray=False):
-        """Direct access to a generator's Jacobian function (if defined)."""
+    def Jacobian(self, dsName, t, xdict, pdict=None, asarray=False):
+        """Direct access to a sub-model generator's Jacobian function (if defined).
+        Arguments:
+
+          dsName   Name of a sub-model
+          t        time (can use 0 for an autonomous system)
+          xdict    state dictionary or Point.
+          pdict    parameter dictionary or Point
+                   (optional, default current parameters)
+          asarray  (Bool, optional, default False) If true, will return an array
+                   in state name alphabetical order, else a Point
+        """
         try:
             dsi = self.modelInfo[dsName]['dsi']
         except KeyError:
             raise ValueError("No DS named %s was found"%dsName)
+        # don't need to convert pdict names to FS-compatible as they sort
+        # the same
+        if pdict is None:
+            pdict = self.pars
         if dsi.haveJacobian():
             if asarray:
                 return dsi.Jacobian(t, xdict, pdict, asarray=True)
@@ -2516,13 +2594,27 @@ class HybridModel(Model):
         else:
             raise PyDSTool_ExistError("Jacobian not defined")
 
-    def JacobianP(self, dsName, t, xdict, pdict, asarray=False):
-        """Direct access to a generator's JacobianP function (if defined)."""
+    def JacobianP(self, dsName, t, xdict, pdict=None, asarray=False):
+        """Direct access to a generator's JacobianP function (if defined).
+        Arguments:
+
+          dsName   Name of a sub-model
+          t        time (can use 0 for an autonomous system)
+          xdict    state dictionary or Point.
+          pdict    parameter dictionary or Point
+                   (optional, default current parameters)
+          asarray  (Bool, optional, default False) If true, will return an array
+                   in state name alphabetical order, else a Point
+        """
         try:
             dsi = self.modelInfo[dsName]['dsi']
         except KeyError:
             raise ValueError("No DS named %s was found"%dsName)
         if dsi.haveJacobian_pars():
+            # don't need to convert pdict names to FS-compatible as they sort
+            # the same
+            if pdict is None:
+                pdict = self.pars
             if asarray:
                 return dsi.JacobianP(t, xdict, pdict, asarray=True)
             else:
@@ -2534,12 +2626,26 @@ class HybridModel(Model):
         else:
             raise PyDSTool_ExistError("Jacobian w.r.t. pars not defined")
 
-    def MassMatrix(self, dsName, t, xdict, pdict, asarray=False):
-        """Direct access to a generator's MassMatrix function (if defined)."""
+    def MassMatrix(self, dsName, t, xdict, pdict=None, asarray=False):
+        """Direct access to a generator's MassMatrix function (if defined).
+        Arguments:
+
+          dsName   Name of a sub-model
+          t        time (can use 0 for an autonomous system)
+          xdict    state dictionary or Point.
+          pdict    parameter dictionary or Point
+                   (optional, default current parameters)
+          asarray  (Bool, optional, default False) If true, will return an array
+                   in state name alphabetical order, else a Point
+        """
         try:
             dsi = self.modelInfo[dsName]['dsi']
         except KeyError:
             raise ValueError("No DS named %s was found"%dsName)
+        # don't need to convert pdict names to FS-compatible as they sort
+        # the same
+        if pdict is None:
+            pdict = self.pars
         if asarray:
             dsi.MassMatrix(t, xdict, pdict, asarray=True)
         else:
@@ -2549,13 +2655,28 @@ class HybridModel(Model):
                       'coordtype': float,
                       'norm': self._normord})
 
-    def AuxVars(self, dsName, t, xdict, pdict, asarray=False):
+    def AuxVars(self, dsName, t, xdict, pdict=None, asarray=False):
         """Direct access to a generator's auxiliary variables
-        definition (if defined)."""
+        definition (if defined).
+
+        Arguments:
+
+          dsName   Name of a sub-model
+          t        time (can use 0 for an autonomous system)
+          xdict    state dictionary or Point.
+          pdict    parameter dictionary or Point
+                   (optional, default current parameters)
+          asarray  (Bool, optional, default False) If true, will return an array
+                   in state name alphabetical order, else a Point
+        """
         try:
             dsi = self.modelInfo[dsName]['dsi']
         except KeyError:
             raise ValueError("No DS named %s was found"%dsName)
+        # don't need to convert pdict names to FS-compatible as they sort
+        # the same
+        if pdict is None:
+            pdict = self.pars
         if asarray:
             return dsi.AuxVars(t, xdict, pdict, asarray=True)
         else:
@@ -2566,7 +2687,20 @@ class HybridModel(Model):
                       'norm': self._normord})
 
     def compute(self, trajname, **kw):
-        """Compute a trajectory out of constituent segments."""
+        """Compute a hybrid trajectory and store it internally in the 'trajectories'
+        attribute.
+
+        Arguments (non-keyword):
+          trajname   Name of trajectory to create (string)
+
+        Arguments (keyword only, all optional):
+          force      (Bool, default False) - force overwrite of any trajectory
+                     stored in this object with the same name
+          verboselevel  (int, default 0)
+          ics        initial conditions dict or Point
+          pars       parameters dict or Point
+          tdata      time data (interval as sequence of 2 numeric values)
+        """
         # initially expect to compute over a global time interval,
         # [t0_global, t1_global], which is truncated if it extends beyond
         # DS's independent variable domain to give [t0, t1].
@@ -3028,9 +3162,9 @@ class HybridModel(Model):
     def _infostr(self, verbose=1):
         if verbose > 0:
             outputStr = 'Hybrid Model '+self.name+" containing components:"
-            print "Observable variables:", self.obsvars
-            print "Internal variables:", self.intvars
-            print "Auxiliary variables:", self.auxvars
+            outputStr += "Observable variables: " + self.obsvars
+            outputStr += "Internal variables: " + self.intvars
+            outputStr += "Auxiliary variables: " + self.auxvars
             for name, infodict in self.modelInfo.iteritems():
                 outputStr += "\n--- Sub-model: "+name
                 outputStr += "\n  "+infodict['dsi'].model._infostr(verbose-1)
@@ -3043,8 +3177,8 @@ class HybridModel(Model):
 #### Private functions
 
 def getAuxVars(dsi, t, icdict, pardict):
-    """Return auxiliary variable values evaluated at t, ic,
-    pars, t given.
+    """Return auxiliary variable values evaluated at t, icdict,
+    pardict.
     """
     # prepare auxiliary variables eval'd at i.c.
     icdict_local = copy.copy(icdict)
