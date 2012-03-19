@@ -846,7 +846,7 @@ class Event(object):
                                  ' for trange in event %s'%self.name)
             ttemp = copy.copy(var.indepdomain)
             ttemp.set(trange)
-            tlist = ttemp.uniformSample(dt, avoidendpoints=True)
+            tlist = ttemp.sample(dt, avoidendpoints=True)
         else:
             raise TypeError('var must be a Variable object')
         if inputs is None:
