@@ -74,7 +74,6 @@ class IntervalMembership(int):
     def __rand__(self, v):
         return self.__and__(v)
 
-    # For possible future use
     def __or__(self, v):
         """Interval `logical OR` for checking interval intersection.
         e.g. if at least one endpoint is contained then there is intersection."""
