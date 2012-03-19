@@ -1,5 +1,5 @@
 """
-Tests and demonstration of Interval class
+Tests and demonstration of Interval and IntervalMembership classes
 """
 from PyDSTool import *
 
@@ -69,8 +69,12 @@ assert iiiii_2[0] == -Inf
 assert iiiii_2[1] == -1
 assert i.contains(1) is contained   # because discrete-valued interval
 
+i_neg = Interval('i_neg', float, (-1, 1))
+ii_neg = 1/i_neg
+assert ii_neg.get() == [-1, 1]
+
 print "\nUse the explicit `contains` method to avoid exceptions, and instead"
-print "   get a NumIntMembership type returned..."
+print "   get an IntervalMembership type returned..."
 print "m.contains(i) =>  ", m.contains(i)
 print "m.contains(0.4) => ", m.contains(0.4)
 
@@ -80,7 +84,7 @@ print "p = m.contains(j)"
 p = m.contains(j)
 print "p is uncertain => ", p is uncertain
 
-print "\nBut don't try to compare NumIntMembership objects to booleans..."
+print "\nBut don't try to compare IntervalMembership objects to booleans..."
 print "q = m.contains(0.9)"
 q = m.contains(0.9)
 assert q is contained
@@ -94,28 +98,29 @@ print "contained and notcontained => ", contained and notcontained
 print "contained and uncertain => ", contained and uncertain
 print "notcontained and notcontained => ", notcontained and notcontained
 
-print "\nm.uniformSample(0.09, strict=False, avoidendpoints=True) => ", \
-      m.uniformSample(0.09, strict=False, avoidendpoints=True)
+print "\nm.sample(0.09, strict=False, avoidendpoints=True) => ", \
+      m.sample(0.09, strict=False, avoidendpoints=True)
 
-print "\nm.uniformSample(0.09, strict=False) => ", \
-      m.uniformSample(0.09, strict=False)
+print "\nm.sample(0.09, strict=False) => ", \
+      m.sample(0.09, strict=False)
 
 print "i2=Interval('i2', int, (0,10))"
 i2=Interval('i2', int, (0,10))
-print "\ni2.uniformSample(2, strict=False, avoidendpoints=True) => ", \
-      i2.uniformSample(2, strict=False, avoidendpoints=True)
+print "\ni2.sample(2, strict=False, avoidendpoints=True) => ", \
+      i2.sample(2, strict=False, avoidendpoints=True)
 
 print "i3=Interval('i3', float, (0.,0.4))"
 i3=Interval('i3', float, (0.,0.4))
-print "\ni3.uniformSample(0.36, strict=False) => ", \
-      i3.uniformSample(0.36, strict=False)
+print "\ni3.sample(0.36, strict=False) => ", \
+      i3.sample(0.36, strict=False)
 
-print "\ni3.uniformSample(0.36, strict=False, avoidendpoints=True) => ", \
-      i3.uniformSample(0.36, strict=False, avoidendpoints=True)
+print "\ni3.sample(0.36, strict=False, avoidendpoints=True) => ", \
+      i3.sample(0.36, strict=False, avoidendpoints=True)
 
-print "\ni3.uniformSample(0.36, strict=True) => ", \
-      i3.uniformSample(0.36, strict=True)
+print "\ni3.sample(0.36, strict=True) => ", \
+      i3.sample(0.36, strict=True)
 
+assert len(i3.sample(0.36, strict=True)) == 3
 
 print "\nInfinite intervals"
 print "inf1 = Interval('inf1', float, [0,Inf])"

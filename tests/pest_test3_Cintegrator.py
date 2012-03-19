@@ -74,8 +74,8 @@ HH_test.set(tdata=[0,15], algparams={'atol':1e-9,'rtol':1e-8,
 
 ## Set up external interface for the reference trajectory based on spike time
 
-tmesh = goaltraj.indepdomain.uniformSample(dt=(tdata[1]-tdata[0])/100.,
-                                           avoidendpoints=True)
+tmesh = goaltraj.indepdomain.sample(dt=(tdata[1]-tdata[0])/100.,
+                                    avoidendpoints=True)
 
 ## DATA SPIKE ===================
 

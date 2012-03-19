@@ -50,8 +50,8 @@ print "directly from the noisy data"
 
 ## Set up external interface for the reference trajectory based on spike time
 
-tmesh = goaltraj.indepdomain.uniformSample(dt=(tdata[1]-tdata[0])/100.,
-                                           avoidendpoints=True)
+tmesh = goaltraj.indepdomain.sample(dt=(tdata[1]-tdata[0])/100.,
+                                    avoidendpoints=True)
 
 ## DATA SPIKE ===================
 
