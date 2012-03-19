@@ -1491,23 +1491,3 @@ def findApproxPeriod(traj, t0, t1_guess=None, T_guess=None, coordname=None,
           "Try a different starting point,", \
           "a different test variable, or reduce relative tolerance."
         raise ValueError("Did not converge")
-
-# ---------------------------------------------------------------------
-
-
-if __name__ == '__main__':
-    v1 = Variable(Pointset({'coordarray': array(range(10), float)*0.1,
-                            'indepvararray': array(range(10), float)*0.5
-                            }), name='v1')
-    v2 = Variable(Pointset({'coordarray': array(range(10), float64)*0.25+1.0,
-                            'indepvararray': array(range(10), float64)*0.5
-                            }), name='v2')
-    traj = Trajectory('test1', [v1,v2])
-    print "print traj(0.5, checklevel=2) => ", traj(0.5, checklevel=2)
-    print "print traj([0., 0.5]) => ", traj([0., 0.5], 'v1')
-    print "traj(0.4, 0, checklevel=2) =>"
-    try:
-        traj(0.4, 0, checklevel=2)
-    except ValueError, e:
-        print " ... raised error: ", e
-    print "Tests passed."
