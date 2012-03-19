@@ -64,7 +64,7 @@ def _dummy_userfunc(euler):
 class Euler_ODEsystem(ODEsystem):
     """Euler method. Fixed step.
 
-    Uses Python functional specifications only."""
+    Uses Python target language only for functional specifications."""
 
     def __init__(self, kw):
         if 'user_func_beforestep' in kw:

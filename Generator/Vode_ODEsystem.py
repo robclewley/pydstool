@@ -35,7 +35,7 @@ HAVE_PSYCO = False
 class Vode_ODEsystem(ODEsystem):
     """Wrapper for VODE, from SciPy.
 
-    Uses Python functional specifications only."""
+    Uses Python target language only for functional specifications."""
 
     def __init__(self, kw):
         ODEsystem.__init__(self, kw)

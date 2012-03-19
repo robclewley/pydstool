@@ -303,7 +303,7 @@ class dopri(integrator):
 class Dopri_ODEsystem(ODEsystem):
     """Wrapper for Dopri853 integrator.
 
-    Uses C functional specifications only."""
+    Uses C target language only for functional specifications."""
     _paraminfo = {'rtol': 'Relative error tolerance.',
                   'atol': 'Absolute error tolerance.',
                   'safety': 'Safety factor in the step size prediction, default 0.9.',

@@ -384,9 +384,9 @@ class radau(integrator):
 
 
 class Radau_ODEsystem(ODEsystem):
-    """Wrapper for Radau integrator (with no DAE support).
+    """Wrapper for Radau integrator (with support for differential-algebraic equations).
 
-    Uses C functional specifications only."""
+    Uses C target language only for functional specifications"""
     _paraminfo = {'rtol': 'Relative error tolerance.',
                   'atol': 'Absolute error tolerance.',
                   'safety': 'Safety factor in the step size prediction, default 0.9.',
