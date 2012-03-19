@@ -344,7 +344,7 @@ class domain_test(MProject.qt_feature_node):
 
 class Model(object):
     """
-    General-purpose Hybrid Model abstract class.
+    General-purpose Hybrid and Non-Hybrid Model abstract class.
 
     """
     _needKeys = ['name', 'modelInfo']
@@ -1154,8 +1154,11 @@ class Model(object):
         pickledself = pickle.dumps(self)
         return pickle.loads(pickledself)
 
+
     def renameTraj(self, trajname, newname, force=False):
-        """Rename stored trajectory"""
+        """Rename stored trajectory. Force option (default False)
+        will overwrite any existing trajectory with the new name.
+        """
         try:
             traj = self.trajectories[trajname]
         except KeyError:
@@ -1247,26 +1250,23 @@ class Model(object):
         idx -- (optional) index into value if algorithmic parameter val is a
           list of values.
         """
-        if isinstance(target, str):
-            if target in self.registry.keys():
-                algpars = self.registry[target].get('algparams')
-                if par in algpars.keys():
-                    if isinstance(algpars[par], list):
-                        if idx is not None:
-                            if isinstance(idx, list):
-                                val = [algpars[par][x] for x in idx]
-                            else:
-                                val = algpars[par][idx]
+        if target in self.registry.keys():
+            algpars = self.registry[target].get('algparams')
+            if par in algpars.keys():
+                if isinstance(algpars[par], list):
+                    if idx is not None:
+                        if isinstance(idx, list):
+                            val = [algpars[par][x] for x in idx]
                         else:
-                            val = algpars[par]
+                            val = algpars[par][idx]
                     else:
                         val = algpars[par]
                 else:
-                    val = None
+                    val = algpars[par]
             else:
                 val = None
         else:
-            val = None
+            raise ValueError("Target sub-model name not found")
         return val
 
     def setDSAlgPars(self, target, par, val):
@@ -1357,7 +1357,7 @@ class Model(object):
                       "Event mapping info:\n" + str(self.modelInfo[dsName]['swRules'])}
             except KeyError:
                 raise NameError("Sub-model %s not found in model"%dsName)
-            return "Sub-model %s:\n" % dsName + pp.print(result)
+            return "Sub-model %s:\n" % (dsName) + pp.pprint(result)
 
     def showDSEventInfo(self, target, verbosity=1, ics=None, t=0):
         # call to eventstruct prints info to stdout
@@ -1598,6 +1598,7 @@ class Model(object):
             estruct.setBisect(eventTarget, val)
 
     def resetEventTimes(self):
+        """Internal method"""
         for ds in self.registry.values():
             ds.resetEventTimes()
 
@@ -1611,7 +1612,7 @@ class Model(object):
 
     def searchForNames(self, template):
         """Find parameter / variables names matching template in
-        the model's generators or sub-models."""
+        the model's generators or sub-models: the returned result is a list."""
         if self._mspecdict is None:
             raise PyDSTool_ExistError("Cannot use this function for models"
                                       " not defined through ModelSpec")
@@ -1629,7 +1630,7 @@ class Model(object):
 
     def searchForVars(self, template):
         """Find variable and auxiliary variable names that have to be in every
-        generator or sub-model: the result is a list."""
+        generator or sub-model: the returned result is a list."""
         if self._mspecdict is None:
             raise PyDSTool_ExistError("Cannot use this function for models"
                                       " not defined through ModelSpec")
@@ -2135,6 +2136,16 @@ class NonHybridModel(Model):
 
 
 class HybridModel(Model):
+    """
+    obsvars specifies the observable
+    variables for this model, which must be present in all
+    trajectory segments (regardless of which other variables are
+    specified in those segments). intvars specifies
+    non-observable (internal) variables for the model, which
+    may or may not be present in trajectory segments, depending
+    on reductions, etc., that are present in the sub-model (e.g.
+    generator) that determines the trajectory segment.
+    """
     def __init__(self, *a, **kw):
         Model.__init__(self, True, *a, **kw)
         # collect parameter info from all modelInfo objects
