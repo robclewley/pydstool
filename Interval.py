@@ -22,7 +22,7 @@ from common import *
 from errors import *
 
 ## Other imports
-from numpy import Inf, NaN, isfinite, isinf, isnan, array, sign, linspace
+from numpy import Inf, NaN, isfinite, isinf, isnan, array, sign, linspace, arange
 import re, math
 import copy
 
@@ -251,7 +251,7 @@ class Interval(object):
                 new_hi = val/self._loval
         else:
             new_hi = val/self._loval
-        if sign(val) == -1:
+        if new_hi < new_lo:
             # negative and division changes order
             c.set((new_hi,new_lo))
         else:
@@ -488,14 +488,19 @@ class Interval(object):
     def uniformSample(self, dt, strict=False, avoidendpoints=False):
         """Uniformly sample the interval, returning a Pointset.
 
-    'Strict' option forces dt to be used throughout the interval,
-    with a final step of < dt if not commensurate. Default strict =
-    False used for auto-selection of sample rate to fit interval
-    (choice based on dt argument).
+    Arguments:
 
-    avoidendpoints = True (default False) ensures that the first and
-    last independent variable ("t") values are not included.
-"""
+    dt : sample step
+
+    strict : (Boolean) This option forces dt to be used throughout the interval,
+      with a final step of < dt if not commensurate. Default of False
+      is used for auto-selection of sample rate to fit interval
+      (choice based on dt argument).
+
+    avoidendpoints : (Boolean, default False). When True, ensures that the first and
+      last independent variable ("t") values are not included, offset by
+      an amount given by self._abseps (the endpoint tolerance).
+    """
         assert self.defined
         intervalsize = self._hival - self._loval
         assert isfinite(intervalsize), "Interval must be finite"
@@ -507,19 +512,17 @@ class Interval(object):
         if compareNumTypes(self.type, _all_float):
             if strict:
                 # moved int() to samplist's xrange
-                n = max(math.floor(intervalsize/dt),2)
-                # special case: add a point at t=dt
-                # otherwise just get endpoints returned!
+                samplelist = list(arange(self._loval, self._hival, dt,
+                                         dtype=float))
+                if self._hival not in samplelist:
+                    samplelist.append(self._hival)
             else: # choose automatically
                 n = max(round(intervalsize/dt),2)
                 dt = intervalsize/n
-            samplelist = list(linspace(self._loval, self._hival, n))
+                samplelist = list(linspace(self._loval, self._hival, n))
             if avoidendpoints:
-                #samplelist.append(self._hival - 1.1*self._abseps)
                 samplelist[-1] = self._hival - 1.1*self._abseps
                 samplelist[0] = self._loval + 1.1*self._abseps
-            #else:
-            #    samplelist.append(self._hival)
         elif compareNumTypes(self.type, _all_int):
             if not isinstance(dt, _int_types):
                 raise ValueError("dt must be an integer for integer "
