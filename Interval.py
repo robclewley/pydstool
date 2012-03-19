@@ -157,7 +157,6 @@ class Interval(object):
     def __eq__(self, other):
         assert isinstance(other, Interval)
         return self.defined == other.defined and \
-               self.name == other.name and \
                self.type == other.type and \
                self._loval == other._loval and \
                self._hival == other._hival and \
