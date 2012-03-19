@@ -513,7 +513,7 @@ class MapSystem(discGen):
         # temp storage of first time at which terminal events found
         # (this is used for keeping the correct end point of new mesh)
         first_found_t = None
-        tmesh = self.indepvariable.depdomain.uniformSample(self.tstep,
+        tmesh = self.indepvariable.depdomain.sample(self.tstep,
                                         strict=False,
                                         avoidendpoints=self.checklevel>2)
         # Main loop

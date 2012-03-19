@@ -179,7 +179,7 @@ class Euler_ODEsystem(ODEsystem):
         else:
             notDone = True
             while notDone:
-                tmesh = self.indepvariable.depdomain.uniformSample(dt,
+                tmesh = self.indepvariable.depdomain.sample(dt,
                                           strict=True,
                                           avoidendpoints=True)
                 notDone = False

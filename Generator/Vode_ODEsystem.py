@@ -236,7 +236,7 @@ class Vode_ODEsystem(ODEsystem):
             count = 0
             while notDone and count <= repeatTol:
                 try:
-                    tmesh = self.indepvariable.depdomain.uniformSample(dt,
+                    tmesh = self.indepvariable.depdomain.sample(dt,
                                           strict=strict,
                                           avoidendpoints=self.checklevel>2)
                     notDone = False
