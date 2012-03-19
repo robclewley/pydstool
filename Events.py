@@ -1645,17 +1645,3 @@ def findpreciseroot(ev, tlo, thi, parDict=None, vars=None, inputs=None,
         return (None, rootival)
 
 
-#---------------------------------------------------------------------------
-
-if __name__=='__main__':
-    abseps=1e-6
-    touchdown_args = {'eventtol': abseps/10,
-                'eventdelay': 0,#abseps*10,
-                'active': True,
-                'term': True,
-                'precise': True,
-                'name': 'touchdown'}
-    touchdown_ev = makeZeroCrossEvent('z-sin(beta)', -1, touchdown_args,
-                                                ['z'], ['beta'],
-                                                targetlang='c')
-
