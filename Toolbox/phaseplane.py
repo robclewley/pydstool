@@ -1640,7 +1640,7 @@ class nullcline(object):
             #raise ValueError("No nullcline sample points in given region")
         if resample_frac > 0:
             width = xdom[1] - xdom[0]
-            new_xs = xinterval.uniformSample(dt=width*resample_frac)
+            new_xs = xinterval.sample(dt=width*resample_frac)
             tol = width*resample_frac*0.1
             for x in new_xs:
                 # exclude any that are within 5% of domain extent of
