@@ -38,7 +38,9 @@ test_pycont_auto = True
 
 # Basic PyDSTool modules
 general_list = [
-    'Interval_test',
+    'test_interval',
+    'test_pointsets',
+    'test_variable_traj',
     'traj_gt0_test',
     'test_bd_containment',
     'basic_gen_tests',
