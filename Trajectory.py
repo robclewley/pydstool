@@ -253,6 +253,7 @@ class Trajectory(object):
         self.eventTimes = eventTimes
 
     def delete_variables(self, coords):
+        """coords is a list of coordinate names to remove"""
         assert alltrue([c in self.variables for c in coords]), \
                "Variable name %s doesn't exist"%c
         assert len(coords) < self.dimension, "Cannot delete every variable!"
@@ -264,6 +265,8 @@ class Trajectory(object):
             del self.depdomain[c]
 
     def mapNames(self, themap):
+        """themap is a symbolMapClass mapping object for remapping coordinate names
+        """
         new_coordnames = array(themap(self.coordnames)).tolist()
         assert isUniqueSeq(new_coordnames), 'Coordinate names must be unique'
         new_coordnames.sort()
