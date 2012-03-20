@@ -2116,7 +2116,8 @@ def comparePointCoords(p1, p2, fussy=False):
     *not* compared.
 
     fussy option causes point norm order and coordinate types to be
-    checked too (requires both arguments to be Points or Pointsets)."""
+    checked too (requires both arguments to be Points or Pointsets).
+    """
     try:
         p1d = dict(p1)
         p1dk = p1d.keys()
@@ -2146,6 +2147,8 @@ def isparameterized(p):
 
 
 def makeNonParameterized(p):
+    """Return a new Pointset stripped of its parameterization.
+    """
     if isinstance(p, Pointset) and p._isparameterized:
         return Pointset({'coordarray': copy(p.coordarray),
                          'coordnames': copy(p.coordnames),
@@ -2156,13 +2159,14 @@ def makeNonParameterized(p):
 
 
 def pointsToPointset(pointlist, indepvarname='', indepvararray=None,
-                     indepvartype=float64, norm=2):
+                     indepvartype=float, norm=2):
     """Generate a Pointset from a list of Point objects (or a singleton Point).
 
     Include a name for the independent variable if constructing a
     parameterized pointset. The independent variable should be a
     coordinate of the Points passed, otherwise it can be passed as the
-    optional third argument."""
+    optional third argument.
+    """
 
     if not isinstance(indepvarname, str):
         raise TypeError("String expected for independent variable name")
@@ -2242,7 +2246,8 @@ def arrayToPointset(a, vnames=None, ia=None, iname=""):
     optional independent variable array creates a parameterized Pointset.
 
     Coordinate (and independent variable) names are optional: the defaults are
-    the array indices (and 't' for the independent variable)."""
+    the array indices (and 't' for the independent variable).
+    """
     if rank(a) > 2:
         raise ValueError("Cannot convert arrays of rank > 2")
     if rank(a) == 0:
@@ -2631,7 +2636,7 @@ def mergePointsets(pts1, pts2):
 
 def padPointset(pts, pinterval, value_dict, eps=None):
     """Pad a pointset pts with values from value_dict over the interval given
-    by pinterval. For each side of the interval outside of the current independent
+    by pinterval (pair). For each side of the interval outside of the current independent
     variable domain of pts, two new points are added, one at the outer limit
     of the interval, and one a distance eps (default the abseps setting of pts)
     from the existing closest point in pts.
