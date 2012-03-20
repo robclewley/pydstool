@@ -484,7 +484,7 @@ class Interval(object):
             raise ValueError('Invalid boundary spec code')
 
     def sample(self, dt, strict=False, avoidendpoints=False):
-        """Sample the interval, returning an array.
+        """Sample the interval, returning a list.
 
     Arguments:
 
@@ -540,7 +540,8 @@ class Interval(object):
             # extra +1 on hival because of python range() policy!
         else:
             raise TypeError("Unsupported value type")
-        return array(samplelist, dtype=self.type)
+        # return a list (not an array) so that pop method is available to VODE Generator, etc.
+        return samplelist
 
     # deprecated syntax
     uniformSample = sample
