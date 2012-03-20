@@ -352,7 +352,6 @@ class Dopri_ODEsystem(ODEsystem):
             -4 : 'the problem is probably stiff (interrupted)',
             -8 : 'The solution exceeded a magbound (poor choice of initial step)'}
         self._solver = None
-        # currently the final four of these params are for event handling
         algparams_def = {'poly_interp': False,
                         'init_step': 0,
                         'max_step': 0,
@@ -364,11 +363,11 @@ class Dopri_ODEsystem(ODEsystem):
                         'beta': 0.04,
                         'max_pts': 10000,
                         'refine': 0,
-                        'maxbisect': [],
-                        'maxevtpts': 1000,
-                        'eventInt': [],
-                        'eventDelay': [],
-                        'eventTol': [],
+                        'maxbisect': [], # for events
+                        'maxevtpts': 1000, # for events
+                        'eventInt': [],  # set using setEventInterval only
+                        'eventDelay': [], # set using setEventDelay only
+                        'eventTol': [], # set using setEventTol only
                         'use_special': 0,
                         'specialtimes': [],
                         'check_aux': 1,

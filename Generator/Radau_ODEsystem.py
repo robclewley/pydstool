@@ -463,7 +463,6 @@ Default 0.001.""",
         algparams_def = {'poly_interp': False,
                         'init_step': 0,
                         'max_step': 0,
-#                        'min_step': 0,
                         'rtol': [1e-9 for i in range(self.dimension)],
                         'atol': [1e-12 for i in range(self.dimension)],
                         'fac1': 1.0,
@@ -473,11 +472,11 @@ Default 0.001.""",
                         'safety': 0.9,
                         'max_pts': 10000,
                         'refine': 0,
-                        'maxbisect': [],
-                        'maxevtpts': 1000,
-                        'eventInt': [],
-                        'eventDelay': [],
-                        'eventTol': [],
+                        'maxbisect': [], # for events
+                        'maxevtpts': 1000, # for events
+                        'eventInt': [], # set using setEventInterval only
+                        'eventDelay': [], # set using setEventDelay only
+                        'eventTol': [], # set using setEventTol only
                         'use_special': 0,
                         'specialtimes': [],
                         'check_aux': 1,
