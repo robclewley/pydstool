@@ -101,23 +101,18 @@ scope.update({'n': HH.initialconditions['n'], 'h': HH.initialconditions['h']})
 scope.update(new_fnspecs)
 jac_fn = expr2fun(jac, ensure_args=['t'], **scope)
 
-print "Use of Jacobian speeds up finding of nullclines and fixed points by"
-print "nearly a factor of two (not including time to plot results)..."
-start_time = time.clock()
+#print "Use of Jacobian speeds up finding of nullclines and fixed points by"
+#print "nearly a factor of two (not including time to plot results)..."
 fp_coords = find_fixedpoints(HH, n=4, jac=jac_fn, eps=1e-8,
                              subdomain={'v':HH.xdomain['v'],'m':HH.xdomain['m'],
                              'h': HH.initialconditions['h'], 'n': HH.initialconditions['n']})
-nulls_x, nulls_y = find_nullclines(HH, 'v', 'm', n=3, jac=jac_fn, eps=1e-8, max_step=1,
+nulls_x, nulls_y = find_nullclines(HH, 'v', 'm', n=3, jac=jac_fn, eps=1e-8, max_step=0.5,
                              subdomain={'v':HH.xdomain['v'],'m':HH.xdomain['m'],
                              'h': HH.initialconditions['h'], 'n': HH.initialconditions['n']},
                              fps=fp_coords)
+
 N_x = nullcline('v', 'm', nulls_x)
 N_y = nullcline('v', 'm', nulls_y)
-print "... finished in %.4f seconds\n" % (time.clock()-start_time)
-
-plotter.do_display=True
-plotter.plot_nullcline(N_x, 'g')
-plotter.plot_nullcline(N_y, 'r')
 
 
 print "Fixed points for (v,m) phase plane sub-system when h=%.2f and n=%.2f: " % (HH.initialconditions['h'], HH.initialconditions['n'])
@@ -134,5 +129,26 @@ fps.append(fixedpoint_2D(HH, Point(fp_coords[2]), coords=['v', 'm'],
 for fp in fps:
     print "F.p. at (%.5f, %.5f) is a %s and has stability %s" % (fp.point['v'],
                             fp.point['m'], fp.classification, fp.stability)
-    plotter.plot_point(Point2D(fp.point.todict(), xname='v', yname='m'), 'ko')
-show()
+
+plotter.fig_directory = {'PP_large': 1,
+                         'PP_small': 2}
+plotter.do_display=True
+plotter.set_curr_fig('PP_large')
+plotter.plot_nullcline(N_x, 'g')
+plotter.plot_nullcline(N_y, 'r')
+plotter.plot_fps(fps, 'v', 'm')
+plotter.plot_vf(HH, 'v', 'm', subdomain={'v': [-100, 50]}, scale_exp=1, N=50)
+plt.xlabel('V')
+plt.ylabel('m')
+plt.title('Phase plane')
+
+plotter.set_curr_fig('PP_small')
+plotter.xdom = [-80, -50]
+plotter.plot_nullcline(N_x, 'g')
+plotter.plot_nullcline(N_y, 'r', N=200)
+plotter.plot_fps(fps, 'v', 'm')
+plotter.plot_vf(HH, 'v', 'm', subdomain={'v': [-80, -50], 'm': [0,0.14]}, scale_exp=0.2, N=50)
+plt.xlabel('V')
+plt.ylabel('m')
+plt.title('Phase plane: zoom')
+plt.show()
