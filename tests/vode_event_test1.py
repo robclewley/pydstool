@@ -68,7 +68,7 @@ term_evs_found.info()
 
 # Alternative way to extract events: they are labelled in the
 # pointset! These return dictionaries indexing into the pointset.
-mon_evs_dict = pts.labels.by_label['Event monitor']
+mon_evs_dict = pts.labels.by_label['Event:monitor']
 mon_ev_points = pts[sort(mon_evs_dict.keys())]
 
 assert len(mon_evs_found) == len(mon_ev_points) == 2
