@@ -44,8 +44,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 vernum = '0.88'
 __version__  = vernum
-__revision__ = '$Revision: 111221 $'
-__date__     = '$Date: 2011/12/21 19:50:00 $'
+__revision__ = '$Revision: 120401 $'
+__date__     = '$Date: 2012/04/01 19:50:00 $'
 
 import sys, os, gc
 
