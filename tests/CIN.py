@@ -228,14 +228,14 @@ def plotActivation(expr, Vrange, parlist=[], dV=1.):
     show()
 
 def plotVoltages(dataset):
-    pylab.figure()
+    plt.figure()
     allVlist = CB.searchForVars('soma.V')
     for vname in allVlist:
         plot(dataset['t'], dataset[vname])
     show()
 
 def plotCurrents(cell_name, dataset):
-    pylab.figure()
+    plt.figure()
     allIlist = CB.searchForVars(cell_name+'.channel.I')
     for Iname in allIlist:
         plot(dataset['t'], dataset[Iname])
@@ -252,7 +252,7 @@ print "... finished in %f seconds\n"%(t1-t0)
 #plotActivation(MNtaun, [-100,30], [MNtheta_n, MNk_n, MNtaun_bar])
 
 plotVoltages(v_dat)
-pylab.figure()
+plt.figure()
 print "Plotting synaptic facilitation variable, sRM.d ..."
 plot(v_dat['t'], v_dat['sRM.d'])
 
