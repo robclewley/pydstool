@@ -20,6 +20,7 @@ import itertools, operator
 from PyDSTool import *
 from PyDSTool.errors import PyDSTool_ValueError
 from PyDSTool.MProject import *
+from PyDSTool.utils import findClosestPointIndex
 from PyDSTool.common import args, metric, metric_L2, metric_weighted_L2, \
      metric_float, remain, fit_quadratic, fit_exponential, fit_diff_of_exp, \
      smooth_pts, nearest_2n_indices, make_poly_interpolated_curve, simple_bisection
@@ -61,8 +62,8 @@ _functions = ['find_nullclines', 'make_distance_to_line_auxfn',
               'closest_perp_distance_between_splines',
               'closest_perp_distance_between_sample_points',
               'closest_perp_distance_on_spline',
-              'line_intersection',
-              'find_saddle_manifolds', 'show_PPs', 'get_PP']
+              'line_intersection', 'find_saddle_manifolds',
+              'plot_PP_vf', 'plot_PP_fps', 'show_PPs', 'get_PP']
 
 _classes = ['distance_to_pointset', 'mesh_patch_2D', 'dx_scaled_2D',
             'phaseplane', 'fixedpoint_nD', 'fixedpoint_2D', 'nullcline',
@@ -559,22 +560,34 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
     def xdot_x(x, y, t):
         vardict[yname] = y
         vardict[xname] = x
-        return gen.Rhs(t,vardict,gen.pars)[x_ix]
+        try:
+            return gen.Rhs(t,vardict,gen.pars)[x_ix]
+        except OverflowError:
+            pass
     def ydot_y(y, x, t):
         vardict[yname] = y
         vardict[xname] = x
-        return gen.Rhs(t,vardict,gen.pars)[y_ix]
+        try:
+            return gen.Rhs(t,vardict,gen.pars)[y_ix]
+        except OverflowError:
+            pass
     if gen.haveJacobian():
         # user-supplied Jacobian if present
         # subscript refers to the component returned
         def xfprime_x(x, y, t):
             vardict[xname] = x
             vardict[yname] = y
-            return gen.Jacobian(t, vardict, gen.pars)[x_ix]
+            try:
+                return gen.Jacobian(t, vardict, gen.pars)[x_ix]
+            except OverflowError:
+                pass
         def yfprime_y(y, x, t):
             vardict[xname] = x
             vardict[yname] = y
-            return gen.Jacobian(t, vardict, gen.pars)[y_ix]
+            try:
+                return gen.Jacobian(t, vardict, gen.pars)[y_ix]
+            except OverflowError:
+                pass
     elif jac is not None:
         # assumes **args-compatible signature!
         # subscript refers to the component returned
@@ -759,20 +772,21 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             if pycont_cache[1] is None:
                 sysargs_y = args(name='nulls_y', pars={xname: x_init},
                            ics={yname: y_init},
-                           varspecs={yname: gen.funcspec._initargs['varspecs'][yname]},
                            xdomain={yname: gen.xdomain[yname]}, pdomain={xname: gen.xdomain[xname]})
                 if 'inputs' in gen.funcspec._initargs: # and isinstance(gen.funcspec._initargs['inputs'], dict):
                     if len(gen.funcspec._initargs['inputs']) > 0:
                         sysargs_y['inputs'] = gen.inputs.copy()
                 sysargs_y.pars.update(gen.pars)
                 sysargs_y.pars.update(filteredDict(vardict, [xname, yname], neg=True))
+                varspecs = {yname: gen.funcspec._initargs['varspecs'][yname]}
                 if 'fnspecs' in gen.funcspec._initargs:
                     old_fnspecs = gen.funcspec._initargs['fnspecs']
-                    fnspecs = resolveClashingAuxFnPars(old_fnspecs, sysargs_y.pars.keys())
+                    fnspecs, new_varspecs = resolveClashingAuxFnPars(old_fnspecs, varspecs,
+                                                                     sysargs_y.pars.keys())
                     # TEMP
-                    del fnspecs['Jacobian']
-##                    # process any Jacobian functions to remove un-needed terms
-##                    if 'Jacobian' in fnspecs:
+                    # process any Jacobian functions to remove un-needed terms
+                    if 'Jacobian' in fnspecs:
+                        del fnspecs['Jacobian']
 ##                        fnspecs['Jacobian'] = makePartialJac(fnspecs['Jacobian'], [yname])
 ##                    if 'Jacobian_pars' in fnspecs:
 ##                        fnspecs['Jacobian_pars'] = makePartialJac(fnspecs['Jacobian_pars'], [yname])
@@ -780,6 +794,9 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
 ##                        old_fargs, J_par_spec = makePartialJac(old_fnspecs['Jacobian'], [yname], [xname])
 ##                        fnspecs['Jacobian_pars'] = (fnspecs['Jacobian'][0], J_par_spec)
                     sysargs_y.update({'fnspecs': fnspecs})
+                else:
+                    new_varspecs = varspecs
+                sysargs_y.varspecs = new_varspecs
                 sysargs_y.pars['time'] = t
                 sys_y = Vode_ODEsystem(sysargs_y)
                 P_y = ContClass(sys_y)
@@ -835,27 +852,15 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                             check_bounds(array([P_y['null_curve_y'].new_sol_segment[xname],
                                                 P_y['null_curve_y'].new_sol_segment[yname]]).T,
                                          xinterval, yinterval)
-                        #print "\n", "TEMP in subdom"
                         y_null_part = crop_2D(array([P_y['null_curve_y'].sol[xname],
                                                      P_y['null_curve_y'].sol[yname]]).T,
                                               xinterval, yinterval)
-                        #print num_points
-                        #if len(y_null_part)>0:
-                        #    print y_null_part[0], y_null_part[-1]
-                        #else:
-                        #    print "No y_null_part"
                     else:
                         # did not start in sub-domain and still not yet found
                         # it during continuation
                         y_null_part = crop_2D(array([P_y['null_curve_y'].sol[xname],
                                                      P_y['null_curve_y'].sol[yname]]).T,
                                               xinterval, yinterval)
-                        #print "\n", "TEMP not in subdom"
-                        #print num_points
-                        #if len(y_null_part)>0:
-                        #    print y_null_part[0], y_null_part[-1]
-                        #else:
-                        #    print "No y_null_part"
                         in_subom = len(y_null_part)>0
                         done = num_points > 15*loop_step
 
@@ -907,14 +912,12 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                                 P_y['null_curve_y'].sol[yname]]).T
             try:
                 x_vals = y_null[:,0]
+                y_vals = y_null[:,1]
             except IndexError:
                 raise PyDSTool_ExistError('null_curve_y failed: points were out of domain')
-            x_vals_unique, indices = unique(x_vals, return_index=True)
-            y_null = y_null[indices]
+            y_null = uniquePoints(y_null)
             # add fixed points to nullcline, assuming sufficient accuracy
-            # also searchsorted assumes monotonicity in x values, i.e.
-            # that the nullcline is a function of x
-            fp_ixs = np.searchsorted(x_vals_unique, add_pts_x)
+            fp_ixs = [findClosestPointIndex(pt, y_null) for pt in add_fp_pts]
             for n, ix in enumerate(fp_ixs):
                 # +n offsets fact that n entries were already added
                 y_null = np.insert(y_null, ix+n, add_fp_pts[n], axis=0)
@@ -961,20 +964,21 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             if pycont_cache[0] is None:
                 sysargs_x = args(name='nulls_x', pars={yname: y_init},
                            ics={xname: x_init}, tdata=[t,t+1],
-                           varspecs={xname: gen.funcspec._initargs['varspecs'][xname]},
                            xdomain={xname: gen.xdomain[xname]}, pdomain={yname: gen.xdomain[yname]})
                 if 'inputs' in gen.funcspec._initargs: # and isinstance(gen.funcspec._initargs['inputs'], dict):
                     if len(gen.funcspec._initargs['inputs']) > 0:
                         sysargs_x['inputs'] = gen.inputs.copy()
                 sysargs_x.pars.update(gen.pars)
                 sysargs_x.pars.update(filteredDict(vardict, [xname, yname], neg=True))
+                varspecs = {xname: gen.funcspec._initargs['varspecs'][xname]}
                 if 'fnspecs' in gen.funcspec._initargs:
                     old_fnspecs = gen.funcspec._initargs['fnspecs']
-                    fnspecs = resolveClashingAuxFnPars(old_fnspecs, sysargs_x.pars.keys())
+                    fnspecs, new_varspecs = resolveClashingAuxFnPars(old_fnspecs, varspecs,
+                                                                     sysargs_x.pars.keys())
                     # TEMP
-                    del fnspecs['Jacobian']
                     # process any Jacobian functions to remove un-needed terms
-##                    if 'Jacobian' in fnspecs:
+                    if 'Jacobian' in fnspecs:
+                        del fnspecs['Jacobian']
 ##                        fnspecs['Jacobian'] = makePartialJac(fnspecs['Jacobian'], [xname])
 ##                    if 'Jacobian_pars' in fnspecs:
 ##                        fnspecs['Jacobian_pars'] = makePartialJac(fnspecs['Jacobian_pars'], [xname])
@@ -982,6 +986,9 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
 ##                        old_fargs, J_par_spec = makePartialJac(old_fnspecs['Jacobian'], [xname], [yname])
 ##                        fnspecs['Jacobian_pars'] = (fnspecs['Jacobian'][0], J_par_spec)
                     sysargs_x.update({'fnspecs': fnspecs})
+                else:
+                    new_varspecs = varspecs
+                sysargs_x.varspecs = new_varspecs
                 sysargs_x.pars['time'] = t
                 sys_x = Vode_ODEsystem(sysargs_x)
                 P_x = ContClass(sys_x)
@@ -1006,7 +1013,6 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             PCargs.MaxNumPoints = loop_step
             PCargs.MaxCorrIters = 8
             #PCargs.verbosity = 100
-
             P_x.newCurve(PCargs)
             done = False
             num_points = 0
@@ -1027,7 +1033,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                         sys_x.set(pars={yname: y_init}, ics={xname: x_init})
                 else:
                     num_points += loop_step
-                    # stop if have tried going forwards more than twice and solution is
+                    # stop if have tried going forwards more than 5 times and solution is
                     # still not within domain, or if num_points exceeds max_num_points
                     done = (num_points > 5*loop_step and not \
                             check_bounds(array([P_x['null_curve_x'].new_sol_segment[xname],
@@ -1053,7 +1059,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                         sys_x.set(pars={yname: y_init}, ics={xname: x_init})
                 else:
                     num_points += loop_step
-                    # stop if have tried going backwards more than twice and solution is
+                    # stop if have tried going backwards more than 5 times and solution is
                     # still not within domain, or if num_points exceeds max_num_points
                     done = (num_points > 5*loop_step and not \
                             check_bounds(array([P_x['null_curve_x'].new_sol_segment[xname],
@@ -1074,12 +1080,9 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 x_vals = x_null[:,0]
             except IndexError:
                 raise PyDSTool_ExistError('null_curve_x failed: points were out of domain')
-            x_vals_unique, indices = unique(x_vals, return_index=True)
-            x_null = x_null[indices]
+            x_null = uniquePoints(x_null)
             # add fixed points to nullcline, assuming sufficient accuracy
-            # also searchsorted assumes monotonicity in x values, i.e.
-            # that the nullcline is a function of x
-            fp_ixs = np.searchsorted(x_vals_unique, add_pts_x)
+            fp_ixs = [findClosestPointIndex(pt, x_null) for pt in add_fp_pts]
             for n, ix in enumerate(fp_ixs):
                 # +n offsets fact that n entries were already added
                 x_null = np.insert(x_null, ix+n, add_fp_pts[n], axis=0)
@@ -1798,21 +1801,11 @@ class fixedpoint_nD(object):
             self.fp_coords = gen.funcspec.vars
         else:
             self.dimension = len(coords)
-            coords.sort()
             self.fp_coords = coords
         self.eps = eps
         self.gen = gen
-        if jac is None:
-            try:
-                gen.Jacobian(0, gen.initialconditions)
-            except PyDSTool_ExistError:
-                # no full Jac available
-                raise NotImplementedError()
-            else:
-                # in the future, make a jac function that extracts
-                # the n components from Jacobian (if n < gen.dimension)
-                raise NotImplementedError()
-        self.jac = jac
+        # redefine jac if necessary and allocate to self attribute
+        self.jac = jac = self._ensure_jac(jac)
         jac_test_arg = filteredDict(pt, self.fp_coords)
         jac_test_arg['t'] = 0
         if hasattr(jac, '_namemap'):
@@ -1876,6 +1869,12 @@ class fixedpoint_nD(object):
             evecs_normed.append(ev)
         self.evecs = tuple(evecs_normed)
 
+    def _ensure_jac(self, jac):
+        if jac is None:
+            raise NotImplementedError('Currently, Jacobian must be supplied for nD')
+        else:
+            return jac
+
     def __getitem__(self, k):
         return self.point[k]
 
@@ -1894,6 +1893,25 @@ class fixedpoint_2D(fixedpoint_nD):
                                normord=normord, eps=eps)
         if self.dimension != 2:
             raise TypeError("This class is for 2D systems only")
+
+    def _ensure_jac(self, jac):
+        # overrides nD versions
+        if jac is None:
+            try:
+                J = self.gen.Jacobian(0, self.gen.initialconditions)
+            except PyDSTool_ExistError:
+                # no full Jac available
+                raise NotImplementedError('Jacobian not available')
+            else:
+                # in the future, make a jac function that extracts
+                # the n components from Jacobian (if n < gen.dimension)
+                if J.shape[0] == J.shape[1] == self.dimension:
+                    def jac(t, x, y):
+                        return self.gen.Jacobian(t, {self.fp_coords[0]: x,
+                                                self.fp_coords[1]: y})
+                else:
+                    raise NotImplementedError('Jacobian is not the right shape')
+        return jac
 
     def _classify(self):
         real_evals = (isreal(self.evals[0]), isreal(self.evals[1]))
@@ -2077,7 +2095,7 @@ class plotter_2D(object):
             pp.ylim( self.y_dom )
         pp.draw()
 
-    def plot_nullcline(self, nullc, style, lw=1, N=100, figname=None):
+    def plot_nullcline(self, nullc, style, lw=1, N=100, marker='', figname=None):
         if not self.do_display:
             return
         self.setup(figname)
@@ -2086,9 +2104,24 @@ class plotter_2D(object):
         xs = np.sort( np.concatenate( (np.linspace(x_data[0], x_data[-1], N), x_data) ) )
         ys = nullc.spline(xs)
         pp.plot(xs, ys, style, linewidth=lw)
-        pp.plot(x_data, y_data, style[0]+'o')
-        #pars = np.sort( np.concatenate( (np.linspace(0, 1, N), nullc.param) ) )
-        #pp.plot(nullc.splinex(pars), nullc.spliney(pars), 'b')
+        if marker != '':
+            pp.plot(x_data, y_data, style[0]+marker)
+        self.teardown()
+
+    def plot_vf(self, gen, xname, yname, col='k', N=20, subdomain=None, scale_exp=0,
+                figname=None):
+        """Plot vector field in 2D"""
+        if not self.do_display:
+            return
+        self.setup(figname)
+        plot_PP_vf(gen, xname, yname, N=N, subdomain=subdomain, scale_exp=scale_exp)
+        self.teardown()
+
+    def plot_fps(self, fps, coords=None, do_evecs=False, markersize=10, figname=None):
+        """Plot fixed point(s) in 2D"""
+        if not self.do_display:
+            return
+        plot_PP_fps(fps, coords=coords, do_evecs=do_evecs, markersize=markersize)
         self.teardown()
 
     def plot_line_from_points(self, A, B, style, lw=1, figname=None):
@@ -2109,7 +2142,7 @@ class plotter_2D(object):
         if not self.do_display:
             return
         self.setup(figname)
-        pp.axvline(x=x, color=style[0], linestyle=style[1])
+        pp.axvline(x, color=style[0], linestyle=style[1])
         self.teardown()
 
     def plot_hline(self, y, style, figname=None):
@@ -2121,6 +2154,7 @@ class plotter_2D(object):
 
 
 # global instance
+global plotter
 plotter = plotter_2D()
 
 def _newton_step(Q0, nullc, A, B, phi, tol):
@@ -3394,7 +3428,128 @@ class min_curvature_zone(nullcline_zone_leaf):
 
 
 # ---------------------------------------------------------------
-# ANIMATION TOOLS
+# PLOTTING and ANIMATION TOOLS
+
+def plot_PP_fps(fps, coords=None, do_evecs=False, markersize=10):
+    """Draw 2D list of fixed points (singletons allowed), must be
+    fixedpoint_2D objects.
+
+    Optional do_evecs (default False) draws eigenvectors around each f.p.
+
+    Requires matplotlib
+    """
+    if isinstance(fps, fixedpoint_2D):
+        # singleton passed
+        fps = [fps]
+
+    x, y = fps[0].fp_coords
+    for fp in fps:
+        # When matplotlib implements half-full circle markers
+        #if fp.classification == 'saddle':
+            # half-open circle
+        if fp.stability == 'u':
+            style = 'wo'
+        elif fp.stability == 'c':
+            style = 'co'
+        else: # 's'
+            style = 'ko'
+        plt.plot(fp.point[x], fp.point[y], style, markersize=markersize, mew=2)
+
+def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0):
+    """Draw 2D vector field in (xname, yname) coordinates of given Generator,
+    sampling on a uniform grid of n by n points.
+
+    Optional subdomain dictionary specifies axes limits in each variable,
+    otherwise Generator's xdomain attribute will be used.
+
+    For systems of dimension > 2, the non-phase plane variables will be held
+      constant at their initial condition values set in the Generator.
+
+    Optional scale_exp is an exponent (domain is all reals) which rescales
+      size of arrows in case of disparate scales in the vector field. Larger
+      values of scale magnify the arrow sizes. For stiff vector fields, values
+      from -3 to 3 may be necessary to resolve arrows in certain regions.
+
+    Requires matplotlib 0.99 or later
+    """
+    assert N > 1
+    xdom = gen.xdomain[xname]
+    ydom = gen.xdomain[yname]
+    if subdomain is not None:
+        try:
+            xdom = subdomain[xname]
+        except KeyError:
+            pass
+        try:
+            ydom = subdomain[yname]
+        except KeyError:
+            pass
+    assert all(isfinite(xdom)), "Must specify a finite domain for x direction"
+    assert all(isfinite(ydom)), "Must specify a finite domain for y direction"
+    w = xdom[1]-xdom[0]
+    h = ydom[1]-ydom[0]
+
+    xdict = gen.initialconditions.copy()
+
+    xix = gen.funcspec.vars.index(xname)
+    yix = gen.funcspec.vars.index(yname)
+
+    xs = np.linspace(xdom[0], xdom[1], N)
+    ys = np.linspace(ydom[0], ydom[1], N)
+
+    X, Y = np.meshgrid(xs, ys)
+    dxs, dys = np.meshgrid(xs, ys)
+
+##    dx_big = 0
+##    dy_big = 0
+    dz_big = 0
+    vec_dict = {}
+
+#    dxs = array((n,), float)
+#    dys = array((n,), float)
+    for xi, x in enumerate(xs):
+        for yi, y in enumerate(ys):
+            xdict.update({xname: x, yname: y})
+            dx, dy = gen.Rhs(0, xdict)[[xix, yix]]
+            # note order of indices
+            dxs[yi,xi] = dx
+            dys[yi,xi] = dy
+            dz = np.linalg.norm((dx,dy))
+##            vec_dict[ (x,y) ] = (dx, dy, dz)
+##            if dx > dx_big:
+##                dx_big = dx
+##            if dy > dy_big:
+##                dy_big = dy
+            if dz > dz_big:
+                dz_big = dz
+
+    plt.quiver(X, Y, dxs, dys, angles='xy', pivot='middle', units='inches',
+               scale=dz_big*max(h,w)/(10*exp(2*scale_exp)), lw=0.01/exp(scale_exp-1),
+               headwidth=max(2,1.5/(exp(scale_exp-1))),
+               #headlength=2*max(2,1.5/(exp(scale_exp-1))),
+               width=0.001*max(h,w), minshaft=2, minlength=0.001)
+
+##    # Use 95% of interval size
+##    longest_x = w*0.95/(n-1)
+##    longest_y = h*0.95/(n-1)
+##    longest = min(longest_x, longest_y)
+##
+##    scaling_x = longest_x/dx_big
+##    scaling_y = longest_y/dy_big
+##    scaling = min(scaling_x, scaling_y)
+
+    ax = plt.gca()
+##    hw = longest/10
+##    hl = hw*2
+##    for x in xs:
+##        for y in ys:
+##            dx, dy, dz = vec_dict[ (x,y) ]
+##            plt.arrow(x, y, scaling*dx, yscale*scaling*dy,
+##                      head_length=hl, head_width=hw, length_includes_head=True)
+    ax.set_xlim(xdom)
+    ax.set_ylim(ydom)
+    plt.draw()
+
 
 def get_PP(gen, pt, vars, doms=None, doplot=True,
            t=0, saveplot=None, format='svg', trail_pts=None,
