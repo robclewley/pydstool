@@ -1,5 +1,4 @@
 from PyDSTool import *
-from matplotlib import pyplot as plt
 
 icdict = {'x': 1, 'y': 0.4}
 pardict = {'k': 0.1, 'm': 0.5}
