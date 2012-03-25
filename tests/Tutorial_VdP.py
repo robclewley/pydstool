@@ -119,6 +119,6 @@ plt.axis('tight')
 plt.title('Phase portrait as $\epsilon$ varies')
 plt.xlabel('x')
 plt.ylabel('y')
-plt.legend(loc=3)
+plt.legend(loc=3)  # bottom left location
 
 plt.show()
