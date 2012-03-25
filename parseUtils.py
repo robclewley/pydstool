@@ -1889,7 +1889,9 @@ def parseMatrixStrToDictStr(specstr, specvars, m=0):
 
 def readArgs(argstr, lbchar='(', rbchar=')'):
     """Parse arguments out of string beginning and ending with braces
-    (default: round brace)."""
+    (default: round brace).
+
+    Returns a triple: [success_boolean, list of arguments, number of args]"""
     bracetest = argstr[0] == lbchar and argstr[-1] == rbchar
     rest = argstr[1:-1].replace(" ","")
     pieces = []
@@ -1921,8 +1923,11 @@ def readArgs(argstr, lbchar='(', rbchar=')'):
 
 
 def findEndBrace(s, lbchar='(', rbchar=')'):
-    """Find position in string (or list of strings) s at which final matching
+    """Find position in string (or list of strings), s, at which final matching
     brace occurs (if at all). If not found, returns None.
+
+    s[0] must be the left brace character. Default left and right braces are
+    '(' and ')'. Change them with the optional second and third arguments.
     """
     pos = 0
     assert s[0] == lbchar, 'string argument must begin with left brace'
