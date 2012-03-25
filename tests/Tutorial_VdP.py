@@ -63,7 +63,7 @@ nulls_x, nulls_y = pp.find_nullclines(vdp, 'x', 'y', n=3, eps=1e-8,
                                       max_step=0.1, fps=[fp_coord])
 
 
-# plot the fixed points
+# plot the fixed point
 pp.plot_PP_fps(fp)
 
 # plot the nullclines
@@ -112,7 +112,7 @@ nulls_x, nulls_y = pp.find_nullclines(vdp, 'x', 'y', n=3, eps=1e-8,
 plt.plot(nulls_x[:,0], nulls_x[:,1], 'k', lw=2)
 plt.plot(nulls_y[:,0], nulls_y[:,1], 'k', lw=2)
 
-# plot the fixed points
+# plot the fixed point
 pp.plot_PP_fps(fp)
 
 plt.axis('tight')
