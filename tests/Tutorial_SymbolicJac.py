@@ -10,20 +10,27 @@
 
 from PyDSTool import *
 
-y0=Var('y0')
-y1=Var('y1')
-y2=Var('y2')
-t=Var('t')
+# declarations of symbolic objects
+y0 = Var('y0')
+y1 = Var('y1')
+y2 = Var('y2')
+t = Var('t')
 
-ydot0=Fun(-0.04*y0 + 1e4*y1*y2, [y0, y1, y2], 'ydot0')
-ydot2=Fun(3e7*y1*y1, [y0, y1, y2], 'ydot2')
-ydot1=Fun(-ydot0(y0,y1,y2)-ydot2(y0,y1,y2), [y0, y1, y2], 'ydot1')
+# definitions of right-hand sides for each variable, as functions of all variables
+ydot0 = Fun(-0.04*y0 + 1e4*y1*y2, [y0, y1, y2], 'ydot0')
+ydot2 = Fun(3e7*y1*y1, [y0, y1, y2], 'ydot2')
+ydot1 = Fun(-ydot0(y0,y1,y2)-ydot2(y0,y1,y2), [y0, y1, y2], 'ydot1')
 
+# the whole vector field as one nonlinear multi-variate function: R^3 -> R^3
 F = Fun([ydot0(y0,y1,y2),ydot1(y0,y1,y2),ydot2(y0,y1,y2)], [y0,y1,y2], 'F')
 
-# Diff returns a QuantSpec object
-jac=Fun(Diff(F,[y0,y1,y2]), [t, y0, y1, y2], 'Jacobian')
-# The user could inspect this expression and make some simplifications
+# Diff is the symbolic derivative operator, and returns a QuantSpec object.
+# It must be named "Jacobian" for PyDSTool to recognize it as such.
+jac = Fun(Diff(F,[y0,y1,y2]), [t, y0, y1, y2], 'Jacobian')
+# This defines a function of arguments (t, y0, y1, y2) obtained by differentiating F in all three
+# variables, y0, y1, and y2.
+
+# The user could inspect this expression, jac, and make some simplifications
 # by hand, to help optimize the speed of its evaluation. Here, we'll
 # just use it as is.
 
@@ -36,6 +43,7 @@ DSargs.tdomain = [0.,1e20]
 DSargs.ics = {y0: 1.0, y1: 0., y2: 0.}
 DSargs.algparams = {'init_step':0.4, 'strictdt': True, 'stiff': True,
                     'rtol': 1e-4, 'atol': [1e-8,1e-14,1e-6]}
+
 DSargs.events = makeZeroCrossEvent(y0-0.001, -1, {'name': 'thresh_ev',
                        'eventtol': 10,
                        'bisectlimit': 20,
