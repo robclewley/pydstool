@@ -549,7 +549,8 @@ class Euler_ODEsystem(ODEsystem):
         """asarray is an unused, dummy argument for compatibility with Model.Rhs"""
         # don't need to convert names to FS-compatible as they sort
         # the same
-        x = sortedDictValues(filteredDict(xdict, self.funcspec.vars))
+        # also, ensure xdict doesn't contain elements like array([4.1]) instead of 4
+        x = [float(val) for val in sortedDictValues(filteredDict(xdict, self.funcspec.vars))]
         if pdict is None:
             pdict = self.pars
         p = sortedDictValues(pdict)
@@ -561,7 +562,9 @@ class Euler_ODEsystem(ODEsystem):
         """asarray is an unused, dummy argument for compatibility with
         Model.Jacobian"""
         if self.haveJacobian():
-            x = x = sortedDictValues(filteredDict(xdict, self.funcspec.vars))
+            # also, ensure xdict doesn't contain elements like array([4.1]) instead of 4
+            x = [float(val) for val in sortedDictValues(filteredDict(xdict,
+                                                                     self.funcspec.vars))]
             if pdict is None:
                 pdict = self.pars
             p = sortedDictValues(pdict)
@@ -576,7 +579,9 @@ class Euler_ODEsystem(ODEsystem):
         """asarray is an unused, dummy argument for compatibility with
         Model.JacobianP"""
         if self.haveJacobian_pars():
-            x = sortedDictValues(filteredDict(xdict, self.funcspec.vars))
+            # also, ensure xdict doesn't contain elements like array([4.1]) instead of 4
+            x = [float(val) for val in sortedDictValues(filteredDict(xdict,
+                                                                     self.funcspec.vars))]
             if pdict is None:
                 pdict = self.pars
             p = sortedDictValues(pdict)
@@ -590,7 +595,9 @@ class Euler_ODEsystem(ODEsystem):
     def AuxVars(self, t, xdict, pdict=None, asarray=True):
         """asarray is an unused, dummy argument for compatibility with
         Model.AuxVars"""
-        x = sortedDictValues(filteredDict(xdict, self.funcspec.vars))
+        # also, ensure xdict doesn't contain elements like array([4.1]) instead of 4
+        x = [float(val) for val in sortedDictValues(filteredDict(xdict,
+                                                                 self.funcspec.vars))]
         if pdict is None:
             pdict = self.pars
         p = sortedDictValues(pdict)
