@@ -63,7 +63,7 @@ _mappings = ['_num_type2name', '_num_name2type',
 _functions = ['isUniqueSeq', 'makeArrayIxMap', 'className',
               'compareBaseClass', 'compareClassAndBases', 'timestamp',
               'makeUniqueFn', 'copyVarDict', 'concatStrDict',
-              'invertMap', 'makeSeqUnique', 'insertInOrder',
+              'invertMap', 'makeSeqUnique', 'insertInOrder', 'uniquePoints',
               'sortedDictKeys', 'sortedDictValues', 'sortedDictItems',
               'sortedDictLists', 'compareNumTypes', 'diff', 'diff2',
               'listid', 'idfn', 'noneFn', 'isincreasing', 'ismonotonic',
@@ -1804,6 +1804,17 @@ def extent(data):
         return minval
     else:
         return [minval, maxval]
+
+def uniquePoints(ar):
+    """For an n by m array input, return only points that are unique"""
+    result = []
+    seq = set()
+    for a in ar:
+        a = tuple(a)
+        if a not in seq:
+            result.append(a)
+            seq.add(a)
+    return array(result)
 
 
 def sortedDictValues(d, onlykeys=None, reverse=False):
