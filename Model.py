@@ -502,8 +502,10 @@ class Model(object):
         intvars = remain(all_known_varnames, obsvars)
         return (obsvars, intvars, auxvars)
 
-    def generateParamInfo(self):
-        """Record parameter info locally, for future queries."""
+    def _generateParamInfo(self):
+        """Record parameter info locally, for future queries.
+        Internal use only.
+        """
         # use query method in case model in registry is a wrapped Generator
         # that uses _ versions of hierarchical names that are used natively
         # here.
@@ -972,7 +974,7 @@ class Model(object):
                               ' every sub-model: %s'%key)
             del(entry_err_attr)
             del(entry_err_val)
-        self.generateParamInfo()
+        self._generateParamInfo()
 
     def __getitem__(self, trajname):
         try:
@@ -1172,8 +1174,8 @@ class Model(object):
                 raise ValueError("Name %s already exists"%newname)
 
     def getTrajModelName(self, trajname, t=None):
-        """Return the named trajectory's associated Model(s), specific
-        to time t if given."""
+        """Return the named trajectory's associated sub-model(s) used
+        to create it, specific to time t if given."""
         try:
             modelNames = self.trajectories[trajname].modelNames
         except KeyError:
@@ -1657,7 +1659,7 @@ class NonHybridModel(Model):
     def __init__(self, *a, **kw):
         Model.__init__(self, True, *a, **kw)
         # collect parameter info from all modelInfo objects
-        self.generateParamInfo()
+        self._generateParamInfo()
         self._validateRegistry(self.obsvars, self.intvars)
 
     def _findTrajInitiator(self, end_reasons, partition_num, t0, xdict,
@@ -2149,7 +2151,7 @@ class HybridModel(Model):
     def __init__(self, *a, **kw):
         Model.__init__(self, True, *a, **kw)
         # collect parameter info from all modelInfo objects
-        self.generateParamInfo()
+        self._generateParamInfo()
         # Ensure all Generators provided to build trajectory share the same
         # observables, and that modelInfo switch rules mappings are OK
         self._validateRegistry(self.obsvars, self.intvars)
