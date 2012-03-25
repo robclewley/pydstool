@@ -881,10 +881,8 @@ class Trajectory(object):
 
 
     def getEvents(self, evnames=None, asGlobalTime=True):
-        """Collect all events throughout trajectory in global time,
+        """Returns a pointset of all named events occuring in global time,
         unless asGlobalTime option set to False (default is True).
-
-        Returns a pointset.
         """
         # self.events is a dict of pointsets keyed by event name
         if evnames is None:
@@ -917,7 +915,9 @@ class Trajectory(object):
 
 
     def getEventTimes(self, evnames=None, asGlobalTime=True):
-        """Return list of times at which events occurred."""
+        """Returns a list of times at which the named events occurred in global
+        time, unless asGlobalTime option set to False (default is True).
+        """
         result = {}
         if evnames is None:
             evnames = self.events.keys()
