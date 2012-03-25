@@ -2395,12 +2395,14 @@ def makePartialJac(spec_pair, varnames, select=None):
     fargs_new = ['t'] + [fargs[ix+1] for ix in vixs]
     return (fargs_new, fspec)
 
-def resolveClashingAuxFnPars(fnspecs, parnames):
+
+def resolveClashingAuxFnPars(fnspecs, varspecs, parnames):
     """Use this when parameters have been added to a modified Generator which
     might clash with aux fn argument names. (E.g., used by find_nullclines).
-    Will remove arguments that are now considered parameters by the system.
+    Will remove arguments that are now considered parameters by the system,
+    in both the function definitions and their use in specs for the variables.
     """
-    root = "__dummy__"
+    changed_fns = []
     new_fnspecs = {}
     for fname, (fargs, fspec) in fnspecs.iteritems():
         common_names = intersect(fargs, parnames)
@@ -2410,13 +2412,41 @@ def resolveClashingAuxFnPars(fnspecs, parnames):
         if common_names == []:
             new_fnspecs[fname] = (fargs, fspec)
         else:
-            #qtemp = QuantSpec('temp', fspec)
-            #mapdict = {}
-            #for c in common_names:
-            #    mapdict[c] = root+c
-            #symb_map = symbolMapClass(mapdict)
-            new_fnspecs[fname] = (remain(fargs, parnames), fspec) #(symb_map(fargs), str(symb_map(qtemp)))
-    return new_fnspecs
+            changed_fns.append(fname)
+            new_fnspecs[fname] = (remain(fargs, parnames), fspec)
+
+    new_varspecs = {}
+    for vname, vspec in varspecs.iteritems():
+        q = QuantSpec('__temp__', vspec)
+        # only update use of functions both changed and used in the varspecs
+        used_fns = intersect(q.parser.tokenized, changed_fns)
+        for f in used_fns:
+            ix = q.parser.tokenized.index(f)
+            # identify arg list for this fn call
+            rest = ''.join(q.parser.tokenized[ix+1:])
+            end_ix = findEndBrace(rest)
+            # get string of this arg list
+            argstr = rest[:end_ix+1]
+            # split
+            success, args_list, arglen = readArgs(argstr)
+            assert success, "Parsing arguments failed"
+            new_args_list = []
+            # remove parnames
+            for arg in args_list:
+                qarg = QuantSpec('a', arg)
+                # if parameter appears in a compound expression in the argument,
+                # then we don't know how to process it, so raise exception
+                if len(qarg) > 1 and any([p in qarg for p in parnames]):
+                    raise ValueError("Cannot process argument to aux fn %s"%f)
+                # do not put raw parameter name arguments into new arg list
+                if arg not in parnames:
+                    new_args_list.append(arg)
+            new_argstr = ','.join(new_args_list)
+            # update vspec and q for next f
+            vspec = ''.join(q[:ix+1]) + '(' + new_argstr + ')' + rest[end_ix+1:]
+            q = QuantSpec('__temp__', vspec)
+        new_varspecs[vname] = vspec
+    return new_fnspecs, new_varspecs
 
 
 
