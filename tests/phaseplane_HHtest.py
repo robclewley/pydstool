@@ -84,6 +84,7 @@ print 'Phase Plane test using Hodgkin-Huxley system during action potential'
 par_args = {'gna': 100, 'gk': 80, 'gl': 0.1,
             'vna': 50, 'vk': -100, 'vl': -67,
             'I': 1.75, 'C': 1.0}
+
 # very close to a periodic orbit
 ic_args = {'v_bd0': -130.0, 'v_bd1': 70.0, 'h': 0.99599864212873856,
            'm': 0.00050362509755992027, 'n': 0.00557358064026849,
@@ -101,8 +102,8 @@ scope.update({'n': HH.initialconditions['n'], 'h': HH.initialconditions['h']})
 scope.update(new_fnspecs)
 jac_fn = expr2fun(jac, ensure_args=['t'], **scope)
 
-#print "Use of Jacobian speeds up finding of nullclines and fixed points by"
-#print "nearly a factor of two (not including time to plot results)..."
+print "Use of Jacobian speeds up finding of nullclines and fixed points by"
+print "nearly a factor of two (not including time to plot results)..."
 fp_coords = find_fixedpoints(HH, n=4, jac=jac_fn, eps=1e-8,
                              subdomain={'v':HH.xdomain['v'],'m':HH.xdomain['m'],
                              'h': HH.initialconditions['h'], 'n': HH.initialconditions['n']})
@@ -137,6 +138,7 @@ plotter.set_curr_fig('PP_large')
 plotter.plot_nullcline(N_x, 'g')
 plotter.plot_nullcline(N_y, 'r')
 plotter.plot_fps(fps, 'v', 'm')
+# scale_exp needs to be adjusted to get arrow sizes right for scale of vector field
 plotter.plot_vf(HH, 'v', 'm', subdomain={'v': [-100, 50]}, scale_exp=1, N=50)
 plt.xlabel('V')
 plt.ylabel('m')
