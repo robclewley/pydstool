@@ -24,7 +24,7 @@ DSargs.pars = args(a=2.93, b=-1.44, c=1.85)
 DSargs.vars = ['z', 'zp']   # Implicitly, then, L must be an auxiliary variable
 DSargs.ics = {'z': 2, 'zp': 0}
 DSargs.ttype = int  # force independent variable type to be integer (discrete time)
-lmap = dst.Generator.MapSystem(DSargs)
+lmap = dst.MapSystem(DSargs)
 
 traj = lmap.compute('test')
 pts = traj.sample()
