@@ -9,7 +9,8 @@ from parseUtils import joinStrs
 
 from numpy import Inf, NaN, isfinite, less, greater, sometrue, alltrue, \
      searchsorted, take, argsort, array, swapaxes, asarray, zeros, transpose, \
-     float64, int32, ndarray
+     float64, int32, argmin, ndarray, concatenate
+from numpy.linalg import norm
 from scipy.optimize import minpack, zeros
 try:
     newton_meth = minpack.newton
@@ -28,8 +29,8 @@ _classes = []
 _functions = ['intersect', 'remain', 'union', 'cartesianProduct',
               'makeDataDict', 'makeImplicitFunc', 'orderEventData',
               'saveObjects', 'loadObjects', 'info', 'compareList',
-              'findClosestArray', 'find', 'makeMfileFunction',
-              'make_RHS_wrap', 'make_Jac_wrap']
+              'findClosestArray', 'findClosestPointIndex', 'find',
+              'makeMfileFunction', 'make_RHS_wrap', 'make_Jac_wrap']
 
 _mappings = ['_implicitSolveMethods', '_1DimplicitSolveMethods']
 
@@ -263,9 +264,76 @@ def makeImplicitFunc(f, x0, fprime=None, extrafargs=(), xtolval=1e-8,
         raise ValueError("Unrecognized type of implicit function solver")
 
 
+def findClosestPointIndex(pt, target, tol=Inf, in_order=True):
+    """
+    Find index of the closest N-dimensional Point in the target N by M array
+    or Pointset. Uses norm of order given by the Point
+    or Pointset, unless they are inconsistent, in which case an exception is
+    raised, or unless they are both arrays, in which case 2-norm is assumed.
+
+    With the in_order boolean option (default True), the function will
+    attempt to determine the local "direction" of the values and return an
+    insertion index that will preserve this ordering. This option is
+    incompatible with the tol option (see below).
+
+    If the optional tolerance, tol, is given, then an index is returned only
+    if the closest distance is within the tolerance. Otherwise, a ValueError
+    is raised. This option is incompatible with the in_order option.
+    """
+    try:
+        normord = pt._normord
+    except AttributeError:
+        normord = 2
+    try:
+        if target._normord != normord:
+            raise ValueError("Incompatible order of norm defined for inputs")
+    except AttributeError:
+        pass
+
+    dists = [norm(pt-x, normord) for x in target]
+    index = argmin(dists)
+
+    if in_order:
+        if index > 0:
+            lo_off = 1
+            # insertion offset index
+            ins_off = 1
+            if index < len(target):
+                hi_off = 1
+            else:
+                hi_off = 0
+        else:
+            lo_off = 0
+            hi_off = 2
+            # insertion offset index
+            ins_off = 0
+
+        pta = array([pt]) # extra [] to get compatible shape for concat
+        dim_range = range(target.shape[1])
+        # neighborhood
+        nhood = target[index-lo_off:index+hi_off]
+        if all(ismonotonic(nhood[:,d]) for d in dim_range):
+            # try inserting at index, otherwise at index+1
+            new_nhood = concatenate((nhood[:ins_off], pta, nhood[ins_off:]))
+            if not all(ismonotonic(new_nhood[:,d]) for d in dim_range):
+                ins_off += 1
+                index += 1
+                new_nhood = concatenate((nhood[:ins_off], pta, nhood[ins_off:]))
+                if not all(ismonotonic(new_nhood[:,d]) for d in dim_range):
+                    raise ValueError("Cannot add point in order, try deactivating the in_order option")
+
+    if in_order:
+        return index
+    else:
+        if dists[index] < tol:
+            return index
+        else:
+            raise ValueError("No index found within distance tolerance")
+
+
 def findClosestArray(input_array, target_array, tol):
     """
-    Find the set of elements in input_array that are closest to
+    Find the set of elements in (1D) input_array that are closest to
     elements in target_array.  Record the indices of the elements in
     target_array that are within tolerance, tol, of their closest
     match. Also record the indices of the elements in target_array
