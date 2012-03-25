@@ -53,16 +53,16 @@ def numeric_to_traj(vals, trajname, coordnames, indepvar=None, indepvarname='t',
 
 def convert_ptlabel_events(pts):
     """Creates an eventTimes-like dictionary from a pointset's labels.
-    (Event X time recorded in a label is recorded as "Event X")
+    (Event X time recorded in a label is recorded as "Event:X")
     """
     ev_labels = []
     for l in pts.labels.getLabels():
-        if 'Event ' in l:
+        if 'Event:' in l:
             ev_labels.append(l[6:])
     event_times = {}
     for l in ev_labels:
         ts = []
-        ix_dict = pts.labels.by_label['Event '+l]
+        ix_dict = pts.labels.by_label['Event:'+l]
         # don't use tdict in labels in case indepvararray has been re-scaled
         for ix in ix_dict.keys():
             ts.append(pts.indepvararray[ix])
@@ -698,9 +698,9 @@ class Trajectory(object):
                         # t will match exactly
                         ix = tmesh_list.index(t)
                 if asGlobalTime:
-                    evlabels.update(ix, 'Event '+evname, {'t': t})
+                    evlabels.update(ix, 'Event:'+evname, {'t': t})
                 else:
-                    evlabels.update(ix, 'Event '+evname, {'t': t-self.globalt0})
+                    evlabels.update(ix, 'Event:'+evname, {'t': t-self.globalt0})
         else:
             eventdata = None
 
@@ -1378,7 +1378,7 @@ class HybridTrajectory(Trajectory):
             if doEvents:
                 for evname, ev_ts in self.eventTimes.items():
                     if t in ev_ts:
-                        pset.addlabel(0, 'Event '+evname, {'t': t})
+                        pset.addlabel(0, 'Event:'+evname, {'t': t})
             return pset
         else:
             assert tlo < thi, 't start point must be less than t endpoint'
