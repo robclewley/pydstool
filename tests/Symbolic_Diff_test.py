@@ -186,8 +186,11 @@ ydot1=Fun(-ydot0(y0,y1,y2)-ydot2(y0,y1,y2), [y0, y1, y2], 'ydot1')
 
 F = Fun([ydot0(y0,y1,y2),ydot1(y0,y1,y2),ydot2(y0,y1,y2)], [y0,y1,y2], 'F')
 assert F.dim == 3
-assert_approx_equal( str(Diff(F,[y0,y1,y2])), '[[-0.04,10000*y2,10000*y1],[0.040000000000000001,(-10000*y2)-30000000*2*y1,-10000*y1],[0,30000000*2*y1,0]]')
-#'[[-0.040000000000000001,10000*y2,10000*y1],[0.04,10000*y2-30000000*2*y1,10000*y1],[0,60000000*y1,0]]'
+DF = Diff(F,[y0,y1,y2])
+DF0,DF1,DF2 = DF.fromvector()
+assert_approx_equal(DF0.fromvector()[0].tonumeric(), -0.04)
+# str(Diff(F,[y0,y1,y2])) should be (to within numerical rounding errors):
+#'[[-0.04,10000*y2,10000*y1],[0.040000000000000001,(-10000*y2)-30000000*2*y1,-10000*y1],[0,30000000*2*y1,0]]')
 
 jac=Fun(Diff(F,[y0,y1,y2]), [t, y0, y1, y2], 'Jacobian')
 assert jac(t, 0.1,y0+1,0.5).eval(y0=0) == jac(t, 0.1,1+y0,0.5).eval(y0=0)
