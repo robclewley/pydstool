@@ -5,6 +5,7 @@
 
 from PyDSTool import *
 from numpy.linalg import norm
+from numpy.testing.utils import assert_approx_equal
 
 # testing direct string -> string diff with complex pattern of negative signs
 assert DiffStr('x-(4*x*y)/(1+x*x)','x') == \
@@ -185,7 +186,7 @@ ydot1=Fun(-ydot0(y0,y1,y2)-ydot2(y0,y1,y2), [y0, y1, y2], 'ydot1')
 
 F = Fun([ydot0(y0,y1,y2),ydot1(y0,y1,y2),ydot2(y0,y1,y2)], [y0,y1,y2], 'F')
 assert F.dim == 3
-assert str(Diff(F,[y0,y1,y2])) == '[[-0.04,10000*y2,10000*y1],[0.040000000000000001,(-10000*y2)-30000000*2*y1,-10000*y1],[0,30000000*2*y1,0]]'
+assert_approx_equal( str(Diff(F,[y0,y1,y2])), '[[-0.04,10000*y2,10000*y1],[0.040000000000000001,(-10000*y2)-30000000*2*y1,-10000*y1],[0,30000000*2*y1,0]]')
 #'[[-0.040000000000000001,10000*y2,10000*y1],[0.04,10000*y2-30000000*2*y1,10000*y1],[0,60000000*y1,0]]'
 
 jac=Fun(Diff(F,[y0,y1,y2]), [t, y0, y1, y2], 'Jacobian')
