@@ -2268,7 +2268,13 @@ def addArgToCalls(source, callfns, arg, notFirst=''):
         try:
             findpos = min(filter(lambda x:x>=0,findposlist))+currpos
         except ValueError:
-            done = True
+            if currpos < len(source) and len(findposlist_candidates) > 0 and \
+                       findposlist_candidates[0] >= 0:
+                currpos += findposlist_candidates[0] + 2
+                output += source[:findposlist_candidates[0]+2]
+                continue
+            else:
+                done = True
         if not done:
             # find start and end braces
             startbrace = source[findpos:].find('(')+findpos
