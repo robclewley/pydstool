@@ -79,7 +79,7 @@ print 'done in %.3f seconds!' % (clock()-start)
 PyCont.display(('Iapp','v'),stability=True)
 PyCont['LC1'].display(('Iapp','v_min'),stability=True)
 
-pylab.xlim([-25, 150])
+plt.xlim([-25, 150])
 PyCont.plot.fig1.axes1.axes.set_title('Bifurcation Diagram')
 PyCont.plot.fig1.toggleAll('off', bytype=['P', 'MX'])
 
@@ -88,5 +88,5 @@ PyCont.plot.fig2.axes1.axes.set_title('Cycles')
 
 #PyCont.plot.setLegends('_nolegend_', bytype=['P', 'MX'])
 #PyCont.plot.fig2.refresh()
-#pylab.legend()
+#plt.legend()
 show()

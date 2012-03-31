@@ -99,7 +99,7 @@ print 'done in %.3f seconds!' % (clock()-start)
 
 # Plot
 PyCont.display(stability=True)
-pylab.xlim([1, 4])
+plt.xlim([1, 4])
 PyCont.plot.toggleAll('off')
-pylab.title('Logistic map')
+plt.title('Logistic map')
 show()

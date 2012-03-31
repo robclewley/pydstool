@@ -141,8 +141,8 @@ if __name__=='__main__':
 
     plotData = HHtraj.sample()  # works but not VODE accurate for non-terminal events
     yaxislabelstr = 'v'
-    pylab.ylabel(yaxislabelstr)
-    pylab.xlabel('t')
+    plt.ylabel(yaxislabelstr)
+    plt.xlabel('t')
     vline=plot(plotData['t'], plotData['v'])
     # pick out first event
     evt = evts['thresh_ev']['t'][0]

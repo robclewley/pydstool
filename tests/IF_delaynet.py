@@ -161,8 +161,8 @@ plotData = IFmodel.sample('test', dt=0.1)
 IFmodel.getTrajEventTimes('test')['IF1_thresh']
 IFmodel.getTrajEventTimes('test')['IF2_thresh']
 
-pylab.ylabel('V')
-pylab.xlabel('t')
+plt.ylabel('V')
+plt.xlabel('t')
 vline1=plot(plotData['t'], plotData['IF1.V'])
 vline1=plot(plotData['t'], plotData['IF2.V'])
 show()

@@ -88,8 +88,8 @@ if __name__=='__main__':
     plotData = HHtraj2.sample(dt=0.1)
     evt=HH.getEventTimes().values()[0]
     yaxislabelstr = 'v'
-    pylab.ylabel(yaxislabelstr)
-    pylab.xlabel('t')
+    plt.ylabel(yaxislabelstr)
+    plt.xlabel('t')
     vline=plot(plotData['t'], plotData['v'])
     plot(evt, HHtraj2(evt, 'v'), 'ro')
     show()

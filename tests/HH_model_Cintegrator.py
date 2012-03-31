@@ -116,8 +116,8 @@ print 'Preparing plot'
 plotData2 = HHtraj2.sample(dt=0.1)
 evt2=HH.getEventTimes()['thresh_ev']
 yaxislabelstr = 'v'
-pylab.ylabel(yaxislabelstr)
-pylab.xlabel('t')
+plt.ylabel(yaxislabelstr)
+plt.xlabel('t')
 vline=plot(plotData['t'], plotData['v'])
 vline2=plot(plotData2['t'], plotData2['v'])
 plot(evt, HHtraj(evt, 'v'), 'ro')

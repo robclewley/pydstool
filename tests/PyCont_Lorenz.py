@@ -66,7 +66,7 @@ PyCont['LC1'].cleanLabels()
 PyCont['LC1'].display(stability=True, axes=(1,2,1))
 PyCont['LC1'].plot_cycles(cycles=['P1', 'PD1', 'LPC1'], coords=('u1','u2'), color_method='bytype', linewidth=1, axes=(1,2,2))
 PyCont['LC1'].plot_cycles(cycles=['PD2', 'P2'], coords=('u1','u2'), color_method='bytype', linestyle='--', linewidth=1, axes=(1,2,2))
-pylab.legend(loc=2)
+plt.legend(loc=2)
 
 PyCont.plot.fig1.axes1.axes.set_title('Bifurcation Diagram')
 PyCont.plot.fig1.axes1.axes.set(xlim=(50, 375), ylim=(14, 50))

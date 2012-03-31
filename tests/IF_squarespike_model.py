@@ -126,11 +126,11 @@ if __name__=='__main__':
     print 'Preparing plot'
     plotData = IFmodel.sample('onespike', dt=0.05)
     plotData2 = IFmodel.sample('twospike', ['v', 'testaux'], 0.05)
-    pylab.ylabel('v, testaux')
-    pylab.xlabel('t')
-    vline = pylab.plot(plotData['t'], plotData['v'])
-    vline2 = pylab.plot(plotData2['t'], plotData2['v'])
-    aline = pylab.plot(plotData['t'], plotData['testaux'])
+    plt.ylabel('v, testaux')
+    plt.xlabel('t')
+    vline = plt.plot(plotData['t'], plotData['v'])
+    vline2 = plt.plot(plotData2['t'], plotData2['v'])
+    aline = plt.plot(plotData['t'], plotData['testaux'])
 
     print "\nLast point of hybrid trajectory: "
     print "IFmodel.getEndPoint('onespike') -->\n", \
@@ -160,5 +160,5 @@ if __name__=='__main__':
              "Problem with hybrid events"
 
     print "\nDepending on your platform and pylab configuration you may need"
-    print " to execute the pylab.show() command to see the plots"
-    # pylab.show()
+    print " to execute the plt.show() command to see the plots"
+    # plt.show()

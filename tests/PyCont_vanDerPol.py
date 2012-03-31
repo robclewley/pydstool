@@ -257,10 +257,10 @@ def cont_func(C, pt, pars):
     if plot:
         px1f = tx1f.sample(dt=0.01)
         px1b = tx1b.sample(dt=0.01)
-        pylab.plot(px1f['x'], px1f['y'])
-        pylab.plot(px1b['x'], px1b['y'])
+        plt.plot(px1f['x'], px1f['y'])
+        plt.plot(px1b['x'], px1b['y'])
         raw_input()
-        pylab.close()
+        plt.close()
 
     F = array([x1f[1]-x1b[1]], float)
     return F
@@ -273,7 +273,7 @@ def plot_cycles(PyCont, name='UD1', meas=None):
         for pt in PyCont[name].sol:
             if 'UD' in pt.labels and pt.labels['UD']['data'].has_key('cycle'):
                 cycle = pt.labels['UD']['data'].cycle
-                pylab.plot(cycle['x'], cycle['y'], '-b')
+                plt.plot(cycle['x'], cycle['y'], '-b')
     else:
         a = PyCont[name].sol['a']
         solmeas = []
@@ -294,7 +294,7 @@ def plot_cycles(PyCont, name='UD1', meas=None):
 
         solmeas = array(solmeas)
         ind = array(ind)
-        pylab.plot(a[ind], solmeas)
+        plt.plot(a[ind], solmeas)
 
 
 # --------------------------------------------------------------------------
@@ -312,8 +312,8 @@ C['LC_eps'].display(('eps', 'x_nm2'))
 C.plot.toggleAll('off', bytype='P')
 C['LC_a'].plot_cycles(('x', 'y'), figure='mew', method='highlight')
 plot_manifold()
-pylab.xlim([-2.5, 2.5])
-pylab.ylim([-1, 1])
+plt.xlim([-2.5, 2.5])
+plt.ylim([-1, 1])
 
 print "Continuing limit cycle"
 continuation(C, cycle=None, compute=False, disp=False)

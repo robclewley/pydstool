@@ -133,8 +133,8 @@ if __name__=='__main__':
     print 'Preparing plot'
 
     yaxislabelstr = 'angles'
-    pylab.ylabel(yaxislabelstr)
-    pylab.xlabel('t')
+    plt.ylabel(yaxislabelstr)
+    plt.xlabel('t')
     phi1_line=plot(plotData['t'], plotData['phi1'])
     phi2_line=plot(plotData['t'], plotData['phi2'])
     phi3_line=plot(plotData['t'], plotData['phi3'])

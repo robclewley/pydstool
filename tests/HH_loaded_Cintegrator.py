@@ -20,8 +20,8 @@ plotData2 = HHtraj2.sample(dt=0.05)
 evt2=HH.getEventTimes()['thresh_ev']
 
 yaxislabelstr = 'v'
-pylab.ylabel(yaxislabelstr)
-pylab.xlabel('t')
+plt.ylabel(yaxislabelstr)
+plt.xlabel('t')
 
 vline1=plot(plotData1['t'], plotData1['v'])
 vline2=plot(plotData2['t'], plotData2['v'])

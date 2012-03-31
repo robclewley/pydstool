@@ -246,9 +246,9 @@ HHmodel_net.compute(trajname='test',
                      verboselevel=verboselevel)
 
 v_dat = HHmodel_net.sample('test')
-pylab.figure()
-v1line = plot(v_dat['t'], v_dat['cell1.V'])
-v2line = plot(v_dat['t'], v_dat['cell2.V'])
-show()
+plt.figure()
+v1line = plt.plot(v_dat['t'], v_dat['cell1.V'])
+v2line = plt.plot(v_dat['t'], v_dat['cell2.V'])
+plt.show()
 
 print "   ... passed"

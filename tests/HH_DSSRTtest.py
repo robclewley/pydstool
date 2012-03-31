@@ -165,9 +165,9 @@ ix0 = pts.find(t0) # guaranteed to be exact
 ix1 = pts.find(t1) # guaranteed to be exact
 ts = pts['t'][ix0:ix1+1]
 cycle = pts[ix0:ix1+1]
-pylab.plot(ts, cycle['v'])
-pylab.plot(ts, cycle['inf_v'])
-pylab.title('v(t) and v_inf(t) for one approximate period')
+plt.plot(ts, cycle['v'])
+plt.plot(ts, cycle['inf_v'])
+plt.title('v(t) and v_inf(t) for one approximate period')
 print "Graph shows **approximate** period of tonic spiking =", t1-t0
 
 for ep in epochs:
@@ -477,10 +477,10 @@ HH.set(tdata=[0,40])
 traj = HH.compute('orig')
 pts_orig = traj.sample()
 
-pylab.figure()
-pylab.plot(pts_orig['t'],pts_orig['v'],'b')
-pylab.plot(pts_hyb['t'], pts_hyb['v'], 'g')
-pylab.title('Original (B) and hybrid (G) model voltage vs. t')
+plt.figure()
+plt.plot(pts_orig['t'],pts_orig['v'],'b')
+plt.plot(pts_hyb['t'], pts_hyb['v'], 'g')
+plt.title('Original (B) and hybrid (G) model voltage vs. t')
 
 ## Bifurcation-like diagram, to compare at different parameter values
 print "\nComparing bifurcations of spiking onset"
@@ -524,9 +524,9 @@ for i, bpval in enumerate(bifpar_range):
                       force=True)
     period_data_hyb.append(find_period(hybrid_HH['hyb_bif']))
 
-pylab.figure()
-pylab.plot(bifpar_range, period_data_hyb, 'ko')
-pylab.plot(bifpar_range, period_data_orig, 'kx')
+plt.figure()
+plt.plot(bifpar_range, period_data_hyb, 'ko')
+plt.plot(bifpar_range, period_data_orig, 'kx')
 print "\nDepending on your platform and pylab configuration you may need"
-print " to execute the pylab.show() command to see the plots"
-# pylab.show()
+print " to execute the plt.show() command to see the plots"
+# plt.show()

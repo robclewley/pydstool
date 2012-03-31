@@ -75,17 +75,17 @@ print 'done in %.3f seconds!' % (clock()-start)
 
 # Plot
 PyCont.display(('q2','x'), axes=(3,1,1))
-pylab.xlabel('')
-pylab.xticks([])
-pylab.title('')
+plt.xlabel('')
+plt.xticks([])
+plt.title('')
 
 PyCont.display(('q2','y'), axes=(3,1,2))
-pylab.xlabel('')
-pylab.xticks([])
-pylab.title('')
+plt.xlabel('')
+plt.xticks([])
+plt.title('')
 
 PyCont.display(('q2','s'), axes=(3,1,3))
-pylab.title('')
+plt.title('')
 
 PyCont.plot.toggleAll('off', bytype='P')
-show()
+plt.show()

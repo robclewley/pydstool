@@ -214,8 +214,8 @@ assert IFmodel.getTrajEventTimes('synch_test')['IF1_thresh'][-1] - \
          "Trajectories should have stayed identical"
 
 plotData = IFmodel.sample('test', dt=0.1)
-pylab.ylabel('V')
-pylab.xlabel('t')
+plt.ylabel('V')
+plt.xlabel('t')
 vline1=plot(plotData['t'], plotData['IF1.V'])
 vline1=plot(plotData['t'], plotData['IF2.V'])
 show()

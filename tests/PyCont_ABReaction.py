@@ -93,7 +93,7 @@ PyCont.plot.fig1.axes1.EQ1.LP1.text.set_position((pos[0]*0.95, pos[1]))
 PyCont.plot.fig1.axes1.axes.set(xticks=[0.0, 0.04, 0.08, 0.12, 0.16])
 PyCont.plot.fig1.axes2.axes.set(xticks=[0.2, 0.4, 0.6, 0.8, 1.0])
 PyCont.plot.fig1.refresh()
-pylab.legend(loc=2)
+plt.legend(loc=2)
 
 PyCont.plot.fig1.axes1.axes.set_title('Bifurcation Diagram')
 PyCont.plot.fig1.axes2.axes.set_title('Cycles')

@@ -83,8 +83,8 @@ testODE.set(tdata=[0,20])
 fulltraj = testODE.compute('fulltraj')
 plotData_full = fulltraj.sample(dt=0.1)
 
-pylab.ylabel(yaxislabelstr)
-pylab.xlabel('t')
+plt.ylabel(yaxislabelstr)
+plt.xlabel('t')
 
 wline_full=plot(plotData_full['t'], plotData_full['w'])
 yline_full=plot(plotData_full['t'], plotData_full['y'])

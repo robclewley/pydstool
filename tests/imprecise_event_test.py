@@ -38,8 +38,8 @@ print 'Preparing plot'
 
 plotData = traj.sample(dt=0.1)
 yaxislabelstr = 'x'
-pylab.ylabel(yaxislabelstr)
-pylab.xlabel('t')
+plt.ylabel(yaxislabelstr)
+plt.xlabel('t')
 vline=plot(plotData['t'], plotData['x'])
 evt=ode.getEventTimes()['thresh_ev_imprec'][0]
 print "Event at", evt, "where x has value", traj(evt)

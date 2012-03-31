@@ -170,9 +170,9 @@ def fast_subsystem():
     HR = create_system()
     HRtraj = create_HR_cycle(HR, t1=1000)
     plotData = HRtraj.sample()
-    pylab.figure(HR_fast.plot.fig1.fig.number)
+    plt.figure(HR_fast.plot.fig1.fig.number)
     plot(plotData['z'], plotData['x'])
-    pylab.xlim([1.5, 2.5])
+    plt.xlim([1.5, 2.5])
 
     return HR_fast
 

@@ -79,8 +79,8 @@ print 'done in %.3f seconds!' % (clock()-start)
 PyCont.display(('Iapp','v'),stability=True)
 PyCont['LC1'].display(('Iapp','v_min'),stability=True)
 
-pylab.xlim([0, 300])
-pylab.ylim([-75, 75])
+plt.xlim([0, 300])
+plt.ylim([-75, 75])
 PyCont.plot.fig1.axes1.axes.set_title('Bifurcation Diagram')
 
 PyCont['LC1'].plot_cycles(figure='fig2', method='stack', exclude='P2', tlim='5T')
@@ -93,5 +93,5 @@ PyCont.plot.fig3.axes1.axes.set_title('Phase Space')
 
 PyCont.plot.toggleAll('off', bytype='P')
 PyCont.plot.fig3.refresh()
-pylab.legend(loc=2)
+plt.legend(loc=2)
 show()

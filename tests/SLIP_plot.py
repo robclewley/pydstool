@@ -15,23 +15,23 @@ def SLIP_plot(SLIP, trajname, plottype=['plane'], legs=True, verboselevel=0):
     plotData = SLIP.sample(trajname, dt=0.025)
 
     if 'velocity' in plottype:
-        pylab.figure(2)
-        pylab.ylabel('velocity')
-        pylab.xlabel('t')
+        plt.figure(2)
+        plt.ylabel('velocity')
+        plt.xlabel('t')
         ydline = plot(plotData['t'], plotData['ydot'])
         zdline = plot(plotData['t'], plotData['zdot'])
 
     if 'position' in plottype:
-        pylab.figure(3)
-        pylab.ylabel('position')
-        pylab.xlabel('t')
+        plt.figure(3)
+        plt.ylabel('position')
+        plt.xlabel('t')
         yline = plot(plotData['t'], plotData['y'])
         zline = plot(plotData['t'], plotData['z'])
 
     if 'plane' in plottype:
-        pylab.figure(1)
-        pylab.ylabel('z')
-        pylab.xlabel('y')
+        plt.figure(1)
+        plt.ylabel('z')
+        plt.xlabel('y')
         pline=plot(plotData['y'], plotData['z'])
 
         evs = SLIP.getTrajEventTimes(trajname)

@@ -167,8 +167,8 @@ fullmodel.compute(trajname='run1',
 print "\nPlotting output"
 plotData = fullmodel.sample('run1', coords=['a','ad'],
                                            dt=0.01)
-afig = pylab.figure()
+afig = plt.figure()
 aline = plot(plotData['t'], plotData['a'])
-##    adotfig = pylab.figure()
+##    adotfig = plt.figure()
 adline = plot(plotData['t'], plotData['ad'])
 show()

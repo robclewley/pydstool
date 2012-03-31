@@ -46,11 +46,11 @@ print '  ... finished in %.3f seconds.\n' % (clock()-start)
 
 if 0:
     plotData=testtraj.sample(dt=0.1)
-    mline=pylab.plot(plotData['t'],plotData['m'])
-    rline=pylab.plot(plotData['t'],plotData['r'])
-    Cline=pylab.plot(plotData['t'],plotData['C'])
-    sline=pylab.plot(plotData['t'],plotData['s'])
-    pylab.legend([mline,rline,Cline,sline],['m','r','C','s'])
+    mline=plt.plot(plotData['t'],plotData['m'])
+    rline=plt.plot(plotData['t'],plotData['r'])
+    Cline=plt.plot(plotData['t'],plotData['C'])
+    sline=plt.plot(plotData['t'],plotData['s'])
+    plt.legend([mline,rline,Cline,sline],['m','r','C','s'])
     show()
 
 # Set up continuation class

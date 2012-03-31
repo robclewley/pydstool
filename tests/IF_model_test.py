@@ -83,8 +83,8 @@ print '... finished in %.3f seconds.\n' % (clock()-start)
 
 print 'Preparing plot to show non-identity mapping of epoch state transitions'
 plotData = IFmodel.sample('onespike', ['V'], 0.02)
-pylab.ylabel('V')
-pylab.xlabel('t')
+plt.ylabel('V')
+plt.xlabel('t')
 vline=plot(plotData['t'], plotData['V'])
 
 print "\n\nInformation about Model's components:\n"

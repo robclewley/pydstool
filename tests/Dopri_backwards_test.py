@@ -39,8 +39,8 @@ print 'Preparing plot (curves should align to be a single smooth curve)'
 plotDataf = trajf.sample(dt=0.1)
 plotDatab = trajb.sample(dt=0.1)
 yaxislabelstr = 'x'
-pylab.ylabel(yaxislabelstr)
-pylab.xlabel('t')
+plt.ylabel(yaxislabelstr)
+plt.xlabel('t')
 vlinef=plot(plotDataf['t'], plotDataf['x'])
 vlineb=plot(plotDatab['t'], plotDatab['x'])
 show()
