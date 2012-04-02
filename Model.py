@@ -652,11 +652,10 @@ class Model(object):
                     # ds is a ModelInterface, not a Generator
                     result.update(model.query('events'))
         elif querykey == 'submodels':
-            result = {}
-            result.update(self.showModelInfo(returnInfo=True, verbosity=1))
+            result = self.registry
         elif querykey in ['vars', 'variables']:
             result = copy.copy(self.allvars)
-        elif querykey == 'vardomains':
+        elif querykey in ['vardomains', 'xdomains']:
             result = {}
             # accumulate domains from each sub-model for regular variables
             for model in self.registry.values():
@@ -685,7 +684,7 @@ class Model(object):
             # remaining vars are promoted aux vars
             for vname in remain(self.allvars, result.keys()):
                 result[vname] = Interval(vname, float, [-Inf, Inf])
-        elif querykey == 'pardomains':
+        elif querykey in ['pardomains', 'pdomains']:
             result = {}
             # accumulate domains from each sub-model for regular variables
             for model in self.registry.values():
@@ -2096,7 +2095,7 @@ class NonHybridModel(Model):
             print " ... ", ti_1, " > ", t1_global-t0
         epochEvents = {}
         try:
-            epochEvents.update(gen.getEvents(globalindepvar=True))
+            epochEvents.update(gen.getEvents(asGlobalTime=True))
         except (AttributeError, TypeError):
             # this Generator has no eventstruct
             pass
@@ -3175,9 +3174,9 @@ class HybridModel(Model):
     def _infostr(self, verbose=1):
         if verbose > 0:
             outputStr = 'Hybrid Model '+self.name+" containing components:"
-            outputStr += "Observable variables: " + self.obsvars
-            outputStr += "Internal variables: " + self.intvars
-            outputStr += "Auxiliary variables: " + self.auxvars
+            outputStr += "Observable variables: " + ",".join(self.obsvars)
+            outputStr += "Internal variables: " + ",".join(self.intvars)
+            outputStr += "Auxiliary variables: " + ",".join(self.auxvars)
             for name, infodict in self.modelInfo.iteritems():
                 outputStr += "\n--- Sub-model: "+name
                 outputStr += "\n  "+infodict['dsi'].model._infostr(verbose-1)
