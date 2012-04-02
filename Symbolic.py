@@ -797,10 +797,15 @@ class QuantSpec(object):
         except IndexError:
             # spec not long enough therefore self cannot be a vector
             self.dim = 0
+        self._check_self_ref()
 
+    def _check_self_ref(self):
         if self.specType == 'ExpFuncSpec':
-            if subjectToken in self.parser.usedSymbols:
-                raise ValueError("Cannot define the symbol "+subjectToken+" in"
+            if self.subjectToken in self.parser.usedSymbols:
+                locs = self.parser.find(self.subjectToken)
+                for loc in locs:
+                    if loc <= 1 or self.parser.tokenized[loc-2:loc] != ['initcond', '(']:
+                        raise ValueError("Cannot define the symbol "+self.subjectToken+" in"
                                  " terms of itself with spec type ExpFuncSpec")
 
 
@@ -2114,10 +2119,6 @@ class Quantity(object):
             self.name = token
         self.spec = actual_spec
         self.specType = self.spec.specType
-        if self.specType == 'ExpFuncSpec':
-            if self.name in self.spec.usedSymbols:
-                raise ValueError("Cannot define the symbol "+self.name+" in"
-                                 " terms of itself with spec type ExpFuncSpec")
         if self.multiDefInfo[0]:
             # must override spec's free symbol list with doctored one
             self.freeSymbols = remain(actual_freeSymbols, self.name)
@@ -2350,10 +2351,7 @@ class Quantity(object):
                                  parentname+NAMESEP+rootname+'['+ix+']'
             self.name = new_name
         self.spec.mapNames(nameMap)
-        if self.specType == 'ExpFuncSpec':
-            if self.name in self.spec.usedSymbols:
-                raise ValueError("Cannot define the symbol "+self.name+" in"
-                                 " terms of itself with spec type ExpFuncSpec")
+        self.spec._check_self_ref()
         self.freeSymbols = remain(self.spec.freeSymbols, self.name)
         self.usedSymbols = self.spec.usedSymbols
 
