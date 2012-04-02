@@ -429,19 +429,28 @@ class GeneratorConstructor(object):
         a.inputs = self.inputs
         a.name = self.mspec.name
         xdomain = {}
+        xtype = {}
         pdomain = {}
         for k, d in flatspec['domains'].iteritems():
             # e.g. d == (float, Continuous, [-Inf, Inf])
             if k in flatspec['vars']:
-                assert len(d[2]) == 2, "Domain spec must be a valid interval"
-                xdomain[k] = d[2]
+                if isinstance(d[2], _num_types):
+                    xdomain[k] = d[2]
+                elif len(d[2]) == 2:
+                    xdomain[k] = d[2]
+                else:
+                    raise ValueError("Domain spec must be a valid interval")
+                xtype[k] = d[0]
             elif k in flatspec['pars']:
                 assert len(d[2]) == 2, "Domain spec must be a valid interval"
                 pdomain[k] = d[2]
-            if d[1] != gsh.domain:
-                raise AssertionError("Domain mismatch (%s) with target Generator's (%s)"%(d[1],gsh.domain))
+            # Eliminate this test because it won't work for hybrid models, where an indicator
+            # variable is needed, which is set as a discrete variable with integer value
+            #if d[1] != gsh.domain:
+            #    raise AssertionError("Domain mismatch (%s) with target Generator's (%s)"%(d[1],gsh.domain))
         a.xdomain = xdomain
         a.pdomain = pdomain
+        a.xtype = xtype
         exp_vars = [v for (v,t) in flatspec['spectypes'].items() \
                          if t == 'ExpFuncSpec']
         rhs_vars = [v for (v,t) in flatspec['spectypes'].items() \
@@ -619,7 +628,8 @@ class ModelConstructor(object):
         withJac : Boolean for making Jacobian
         withJacP : Boolean for making Jacobian with respect to parameters
 
-        RETURNS: getModel method returns a Model object
+        RETURNS: Nothing, but getModel method returns an instantiated Model
+          object when the specifications are complete and consistent.
         """
         self.name = name
         self.forcedIntVars = []
@@ -1430,16 +1440,64 @@ class EvMapping(object):
     """Event mapping class, for use by makeModelInfoEntry and, when
     instantiated, the Model class.
 
-    defStrings (list of statements) overrides assignDict if supplied at
-    initialization, to permit full flexibility in the contents of the
-    event mapping function.
+    assignDict maps its values onto the variable or parameter named by the
+    key. To use the simple syntax in these assignments, either the 'model'
+    argument or the 'infodict' argument must be provided, the first taking
+    preference if both are provided. An instantiated Model object must be
+    provided with the 'model' argument in order to name these variables and
+    parameters without further qualification. A dictionary with keys 'vars'
+    and 'pars' must provide lists of variable and parameter names for the
+    'infodict' argument. Use this argument with ModelConstructor when an
+    instantiated model is not available. With either of these arguments,
+    assignments must be given in the (key, value) form: "a", "1 + a*k/2"
 
-    Use activeDict to map event names to new states."""
+    Without the model argument, assignments must be given in the (key, value) form:
+     "xdict['a']", "1+xdict['a']*pdict['k']/2"
+
+    defStrings (list of valid python statements) overrides assignDict if supplied at
+    initialization, to permit full flexibility in the contents of the
+    event mapping function. These strings must use "xdict" and "pdict" to reference
+    the variables and parameters, respectively.
+
+    Use activeDict to map named events to a given setting for 'active' (Boolean).
+    """
 
     def __init__(self, assignDict=None, defString="",
-                 activeDict=None):
+                 activeDict=None, model=None, infodict=None):
         if assignDict is None:
             assignDict = {}
+        else:
+            # parse assignments to use xdict, pdict if model was provided
+            new_assignDict = {}
+            if model is None:
+                try:
+                    vars = infodict['vars']
+                    pars = infodict['pars']
+                except:
+                    raise ValueError("Must pass dictionary of 'vars' and 'pars'")
+            else:
+                try:
+                    vars = model.query('vars')
+                    pars = model.query('pars')
+                except:
+                    raise ValueError("Must pass instantiated Model")
+            for key, value in assignDict.items():
+                rhs = ModelSpec.QuantSpec('rhs', value)
+                rhs_str = ''
+                for tok in rhs.parser.tokenized:
+                    if tok in vars:
+                        rhs_str += "xdict['%s']"%tok
+                    elif tok in pars:
+                        rhs_str += "pdict['%s']"%tok
+                    else:
+                        rhs_str += tok
+                if key in vars:
+                    new_assignDict["xdict['%s']"%key] = rhs_str
+                elif key in pars:
+                    new_assignDict["pdict['%s']"%key] = rhs_str
+                else:
+                    raise ValueError("Invalid LHS for event mapping")
+            assignDict = new_assignDict
         if activeDict is None:
             activeDict = {}
         self.assignDict = assignDict.copy()
