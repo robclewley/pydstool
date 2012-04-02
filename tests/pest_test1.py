@@ -141,14 +141,14 @@ west_plotData_ic = bestFitModel_ic.sample('test_iface_traj', dt=0.02,
                                                          thi=max(trange),
                                                 precise=True)
 
-pylab.ylabel('w')
-pylab.xlabel('t')
+plt.ylabel('w')
+plt.xlabel('t')
 refline=plot(tplotData, wplotData['w'])
 estline_par = plot(west_plotData_par['t'], west_plotData_par['w'])
 estleg_par = 'w est. for k = %.4f'%pestData_par['pars_sol']['k']
 estline_ic = plot(west_plotData_ic['t'], west_plotData_ic['w'])
 estleg_ic = 'w est. for w(0) = %.4f'%pestData_ic['pars_sol']['w']
-pylab.legend([refline, estline_par, estline_ic],
+plt.legend([refline, estline_par, estline_ic],
              [refleg, estleg_par, estleg_ic],
              'upper left')
 show()

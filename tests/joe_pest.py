@@ -144,15 +144,15 @@ disp_dt = 0.05
 goalleg = "v original"
 plotData_par = testModel.sample('test_iface_traj', ['v'], disp_dt, precise=True)
 
-pylab.ylabel('v')
-pylab.xlabel('t')
+plt.ylabel('v')
+plt.xlabel('t')
 ##goalline=plot(plotData_par['t'], plotData_goal['v'])
 goal_v = reftraj(tmesh, 'v')
 goalline = plot(tmesh, goal_v, 'ok')
 estline = plot(plotData_par['t'], plotData_par['v'])
 estleg = 'v estimated'
 
-pylab.legend([goalline, estline],
+plt.legend([goalline, estline],
              [goalleg, estleg],
              'lower left')
 show()

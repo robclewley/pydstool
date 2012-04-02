@@ -198,14 +198,14 @@ origleg = "Un-fitted IF orbit"
 IF_sampleData = []
 for t in HH_sampleData['t']:
     IF_sampleData.append(IFmodel_splen('disp', t, ['v']))
-pylab.ylabel('w')
-pylab.xlabel('t')
+plt.ylabel('w')
+plt.xlabel('t')
 goalline=plot(HH_sampleData['t'], HH_sampleData['v'], 'bo')
 goalleg = 'HH reference'
 estline_splen = plot(HH_sampleData['t'], IF_sampleData, 'k-',
                          linewidth=2)
 estleg_splen = 'IF spike thresh \& width fitted'
-pylab.legend([goalline, estline_splen, origline],
+plt.legend([goalline, estline_splen, origline],
              [goalleg, estleg_splen, origleg],
              'lower left')
 show()

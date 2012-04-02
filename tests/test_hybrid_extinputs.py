@@ -107,8 +107,8 @@ def test2(m):
 
 def doPlot(plotData):
     print 'Preparing plot'
-    pylab.ylabel('x')
-    pylab.xlabel('t')
+    plt.ylabel('x')
+    plt.xlabel('t')
     xline=plot(plotData['t'], plotData['x'])
     iline=plot(plotData['t'], plotData['inval'])
     iline_true=plot(timeData, sindata)

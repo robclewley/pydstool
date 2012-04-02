@@ -216,14 +216,14 @@ plotData_goal = goaltraj.sample(['v'], disp_dt)
 goalleg = "v goal"
 plotData_par = HH_test_model.sample('test_iface_traj', ['v'], disp_dt)
 
-pylab.ylabel('v')
-pylab.xlabel('t')
+plt.ylabel('v')
+plt.xlabel('t')
 goalline = plot(plotData_goal['t'], plotData_goal['v'])
 origline = plot(plotData_orig['t'], plotData_orig['v'])
 estline = plot(plotData_par['t'], plotData_par['v'])
 estleg = 'v estimated'
 
-pylab.legend([origline, goalline, estline],
+plt.legend([origline, goalline, estline],
              [origleg, goalleg, estleg],
              'lower left')
 show()

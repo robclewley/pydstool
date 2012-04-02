@@ -352,7 +352,7 @@ def compute(trajname='fig2', thi=205, dt=0.1, verboselevel=0):
 
 def doPlots(trajname='test', coords=None, dt=0.1, tlo=None, thi=None):
     plotdata = sModel.sample(trajname, coords=coords, dt=dt, tlo=tlo, thi=thi)
-    f=pylab.figure()
+    f=plt.figure()
     for v in coords:
         plot(plotdata['t'], plotdata[v])
 
