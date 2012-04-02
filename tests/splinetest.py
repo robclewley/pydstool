@@ -5,29 +5,23 @@ Currently only works for VODE integrator. Dopri version in development.
 2010.
 """
 
-import scipy
-import numpy
-import matplotlib
-import PyDSTool
 from PyDSTool import *
-from pylab import *
-from pylab import plot, show, linspace, xlabel, ylabel,ylim, clf, hold, legend
 import sys
 from scipy.interpolate import UnivariateSpline
 
 
 x = linspace(0,80,20)
 y = 3.3*x/(4.3+x)
-pred_spline = scipy.interpolate.UnivariateSpline(x,y,s=0)
+pred_spline = spy.interpolate.UnivariateSpline(x,y,s=0)
 
 
-DSargs = PyDSTool.args(name='Calcium')
+DSargs = args(name='Calcium')
 DSargs.pars = { 'delta': 1.25,
                 'Nin' : 80,
                 'mort': 0.055,
                 'lambd': 0.4,
                 'bB': 2.25,
-                'Kb': 15,    
+                'Kb': 15,
                 'epsilon': .25}
 
 
@@ -42,7 +36,7 @@ DSargs.ics      = {'N': 6.3121172183, 'D':46.9266049603, 'S':3.75421042894, 'B':
 DSargs.vfcodeinsert_start = 'pred_spline_val = ds.pred_spline(N)'
 DSargs.ignorespecial = ['pred_spline_val']
 DSargs.tdomain = [0,60]
-ode  = PyDSTool.Generator.Vode_ODEsystem(DSargs)
+ode  = Generator.Vode_ODEsystem(DSargs)
 
 # provide the callback function for the spline
 ode.pred_spline = pred_spline
@@ -58,8 +52,8 @@ maxB=linspace(1,arraysize,arraysize)
 minB=linspace(1,arraysize,arraysize)
 finalB=linspace(1,arraysize,arraysize)
 
-clf()                   # Clear the screen
-hold(True)              # Sequences of plot commands will not clear the existing figures
+plt.clf()                   # Clear the screen
+plt.hold(True)              # Sequences of plot commands will not clear the existing figures
 for j, v0 in enumerate(linspace(.001,1.75,arraysize)):
     ode.set( pars = { 'delta': v0 } )                     # Dilution Rates
     tmp = ode.compute('pol%3f' % j).sample()     # Trajectories are called pol0, pol1, ...
@@ -69,8 +63,8 @@ for j, v0 in enumerate(linspace(.001,1.75,arraysize)):
 ode.set(pars = {'delta': 1.25} )       # Lower bound of the control parameter 'i'  , 'w':6.31211705861
 ode.set(ics =  {'N': 6.3121172183, 'D':46.9266049603, 'S':3.75421042894, 'B':4.90492627563} )       # Close to one of the steady states present for i=-220
 
-PyCont = PyDSTool.ContClass(ode)                 # Set up continuation class
-PCargs = PyDSTool.args(name='EQ1', type='EP-C')  # 'EP-C' stands for Equilibrium Point Curve. The branch will be labeled 'EQ1'.
+PyCont = ContClass(ode)                 # Set up continuation class
+PCargs = args(name='EQ1', type='EP-C')  # 'EP-C' stands for Equilibrium Point Curve. The branch will be labeled 'EQ1'.
 PCargs.freepars     = ['delta']                      # control parameter(s) (it should be among those specified in DSargs.pars)
 PCargs.MaxNumPoints = 400# 300                     # The following 3 parameters are set after trial-and-error
 PCargs.MaxStepSize  = 2
@@ -88,7 +82,7 @@ PyCont['EQ1'].info()
 PyCont['EQ1'].display(('delta','D'), stability=True, color='green')
 
 print "Avoiding computing the Hopf curves until C code can be augmented with equivalent spline code"
-show()
+plt.show()
 # STOP HERE
 1/0
 
@@ -143,7 +137,7 @@ PyCont['FO2'].info()
 
 print 'done in %.3f seconds!' % (clock()-start)
 
-ax1=subplot(111) 
+ax1=subplot(111)
 PyCont['FO1'].display(('delta','D_max'),axes=ax1, stability=True, color='green')
 hold(True)
 PyCont['FO1'].display(('delta','D_min'),axes=ax1, stability=True, color='green')
@@ -160,7 +154,7 @@ xlabel('Dilution rate delta(per day)')
 title('Fussmann Hopf Science 2001')
 
 
-ax2=twinx()  
+ax2=twinx()
 hold(True)
 PyCont['FO1'].display(('delta','B_max'),axes=ax2, stability=True, color='black', linewidth=4)
 hold(True)
