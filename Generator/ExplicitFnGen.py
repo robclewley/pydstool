@@ -41,7 +41,8 @@ class ExplicitFnGen(ctsGen):
                          'ics', 'allvars', 'reuseterms', 'pars', 'pdomain',
                          'fnspecs', 'target']
         if 'inputs' in kw:
-            raise PyDSTool_KeyError('inputs option invalid for ExplicitFnGen '
+            if kw['inputs'] != {}:
+                raise PyDSTool_KeyError('inputs option invalid for ExplicitFnGen '
                                     'class')
         self.funcspec = ExpFuncSpec(self._kw_process_dispatch(dispatch_list,
                                                               kw))
