@@ -64,8 +64,8 @@ DS_spike_MI = intModelInterface(DS_spike)
 # test discrete state mapping that is used at changes of vector field
 # after terminal events
 # must set excited to 0 in order to meet bounds requirements of IF gen
-epmapping = EvMapping({"xdict['V']": "xdict['V']+15",
-                       "xdict['excited']": "0"})
+epmapping = EvMapping({"V": "V+15",
+                       "excited": "0"}, model=DS_spike)
 
 # build model object from individual DS's
 DS_leak_info = makeModelInfoEntry(DS_leak_MI, all_model_names,
@@ -85,9 +85,9 @@ print 'Preparing plot to show non-identity mapping of epoch state transitions'
 plotData = IFmodel.sample('onespike', ['V'], 0.02)
 plt.ylabel('V')
 plt.xlabel('t')
-vline=plot(plotData['t'], plotData['V'])
+vline = plt.plot(plotData['t'], plotData['V'])
 
 print "\n\nInformation about Model's components:\n"
 info(IFmodel.query('submodels'))
 
-show()
+plt.show()
