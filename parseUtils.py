@@ -1182,6 +1182,13 @@ class parserObject(object):
             else:
                 return "".join(symbolMap(self.tokenized))
 
+    def find(self, token):
+        """Find all occurrences of the given token in the expression, returning a list
+        of indices (empty if not present).
+        """
+        if self.tokenized == []:
+            self.parse([])
+        return [i for i, t in enumerate(self.tokenized) if t == token]
 
     def parse(self, specialtoks, symbolMap=None, includeProtected=True,
               reset=False):
@@ -1368,6 +1375,29 @@ class parserObject(object):
                         else:
                             # just a single *
                             tokenized.append('*')
+                    elif stemp == "=":
+                        if len(returnstr)>1:
+                             # check for >= and <= cases
+                            if returnstr[-1] == ">":
+                                if tokenized[-1] == '>':
+                                    tokenized[-1] = '>='
+                                else:
+                                    tokenized.append('>=')
+                                s = ''
+                                returnstr += stemp
+                                continue   # avoids returnstr += stemp below
+                            elif returnstr[-1] == "<":
+                                if tokenized[-1] == '<':
+                                    tokenized[-1] = '<='
+                                else:
+                                    tokenized[-1] = '<='
+                                s = ''
+                                returnstr += stemp
+                                continue   # avoids returnstr += stemp below
+                            else:
+                                tokenized.append('=')
+                        else:
+                            tokenized.append('=')
                     elif stemp in [" ","\t","\n"]:
                         if self.preserveSpace: tokenized.append(stemp)
                     else:
