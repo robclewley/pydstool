@@ -194,6 +194,13 @@ class Variable(object):
         self.labels = labels
 
 
+    def is_continuous_valued(self):
+        return isoutputcts(self)
+
+    def is_discrete_valued(self):
+        return not isoutputcts(self)
+
+
     # Auxiliary functions for user-defined code to call
     def _auxfn_globalindepvar(self, parsinps, t):
         return self.globalt0 + t
