@@ -90,6 +90,8 @@ traj2 = testODE.compute('test2')
 # Test: Explicit functional trajectory
 # Explicit functional trajectory 'sin_gen' computes sin(t*speed)
 
+sine_time_ev = makeZeroCrossEvent('t-2', 1, {'name': 'sine_time_test',
+                                             'term': True})
 # Make 'xdomain' argument smaller than known limits for sine wave: [-1.001, 0.7]
 ef_args = {'tdomain': [-50, 50],
         'pars': {'speed': 1},
@@ -97,7 +99,8 @@ ef_args = {'tdomain': [-50, 50],
         'name': 'sine',
         'globalt0': 0.4,
         'pdomain': {'speed': [0, 200]},
-        'varspecs': {'s': "sin(globalindepvar(t)*speed)"}}
+        'varspecs': {'s': "sin(globalindepvar(t)*speed)"},
+        'events': sine_time_ev}
 sin_gen = ExplicitFnGen(ef_args)
 sintraj = sin_gen.compute('sinewave')
 assert sintraj(0.0, checklevel=2)['s'] - 0.38941834 < 1e-7
@@ -115,6 +118,8 @@ sin_gen.set(xdomain={'s': [-1., 1.]})
 sintraj2 = sin_gen.compute('sinewave2')
 # this doesn't raise an exception now
 sintraj2(0.8, checklevel=2)
+evts = sintraj.getEventTimes()
+assert len(evts) == 1
 
 # Test if, min, max, & for macro
 fnspecs = {'testif': (['x'], 'if(x<0.0,0.0,x)'),
