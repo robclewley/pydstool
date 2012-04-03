@@ -143,16 +143,16 @@ if __name__=='__main__':
     yaxislabelstr = 'v'
     plt.ylabel(yaxislabelstr)
     plt.xlabel('t')
-    vline=plot(plotData['t'], plotData['v'])
+    vline = plt.plot(plotData['t'], plotData['v'])
     # pick out first event
     evt = evts['thresh_ev']['t'][0]
-    plot(evt, HHtraj(evt, 'v'), 'ro')
+    plt.plot(evt, HHtraj(evt, 'v'), 'ro')
     print "Showing longer trajectory with +10mV offset, using the syntax"
     print ">>> plotData2['v'] += 10"
     plotData2 = HHtraj2.sample()
     plotData3 = HHtraj3.sample()
     plotData2['v'] += 10  # could have plotted plotData2['v']+10
     plotData3['v'] += 10
-    vline2=plot(plotData2['t'], plotData2['v'])
-    vline3=plot(plotData3['t'], plotData3['v'])
-    show()
+    vline2 = plt.plot(plotData2['t'], plotData2['v'])
+    vline3 = plt.plot(plotData3['t'], plotData3['v'])
+    plt.show()
