@@ -29,17 +29,18 @@ class ODEsystem(ctsGen):
     _validKeys = ['globalt0', 'xdomain', 'tdata', 'tdomain', 'checklevel',
                   'ics', 'pars', 'algparams', 'inputs', 'pdomain', 'abseps',
                   'inputs_t0']
-
-    def __init__(self, kw):
-        ctsGen.__init__(self, kw)
-        self.diagnostics._errmessages[E_COMPUTFAIL] = 'Integration failed'
-        self._needKeys.extend(['varspecs'])
-        self._optionalKeys.extend(['tdomain', 'xdomain', 'xtype', 'inputs', 'tdata',
+    _needKeys = ctsGen._needKeys + ['varspecs']
+    _optionalKeys = ctsGen._optionalKeys + ['tdomain', 'xdomain', 'xtype',
+                                            'inputs', 'tdata',
                           'ics', 'events', 'compiler', 'enforcebounds',
                           'activatedbounds', 'checklevel', 'algparams',
                           'auxvars', 'vars', 'pars', 'fnspecs', 'pdomain',
                           'reuseterms', 'vfcodeinsert_start',
-                          'vfcodeinsert_end', 'ignorespecial'])
+                          'vfcodeinsert_end', 'ignorespecial']
+
+    def __init__(self, kw):
+        ctsGen.__init__(self, kw)
+        self.diagnostics._errmessages[E_COMPUTFAIL] = 'Integration failed'
         # user auxiliary function interface
         self.auxfns = auxfn_container(self)
         dispatch_list = ['varspecs', 'tdomain', 'tdata', 'inputs',

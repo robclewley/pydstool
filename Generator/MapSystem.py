@@ -33,17 +33,17 @@ class MapSystem(discGen):
     """
     _validKeys = ['globalt0', 'xdomain', 'tdata', 'tdomain', 'checklevel',
                      'ics', 'pars', 'inputs', 'pdomain', 'abseps']
-
-    def __init__(self, kw):
-        discGen.__init__(self, kw)
-        self.diagnostics._errmessages[E_COMPUTFAIL] = 'Computation of trajectory failed'
-        self._needKeys.extend(['varspecs'])
-        self._optionalKeys.extend(['tdomain', 'xdomain', 'inputs', 'tdata',
+    _needKeys = discGen._needKeys + ['varspecs']
+    _optionalKeys = discGen._optionalKeys + ['tdomain', 'xdomain', 'inputs', 'tdata',
                           'ics', 'events', 'system', 'ignorespecial',
                           'auxvars', 'vars', 'fnspecs', 'ttype', 'xtype',
                           'tstep', 'checklevel', 'pars', 'pdomain',
                           'vfcodeinsert_start', 'vfcodeinsert_end',
-                          'enforcebounds', 'activatedbounds', 'reuseterms'])
+                          'enforcebounds', 'activatedbounds', 'reuseterms']
+
+    def __init__(self, kw):
+        discGen.__init__(self, kw)
+        self.diagnostics._errmessages[E_COMPUTFAIL] = 'Computation of trajectory failed'
         # user auxiliary function interface
         self.auxfns = auxfn_container(self)
         dispatch_list = ['varspecs', 'tdomain', 'ttype', 'tdata', 'tstep',

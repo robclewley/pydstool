@@ -24,14 +24,14 @@ class ImplicitFnGen(ctsGen):
     """Implicitly defined functional-form trajectory generator.
     """
     _validKeys = ['globalt0', 'xdomain', 'tdata', 'tdomain', 'checklevel',
-                     'ics', 'pars', 'algparams', 'pdomain', 'abseps']
+                   'name', 'ics', 'pars', 'algparams', 'pdomain', 'abseps']
+    _needKeys = ctsGen._needKeys + ['varspecs', 'ics']
+    _optionalKeys = ctsGen._optionalKeys + ['tdomain', 'pars', 'pdomain', 'xdomain',
+                                  'xtype', 'auxvars', 'vars', 'events',
+                                  'algparams', 'fnspecs', 'tdata']
 
     def __init__(self, kw):
         ctsGen.__init__(self, kw)
-        self._needKeys.extend(['varspecs', 'ics'])
-        self._optionalKeys.extend(['tdomain', 'pars', 'pdomain', 'xdomain',
-                                  'xtype', 'auxvars', 'vars', 'events',
-                                  'algparams', 'fnspecs', 'tdata'])
         dispatch_list = ['varspecs', 'tdomain', 'tdata', 'xtype', 'xdomain',
                          'ics', 'allvars', 'pars', 'pdomain', 'fnspecs',
                          'algparams', 'target']

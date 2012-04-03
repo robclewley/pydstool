@@ -29,17 +29,19 @@ class ExplicitFnGen(ctsGen):
     own external inputs."""
     _validKeys = ['globalt0', 'xdomain', 'tdata', 'tdomain',
                      'ics', 'pars', 'checklevel', 'pdomain', 'abseps']
+    _needKeys = ctsGen._needKeys + ['varspecs']
+    _optionalKeys = ctsGen._optionalKeys + ['tdomain', 'pars', 'pdomain', 'xdomain',
+                                  'xtype', 'ics', 'auxvars', 'vars', 'events',
+                                  'fnspecs', 'tdata', 'enforcebounds',
+                                  'activatedbounds', 'reuseterms']
 
     def __init__(self, kw):
         ctsGen.__init__(self, kw)
-        self._needKeys.extend(['varspecs'])
-        self._optionalKeys.extend(['tdomain', 'pars', 'pdomain', 'xdomain',
-                                  'xtype', 'ics', 'auxvars', 'vars', 'events',
-                                  'fnspecs', 'tdata', 'enforcebounds',
-                                  'activatedbounds', 'reuseterms'])
         dispatch_list = ['varspecs', 'tdomain', 'tdata', 'xtype', 'xdomain',
                          'ics', 'allvars', 'reuseterms', 'pars', 'pdomain',
                          'fnspecs', 'target']
+        # allow inputs only if it's empty, for compatibility with ModelConstructor
+        # which might put an empty dictionary in for this key
         if 'inputs' in kw:
             if kw['inputs'] != {}:
                 raise PyDSTool_KeyError('inputs option invalid for ExplicitFnGen '
@@ -226,7 +228,7 @@ class ExplicitFnGen(ctsGen):
         termevents = self.eventstruct.query(['term'], eventslist)
         Evtimes = {}
         Evpoints = {}
-        for (evname, ev) in eventslist:
+        for evname, ev in eventslist:
             Evtimes[evname] = []
             Evpoints[evname] = []
         if eventslist != []:
@@ -245,11 +247,12 @@ class ExplicitFnGen(ctsGen):
                 self.eventstruct.validateEvents(self.funcspec.vars + \
                                             self.funcspec.auxvars + \
                                             ['t'], eventslist)
-            for evix in xrange(len(eventslist)):
-                (evname, ev) = eventslist[evix]
+            for evname, ev in eventslist:
+                # select only continuous-valued variables for event detection
+                # (in case of indicator variables used in hybrid systems)
                 evsfound = ev.searchForEvents(self.indepvariable.depdomain.get(),
                                               parDict=self.pars,
-                                              vars=tempvars,
+                                              vars=copyVarDict(tempvars, only_cts=True),
                                               checklevel=self.checklevel)
                 tvals = sortedDictValues(tempvars)
                 for evinfo in evsfound:
@@ -262,12 +265,11 @@ class ExplicitFnGen(ctsGen):
                                             ['t'], eventslist)
             termevtimes = {}
             nontermevtimes = {}
-            for evix in xrange(len(eventslist)):
-                (evname, ev) = eventslist[evix]
+            for evname, ev in eventslist:
                 numevs = shape(Evtimes[evname])[-1]
                 if numevs == 0:
                     continue
-                if eventslist[evix][1].activeFlag:
+                if ev.activeFlag:
                     if numevs > 1:
                         print "Event info:", Evtimes[evname]
                     assert numevs <= 1, ("Internal error: more than one "
@@ -284,7 +286,7 @@ class ExplicitFnGen(ctsGen):
                                    len(self.diagnostics.warnings)
                         self.diagnostics.warnings.append((W_TERMEVENT,
                                          (Evtimes[evname][0],
-                                         [eventslist[evix][0]])))
+                                         [evname])))
                 else:
                     for ev in range(numevs):
                         if Evtimes[evname][ev] in nontermevtimes.keys():
@@ -297,7 +299,7 @@ class ExplicitFnGen(ctsGen):
                                                 len(self.diagnostics.warnings)
                             self.diagnostics.warnings.append((W_NONTERMEVENT,
                                              (Evtimes[evname][ev],
-                                              [eventslist[evix][0]])))
+                                              [evname])))
         termcount = 0
         earliest_termtime = self.indepvariable.depdomain[1]
         for (w,i) in self.diagnostics.warnings:

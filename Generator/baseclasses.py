@@ -166,13 +166,13 @@ class Generator(object):
     _querykeys = ['pars', 'parameters', 'events', 'abseps',
                   'ics', 'initialconditions', 'vars', 'variables',
                   'auxvariables', 'auxvars', 'vardomains', 'pardomains']
-
-    def __init__(self, kw):
-        # initialization keyword keys
-        self._needKeys = ['name']
-        self._optionalKeys = ['globalt0', 'checklevel', 'model', 'abseps',
+    # initialization keyword keys
+    _needKeys = ['name']
+    _optionalKeys = ['globalt0', 'checklevel', 'model', 'abseps',
                               'eventPars', 'FScompatibleNames',
                               'FScompatibleNamesInv']
+
+    def __init__(self, kw):
         # _funcreg stores function instances (and base classes) that are
         # passed from self.funcspec, as they are not defined in __main__.
         # A Generator object cannot be deep copied or
