@@ -28,13 +28,13 @@ class EmbeddedSysGen(ctsGen):
     # inherit most of these from the embedded system
     _validKeys = ['globalt0', 'xdomain', 'tdata', 'tdomain',
                      'ics', 'pars', 'checklevel', 'pdomain', 'abseps']
+    _needKeys = ctsGen._needKeys + ['specfn', 'system']
+    _optionalKeys = ctsGen._optionalKeys + ['tdomain', 'pars', 'pdomain', 'xdomain',
+                                  'ics', 'vars', 'tdata', 'enforcebounds',
+                                  'activatedbounds']
 
     def __init__(self, kw):
         ctsGen.__init__(self, kw)
-        self._needKeys.extend(['specfn', 'system'])
-        self._optionalKeys.extend(['tdomain', 'pars', 'pdomain', 'xdomain',
-                                  'ics', 'vars', 'tdata', 'enforcebounds',
-                                  'activatedbounds'])
         dispatch_list = ['tdomain', 'tdata', 'xtype', 'xdomain',
                          'ics', 'pars', 'pdomain', 'system']
         if 'varspecs' in kw:
