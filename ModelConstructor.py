@@ -575,7 +575,8 @@ class GeneratorConstructor(object):
 
         ## Make Generator
         try:
-            return gsh.genClass(a)
+            return gsh.genClass(args(**filteredDict(a.__dict__,
+                            gsh.genClass._needKeys+gsh.genClass._optionalKeys)))
         except:
             print "Problem initializing target Generator '%s'"%self.targetGen
             raise
