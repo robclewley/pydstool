@@ -832,7 +832,7 @@ class Event(object):
                         tlimits[1] = temp[1]
             if trange is not None:
                 # compare trange and tlimits using Interval inclusion,
-                # so that can make use of uncertain values at boudaries
+                # so that can make use of uncertain values at boundaries
                 trange_int = Interval('trange', float, trange, abseps)
                 tlimits_int = Interval('tlimits', float, tlimits, abseps)
                 if not self.contains(tlimits_int, trange_int, checklevel):
