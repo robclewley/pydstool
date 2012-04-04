@@ -949,7 +949,7 @@ class QuantSpec(object):
             if otherstr[0] == '-' and opstr == '-' and not reverseorder:
                 opstr = '+'
                 otherstr = str(otherstr[1:])
-            otherbraces = (opstr == '*' and other.isCompound(['+','-']) \
+            otherbraces = int((opstr == '*' or opstr == '-') and other.isCompound(['+','-']) \
                            or opstr == '/' and other.isCompound())
         elif isinstance(other, str):
             e = None
@@ -982,7 +982,7 @@ class QuantSpec(object):
             else:
                 otherstr = str(other).strip()
             temp = QuantSpec("__result__", otherstr, self.specType)
-            otherbraces = (opstr == '*' and temp.isCompound(['+','-']) \
+            otherbraces = int((opstr == '*' or opstr == '-') and temp.isCompound(['+','-']) \
                            or opstr == '/' and temp.isCompound())
         elif isinstance(other, _num_types):
             if other == 0:
@@ -1014,7 +1014,7 @@ class QuantSpec(object):
             combinestr = ""
             selfbraces = 0
         else:
-            selfbraces = (opstr == '*' and self.isCompound(['+','-']) \
+            selfbraces = int((opstr == '*' or opstr == '-') and self.isCompound(['+','-']) \
                           or opstr in ['-','/'] and self.isCompound())
             combinestr = " " + opstr + " "
         if not include_self:
