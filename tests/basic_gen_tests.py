@@ -105,11 +105,11 @@ sin_gen = ExplicitFnGen(ef_args)
 sintraj = sin_gen.compute('sinewave')
 assert sintraj(0.0, checklevel=2)['s'] - 0.38941834 < 1e-7
 
+print "Expect problem calling at t=0.8..."
 try:
     sintraj(0.8, checklevel=2)
 except PyDSTool_BoundsError, e:
-    pass
-    # print "... correctly raised error: ", e
+    print "... correctly raised error: ", e
 else:
     raise AssertionError
 # print "Set limits properly now, to [-1., 1.] ..."
