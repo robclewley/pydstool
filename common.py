@@ -707,9 +707,23 @@ def concatStrDict(d, order=[]):
     return retstr
 
 
-def copyVarDict(vardict):
-    """Copy dictionary of Variable objects."""
-    return dict(zip(sortedDictKeys(vardict), [copy(v) for v in \
+def copyVarDict(vardict, only_cts=False):
+    """Copy dictionary of Variable objects.
+    Use the only_cts Boolean optional argument (default False) to select only
+    continuous-valued variables (mainly for internal use).
+    """
+    if only_cts:
+        out_vars = []
+        out_varnames = []
+        sorted_varnames = sortedDictKeys(vardict)
+        for varname in sorted_varnames:
+            var = vardict[varname]
+            if var.is_continuous_valued():
+                out_varnames.append(varname)
+                out_vars.append(var)
+        return dict(zip(out_varnames, out_vars))
+    else:
+        return dict(zip(sortedDictKeys(vardict), [copy(v) for v in \
                                               sortedDictValues(vardict)]))
 
 
