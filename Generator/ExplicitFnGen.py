@@ -314,8 +314,8 @@ class ExplicitFnGen(ctsGen):
                 if i[0] <= earliest_termtime:
                     warn_temp.append((w,i))
             self.diagnostics.warnings = warn_temp
-#        self.indepvariable.depdomain.set([self.indepvariable.depdomain[0],
-#                                          earliest_termtime])
+        self.indepvariable.depdomain.set([self.indepvariable.depdomain[0],
+                                          earliest_termtime])
         for v in tempvars.values():
             v.indepdomain.set(self.indepvariable.depdomain.get())
 ##                print 'Time interval adjusted according to %s: %s' % \
