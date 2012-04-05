@@ -70,19 +70,20 @@ def get_aeIF_component():
     ## Delta   # steepness of exponential approach to threshold [mV]
     ## V_T     # spike threshold [mV]
     ## S       # membrane area [mum**2]
-    ## tau_ref # refractory time [ms]
+    ## trefractory # refractory time [ms]
+    ## tspike  # spike time [ms]
     ## tau_w   # adaptation time constant
     ## a, b    # adaptation parameters [muS, nA]
     """
     parameters = ['C_m', 'g_L', 'E_L', 'Delta', 'V_T', 'S',
-                  'tau_ref', 'tau_w', 'a', 'b']
+                  'trefractory', 'tspike', 'tau_w', 'a', 'b']
 
     aeIF = al.ComponentClass("aeIF",
                      regimes=[
                          al.Regime(
                                 name="subthresholdregime",
                                 time_derivatives = [
-                                    "dV/dt = -g_L*(V-E_L)/C_m + g_L*Delta*exp((V-V_T)/Delta-w/S)/C_m+ Isyn/C_m",
+                                    "dV/dt = -g_L*(V-E_L)/C_m + Isyn/C_m + g_L*Delta*exp((V-V_T)/Delta-w/S)/C_m",
                                     "dw/dt = (a*(V-E_L)-w)/tau_w", ],
                                 transitions=al.On("V > V_T",
                                                do=["V = E_L",
@@ -105,41 +106,83 @@ def get_aeIF_component():
 
 # -------------------------------------------------------------------------------
 
-c = get_HH_component()
+def test_HH():
+    c = get_HH_component()
 
-# Convert to PyDSTool.ModelSpec and create Model object
-# Provide extra parameter Isyn which is missing from component definition
-# in absence of any synaptic inputs coupled to the model membrane
-HHmodel = get_nineml_model(c, 'HH_9ML', extra_args=[Par('Isyn')])
+    # Convert to PyDSTool.ModelSpec and create NonHybridModel object
+    # Provide extra parameter Isyn which is missing from component definition
+    # in absence of any synaptic inputs coupled to the model membrane
+    HHmodel = get_nineml_model(c, 'HH_9ML', extra_args=[Par('Isyn')])
 
-HHmodel.set(pars={'C': 1.0,
-                  'Isyn': 20.0,
-                  'celsius': 20.0,
-                  'ek': -90,
-                  'el': -65,
-                  'ena': 80,
-                  'gkbar': 30.0,
-                  'gl': 0.3,
-                  'gnabar': 130.0,
-                  'theta': -40.0},
-            ics={'V': -70, 'm': 0.1, 'n': 0, 'h': 0.9},
-            tdata=[0,15])
+    HHmodel.set(pars={'C': 1.0,
+                      'Isyn': 20.0,
+                      'celsius': 20.0,
+                      'ek': -90,
+                      'el': -65,
+                      'ena': 80,
+                      'gkbar': 30.0,
+                      'gl': 0.3,
+                      'gnabar': 130.0,
+                      'theta': -40.0},
+                ics={'V': -70, 'm': 0.1, 'n': 0, 'h': 0.9},
+                tdata=[0,15])
 
-HHmodel.compute('test', force=True)
-pts = HHmodel.sample('test')
-plt.plot(pts['t'], pts['V'],'k')
-plt.title('Hodgkin-Huxley membrane potential')
+    HHmodel.compute('test', force=True)
+    pts = HHmodel.sample('test')
+    plt.plot(pts['t'], pts['V'],'k')
+    plt.title('Hodgkin-Huxley membrane potential')
 
-ev_info = pts.labels.by_label['Event:spikeoutput']
-for ev_ix, ev_tdata in ev_info.items():
-    plt.plot(ev_tdata['t'], pts[ev_ix]['V'], 'ko')
+    ev_info = pts.labels.by_label['Event:spikeoutput']
+    for ev_ix, ev_tdata in ev_info.items():
+        plt.plot(ev_tdata['t'], pts[ev_ix]['V'], 'ko')
 
-plt.xlabel('t')
-plt.ylabel('V')
-plt.show()
+    plt.xlabel('t')
+    plt.ylabel('V')
+
 
 # ========
 
-c = get_aeIF_component()
+def test_aeIF():
+    c = get_aeIF_component()
 
-aeIF = get_nineml_model(c, 'aeIF_9ML')
+    # Convert to PyDSTool.ModelSpec and create HybridModel object
+    # Provide extra parameter Isyn which is missing from component definition
+    # in absence of any synaptic inputs coupled to the model membrane
+    aeIF = get_nineml_model(c, 'aeIF_9ML', extra_args=[Par('Isyn')],
+                            max_t=100)
+
+    aeIF.set(pars=dict(
+        C_m = 1,
+        g_L = 0.1,
+        E_L = -65,
+        Delta = 1, #0.01,
+        V_T = -58,
+        S = 0.1,
+        tspike = 0.5,
+        trefractory = 0.25,
+        tau_w = 4,
+        a = 1,
+        b = 2,
+        Isyn = 5
+        ))
+
+    aeIF.set(ics={'V': -70, 'w': 0.1, '_regime_': 0},
+             tdata=[0, 10],
+             algparams={'init_step': 0.01})
+
+    aeIF.compute('test', verboselevel=0)
+
+    pts = aeIF.sample('test', dt=0.1)
+
+    plt.figure(3)
+    plt.plot(pts['t'], pts['V'])
+    plt.figure(4)
+    plt.plot(pts['t'], pts['w'])
+
+
+test_HH()
+test_aeIF()
+
+plt.show()
+
+
