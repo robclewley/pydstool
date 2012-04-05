@@ -114,8 +114,8 @@ def makeModel3(parDict, dt=0.1):
     decay_MI = intModelInterface(decay)
 
     # epoch map to new contact phase
-    epmapping = EvMapping({"xdict['a']": "pdict['alpha0']",
-        "xdict['incontact']": "1"})
+    epmapping = EvMapping({"a": "alpha0",
+        "incontact": "1"}, model=decay)
 
     allnames = ['contact_epoch', 'decay_epoch']
     contactInfo = makeModelInfoEntry(ode_MI, allnames,

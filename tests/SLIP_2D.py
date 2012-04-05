@@ -119,13 +119,15 @@ def makeSLIPModel(stanceMI, flightMI, stop_at_TD, stop_at_LO):
                                     [('touchdown', 'terminate')])
     else:
         flightMI_info = makeModelInfoEntry(flightMI, allgen_names,
-                                     [('touchdown', ('stance', EvMapping({"xdict['incontact']": "1"})))])
+                    [('touchdown', ('stance', EvMapping({"incontact": "1"},
+                                                        model=flightMI.model)))])
     if stop_at_LO:
         stanceMI_info = makeModelInfoEntry(stanceMI, allgen_names,
                                     [('liftoff', 'terminate')])
     else:
         stanceMI_info = makeModelInfoEntry(stanceMI, allgen_names,
-                                     [('liftoff', ('flight', EvMapping({"xdict['incontact']": "0"})))])
+                    [('liftoff', ('flight', EvMapping({"incontact": "0"},
+                                                      model=stanceMI.model)))])
     modelInfoDict = makeModelInfo([stanceMI_info, flightMI_info])
 
     SLIP = Model.HybridModel({'name': 'SLIP', 'modelInfo': modelInfoDict})

@@ -39,7 +39,8 @@ sintraj2 = sin_gen.compute('sine2')
 
 # sintraj2 independent variable domain truncated at terminal event
 assert allclose(sin_gen.getEventTimes()['threshold'], 20+sintraj1.globalt0)
-assert sintraj2.indepdomain.get() == [-50, 50]
+assert sintraj2.indepdomain[0] == -50
+assert abs(sintraj2.indepdomain[1] - 20) < 1e-4
 
 # Simple implicit function
 fvarspecs = {"y": "t*t+y*y-r*r",
