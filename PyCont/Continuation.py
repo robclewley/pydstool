@@ -17,6 +17,7 @@ from Plotting import *
 from PyDSTool import Point, Pointset, PointInfo, args
 from PyDSTool.common import pickle, sortedDictValues, sortedDictKeys
 from PyDSTool.errors import *
+from PyDSTool.Symbolic import QuantSpec
 try:
     from PyDSTool.matplotlib_import import *
 except ImportError:
@@ -153,9 +154,39 @@ class Continuation(object):
                 # will call self._system, selecting vars from possible ones
                 self.varsindices = array([orig_vars.index(v) for v in self.varslist])
             else:
-                self.varslist = self.model.query('vars') #gensys.funcspec.vars
+                self.varslist = self.model.query('vars')
                 self.varsindices = arange(len(self.varslist))
 
+        if self.gensys.haveJacobian_pars():
+            fargs, fspecstr = self.gensys.funcspec._auxfnspecs['Jacobian_pars']
+            Jquant = QuantSpec('J', fspecstr)
+            if Jquant.dim == 0:
+                # dim of vars == 1 == dim of pars
+                assert len(self.varslist) == 1
+                assert len(self.freepars) == 1
+                # Supplied Jac w.r.t. params is custom-made for only the free params in this continuation
+                # (or there's only one parameter in system)
+                self.parsindices = array([0])
+            else:
+                assert len(self.varslist) == Jquant.dim
+                Jquant0 = Jquant.fromvector(0)
+                if Jquant0.dim == 0:
+                    # dim of free pars == 1
+                    assert len(self.freepars) == 1
+                    # Supplied Jac w.r.t. params is custom-made for only the free params in this continuation
+                    # (or there's only one parameter in system)
+                    self.parsindices = array([0])
+                else:
+                    if len(self.freepars) == Jquant0.dim:
+                        # Supplied Jac w.r.t. params is custom-made for only the free params in this continuation
+                        self.parsindices = arange(range(Jquant0.dim))
+                    else:
+                        # Assume supplied Jac w.r.t. params is for all params in the original system
+                        # therefore there should be fewer free params than # system parameters
+                        assert len(self.freepars) < Jquant0.dim
+                        self.parsindices = array([self.parsdict.keys().index(p) for p in self.freepars])
+        else:
+            self.parsindices = array([self.parsdict.keys().index(p) for p in self.freepars])
         self.varsdim = len(self.varslist)
         self.freeparsdim = len(self.freepars)
         self.auxparsdim = len(self.auxpars)
@@ -167,7 +198,12 @@ class Continuation(object):
             self.sysfunc = Function((self.dim, self.varsdim), self._systemuser)
 
         if (self.curvetype != 'UD-C' and self.gensys.haveJacobian()):
-            self.sysfunc.jac = Function((self.sysfunc.n,
+            if self.gensys.haveJacobian_pars():
+                self.sysfunc.jac = Function((self.sysfunc.n,
+                                         (self.sysfunc.m,self.sysfunc.n)),
+                                        self._systemjac_withpars)
+            else:
+                self.sysfunc.jac = Function((self.sysfunc.n,
                                          (self.sysfunc.m,self.sysfunc.n)),
                                         self._systemjac)
         elif (self.curvetype == 'UD-C' and hasattr(self, '_userjac')):
@@ -356,8 +392,8 @@ class Continuation(object):
                     raise ValueError("Invalid free parameter %s" % par)
                 for i, pval in enumerate(par_vals):
                     method = ParTestFunc(self.sysfunc.n,
-                                                self, par_ix, pval, save=True,
-                                                numpoints=self.NumSPOut+1)
+                                         self, par_ix, pval, save=True,
+                                         numpoints=self.NumSPOut+1)
                     self.TestFuncs.append(method)
                     self.BifPoints['SP-%s-%i' % (par, i)] = \
                         SPoint(method, iszero, stop=False)
@@ -386,6 +422,23 @@ class Continuation(object):
             t = 0
         jacx = self.gensys.Jacobian(t, VARS, self.parsdict, asarray=True)[self.varsindices]
         jacp = self.sysfunc.diff(x0, ind=self.params)
+        try:
+            return c_[jacx, jacp][:,ind[0]:(ind[-1]+1)]
+        except:
+            return c_[jacx, jacp]
+
+
+    def _systemjac_withpars(self, x0, ind=None):
+        VARS = dict(zip(self.varslist, array(x0)[self.coords]))
+        for i, par in enumerate(self.freepars):
+            self.parsdict[par] = x0[self.params[i]]
+        try:
+            t = self.parsdict['time']
+        except KeyError:
+            # autonomous system, t doesn't matter
+            t = 0
+        jacx = self.gensys.Jacobian(t, VARS, self.parsdict, asarray=True)[self.varsindices]
+        jacp = self.gensys.JacobianP(t, VARS, self.parsdict, asarray=True)[self.parsindices]
         try:
             return c_[jacx, jacp][:,ind[0]:(ind[-1]+1)]
         except:
@@ -894,11 +947,20 @@ class Continuation(object):
             x0 = tocoords(self, x0)
 
         # Get Jacobian information
-        self.CorrFunc.jac = Function((self.CorrFunc.n,
+        if self.sysfunc == self.CorrFunc:
+            # It's codim 1 and can use the existing Jac (in case it's symbolic)
+            J = self.CorrFunc.jac(x0)
+            J_coords = J[:,self.coords]
+            J_params = J[:,self.params]
+        else:
+            # SHORTCOMING HERE:
+            # replace Jac with numerical diff, regardless of whether
+            # original sysfunc had a symbolic Jac
+            self.CorrFunc.jac = Function((self.CorrFunc.n,
                                       (self.CorrFunc.m,self.CorrFunc.n)), \
-            self.CorrFunc.diff, numpoints=self.MaxNumPoints+1)
-        J_coords = self.CorrFunc.jac(x0, self.coords)
-        J_params = self.CorrFunc.jac(x0, self.params)
+                          self.CorrFunc.diff, numpoints=self.MaxNumPoints+1)
+            J_coords = self.CorrFunc.jac(x0, self.coords)
+            J_params = self.CorrFunc.jac(x0, self.params)
 
         # Process V
         if v0 is None:
@@ -933,7 +995,7 @@ class Continuation(object):
 
         converged = True
         attempts = 0
-        val = linalg.norm(self.CorrFunc(curve[0]))
+        val = linalg.norm(self.CorrFunc(x0))
         while val > self.FuncTol or not converged:
             try:
                 k, converged, problem, diag = self.Corrector(curve[0], V[0])
@@ -954,8 +1016,12 @@ class Continuation(object):
         # Initialize test functions
         self._createTestFuncs()
 
-        self.CorrFunc.J_coords = self.CorrFunc.jac(x0,self.coords)
-        self.CorrFunc.J_params = self.CorrFunc.jac(x0,self.params)
+        x0 = curve[0]
+        v0 = V[0]
+        J = self.CorrFunc.jac(x0)
+        self.CorrFunc.J_coords = J[:,self.coords]
+        self.CorrFunc.J_params = J[:,self.params]
+
         if self.TestFuncs != []:
             for testfunc in self.TestFuncs:
                 if hasattr(testfunc, 'setdata'):
@@ -1015,8 +1081,8 @@ class Continuation(object):
                     self.StepSize = max(self.MinStepSize, self.StepSize*SSC_c)
                 else:
                     # Stop continuation
-                    print "Warning: Did not converge.  Stopping continuation.  Reduce MinStepSize to continue."
-                    break
+                    print "Did not converge.  Stopping continuation.  Reduce MinStepSize to continue."
+                    raise PyDSTool_ExistError("Did not converge. Stopping continuation. Reduce MinStepSize to continue")
             else:
                 # Increase stepsize for fast convergence
                 if self.StepSize < self.MaxStepSize and k < CorrThreshold:
@@ -1077,8 +1143,8 @@ class Continuation(object):
         """Computes forward along curve from initpoint if this is the first run.  Otherwise, it computes
         forward along curve from the last point on the saved solution sol.  The new curve is appended to
         the end of sol."""
-        if self.gensys.haveJacobian_pars():
-            print 'Warning: Jacobian with respect to parameters is not currently implemented in PyCont.'
+        #if self.gensys.haveJacobian_pars():
+        #    raise NotImplementedError("Jacobian with respect to parameters is not currently implemented in PyCont.")
 
         self.CurveInfo = PointInfo()
         if self.sol is None:
@@ -1114,10 +1180,6 @@ class Continuation(object):
                 except:
                     v0 = None
 
-            #try:
-            #    self.StepSize = sol1.labels[self.curvetype.split('-')[0]]['data'].ds
-            #except:
-            #    pass
             if sol1.labels[self.curvetype.split('-')[0]]['data'].has_key('ds'):
                 self.StepSize = min(self.StepSize,
                           sol1.labels[self.curvetype.split('-')[0]]['data'].ds)
@@ -1126,10 +1188,6 @@ class Continuation(object):
             sol = self._curveToPointset()[1:]
 
             # Fix labels
-            #try:
-            #    self.sol.labels.remove(len(self.sol)-1,'P')
-            #except:
-            #    self.sol.labels.remove(len(self.sol)-1,'MX')
             try:
                 self.sol.labels.remove(len(self.sol)-1,'P')
             except:
@@ -1166,8 +1224,8 @@ class Continuation(object):
         the first point on the saved solution sol.  The new curve is
         appended to the front of sol.
         """
-        if self.gensys.haveJacobian_pars():
-            raise NotImplementedError('Jacobian with respect to parameters is not currently implemented in PyCont.')
+        #if self.gensys.haveJacobian_pars():
+        #    raise NotImplementedError('Jacobian with respect to parameters is not currently implemented in PyCont.')
 
         self.CurveInfo = PointInfo()
         if self.sol is None:
@@ -2407,12 +2465,6 @@ class LimitCycleCurve(Continuation):
     def update(self, args):
         """Update parameters for LimitCycleCurve."""
         Continuation.update(self, args)
-        if 'BP' in self.LocBifPoints:
-            self.LocBifPoints.remove('BP')
-        if 'BP' in self.StopAtPoints:
-            self.StopAtPoints.remove('BP')
-        #self.LocBifPoints = []  # Temporary fix: Delete after branch fix for LimitCycleCurve
-
         if args is not None:
             for k, v in args.iteritems():
                 if k in limitcycle_args_list:
@@ -2452,7 +2504,7 @@ class LimitCycleCurve(Continuation):
                                     w = [w]
 
                         for bftype in v:
-                            if bftype == 'BP' or bftype not in cont_bif_points \
+                            if bftype not in cont_bif_points \
                                and bftype not in limitcycle_bif_points:
                                 if self.verbosity >= 1:
                                     print "Warning: Detection of %s"%bftype,
