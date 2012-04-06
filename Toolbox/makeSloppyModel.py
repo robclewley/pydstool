@@ -117,7 +117,8 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
                                        varnames, parnames, [], auxfndict, targetlang)
             evcount += 1
             sModel.addEvents(genName, ev)
-            evmap = makeEvMapping(mappingDict, varnames+auxvarnames, parnames)
+            evmap = EvMapping(mappingDict, infodict={'vars': varnames+auxvarnames,
+                                                     'pars': parnames})
             sModel.mapEvent(genName, evname, genName, evmap)
     if not silent:
         print "Building target model with default settings"
