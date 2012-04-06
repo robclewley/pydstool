@@ -73,10 +73,8 @@ def makeModel(target1, target2):
     mc.addModelInfo(DSargs, target1+'_ODEsystem')
     mc.addModelInfo(DSargs2, target2+'_ODEsystem')
     # now that all generators declared, can introduce mappings
-    mc.mapEvent('gen1', 'ev_togen2', 'gen2', {"xdict['state']": "1"})
-    mc.mapEvent('gen2', 'ev_togen1', 'gen1', {"xdict['state']": "0"})
-    # No longer make this an internal variable
-    #mc.forcedIntVars = ['state']
+    mc.mapEvent('gen1', 'ev_togen2', 'gen2', {"state": "1"})
+    mc.mapEvent('gen2', 'ev_togen1', 'gen1', {"state": "0"})
     return mc.getModel()
 
 def test1(m):
