@@ -155,7 +155,7 @@ def test_aeIF():
         C_m = 1,
         g_L = 0.1,
         E_L = -65,
-        Delta = 1, #0.01,
+        Delta = 1,
         V_T = -58,
         S = 0.1,
         tspike = 0.5,
