@@ -99,7 +99,7 @@ param_est_C_list = [
 symbolic_list = [
     'Symbolic_test',
     'Symbolic_Diff_test',
-    'vode_withJac_Symbolic_test'
+    'Tutorial_SymbolicJac'
     ]
 
 # Dopri integration; requires external C compiler
