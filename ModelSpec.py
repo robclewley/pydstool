@@ -1130,7 +1130,10 @@ def processMacro(c, mspec, forSubs=False):
         if forSubs:
             for t in targList_new:
                 if t not in targList: targList.append(t)
-        specStr += "(" + opStr.join(targList_new) + ")"
+        if targList_new == []:
+            specStr += "0"
+        else:
+            specStr += "(" + opStr.join(targList_new) + ")"
         forpos += 1
     # add rest of original spec string
     specStr += "".join(toks[forpos+1:])
