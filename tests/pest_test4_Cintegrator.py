@@ -25,7 +25,7 @@ tdata = [0, 20]
 
 par_args_HH_goal = {'gna': 100, 'gk': 80, 'gl': 0.1,
             'vna': 50, 'vk': -100, 'vl': -67,
-            'I': 1.3, 'C': 1.0}
+            'Iapp': 1.3, 'C': 1.0}
 ic_args_HH = {'v':-70, 'm': 0, 'h': 1, 'n': 0}
 HH_goal = HH_model.makeHHneuron('goalHH', par_args_HH_goal, ic_args_HH,
              extra_terms='-0.03*(sin(9.1*t)*cos(2.6*t)+sin(5.1119*t+2))*(v-60)')
@@ -110,7 +110,7 @@ geom_interface = ext_geom_iface(goaltraj,
 ## Set up test HH model
 par_args_HH_test = {'gna': 95, 'gk': 82, 'gl': 0.12,
             'vna': 48, 'vk': -95, 'vl': -67.5,
-            'I': 1.32, 'C': 1.0}
+            'Iapp': 1.32, 'C': 1.0}
 
 # Note that these params are not the same as that for goal, even though we're not
 # optimizing them
@@ -218,9 +218,9 @@ plotData_par = HH_test_model.sample('test_iface_traj', ['v'], disp_dt)
 
 plt.ylabel('v')
 plt.xlabel('t')
-goalline = plot(plotData_goal['t'], plotData_goal['v'])
-origline = plot(plotData_orig['t'], plotData_orig['v'])
-estline = plot(plotData_par['t'], plotData_par['v'])
+goalline = plt.plot(plotData_goal['t'], plotData_goal['v'])
+origline = plt.plot(plotData_orig['t'], plotData_orig['v'])
+estline = plt.plot(plotData_par['t'], plotData_par['v'])
 estleg = 'v estimated'
 
 plt.legend([origline, goalline, estline],
