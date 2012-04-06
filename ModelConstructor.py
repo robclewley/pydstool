@@ -572,6 +572,9 @@ class GeneratorConstructor(object):
 
         # keep a copy of the arguments in self for users to see what was done
         self.conargs = copy.copy(a)
+        # TEMP FOR DEBUGGING VECTOR FIELD
+#        a['vfcodeinsert_end'] = '    print xnew0, xnew1, xnew2, xnew3, xnew4, xnew5\n'
+#        a['vfcodeinsert_start'] = '    print t\n    print x\n    print parsinps\n    import sys; sys.stdout.flush()'
 
         ## Make Generator
         try:
@@ -1368,7 +1371,13 @@ class ModelConstructor(object):
         if eventmapping is None:
             evm = EvMapping()
         elif isinstance(eventmapping, dict):
-            evm = EvMapping(eventmapping)
+            try:
+                pars = geninfo['modelspec'].pars
+            except AttributeError:
+                pars = []
+            evm = EvMapping(eventmapping,
+                            infodict={'vars': geninfo['modelspec'].vars,
+                                      'pars': pars})
         else:
             evm = eventmapping
         if hostGen in self.eventmaps:
@@ -1567,17 +1576,18 @@ class EvMapping(object):
 
 
 def makeEvMapping(mappingDict, varnames, parnames):
-    evMapDict = {}
-    namemap = {}
-    for varname in varnames:
-        namemap[varname] = "xdict['"+varname+"']"
-    for parname in parnames:
-        namemap[parname] = "pdict['"+parname+"']"
-    for k, v in mappingDict.iteritems():
-        v_dummyQ = Symbolic.QuantSpec('dummy', v)
-        v_dummyQ.mapNames(namemap)
-        evMapDict["xdict['%s']"%k] = v_dummyQ()
-    return EvMapping(evMapDict)
+    raise NotImplementedError("Use EvMapping directly now with infodict argument of 'vars' and 'pars' keys")
+##    evMapDict = {}
+##    namemap = {}
+##    for varname in varnames:
+##        namemap[varname] = "xdict['"+varname+"']"
+##    for parname in parnames:
+##        namemap[parname] = "pdict['"+parname+"']"
+##    for k, v in mappingDict.iteritems():
+##        v_dummyQ = Symbolic.QuantSpec('dummy', v)
+##        v_dummyQ.mapNames(namemap)
+##        evMapDict["xdict['%s']"%k] = v_dummyQ()
+##    return EvMapping(evMapDict)
 
 def validateTransitionName(name, special_reasons):
     if sometrue([name == r for r in special_reasons + ['time', 'terminate']]):
