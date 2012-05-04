@@ -126,7 +126,7 @@ fnspecs = {'testif': (['x'], 'if(x<0.0,0.0,x)'),
           'testmin': (['x', 'y'], 'min(x,y)'),
           'testmax': (['x', 'y'], 'max(x,y)'),
           'testmin2': (['x', 'y'], '1/(2+min(1+(x*3),y))+y'),
-          'indexfunc': (['i'], 'pi*i')
+          'indexfunc': (['x'], 'pi*x')
           }
 
 DSargs = args(name='test',
