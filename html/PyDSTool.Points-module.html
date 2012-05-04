@@ -198,7 +198,8 @@ Point and Pointset enhanced array classes.
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="makeNonParameterized"></a><span class="summary-sig-name">makeNonParameterized</span>(<span class="summary-sig-arg">p</span>)</span></td>
+          <td><span class="summary-sig"><a name="makeNonParameterized"></a><span class="summary-sig-name">makeNonParameterized</span>(<span class="summary-sig-arg">p</span>)</span><br />
+      Return a new Pointset stripped of its parameterization.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Points-pysrc.html#makeNonParameterized">source&nbsp;code</a></span>
             
@@ -217,7 +218,7 @@ Point and Pointset enhanced array classes.
           <td><span class="summary-sig"><a href="PyDSTool.Points-module.html#pointsToPointset" class="summary-sig-name">pointsToPointset</a>(<span class="summary-sig-arg">pointlist</span>,
         <span class="summary-sig-arg">indepvarname</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
         <span class="summary-sig-arg">indepvararray</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">indepvartype</span>=<span class="summary-sig-default">&lt;type 'numpy.float64'&gt;</span>,
+        <span class="summary-sig-arg">indepvartype</span>=<span class="summary-sig-default">&lt;type 'float'&gt;</span>,
         <span class="summary-sig-arg">norm</span>=<span class="summary-sig-default">2</span>)</span><br />
       Generate a Pointset from a list of Point objects (or a singleton 
       Point).</td>
@@ -301,6 +302,25 @@ Point and Pointset enhanced array classes.
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
+          <td><span class="summary-sig"><a href="PyDSTool.Points-module.html#export_pointset_to_CSV" class="summary-sig-name">export_pointset_to_CSV</a>(<span class="summary-sig-arg">filename</span>,
+        <span class="summary-sig-arg">pts</span>)</span><br />
+      Simple export that ignores all metadata in pts, including name, tags,
+      norm, etc.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="PyDSTool.Points-pysrc.html#export_pointset_to_CSV">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
           <td><span class="summary-sig"><a href="PyDSTool.Points-module.html#mergePointsets" class="summary-sig-name">mergePointsets</a>(<span class="summary-sig-arg">pts1</span>,
         <span class="summary-sig-arg">pts2</span>)</span><br />
       Merges two pointsets into a new pointset, preserving (merging) any 
@@ -325,57 +345,9 @@ Point and Pointset enhanced array classes.
         <span class="summary-sig-arg">value_dict</span>,
         <span class="summary-sig-arg">eps</span>=<span class="summary-sig-default">None</span>)</span><br />
       Pad a pointset pts with values from value_dict over the interval 
-      given by pinterval.</td>
+      given by pinterval (pair).</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Points-pysrc.html#padPointset">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr class="private">
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="test_point"></a><span class="summary-sig-name">test_point</span>()</span></td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="PyDSTool.Points-pysrc.html#test_point">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr class="private">
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="test_pointset"></a><span class="summary-sig-name">test_pointset</span>()</span></td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="PyDSTool.Points-pysrc.html#test_pointset">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr class="private">
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="test_pointset_labels"></a><span class="summary-sig-name">test_pointset_labels</span>(<span class="summary-sig-arg">wp</span>)</span></td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="PyDSTool.Points-pysrc.html#test_pointset_labels">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -658,7 +630,7 @@ Point and Pointset enhanced array classes.
   <h3 class="epydoc"><span class="sig"><span class="sig-name">pointsToPointset</span>(<span class="sig-arg">pointlist</span>,
         <span class="sig-arg">indepvarname</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
         <span class="sig-arg">indepvararray</span>=<span class="sig-default">None</span>,
-        <span class="sig-arg">indepvartype</span>=<span class="sig-default">&lt;type 'numpy.float64'&gt;</span>,
+        <span class="sig-arg">indepvartype</span>=<span class="sig-default">&lt;type 'float'&gt;</span>,
         <span class="sig-arg">norm</span>=<span class="sig-default">2</span>)</span>
   </h3>
   </td><td align="right" valign="top"
@@ -781,6 +753,28 @@ starting to read data (in case of preceding text) -- default 0.
   </dl>
 </td></tr></table>
 </div>
+<a name="export_pointset_to_CSV"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">export_pointset_to_CSV</span>(<span class="sig-arg">filename</span>,
+        <span class="sig-arg">pts</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Points-pysrc.html#export_pointset_to_CSV">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Simple export that ignores all metadata in pts, including name, tags, 
+  norm, etc. Data is arranged by row only.</p>
+  <p>Independent variable is first column, if it exists in pts.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
 <a name="mergePointsets"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -828,7 +822,7 @@ starting to read data (in case of preceding text) -- default 0.
   </tr></table>
   
   <p>Pad a pointset pts with values from value_dict over the interval given
-  by pinterval. For each side of the interval outside of the current 
+  by pinterval (pair). For each side of the interval outside of the current
   independent variable domain of pts, two new points are added, one at the 
   outer limit of the interval, and one a distance eps (default the abseps 
   setting of pts) from the existing closest point in pts.</p>
@@ -1249,7 +1243,7 @@ starting to read data (in case of preceding text) -- default 0.
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:23 2011
+    Generated by Epydoc 3.0.1 on Fri May  4 15:24:03 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

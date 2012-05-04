@@ -81,7 +81,8 @@ PyDSTool.parseUtils.symbolMapClass.copy" class="py-name" href="#" onclick="retur
 </div><div id="SpiffyODEModel-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="SpiffyODEModel-expanded"><a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line">    <tt class="py-keyword">pass</tt> </tt>
 </div><a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"> </tt>
 <a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-comment"># Set of all compatible generators</tt> </tt>
-<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt id="link-3" class="py-name" targets="Variable PyDSTool.Toolbox.ModelHelper.allODEgens=PyDSTool.Toolbox.ModelHelper-module.html#allODEgens,Variable PyDSTool.Toolbox.makeSloppyModel.allODEgens=PyDSTool.Toolbox.makeSloppyModel-module.html#allODEgens"><a title="PyDSTool.Toolbox.ModelHelper.allODEgens
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt id="link-3" class="py-name" targets="Variable PyDSTool.Toolbox.ModelHelper.allODEgens=PyDSTool.Toolbox.ModelHelper-module.html#allODEgens,Variable PyDSTool.Toolbox.NineML.allODEgens=PyDSTool.Toolbox.NineML-module.html#allODEgens,Variable PyDSTool.Toolbox.makeSloppyModel.allODEgens=PyDSTool.Toolbox.makeSloppyModel-module.html#allODEgens"><a title="PyDSTool.Toolbox.ModelHelper.allODEgens
+PyDSTool.Toolbox.NineML.allODEgens
 PyDSTool.Toolbox.makeSloppyModel.allODEgens" class="py-name" href="#" onclick="return doclink('link-3', 'allODEgens', 'link-3');">allODEgens</a></tt> <tt class="py-op">=</tt> <tt id="link-4" class="py-name" targets="Function PyDSTool.Generator.findGenSubClasses()=PyDSTool.Generator-module.html#findGenSubClasses"><a title="PyDSTool.Generator.findGenSubClasses" class="py-name" href="#" onclick="return doclink('link-4', 'findGenSubClasses', 'link-4');">findGenSubClasses</a></tt><tt class="py-op">(</tt><tt class="py-string">'ODEsystem'</tt><tt class="py-op">)</tt> </tt>
 <a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"> </tt>
 <a name="makeSpiffyODEModel"></a><div id="makeSpiffyODEModel-def"><a name="L20"></a><tt class="py-lineno"> 20</tt> <a class="py-toggle" href="#" id="makeSpiffyODEModel-toggle" onclick="return toggle('makeSpiffyODEModel');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="PyDSTool.Toolbox.ModelHelper-module.html#makeSpiffyODEModel">makeSpiffyODEModel</a><tt class="py-op">(</tt><tt class="py-op">**</tt><tt class="py-param">kw</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
@@ -176,18 +177,22 @@ PyDSTool.Toolbox.makeSloppyModel.allODEgens" class="py-name" href="#" onclick="r
 <a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">    <tt class="py-name">makeJacP</tt> <tt class="py-op">=</tt> <tt class="py-name">withJacP</tt> </tt>
 <a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line"> </tt>
 <a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">targetGen</tt> <tt class="py-keyword">not</tt> <tt class="py-keyword">in</tt> <tt id="link-5" class="py-name"><a title="PyDSTool.Toolbox.ModelHelper.allODEgens
+PyDSTool.Toolbox.NineML.allODEgens
 PyDSTool.Toolbox.makeSloppyModel.allODEgens" class="py-name" href="#" onclick="return doclink('link-5', 'allODEgens', 'link-3');">allODEgens</a></tt><tt class="py-op">:</tt> </tt>
 <a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">        <tt class="py-comment"># Print a list of the valid targets</tt> </tt>
 <a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-keyword">print</tt> <tt class="py-string">'Valid target ODE solvers: '</tt> <tt class="py-op">+</tt> <tt class="py-string">", "</tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt id="link-6" class="py-name"><a title="PyDSTool.Toolbox.ModelHelper.allODEgens
+PyDSTool.Toolbox.NineML.allODEgens
 PyDSTool.Toolbox.makeSloppyModel.allODEgens" class="py-name" href="#" onclick="return doclink('link-6', 'allODEgens', 'link-3');">allODEgens</a></tt><tt class="py-op">)</tt> </tt>
 <a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">        <tt class="py-keyword">raise</tt> <tt class="py-name">ValueError</tt><tt class="py-op">(</tt><tt class="py-string">'Invalid target ODE solver'</tt><tt class="py-op">)</tt> </tt>
 <a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line"> </tt>
 <a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">    <tt class="py-comment"># Empty model spec to be populated with the information in modelDict</tt> </tt>
-<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line"><tt class="py-comment"></tt>    <tt class="py-name">theModelSpec</tt> <tt class="py-op">=</tt> <tt id="link-7" class="py-name" targets="Class PyDSTool.Toolbox.ModelHelper.SpiffyODEModel=PyDSTool.Toolbox.ModelHelper.SpiffyODEModel-class.html"><a title="PyDSTool.Toolbox.ModelHelper.SpiffyODEModel" class="py-name" href="#" onclick="return doclink('link-7', 'SpiffyODEModel', 'link-7');">SpiffyODEModel</a></tt><tt class="py-op">(</tt><tt class="py-name">modelName</tt><tt class="py-op">,</tt> <tt id="link-8" class="py-name" targets="Variable PyDSTool.ModelSpec'.ModelSpec.compatibleGens=PyDSTool.ModelSpec%27.ModelSpec-class.html#compatibleGens,Variable PyDSTool.Symbolic.Quantity.compatibleGens=PyDSTool.Symbolic.Quantity-class.html#compatibleGens,Variable PyDSTool.Toolbox.makeSloppyModel.sloppyModel.compatibleGens=PyDSTool.Toolbox.makeSloppyModel.sloppyModel-class.html#compatibleGens,Variable PyDSTool.Toolbox.neuralcomp.compatODEComponent.compatibleGens=PyDSTool.Toolbox.neuralcomp.compatODEComponent-class.html#compatibleGens,Variable PyDSTool.Toolbox.neuralcomp.compatODELeafComponent.compatibleGens=PyDSTool.Toolbox.neuralcomp.compatODELeafComponent-class.html#compatibleGens"><a title="PyDSTool.ModelSpec'.ModelSpec.compatibleGens
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line"><tt class="py-comment"></tt>    <tt class="py-name">theModelSpec</tt> <tt class="py-op">=</tt> <tt id="link-7" class="py-name" targets="Class PyDSTool.Toolbox.ModelHelper.SpiffyODEModel=PyDSTool.Toolbox.ModelHelper.SpiffyODEModel-class.html"><a title="PyDSTool.Toolbox.ModelHelper.SpiffyODEModel" class="py-name" href="#" onclick="return doclink('link-7', 'SpiffyODEModel', 'link-7');">SpiffyODEModel</a></tt><tt class="py-op">(</tt><tt class="py-name">modelName</tt><tt class="py-op">,</tt> <tt id="link-8" class="py-name" targets="Variable PyDSTool.ModelSpec'.ModelSpec.compatibleGens=PyDSTool.ModelSpec%27.ModelSpec-class.html#compatibleGens,Variable PyDSTool.Symbolic.Quantity.compatibleGens=PyDSTool.Symbolic.Quantity-class.html#compatibleGens,Variable PyDSTool.Toolbox.NineML.NineMLModel.compatibleGens=PyDSTool.Toolbox.NineML.NineMLModel-class.html#compatibleGens,Variable PyDSTool.Toolbox.makeSloppyModel.sloppyModel.compatibleGens=PyDSTool.Toolbox.makeSloppyModel.sloppyModel-class.html#compatibleGens,Variable PyDSTool.Toolbox.neuralcomp.compatODEComponent.compatibleGens=PyDSTool.Toolbox.neuralcomp.compatODEComponent-class.html#compatibleGens,Variable PyDSTool.Toolbox.neuralcomp.compatODELeafComponent.compatibleGens=PyDSTool.Toolbox.neuralcomp.compatODELeafComponent-class.html#compatibleGens"><a title="PyDSTool.ModelSpec'.ModelSpec.compatibleGens
 PyDSTool.Symbolic.Quantity.compatibleGens
+PyDSTool.Toolbox.NineML.NineMLModel.compatibleGens
 PyDSTool.Toolbox.makeSloppyModel.sloppyModel.compatibleGens
 PyDSTool.Toolbox.neuralcomp.compatODEComponent.compatibleGens
 PyDSTool.Toolbox.neuralcomp.compatODELeafComponent.compatibleGens" class="py-name" href="#" onclick="return doclink('link-8', 'compatibleGens', 'link-8');">compatibleGens</a></tt><tt class="py-op">=</tt><tt id="link-9" class="py-name"><a title="PyDSTool.Toolbox.ModelHelper.allODEgens
+PyDSTool.Toolbox.NineML.allODEgens
 PyDSTool.Toolbox.makeSloppyModel.allODEgens" class="py-name" href="#" onclick="return doclink('link-9', 'allODEgens', 'link-3');">allODEgens</a></tt><tt class="py-op">)</tt> </tt>
 <a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line"> </tt>
 <a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">silent</tt><tt class="py-op">:</tt> </tt>
@@ -207,7 +212,7 @@ PyDSTool.parseUtils.symbolMapClass.keys" class="py-name" href="#" onclick="retur
 PyDSTool.Toolbox.phaseplane.Point2D.iteritems
 PyDSTool.common.args.iteritems
 PyDSTool.parseUtils.symbolMapClass.iteritems" class="py-name" href="#" onclick="return doclink('link-11', 'iteritems', 'link-11');">iteritems</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">            <tt class="py-name">theModelSpec</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Method PyDSTool.Generator.baseclasses.GenSpecHelper.add()=PyDSTool.Generator.baseclasses.GenSpecHelper-class.html#add,Method PyDSTool.MProject.GenTransform.add()=PyDSTool.MProject.GenTransform-class.html#add,Method PyDSTool.MProject.MReg.add()=PyDSTool.MProject.MReg-class.html#add,Method PyDSTool.MProject.ModelManager.add()=PyDSTool.MProject.ModelManager-class.html#add,Method PyDSTool.MProject.ModelTransform.add()=PyDSTool.MProject.ModelTransform-class.html#add,Method PyDSTool.ModelConstructor'.MDescriptor.add()=PyDSTool.ModelConstructor%27.MDescriptor-class.html#add,Method PyDSTool.ModelSpec'.LeafComponent.add()=PyDSTool.ModelSpec%27.LeafComponent-class.html#add,Method PyDSTool.ModelSpec'.ModelSpec.add()=PyDSTool.ModelSpec%27.ModelSpec-class.html#add,Variable PyDSTool.PyCont.ContClass'.add=PyDSTool.PyCont.ContClass%27-module.html#add,Variable PyDSTool.Toolbox.ActivationFuncs.add=PyDSTool.Toolbox.ActivationFuncs-module.html#add,Variable PyDSTool.Toolbox.DSSRT_tools.add=PyDSTool.Toolbox.DSSRT_tools-module.html#add,Variable PyDSTool.Toolbox.InputProfile.add=PyDSTool.Toolbox.InputProfile-module.html#add,Variable PyDSTool.Toolbox.ModelHelper.add=PyDSTool.Toolbox.ModelHelper-module.html#add,Variable PyDSTool.Toolbox.adjointPRC.add=PyDSTool.Toolbox.adjointPRC-module.html#add,Variable PyDSTool.Toolbox.dataanalysis.add=PyDSTool.Toolbox.dataanalysis-module.html#add,Variable PyDSTool.Toolbox.fracdim.add=PyDSTool.Toolbox.fracdim-module.html#add,Variable PyDSTool.Toolbox.makeSloppyModel.add=PyDSTool.Toolbox.makeSloppyModel-module.html#add,Variable PyDSTool.Toolbox.neuralcomp.add=PyDSTool.Toolbox.neuralcomp-module.html#add,Variable PyDSTool.Toolbox.phaseplane.add=PyDSTool.Toolbox.phaseplane-module.html#add,Method PyDSTool.Toolbox.phaseplane.phaseplane.add()=PyDSTool.Toolbox.phaseplane.phaseplane-class.html#add,Variable PyDSTool.Toolbox.synthetic_data.add=PyDSTool.Toolbox.synthetic_data-module.html#add,Variable PyDSTool.Toolbox.syntheticdata.add=PyDSTool.Toolbox.syntheticdata-module.html#add,Variable PyDSTool.add=PyDSTool-module.html#add,Variable matplotlib.pylab.add=matplotlib.pylab-module.html#add"><a title="PyDSTool.Generator.baseclasses.GenSpecHelper.add
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">            <tt class="py-name">theModelSpec</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Method PyDSTool.Generator.baseclasses.GenSpecHelper.add()=PyDSTool.Generator.baseclasses.GenSpecHelper-class.html#add,Method PyDSTool.MProject.GenTransform.add()=PyDSTool.MProject.GenTransform-class.html#add,Method PyDSTool.MProject.MReg.add()=PyDSTool.MProject.MReg-class.html#add,Method PyDSTool.MProject.ModelManager.add()=PyDSTool.MProject.ModelManager-class.html#add,Method PyDSTool.MProject.ModelTransform.add()=PyDSTool.MProject.ModelTransform-class.html#add,Method PyDSTool.ModelConstructor'.MDescriptor.add()=PyDSTool.ModelConstructor%27.MDescriptor-class.html#add,Method PyDSTool.ModelSpec'.LeafComponent.add()=PyDSTool.ModelSpec%27.LeafComponent-class.html#add,Method PyDSTool.ModelSpec'.ModelSpec.add()=PyDSTool.ModelSpec%27.ModelSpec-class.html#add,Variable PyDSTool.PyCont.ContClass'.add=PyDSTool.PyCont.ContClass%27-module.html#add,Variable PyDSTool.Toolbox.ActivationFuncs.add=PyDSTool.Toolbox.ActivationFuncs-module.html#add,Variable PyDSTool.Toolbox.DSSRT_tools.add=PyDSTool.Toolbox.DSSRT_tools-module.html#add,Variable PyDSTool.Toolbox.InputProfile.add=PyDSTool.Toolbox.InputProfile-module.html#add,Variable PyDSTool.Toolbox.ModelHelper.add=PyDSTool.Toolbox.ModelHelper-module.html#add,Variable PyDSTool.Toolbox.NineML.add=PyDSTool.Toolbox.NineML-module.html#add,Variable PyDSTool.Toolbox.adjointPRC.add=PyDSTool.Toolbox.adjointPRC-module.html#add,Variable PyDSTool.Toolbox.dataanalysis.add=PyDSTool.Toolbox.dataanalysis-module.html#add,Variable PyDSTool.Toolbox.fracdim.add=PyDSTool.Toolbox.fracdim-module.html#add,Variable PyDSTool.Toolbox.makeSloppyModel.add=PyDSTool.Toolbox.makeSloppyModel-module.html#add,Variable PyDSTool.Toolbox.neuralcomp.add=PyDSTool.Toolbox.neuralcomp-module.html#add,Variable PyDSTool.Toolbox.phaseplane.add=PyDSTool.Toolbox.phaseplane-module.html#add,Method PyDSTool.Toolbox.phaseplane.phaseplane.add()=PyDSTool.Toolbox.phaseplane.phaseplane-class.html#add,Variable PyDSTool.Toolbox.synthetic_data.add=PyDSTool.Toolbox.synthetic_data-module.html#add,Variable PyDSTool.Toolbox.syntheticdata.add=PyDSTool.Toolbox.syntheticdata-module.html#add,Variable PyDSTool.add=PyDSTool-module.html#add,Variable matplotlib.pylab.add=matplotlib.pylab-module.html#add"><a title="PyDSTool.Generator.baseclasses.GenSpecHelper.add
 PyDSTool.MProject.GenTransform.add
 PyDSTool.MProject.MReg.add
 PyDSTool.MProject.ModelManager.add
@@ -220,6 +225,7 @@ PyDSTool.Toolbox.ActivationFuncs.add
 PyDSTool.Toolbox.DSSRT_tools.add
 PyDSTool.Toolbox.InputProfile.add
 PyDSTool.Toolbox.ModelHelper.add
+PyDSTool.Toolbox.NineML.add
 PyDSTool.Toolbox.adjointPRC.add
 PyDSTool.Toolbox.dataanalysis.add
 PyDSTool.Toolbox.fracdim.add
@@ -263,6 +269,7 @@ PyDSTool.Toolbox.ActivationFuncs.add
 PyDSTool.Toolbox.DSSRT_tools.add
 PyDSTool.Toolbox.InputProfile.add
 PyDSTool.Toolbox.ModelHelper.add
+PyDSTool.Toolbox.NineML.add
 PyDSTool.Toolbox.adjointPRC.add
 PyDSTool.Toolbox.dataanalysis.add
 PyDSTool.Toolbox.fracdim.add
@@ -306,6 +313,7 @@ PyDSTool.Toolbox.ActivationFuncs.add
 PyDSTool.Toolbox.DSSRT_tools.add
 PyDSTool.Toolbox.InputProfile.add
 PyDSTool.Toolbox.ModelHelper.add
+PyDSTool.Toolbox.NineML.add
 PyDSTool.Toolbox.adjointPRC.add
 PyDSTool.Toolbox.dataanalysis.add
 PyDSTool.Toolbox.fracdim.add
@@ -351,6 +359,7 @@ PyDSTool.Toolbox.ActivationFuncs.add
 PyDSTool.Toolbox.DSSRT_tools.add
 PyDSTool.Toolbox.InputProfile.add
 PyDSTool.Toolbox.ModelHelper.add
+PyDSTool.Toolbox.NineML.add
 PyDSTool.Toolbox.adjointPRC.add
 PyDSTool.Toolbox.dataanalysis.add
 PyDSTool.Toolbox.fracdim.add
@@ -424,6 +433,7 @@ PyDSTool.Toolbox.ActivationFuncs.add
 PyDSTool.Toolbox.DSSRT_tools.add
 PyDSTool.Toolbox.InputProfile.add
 PyDSTool.Toolbox.ModelHelper.add
+PyDSTool.Toolbox.NineML.add
 PyDSTool.Toolbox.adjointPRC.add
 PyDSTool.Toolbox.dataanalysis.add
 PyDSTool.Toolbox.fracdim.add
@@ -562,6 +572,7 @@ PyDSTool.Toolbox.ActivationFuncs.add
 PyDSTool.Toolbox.DSSRT_tools.add
 PyDSTool.Toolbox.InputProfile.add
 PyDSTool.Toolbox.ModelHelper.add
+PyDSTool.Toolbox.NineML.add
 PyDSTool.Toolbox.adjointPRC.add
 PyDSTool.Toolbox.dataanalysis.add
 PyDSTool.Toolbox.fracdim.add
@@ -603,6 +614,7 @@ PyDSTool.Toolbox.ActivationFuncs.add
 PyDSTool.Toolbox.DSSRT_tools.add
 PyDSTool.Toolbox.InputProfile.add
 PyDSTool.Toolbox.ModelHelper.add
+PyDSTool.Toolbox.NineML.add
 PyDSTool.Toolbox.adjointPRC.add
 PyDSTool.Toolbox.dataanalysis.add
 PyDSTool.Toolbox.fracdim.add
@@ -619,7 +631,7 @@ matplotlib.pylab.add" class="py-name" href="#" onclick="return doclink('link-57'
 <a name="L208"></a><tt class="py-lineno">208</tt>  <tt class="py-line"> </tt>
 <a name="L209"></a><tt class="py-lineno">209</tt>  <tt class="py-line"> </tt>
 <a name="L210"></a><tt class="py-lineno">210</tt>  <tt class="py-line">    <tt class="py-comment"># Construct the model</tt> </tt>
-<a name="L211"></a><tt class="py-lineno">211</tt>  <tt class="py-line"><tt class="py-comment"></tt>    <tt class="py-name">targetLang</tt> <tt class="py-op">=</tt> <tt id="link-58" class="py-name" targets="Variable PyDSTool.Generator.ADMC_ODEsystem'.theGenSpecHelper=PyDSTool.Generator.ADMC_ODEsystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.Dopri_ODEsystem'.theGenSpecHelper=PyDSTool.Generator.Dopri_ODEsystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.EmbeddedSysGen'.theGenSpecHelper=PyDSTool.Generator.EmbeddedSysGen%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.Euler_ODEsystem'.theGenSpecHelper=PyDSTool.Generator.Euler_ODEsystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.ExplicitFnGen'.theGenSpecHelper=PyDSTool.Generator.ExplicitFnGen%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.ExtrapolateTable'.theGenSpecHelper=PyDSTool.Generator.ExtrapolateTable%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.ImplicitFnGen'.theGenSpecHelper=PyDSTool.Generator.ImplicitFnGen%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.InterpolateTable'.theGenSpecHelper=PyDSTool.Generator.InterpolateTable%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.LookupTable'.theGenSpecHelper=PyDSTool.Generator.LookupTable%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.MapSystem'.theGenSpecHelper=PyDSTool.Generator.MapSystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.ODEsystem'.theGenSpecHelper=PyDSTool.Generator.ODEsystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.Radau_ODEsystem'.theGenSpecHelper=PyDSTool.Generator.Radau_ODEsystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.Vode_ODEsystem'.theGenSpecHelper=PyDSTool.Generator.Vode_ODEsystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.baseclasses.theGenSpecHelper=PyDSTool.Generator.baseclasses-module.html#theGenSpecHelper,Variable PyDSTool.Toolbox.dataanalysis.theGenSpecHelper=PyDSTool.Toolbox.dataanalysis-module.html#theGenSpecHelper,Variable PyDSTool.Toolbox.phaseplane.theGenSpecHelper=PyDSTool.Toolbox.phaseplane-module.html#theGenSpecHelper,Variable PyDSTool.Toolbox.synthetic_data.theGenSpecHelper=PyDSTool.Toolbox.synthetic_data-module.html#theGenSpecHelper,Variable PyDSTool.Toolbox.syntheticdata.theGenSpecHelper=PyDSTool.Toolbox.syntheticdata-module.html#theGenSpecHelper"><a title="PyDSTool.Generator.ADMC_ODEsystem'.theGenSpecHelper
+<a name="L211"></a><tt class="py-lineno">211</tt>  <tt class="py-line"><tt class="py-comment"></tt>    <tt class="py-name">targetLang</tt> <tt class="py-op">=</tt> <tt id="link-58" class="py-name" targets="Variable PyDSTool.Generator.ADMC_ODEsystem'.theGenSpecHelper=PyDSTool.Generator.ADMC_ODEsystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.Dopri_ODEsystem'.theGenSpecHelper=PyDSTool.Generator.Dopri_ODEsystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.EmbeddedSysGen'.theGenSpecHelper=PyDSTool.Generator.EmbeddedSysGen%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.Euler_ODEsystem'.theGenSpecHelper=PyDSTool.Generator.Euler_ODEsystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.ExplicitFnGen'.theGenSpecHelper=PyDSTool.Generator.ExplicitFnGen%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.ExtrapolateTable'.theGenSpecHelper=PyDSTool.Generator.ExtrapolateTable%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.ImplicitFnGen'.theGenSpecHelper=PyDSTool.Generator.ImplicitFnGen%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.InterpolateTable'.theGenSpecHelper=PyDSTool.Generator.InterpolateTable%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.LookupTable'.theGenSpecHelper=PyDSTool.Generator.LookupTable%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.MapSystem'.theGenSpecHelper=PyDSTool.Generator.MapSystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.ODEsystem'.theGenSpecHelper=PyDSTool.Generator.ODEsystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.Radau_ODEsystem'.theGenSpecHelper=PyDSTool.Generator.Radau_ODEsystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.Vode_ODEsystem'.theGenSpecHelper=PyDSTool.Generator.Vode_ODEsystem%27-module.html#theGenSpecHelper,Variable PyDSTool.Generator.baseclasses.theGenSpecHelper=PyDSTool.Generator.baseclasses-module.html#theGenSpecHelper,Variable PyDSTool.Toolbox.NineML.theGenSpecHelper=PyDSTool.Toolbox.NineML-module.html#theGenSpecHelper,Variable PyDSTool.Toolbox.dataanalysis.theGenSpecHelper=PyDSTool.Toolbox.dataanalysis-module.html#theGenSpecHelper,Variable PyDSTool.Toolbox.phaseplane.theGenSpecHelper=PyDSTool.Toolbox.phaseplane-module.html#theGenSpecHelper,Variable PyDSTool.Toolbox.synthetic_data.theGenSpecHelper=PyDSTool.Toolbox.synthetic_data-module.html#theGenSpecHelper,Variable PyDSTool.Toolbox.syntheticdata.theGenSpecHelper=PyDSTool.Toolbox.syntheticdata-module.html#theGenSpecHelper"><a title="PyDSTool.Generator.ADMC_ODEsystem'.theGenSpecHelper
 PyDSTool.Generator.Dopri_ODEsystem'.theGenSpecHelper
 PyDSTool.Generator.EmbeddedSysGen'.theGenSpecHelper
 PyDSTool.Generator.Euler_ODEsystem'.theGenSpecHelper
@@ -633,6 +645,7 @@ PyDSTool.Generator.ODEsystem'.theGenSpecHelper
 PyDSTool.Generator.Radau_ODEsystem'.theGenSpecHelper
 PyDSTool.Generator.Vode_ODEsystem'.theGenSpecHelper
 PyDSTool.Generator.baseclasses.theGenSpecHelper
+PyDSTool.Toolbox.NineML.theGenSpecHelper
 PyDSTool.Toolbox.dataanalysis.theGenSpecHelper
 PyDSTool.Toolbox.phaseplane.theGenSpecHelper
 PyDSTool.Toolbox.synthetic_data.theGenSpecHelper
@@ -688,7 +701,7 @@ expandto(location.href);
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:41 2011
+    Generated by Epydoc 3.0.1 on Fri May  4 15:24:16 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

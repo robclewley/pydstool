@@ -174,7 +174,8 @@ PyDSTool.parseUtils.symbolMapClass.copy" class="py-name" href="#" onclick="retur
 <a name="L107"></a><tt class="py-lineno"> 107</tt>  <tt class="py-line"> </tt>
 <a name="get_spike_model.evaluate"></a><div id="get_spike_model.evaluate-def"><a name="L108"></a><tt class="py-lineno"> 108</tt> <a class="py-toggle" href="#" id="get_spike_model.evaluate-toggle" onclick="return toggle('get_spike_model.evaluate');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="PyDSTool.Toolbox.neuro_data.get_spike_model-class.html#evaluate">evaluate</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">traj</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
 </div><div id="get_spike_model.evaluate-collapsed" style="display:none;" pad="++++" indent="++++++++"></div><div id="get_spike_model.evaluate-expanded"><a name="L109"></a><tt class="py-lineno"> 109</tt>  <tt class="py-line">        <tt class="py-comment"># function of traj, not target</tt> </tt>
-<a name="L110"></a><tt class="py-lineno"> 110</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-name">pts</tt> <tt class="py-op">=</tt> <tt class="py-name">traj</tt><tt class="py-op">.</tt><tt id="link-35" class="py-name" targets="Method PyDSTool.Model.Model.sample()=PyDSTool.Model.Model-class.html#sample,Method PyDSTool.Trajectory'.HybridTrajectory.sample()=PyDSTool.Trajectory%27.HybridTrajectory-class.html#sample,Method PyDSTool.Trajectory'.Trajectory.sample()=PyDSTool.Trajectory%27.Trajectory-class.html#sample"><a title="PyDSTool.Model.Model.sample
+<a name="L110"></a><tt class="py-lineno"> 110</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-name">pts</tt> <tt class="py-op">=</tt> <tt class="py-name">traj</tt><tt class="py-op">.</tt><tt id="link-35" class="py-name" targets="Method PyDSTool.Interval'.Interval.sample()=PyDSTool.Interval%27.Interval-class.html#sample,Method PyDSTool.Model.Model.sample()=PyDSTool.Model.Model-class.html#sample,Method PyDSTool.Trajectory'.HybridTrajectory.sample()=PyDSTool.Trajectory%27.HybridTrajectory-class.html#sample,Method PyDSTool.Trajectory'.Trajectory.sample()=PyDSTool.Trajectory%27.Trajectory-class.html#sample"><a title="PyDSTool.Interval'.Interval.sample
+PyDSTool.Model.Model.sample
 PyDSTool.Trajectory'.HybridTrajectory.sample
 PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return doclink('link-35', 'sample', 'link-35');">sample</a></tt><tt class="py-op">(</tt><tt class="py-name">coords</tt><tt class="py-op">=</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">super_pars</tt><tt class="py-op">.</tt><tt class="py-name">burst_coord</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
 <a name="L111"></a><tt class="py-lineno"> 111</tt>  <tt class="py-line">                                      <tt class="py-name">tlo</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">tlo</tt><tt class="py-op">,</tt> </tt>
@@ -245,7 +246,8 @@ PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return
 <a name="L176"></a><tt class="py-lineno"> 176</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">ev</tt> <tt class="py-op">=</tt> <tt id="link-45" class="py-name"><a title="PyDSTool.Events" class="py-name" href="#" onclick="return doclink('link-45', 'Events', 'link-1');">Events</a></tt><tt class="py-op">.</tt><tt id="link-46" class="py-name" targets="Function PyDSTool.Events.makePythonStateZeroCrossEvent()=PyDSTool.Events-module.html#makePythonStateZeroCrossEvent"><a title="PyDSTool.Events.makePythonStateZeroCrossEvent" class="py-name" href="#" onclick="return doclink('link-46', 'makePythonStateZeroCrossEvent', 'link-46');">makePythonStateZeroCrossEvent</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">coord</tt><tt class="py-op">,</tt> </tt>
 <a name="L177"></a><tt class="py-lineno"> 177</tt>  <tt class="py-line">                                                            <tt class="py-string">"thresh"</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> </tt>
 <a name="L178"></a><tt class="py-lineno"> 178</tt>  <tt class="py-line">                                    <tt class="py-name">event_args</tt><tt class="py-op">,</tt> <tt class="py-name">traj</tt><tt class="py-op">.</tt><tt class="py-name">variables</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">coord</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
-<a name="L179"></a><tt class="py-lineno"> 179</tt>  <tt class="py-line">        <tt class="py-name">pts</tt> <tt class="py-op">=</tt> <tt class="py-name">traj</tt><tt class="py-op">.</tt><tt id="link-47" class="py-name"><a title="PyDSTool.Model.Model.sample
+<a name="L179"></a><tt class="py-lineno"> 179</tt>  <tt class="py-line">        <tt class="py-name">pts</tt> <tt class="py-op">=</tt> <tt class="py-name">traj</tt><tt class="py-op">.</tt><tt id="link-47" class="py-name"><a title="PyDSTool.Interval'.Interval.sample
+PyDSTool.Model.Model.sample
 PyDSTool.Trajectory'.HybridTrajectory.sample
 PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return doclink('link-47', 'sample', 'link-35');">sample</a></tt><tt class="py-op">(</tt><tt class="py-name">coords</tt><tt class="py-op">=</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">coord</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-name">tlo</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">tlo</tt><tt class="py-op">,</tt> </tt>
 <a name="L180"></a><tt class="py-lineno"> 180</tt>  <tt class="py-line">                              <tt class="py-name">thi</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">thi</tt><tt class="py-op">)</tt> </tt>
@@ -301,9 +303,11 @@ PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return
 <a name="L230"></a><tt class="py-lineno"> 230</tt>  <tt class="py-line">            <tt class="py-name">dt</tt> <tt class="py-op">=</tt> <tt class="py-name">symm_dist</tt><tt class="py-op">*</tt><tt class="py-number">1.0000000007</tt> </tt>
 <a name="L231"></a><tt class="py-lineno"> 231</tt>  <tt class="py-line">        <tt class="py-name">tlo</tt> <tt class="py-op">=</tt> <tt class="py-name">tmax</tt><tt class="py-op">-</tt><tt class="py-name">dt</tt> </tt>
 <a name="L232"></a><tt class="py-lineno"> 232</tt>  <tt class="py-line">        <tt class="py-name">thi</tt> <tt class="py-op">=</tt> <tt class="py-name">tmax</tt><tt class="py-op">+</tt><tt class="py-name">dt</tt> </tt>
-<a name="L233"></a><tt class="py-lineno"> 233</tt>  <tt class="py-line">        <tt class="py-name">ixlo</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-52" class="py-name" targets="Method PyDSTool.Points.Pointset.find()=PyDSTool.Points.Pointset-class.html#find,Function PyDSTool.utils.find()=PyDSTool.utils-module.html#find"><a title="PyDSTool.Points.Pointset.find
+<a name="L233"></a><tt class="py-lineno"> 233</tt>  <tt class="py-line">        <tt class="py-name">ixlo</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-52" class="py-name" targets="Method PyDSTool.Points.Pointset.find()=PyDSTool.Points.Pointset-class.html#find,Method PyDSTool.parseUtils.parserObject.find()=PyDSTool.parseUtils.parserObject-class.html#find,Function PyDSTool.utils.find()=PyDSTool.utils-module.html#find"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-52', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">tmax</tt><tt class="py-op">-</tt><tt class="py-name">dt</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
 <a name="L234"></a><tt class="py-lineno"> 234</tt>  <tt class="py-line">        <tt class="py-name">ixhi</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-53" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-53', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">tmax</tt><tt class="py-op">+</tt><tt class="py-name">dt</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
 <a name="L235"></a><tt class="py-lineno"> 235</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">verbose_level</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
 <a name="L236"></a><tt class="py-lineno"> 236</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">"ixlo ="</tt><tt class="py-op">,</tt> <tt class="py-name">ixlo</tt><tt class="py-op">,</tt> <tt class="py-string">"ixhi ="</tt><tt class="py-op">,</tt> <tt class="py-name">ixhi</tt> </tt>
@@ -357,10 +361,11 @@ PyDSTool.common.fit_quadratic_at_vertex.fit" class="py-name" href="#" onclick="r
 <a name="L277"></a><tt class="py-lineno"> 277</tt>  <tt class="py-line">            <tt id="link-62" class="py-name"><a title="PyDSTool.matplotlib_import.plot" class="py-name" href="#" onclick="return doclink('link-62', 'plot', 'link-2');">plot</a></tt><tt class="py-op">(</tt><tt class="py-name">tval</tt><tt class="py-op">,</tt> <tt class="py-name">xval</tt><tt class="py-op">,</tt> <tt class="py-string">'rx'</tt><tt class="py-op">)</tt> </tt>
 <a name="L278"></a><tt class="py-lineno"> 278</tt>  <tt class="py-line">            <tt class="py-name">ts</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">pts</tt><tt class="py-op">.</tt><tt class="py-name">indepvararray</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">]</tt> </tt>
 <a name="L279"></a><tt class="py-lineno"> 279</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt id="link-63" class="py-name" targets="Variable PyDSTool.Symbolic.i=PyDSTool.Symbolic-module.html#i,Variable PyDSTool.common.Verbose.i=PyDSTool.common.Verbose-class.html#i"><a title="PyDSTool.Symbolic.i
-PyDSTool.common.Verbose.i" class="py-name" href="#" onclick="return doclink('link-63', 'i', 'link-63');">i</a></tt><tt class="py-op">,</tt> <tt id="link-64" class="py-name" targets="Variable PyDSTool.Toolbox.ActivationFuncs.t=PyDSTool.Toolbox.ActivationFuncs-module.html#t,Variable PyDSTool.Toolbox.DSSRT_tools.t=PyDSTool.Toolbox.DSSRT_tools-module.html#t,Variable PyDSTool.Toolbox.InputProfile.t=PyDSTool.Toolbox.InputProfile-module.html#t,Variable PyDSTool.Toolbox.ModelHelper.t=PyDSTool.Toolbox.ModelHelper-module.html#t,Variable PyDSTool.Toolbox.adjointPRC.t=PyDSTool.Toolbox.adjointPRC-module.html#t,Variable PyDSTool.Toolbox.dataanalysis.t=PyDSTool.Toolbox.dataanalysis-module.html#t,Variable PyDSTool.Toolbox.fracdim.t=PyDSTool.Toolbox.fracdim-module.html#t,Variable PyDSTool.Toolbox.makeSloppyModel.t=PyDSTool.Toolbox.makeSloppyModel-module.html#t,Variable PyDSTool.Toolbox.neuralcomp.t=PyDSTool.Toolbox.neuralcomp-module.html#t,Variable PyDSTool.Toolbox.phaseplane.t=PyDSTool.Toolbox.phaseplane-module.html#t,Variable PyDSTool.Toolbox.synthetic_data.t=PyDSTool.Toolbox.synthetic_data-module.html#t,Variable PyDSTool.Toolbox.syntheticdata.t=PyDSTool.Toolbox.syntheticdata-module.html#t,Variable PyDSTool.t=PyDSTool-module.html#t"><a title="PyDSTool.Toolbox.ActivationFuncs.t
+PyDSTool.common.Verbose.i" class="py-name" href="#" onclick="return doclink('link-63', 'i', 'link-63');">i</a></tt><tt class="py-op">,</tt> <tt id="link-64" class="py-name" targets="Variable PyDSTool.Toolbox.ActivationFuncs.t=PyDSTool.Toolbox.ActivationFuncs-module.html#t,Variable PyDSTool.Toolbox.DSSRT_tools.t=PyDSTool.Toolbox.DSSRT_tools-module.html#t,Variable PyDSTool.Toolbox.InputProfile.t=PyDSTool.Toolbox.InputProfile-module.html#t,Variable PyDSTool.Toolbox.ModelHelper.t=PyDSTool.Toolbox.ModelHelper-module.html#t,Variable PyDSTool.Toolbox.NineML.t=PyDSTool.Toolbox.NineML-module.html#t,Variable PyDSTool.Toolbox.adjointPRC.t=PyDSTool.Toolbox.adjointPRC-module.html#t,Variable PyDSTool.Toolbox.dataanalysis.t=PyDSTool.Toolbox.dataanalysis-module.html#t,Variable PyDSTool.Toolbox.fracdim.t=PyDSTool.Toolbox.fracdim-module.html#t,Variable PyDSTool.Toolbox.makeSloppyModel.t=PyDSTool.Toolbox.makeSloppyModel-module.html#t,Variable PyDSTool.Toolbox.neuralcomp.t=PyDSTool.Toolbox.neuralcomp-module.html#t,Variable PyDSTool.Toolbox.phaseplane.t=PyDSTool.Toolbox.phaseplane-module.html#t,Variable PyDSTool.Toolbox.synthetic_data.t=PyDSTool.Toolbox.synthetic_data-module.html#t,Variable PyDSTool.Toolbox.syntheticdata.t=PyDSTool.Toolbox.syntheticdata-module.html#t,Variable PyDSTool.t=PyDSTool-module.html#t"><a title="PyDSTool.Toolbox.ActivationFuncs.t
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -374,6 +379,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-64', 't', 'li
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -387,6 +393,7 @@ PyDSTool.common.Verbose.i" class="py-name" href="#" onclick="return doclink('lin
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -402,6 +409,7 @@ PyDSTool.common.PiecewisePolynomial.append" class="py-name" href="#" onclick="re
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -414,6 +422,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-72', 't', 'li
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -441,12 +450,14 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-73', 't', 'li
 <a name="L298"></a><tt class="py-lineno"> 298</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-name">pts</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">super_pars</tt><tt class="py-op">.</tt><tt class="py-name">ref_burst_coord_pts</tt> </tt>
 <a name="L299"></a><tt class="py-lineno"> 299</tt>  <tt class="py-line">        <tt class="py-name">x</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">super_pars</tt><tt class="py-op">.</tt><tt class="py-name">burst_coord</tt><tt class="py-op">]</tt> </tt>
 <a name="L300"></a><tt class="py-lineno"> 300</tt>  <tt class="py-line">        <tt class="py-name">on_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-76" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-76', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">on_t</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
 <a name="L301"></a><tt class="py-lineno"> 301</tt>  <tt class="py-line">        <tt class="py-name">ix_lo</tt><tt class="py-op">,</tt> <tt class="py-name">ix_hi</tt> <tt class="py-op">=</tt> <tt id="link-77" class="py-name"><a title="PyDSTool.common.nearest_2n_indices" class="py-name" href="#" onclick="return doclink('link-77', 'nearest_2n_indices', 'link-18');">nearest_2n_indices</a></tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">,</tt> <tt class="py-name">on_ix</tt><tt class="py-op">,</tt> <tt class="py-number">2</tt><tt class="py-op">)</tt> </tt>
 <a name="L302"></a><tt class="py-lineno"> 302</tt>  <tt class="py-line">        <tt id="link-78" class="py-name"><a title="PyDSTool.Toolbox.ActivationFuncs.t
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -460,6 +471,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-78', 't', 'li
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -475,12 +487,14 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-80', 't', 'li
 <a name="L307"></a><tt class="py-lineno"> 307</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-name">off_t</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">super_pars</tt><tt class="py-op">.</tt><tt class="py-name">ref_spike_times</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> <tt class="py-op">+</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">t_lookforward</tt> </tt>
 <a name="L308"></a><tt class="py-lineno"> 308</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">ref_burst_off_time</tt> <tt class="py-op">=</tt> <tt class="py-name">off_t</tt> </tt>
 <a name="L309"></a><tt class="py-lineno"> 309</tt>  <tt class="py-line">        <tt class="py-name">off_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-83" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-83', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">off_t</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
 <a name="L310"></a><tt class="py-lineno"> 310</tt>  <tt class="py-line">        <tt class="py-name">ix_lo</tt><tt class="py-op">,</tt> <tt class="py-name">ix_hi</tt> <tt class="py-op">=</tt> <tt id="link-84" class="py-name"><a title="PyDSTool.common.nearest_2n_indices" class="py-name" href="#" onclick="return doclink('link-84', 'nearest_2n_indices', 'link-18');">nearest_2n_indices</a></tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">,</tt> <tt class="py-name">off_ix</tt><tt class="py-op">,</tt> <tt class="py-number">2</tt><tt class="py-op">)</tt> </tt>
 <a name="L311"></a><tt class="py-lineno"> 311</tt>  <tt class="py-line">        <tt class="py-name">off_res</tt> <tt class="py-op">=</tt> <tt id="link-85" class="py-name"><a title="PyDSTool.common.smooth_pts" class="py-name" href="#" onclick="return doclink('link-85', 'smooth_pts', 'link-17');">smooth_pts</a></tt><tt class="py-op">(</tt><tt id="link-86" class="py-name"><a title="PyDSTool.Toolbox.ActivationFuncs.t
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -503,6 +517,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-86', 't', 'li
 <a name="L322"></a><tt class="py-lineno"> 322</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">results</tt><tt class="py-op">.</tt><tt class="py-name">burst_on_time</tt> <tt class="py-op">=</tt> <tt class="py-name">on_t</tt> </tt>
 <a name="L323"></a><tt class="py-lineno"> 323</tt>  <tt class="py-line">        <tt class="py-name">x</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">[</tt><tt class="py-name">varname</tt><tt class="py-op">]</tt> </tt>
 <a name="L324"></a><tt class="py-lineno"> 324</tt>  <tt class="py-line">        <tt class="py-name">on_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-89" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-89', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">on_t</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
 <a name="L325"></a><tt class="py-lineno"> 325</tt>  <tt class="py-line">        <tt class="py-name">ix_lo</tt><tt class="py-op">,</tt> <tt class="py-name">ix_hi</tt> <tt class="py-op">=</tt> <tt id="link-90" class="py-name"><a title="PyDSTool.common.nearest_2n_indices" class="py-name" href="#" onclick="return doclink('link-90', 'nearest_2n_indices', 'link-18');">nearest_2n_indices</a></tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">,</tt> <tt class="py-name">on_ix</tt><tt class="py-op">,</tt> <tt class="py-number">2</tt><tt class="py-op">)</tt> </tt>
 <a name="L326"></a><tt class="py-lineno"> 326</tt>  <tt class="py-line">        <tt id="link-91" class="py-name" targets="Function PyDSTool.Toolbox.ParamEst.pp()=PyDSTool.Toolbox.ParamEst-module.html#pp"><a title="PyDSTool.Toolbox.ParamEst.pp" class="py-name" href="#" onclick="return doclink('link-91', 'pp', 'link-91');">pp</a></tt> <tt class="py-op">=</tt> <tt id="link-92" class="py-name"><a title="PyDSTool.common.make_poly_interpolated_curve" class="py-name" href="#" onclick="return doclink('link-92', 'make_poly_interpolated_curve', 'link-19');">make_poly_interpolated_curve</a></tt><tt class="py-op">(</tt><tt class="py-name">pts</tt><tt class="py-op">[</tt><tt class="py-name">ix_lo</tt><tt class="py-op">:</tt><tt class="py-name">ix_hi</tt><tt class="py-op">+</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-name">varname</tt><tt class="py-op">,</tt> </tt>
@@ -518,6 +533,7 @@ PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-89',
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -532,6 +548,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-94', 't', 'li
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -550,6 +567,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-95', 't', 'li
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -563,6 +581,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-99', 't', 'li
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -641,10 +660,12 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-100', 't', 'l
 </div><a name="L411"></a><tt class="py-lineno"> 411</tt>  <tt class="py-line"> </tt>
 <a name="burst_feature.postprocess_ref_traj"></a><div id="burst_feature.postprocess_ref_traj-def"><a name="L412"></a><tt class="py-lineno"> 412</tt> <a class="py-toggle" href="#" id="burst_feature.postprocess_ref_traj-toggle" onclick="return toggle('burst_feature.postprocess_ref_traj');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="PyDSTool.Toolbox.neuro_data.burst_feature-class.html#postprocess_ref_traj">postprocess_ref_traj</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
 </div><div id="burst_feature.postprocess_ref_traj-collapsed" style="display:none;" pad="++++" indent="++++++++"></div><div id="burst_feature.postprocess_ref_traj-expanded"><a name="L413"></a><tt class="py-lineno"> 413</tt>  <tt class="py-line">        <tt class="py-comment"># single coord used as indicator</tt> </tt>
-<a name="L414"></a><tt class="py-lineno"> 414</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-name">pts</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ref_traj</tt><tt class="py-op">.</tt><tt id="link-115" class="py-name"><a title="PyDSTool.Model.Model.sample
+<a name="L414"></a><tt class="py-lineno"> 414</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-name">pts</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ref_traj</tt><tt class="py-op">.</tt><tt id="link-115" class="py-name"><a title="PyDSTool.Interval'.Interval.sample
+PyDSTool.Model.Model.sample
 PyDSTool.Trajectory'.HybridTrajectory.sample
 PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return doclink('link-115', 'sample', 'link-35');">sample</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
-<a name="L415"></a><tt class="py-lineno"> 415</tt>  <tt class="py-line">        <tt class="py-name">burst_pts</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ref_traj</tt><tt class="py-op">.</tt><tt id="link-116" class="py-name"><a title="PyDSTool.Model.Model.sample
+<a name="L415"></a><tt class="py-lineno"> 415</tt>  <tt class="py-line">        <tt class="py-name">burst_pts</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ref_traj</tt><tt class="py-op">.</tt><tt id="link-116" class="py-name"><a title="PyDSTool.Interval'.Interval.sample
+PyDSTool.Model.Model.sample
 PyDSTool.Trajectory'.HybridTrajectory.sample
 PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return doclink('link-116', 'sample', 'link-35');">sample</a></tt><tt class="py-op">(</tt><tt class="py-name">coords</tt><tt class="py-op">=</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">burst_coord</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
 <a name="L416"></a><tt class="py-lineno"> 416</tt>  <tt class="py-line">                            <tt class="py-name">dt</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">dt</tt><tt class="py-op">)</tt> </tt>
@@ -657,6 +678,7 @@ PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -703,12 +725,14 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-120', 't', 'l
 <a name="L457"></a><tt class="py-lineno"> 457</tt>  <tt class="py-line">            <tt class="py-comment"># look to the right</tt> </tt>
 <a name="L458"></a><tt class="py-lineno"> 458</tt>  <tt class="py-line"><tt class="py-comment"></tt>            <tt class="py-name">start_t</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">ref_burst_est</tt><tt class="py-op">.</tt><tt class="py-name">spike_ts</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
 <a name="L459"></a><tt class="py-lineno"> 459</tt>  <tt class="py-line">            <tt class="py-name">start_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-128" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-128', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">start_t</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
 <a name="L460"></a><tt class="py-lineno"> 460</tt>  <tt class="py-line">            <tt class="py-name">other_min_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">npy</tt><tt class="py-op">.</tt><tt class="py-name">argmin</tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">[</tt><tt class="py-name">start_ix</tt><tt class="py-op">:</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
 <a name="L461"></a><tt class="py-lineno"> 461</tt>  <tt class="py-line">            <tt class="py-name">other_min_t</tt> <tt class="py-op">=</tt> <tt id="link-129" class="py-name"><a title="PyDSTool.Toolbox.ActivationFuncs.t
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -722,12 +746,14 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-129', 't', 'l
 <a name="L463"></a><tt class="py-lineno"> 463</tt>  <tt class="py-line">            <tt class="py-comment"># look to the left</tt> </tt>
 <a name="L464"></a><tt class="py-lineno"> 464</tt>  <tt class="py-line"><tt class="py-comment"></tt>            <tt class="py-name">start_t</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">ref_burst_est</tt><tt class="py-op">.</tt><tt class="py-name">spike_ts</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
 <a name="L465"></a><tt class="py-lineno"> 465</tt>  <tt class="py-line">            <tt class="py-name">start_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-130" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-130', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">start_t</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
 <a name="L466"></a><tt class="py-lineno"> 466</tt>  <tt class="py-line">            <tt class="py-name">other_min_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">npy</tt><tt class="py-op">.</tt><tt class="py-name">argmin</tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-name">start_ix</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
 <a name="L467"></a><tt class="py-lineno"> 467</tt>  <tt class="py-line">            <tt class="py-name">other_min_t</tt> <tt class="py-op">=</tt> <tt id="link-131" class="py-name"><a title="PyDSTool.Toolbox.ActivationFuncs.t
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -742,11 +768,13 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-131', 't', 'l
 <a name="L470"></a><tt class="py-lineno"> 470</tt>  <tt class="py-line"> </tt>
 <a name="burst_feature.prepare"></a><div id="burst_feature.prepare-def"><a name="L471"></a><tt class="py-lineno"> 471</tt> <a class="py-toggle" href="#" id="burst_feature.prepare-toggle" onclick="return toggle('burst_feature.prepare');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="PyDSTool.Toolbox.neuro_data.burst_feature-class.html#prepare">prepare</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">target</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
 </div><div id="burst_feature.prepare-collapsed" style="display:none;" pad="++++" indent="++++++++"></div><div id="burst_feature.prepare-expanded"><a name="L472"></a><tt class="py-lineno"> 472</tt>  <tt class="py-line">        <tt class="py-comment"># single coord used as indicator</tt> </tt>
-<a name="L473"></a><tt class="py-lineno"> 473</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-name">pts</tt> <tt class="py-op">=</tt> <tt class="py-name">target</tt><tt class="py-op">.</tt><tt class="py-name">test_traj</tt><tt class="py-op">.</tt><tt id="link-132" class="py-name"><a title="PyDSTool.Model.Model.sample
+<a name="L473"></a><tt class="py-lineno"> 473</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-name">pts</tt> <tt class="py-op">=</tt> <tt class="py-name">target</tt><tt class="py-op">.</tt><tt class="py-name">test_traj</tt><tt class="py-op">.</tt><tt id="link-132" class="py-name"><a title="PyDSTool.Interval'.Interval.sample
+PyDSTool.Model.Model.sample
 PyDSTool.Trajectory'.HybridTrajectory.sample
 PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return doclink('link-132', 'sample', 'link-35');">sample</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
 <a name="L474"></a><tt class="py-lineno"> 474</tt>  <tt class="py-line">        <tt class="py-name">x</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">burst_coord</tt><tt class="py-op">]</tt> </tt>
-<a name="L475"></a><tt class="py-lineno"> 475</tt>  <tt class="py-line">        <tt class="py-name">burst_pts</tt> <tt class="py-op">=</tt> <tt class="py-name">target</tt><tt class="py-op">.</tt><tt class="py-name">test_traj</tt><tt class="py-op">.</tt><tt id="link-133" class="py-name"><a title="PyDSTool.Model.Model.sample
+<a name="L475"></a><tt class="py-lineno"> 475</tt>  <tt class="py-line">        <tt class="py-name">burst_pts</tt> <tt class="py-op">=</tt> <tt class="py-name">target</tt><tt class="py-op">.</tt><tt class="py-name">test_traj</tt><tt class="py-op">.</tt><tt id="link-133" class="py-name"><a title="PyDSTool.Interval'.Interval.sample
+PyDSTool.Model.Model.sample
 PyDSTool.Trajectory'.HybridTrajectory.sample
 PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return doclink('link-133', 'sample', 'link-35');">sample</a></tt><tt class="py-op">(</tt><tt class="py-name">coords</tt><tt class="py-op">=</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">burst_coord</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
 <a name="L476"></a><tt class="py-lineno"> 476</tt>  <tt class="py-line">                            <tt class="py-name">dt</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">dt</tt><tt class="py-op">)</tt> </tt>
@@ -761,6 +789,7 @@ PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -779,6 +808,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-137', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -813,6 +843,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-141', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -835,8 +866,10 @@ PyDSTool.MProject.GeneratorInterface.set
 PyDSTool.MProject.ModelInterface.set
 PyDSTool.Model.Model.set" class="py-name" href="#" onclick="return doclink('link-144', 'set', 'link-144');">set</a></tt><tt class="py-op">(</tt><tt class="py-name">tdata</tt><tt class="py-op">=</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-name">end_time</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
 <a name="L514"></a><tt class="py-lineno"> 514</tt>  <tt class="py-line">                <tt class="py-name">end_pts</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-145" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-145', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">end_time</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
 <a name="L515"></a><tt class="py-lineno"> 515</tt>  <tt class="py-line">                <tt class="py-name">end_burst_pts</tt> <tt class="py-op">=</tt> <tt class="py-name">burst_pts</tt><tt class="py-op">.</tt><tt id="link-146" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-146', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">end_time</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
 <a name="L516"></a><tt class="py-lineno"> 516</tt>  <tt class="py-line">                <tt class="py-name">pts</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-name">end_pts</tt><tt class="py-op">]</tt> </tt>
 <a name="L517"></a><tt class="py-lineno"> 517</tt>  <tt class="py-line">                <tt class="py-name">burst_pts</tt> <tt class="py-op">=</tt> <tt class="py-name">burst_pts</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-name">end_burst_pts</tt><tt class="py-op">]</tt> </tt>
@@ -858,6 +891,7 @@ PyDSTool.Model.Model.set" class="py-name" href="#" onclick="return doclink('link
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -875,12 +909,14 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-148', 't', 'l
 <a name="L527"></a><tt class="py-lineno"> 527</tt>  <tt class="py-line">            <tt class="py-comment"># look to the right</tt> </tt>
 <a name="L528"></a><tt class="py-lineno"> 528</tt>  <tt class="py-line"><tt class="py-comment"></tt>            <tt class="py-name">start_t</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">results</tt><tt class="py-op">.</tt><tt class="py-name">burst_est</tt><tt class="py-op">.</tt><tt class="py-name">spike_ts</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
 <a name="L529"></a><tt class="py-lineno"> 529</tt>  <tt class="py-line">            <tt class="py-name">start_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-149" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-149', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">start_t</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
 <a name="L530"></a><tt class="py-lineno"> 530</tt>  <tt class="py-line">            <tt class="py-name">other_min_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">npy</tt><tt class="py-op">.</tt><tt class="py-name">argmin</tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">[</tt><tt class="py-name">start_ix</tt><tt class="py-op">:</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
 <a name="L531"></a><tt class="py-lineno"> 531</tt>  <tt class="py-line">            <tt class="py-name">other_min_t</tt> <tt class="py-op">=</tt> <tt id="link-150" class="py-name"><a title="PyDSTool.Toolbox.ActivationFuncs.t
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -895,12 +931,14 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-150', 't', 'l
 <a name="L534"></a><tt class="py-lineno"> 534</tt>  <tt class="py-line">            <tt class="py-comment"># look to the left</tt> </tt>
 <a name="L535"></a><tt class="py-lineno"> 535</tt>  <tt class="py-line"><tt class="py-comment"></tt>            <tt class="py-name">start_t</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">results</tt><tt class="py-op">.</tt><tt class="py-name">burst_est</tt><tt class="py-op">.</tt><tt class="py-name">spike_ts</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
 <a name="L536"></a><tt class="py-lineno"> 536</tt>  <tt class="py-line">            <tt class="py-name">start_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-151" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-151', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">start_t</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
 <a name="L537"></a><tt class="py-lineno"> 537</tt>  <tt class="py-line">            <tt class="py-name">other_min_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">npy</tt><tt class="py-op">.</tt><tt class="py-name">argmin</tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-name">start_ix</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
 <a name="L538"></a><tt class="py-lineno"> 538</tt>  <tt class="py-line">            <tt class="py-name">other_min_t</tt> <tt class="py-op">=</tt> <tt id="link-152" class="py-name"><a title="PyDSTool.Toolbox.ActivationFuncs.t
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -975,6 +1013,7 @@ PyDSTool.parseUtils.symbolMapClass.copy" class="py-name" href="#" onclick="retur
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1104,6 +1143,7 @@ PyDSTool.common.Verbose.i" class="py-name" href="#" onclick="return doclink('lin
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1114,10 +1154,12 @@ PyDSTool.Toolbox.synthetic_data.t
 PyDSTool.Toolbox.syntheticdata.t
 PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-177', 't', 'link-64');">t</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">ts</tt><tt class="py-op">:</tt> </tt>
 <a name="L695"></a><tt class="py-lineno"> 695</tt>  <tt class="py-line">            <tt class="py-name">tix</tt> <tt class="py-op">=</tt> <tt class="py-name">burst_pts</tt><tt class="py-op">.</tt><tt id="link-178" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-178', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt id="link-179" class="py-name"><a title="PyDSTool.Toolbox.ActivationFuncs.t
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1226,6 +1268,7 @@ PyDSTool.common.Verbose.i" class="py-name" href="#" onclick="return doclink('lin
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1239,6 +1282,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-208', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1261,6 +1305,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-209', 't', 'l
 <a name="L784"></a><tt class="py-lineno"> 784</tt>  <tt class="py-line"><tt class="py-comment"></tt>                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-210" class="py-name"><a title="PyDSTool.common.metric" class="py-name" href="#" onclick="return doclink('link-210', 'metric', 'link-9');">metric</a></tt><tt class="py-op">.</tt><tt class="py-name">results</tt> <tt class="py-op">=</tt> <tt class="py-number">5000</tt><tt class="py-op">*</tt><tt class="py-name">npy</tt><tt class="py-op">.</tt><tt class="py-name">ones</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">metric_len</tt><tt class="py-op">,</tt><tt class="py-op">)</tt><tt class="py-op">,</tt><tt class="py-name">float</tt><tt class="py-op">)</tt> </tt>
 <a name="L785"></a><tt class="py-lineno"> 785</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">False</tt> </tt>
 <a name="L786"></a><tt class="py-lineno"> 786</tt>  <tt class="py-line">            <tt class="py-name">tix</tt> <tt class="py-op">=</tt> <tt class="py-name">all_pts</tt><tt class="py-op">.</tt><tt id="link-211" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-211', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">target_t</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
 <a name="L787"></a><tt class="py-lineno"> 787</tt>  <tt class="py-line">            <tt class="py-name">new_var</tt> <tt class="py-op">=</tt> <tt id="link-212" class="py-name"><a title="PyDSTool.common.make_poly_interpolated_curve" class="py-name" href="#" onclick="return doclink('link-212', 'make_poly_interpolated_curve', 'link-19');">make_poly_interpolated_curve</a></tt><tt class="py-op">(</tt><tt class="py-name">all_pts</tt><tt class="py-op">[</tt><tt class="py-name">tix</tt><tt class="py-op">-</tt><tt class="py-number">5</tt><tt class="py-op">:</tt><tt class="py-name">tix</tt><tt class="py-op">+</tt><tt class="py-number">5</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
 <a name="L788"></a><tt class="py-lineno"> 788</tt>  <tt class="py-line">                                                   <tt class="py-name">vname</tt><tt class="py-op">,</tt> <tt class="py-name">target</tt><tt class="py-op">.</tt><tt class="py-name">model</tt><tt class="py-op">)</tt> </tt>
@@ -1284,6 +1329,7 @@ PyDSTool.common.PiecewisePolynomial.append" class="py-name" href="#" onclick="re
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1297,6 +1343,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-217', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1319,6 +1366,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-218', 't', 'l
 <a name="L816"></a><tt class="py-lineno"> 816</tt>  <tt class="py-line"><tt class="py-comment"></tt>                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-219" class="py-name"><a title="PyDSTool.common.metric" class="py-name" href="#" onclick="return doclink('link-219', 'metric', 'link-9');">metric</a></tt><tt class="py-op">.</tt><tt class="py-name">results</tt> <tt class="py-op">=</tt> <tt class="py-number">5000</tt><tt class="py-op">*</tt><tt class="py-name">npy</tt><tt class="py-op">.</tt><tt class="py-name">ones</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">metric_len</tt><tt class="py-op">,</tt><tt class="py-op">)</tt><tt class="py-op">,</tt><tt class="py-name">float</tt><tt class="py-op">)</tt> </tt>
 <a name="L817"></a><tt class="py-lineno"> 817</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">False</tt> </tt>
 <a name="L818"></a><tt class="py-lineno"> 818</tt>  <tt class="py-line">            <tt class="py-name">tix</tt> <tt class="py-op">=</tt> <tt class="py-name">all_pts</tt><tt class="py-op">.</tt><tt id="link-220" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-220', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">target_t</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
 <a name="L819"></a><tt class="py-lineno"> 819</tt>  <tt class="py-line">            <tt class="py-name">new_var</tt> <tt class="py-op">=</tt> <tt id="link-221" class="py-name"><a title="PyDSTool.common.make_poly_interpolated_curve" class="py-name" href="#" onclick="return doclink('link-221', 'make_poly_interpolated_curve', 'link-19');">make_poly_interpolated_curve</a></tt><tt class="py-op">(</tt><tt class="py-name">all_pts</tt><tt class="py-op">[</tt><tt class="py-name">tix</tt><tt class="py-op">-</tt><tt class="py-number">5</tt><tt class="py-op">:</tt><tt class="py-name">tix</tt><tt class="py-op">+</tt><tt class="py-number">5</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
 <a name="L820"></a><tt class="py-lineno"> 820</tt>  <tt class="py-line">                                                   <tt class="py-name">vname</tt><tt class="py-op">,</tt> <tt class="py-name">target</tt><tt class="py-op">.</tt><tt class="py-name">model</tt><tt class="py-op">)</tt> </tt>
@@ -1373,9 +1421,11 @@ PyDSTool.common.PiecewisePolynomial.append" class="py-name" href="#" onclick="re
 <a name="spike_feature.evaluate"></a><div id="spike_feature.evaluate-def"><a name="L868"></a><tt class="py-lineno"> 868</tt> <a class="py-toggle" href="#" id="spike_feature.evaluate-toggle" onclick="return toggle('spike_feature.evaluate');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="PyDSTool.Toolbox.neuro_data.spike_feature-class.html#evaluate">evaluate</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">target</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
 </div><div id="spike_feature.evaluate-collapsed" style="display:none;" pad="++++" indent="++++++++"></div><div id="spike_feature.evaluate-expanded"><a name="L869"></a><tt class="py-lineno"> 869</tt>  <tt class="py-line">        <tt class="py-comment"># traj will be a post-processed v trajectory -&gt;</tt> </tt>
 <a name="L870"></a><tt class="py-lineno"> 870</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-comment">#   spike time and height values</tt> </tt>
-<a name="L871"></a><tt class="py-lineno"> 871</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-233" class="py-name"><a title="PyDSTool.common.metric" class="py-name" href="#" onclick="return doclink('link-233', 'metric', 'link-9');">metric</a></tt><tt class="py-op">(</tt><tt class="py-name">target</tt><tt class="py-op">.</tt><tt class="py-name">test_traj</tt><tt class="py-op">.</tt><tt id="link-234" class="py-name"><a title="PyDSTool.Model.Model.sample
+<a name="L871"></a><tt class="py-lineno"> 871</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-233" class="py-name"><a title="PyDSTool.common.metric" class="py-name" href="#" onclick="return doclink('link-233', 'metric', 'link-9');">metric</a></tt><tt class="py-op">(</tt><tt class="py-name">target</tt><tt class="py-op">.</tt><tt class="py-name">test_traj</tt><tt class="py-op">.</tt><tt id="link-234" class="py-name"><a title="PyDSTool.Interval'.Interval.sample
+PyDSTool.Model.Model.sample
 PyDSTool.Trajectory'.HybridTrajectory.sample
-PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return doclink('link-234', 'sample', 'link-35');">sample</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ref_traj</tt><tt class="py-op">.</tt><tt id="link-235" class="py-name"><a title="PyDSTool.Model.Model.sample
+PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return doclink('link-234', 'sample', 'link-35');">sample</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ref_traj</tt><tt class="py-op">.</tt><tt id="link-235" class="py-name"><a title="PyDSTool.Interval'.Interval.sample
+PyDSTool.Model.Model.sample
 PyDSTool.Trajectory'.HybridTrajectory.sample
 PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return doclink('link-235', 'sample', 'link-35');">sample</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> \ </tt>
 <a name="L872"></a><tt class="py-lineno"> 872</tt>  <tt class="py-line">                       <tt class="py-op">&lt;</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pars</tt><tt class="py-op">.</tt><tt class="py-name">tol</tt> </tt>
@@ -1413,6 +1463,7 @@ PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1425,6 +1476,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-242', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1442,6 +1494,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-243', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1456,6 +1509,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-244', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1469,6 +1523,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-245', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1482,6 +1537,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-246', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1494,6 +1550,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-247', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1509,12 +1566,13 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-248', 't', 'l
 <a name="L916"></a><tt class="py-lineno"> 916</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-comment"># eliminating each afterwards (separated by zeros)</tt> </tt>
 <a name="L917"></a><tt class="py-lineno"> 917</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-name">spike_ixs</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
 <a name="L918"></a><tt class="py-lineno"> 918</tt>  <tt class="py-line">        <tt class="py-name">done</tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
-<a name="L919"></a><tt class="py-lineno"> 919</tt>  <tt class="py-line">        <tt id="link-249" class="py-name" targets="Variable PyDSTool.Interval'.n=PyDSTool.Interval%27-module.html#n,Variable PyDSTool.Symbolic.n=PyDSTool.Symbolic-module.html#n,Variable PyDSTool.Toolbox.ActivationFuncs.n=PyDSTool.Toolbox.ActivationFuncs-module.html#n,Variable PyDSTool.Toolbox.DSSRT_tools.n=PyDSTool.Toolbox.DSSRT_tools-module.html#n,Variable PyDSTool.Toolbox.InputProfile.n=PyDSTool.Toolbox.InputProfile-module.html#n,Variable PyDSTool.Toolbox.ModelHelper.n=PyDSTool.Toolbox.ModelHelper-module.html#n,Variable PyDSTool.Toolbox.adjointPRC.n=PyDSTool.Toolbox.adjointPRC-module.html#n,Variable PyDSTool.Toolbox.dataanalysis.n=PyDSTool.Toolbox.dataanalysis-module.html#n,Variable PyDSTool.Toolbox.fracdim.n=PyDSTool.Toolbox.fracdim-module.html#n,Variable PyDSTool.Toolbox.makeSloppyModel.n=PyDSTool.Toolbox.makeSloppyModel-module.html#n,Variable PyDSTool.Toolbox.neuralcomp.n=PyDSTool.Toolbox.neuralcomp-module.html#n,Variable PyDSTool.Toolbox.phaseplane.n=PyDSTool.Toolbox.phaseplane-module.html#n,Variable PyDSTool.Toolbox.synthetic_data.n=PyDSTool.Toolbox.synthetic_data-module.html#n,Variable PyDSTool.Toolbox.syntheticdata.n=PyDSTool.Toolbox.syntheticdata-module.html#n,Variable PyDSTool.n=PyDSTool-module.html#n"><a title="PyDSTool.Interval'.n
+<a name="L919"></a><tt class="py-lineno"> 919</tt>  <tt class="py-line">        <tt id="link-249" class="py-name" targets="Variable PyDSTool.Interval'.n=PyDSTool.Interval%27-module.html#n,Variable PyDSTool.Symbolic.n=PyDSTool.Symbolic-module.html#n,Variable PyDSTool.Toolbox.ActivationFuncs.n=PyDSTool.Toolbox.ActivationFuncs-module.html#n,Variable PyDSTool.Toolbox.DSSRT_tools.n=PyDSTool.Toolbox.DSSRT_tools-module.html#n,Variable PyDSTool.Toolbox.InputProfile.n=PyDSTool.Toolbox.InputProfile-module.html#n,Variable PyDSTool.Toolbox.ModelHelper.n=PyDSTool.Toolbox.ModelHelper-module.html#n,Variable PyDSTool.Toolbox.NineML.n=PyDSTool.Toolbox.NineML-module.html#n,Variable PyDSTool.Toolbox.adjointPRC.n=PyDSTool.Toolbox.adjointPRC-module.html#n,Variable PyDSTool.Toolbox.dataanalysis.n=PyDSTool.Toolbox.dataanalysis-module.html#n,Variable PyDSTool.Toolbox.fracdim.n=PyDSTool.Toolbox.fracdim-module.html#n,Variable PyDSTool.Toolbox.makeSloppyModel.n=PyDSTool.Toolbox.makeSloppyModel-module.html#n,Variable PyDSTool.Toolbox.neuralcomp.n=PyDSTool.Toolbox.neuralcomp-module.html#n,Variable PyDSTool.Toolbox.phaseplane.n=PyDSTool.Toolbox.phaseplane-module.html#n,Variable PyDSTool.Toolbox.synthetic_data.n=PyDSTool.Toolbox.synthetic_data-module.html#n,Variable PyDSTool.Toolbox.syntheticdata.n=PyDSTool.Toolbox.syntheticdata-module.html#n,Variable PyDSTool.n=PyDSTool-module.html#n"><a title="PyDSTool.Interval'.n
 PyDSTool.Symbolic.n
 PyDSTool.Toolbox.ActivationFuncs.n
 PyDSTool.Toolbox.DSSRT_tools.n
 PyDSTool.Toolbox.InputProfile.n
 PyDSTool.Toolbox.ModelHelper.n
+PyDSTool.Toolbox.NineML.n
 PyDSTool.Toolbox.adjointPRC.n
 PyDSTool.Toolbox.dataanalysis.n
 PyDSTool.Toolbox.fracdim.n
@@ -1533,6 +1591,7 @@ PyDSTool.Toolbox.ActivationFuncs.n
 PyDSTool.Toolbox.DSSRT_tools.n
 PyDSTool.Toolbox.InputProfile.n
 PyDSTool.Toolbox.ModelHelper.n
+PyDSTool.Toolbox.NineML.n
 PyDSTool.Toolbox.adjointPRC.n
 PyDSTool.Toolbox.dataanalysis.n
 PyDSTool.Toolbox.fracdim.n
@@ -1549,6 +1608,7 @@ PyDSTool.Toolbox.ActivationFuncs.n
 PyDSTool.Toolbox.DSSRT_tools.n
 PyDSTool.Toolbox.InputProfile.n
 PyDSTool.Toolbox.ModelHelper.n
+PyDSTool.Toolbox.NineML.n
 PyDSTool.Toolbox.adjointPRC.n
 PyDSTool.Toolbox.dataanalysis.n
 PyDSTool.Toolbox.fracdim.n
@@ -1564,6 +1624,7 @@ PyDSTool.n" class="py-name" href="#" onclick="return doclink('link-252', 'n', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1671,6 +1732,7 @@ PyDSTool.common.PiecewisePolynomial.append" class="py-name" href="#" onclick="re
 <a name="L1017"></a><tt class="py-lineno">1017</tt>  <tt class="py-line">            <tt class="py-keyword">assert</tt> <tt class="py-name">start_t</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tvals</tt> </tt>
 <a name="L1018"></a><tt class="py-lineno">1018</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">start_t</tt> <tt class="py-op">=</tt> <tt class="py-name">start_t</tt> </tt>
 <a name="L1019"></a><tt class="py-lineno">1019</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">start_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-262" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-262', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">start_t</tt><tt class="py-op">)</tt> </tt>
 <a name="L1020"></a><tt class="py-lineno">1020</tt>  <tt class="py-line">        <tt class="py-keyword">assert</tt> <tt class="py-name">adjust_rate</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">0</tt> <tt class="py-keyword">and</tt> <tt class="py-name">adjust_rate</tt> <tt class="py-op">&lt;</tt> <tt class="py-number">1</tt> </tt>
 <a name="L1021"></a><tt class="py-lineno">1021</tt>  <tt class="py-line">        <tt class="py-name">adjust_rate_up</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt><tt class="py-op">+</tt><tt class="py-name">adjust_rate</tt> </tt>
@@ -1733,8 +1795,10 @@ PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-262'
 PyDSTool.common.Verbose.i" class="py-name" href="#" onclick="return doclink('link-267', 'i', 'link-63');">i</a></tt><tt class="py-op">]</tt> <tt class="py-keyword">for</tt> <tt id="link-268" class="py-name"><a title="PyDSTool.Symbolic.i
 PyDSTool.common.Verbose.i" class="py-name" href="#" onclick="return doclink('link-268', 'i', 'link-63');">i</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">spike_ixs</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
 <a name="L1078"></a><tt class="py-lineno">1078</tt>  <tt class="py-line">        <tt class="py-name">nearest_per_ix_lo</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-269" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-269', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">ts</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">spike_ixs</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">]</tt><tt class="py-op">-</tt><tt class="py-name">per</tt><tt class="py-op">*</tt><tt class="py-name">tol</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
 <a name="L1079"></a><tt class="py-lineno">1079</tt>  <tt class="py-line">        <tt class="py-name">nearest_per_ix_hi</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-270" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-270', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">ts</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">spike_ixs</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">]</tt><tt class="py-op">+</tt><tt class="py-name">per</tt><tt class="py-op">*</tt><tt class="py-name">tol</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
 <a name="L1080"></a><tt class="py-lineno">1080</tt>  <tt class="py-line">        <tt class="py-comment"># fill in rest of curve (outside of +/- period tolerance) with zeros</tt> </tt>
 <a name="L1081"></a><tt class="py-lineno">1081</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-keyword">if</tt> <tt class="py-name">spike_ixs_lo</tt> <tt class="py-op">==</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> <tt class="py-keyword">or</tt> <tt class="py-name">spike_ixs_lo</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">==</tt><tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
@@ -1783,6 +1847,7 @@ PyDSTool.common.Verbose.i" class="py-name" href="#" onclick="return doclink('lin
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1797,6 +1862,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-274', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1817,6 +1883,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-275', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1841,6 +1908,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-276', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1854,6 +1922,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-277', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1867,6 +1936,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-278', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1880,11 +1950,13 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-279', 't', 'l
 <a name="L1147"></a><tt class="py-lineno">1147</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#            print "Search from t=", t, "existing spikes=", spike_ixs</tt> </tt>
 <a name="L1148"></a><tt class="py-lineno">1148</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#            print "per= ", per, "t_lo=", t_lo, "t_hi=", t_hi</tt> </tt>
 <a name="L1149"></a><tt class="py-lineno">1149</tt>  <tt class="py-line"><tt class="py-comment"></tt>            <tt class="py-name">lo_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-280" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-280', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">t_lo</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
 <a name="L1150"></a><tt class="py-lineno">1150</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">lo_ix</tt> <tt class="py-op">==</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">:</tt> </tt>
 <a name="L1151"></a><tt class="py-lineno">1151</tt>  <tt class="py-line">                <tt class="py-comment"># hit end!</tt> </tt>
 <a name="L1152"></a><tt class="py-lineno">1152</tt>  <tt class="py-line"><tt class="py-comment"></tt>                <tt class="py-name">lo_ix</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
 <a name="L1153"></a><tt class="py-lineno">1153</tt>  <tt class="py-line">            <tt class="py-name">hi_ix</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pts</tt><tt class="py-op">.</tt><tt id="link-281" class="py-name"><a title="PyDSTool.Points.Pointset.find
+PyDSTool.parseUtils.parserObject.find
 PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-281', 'find', 'link-52');">find</a></tt><tt class="py-op">(</tt><tt class="py-name">t_hi</tt><tt class="py-op">,</tt> <tt class="py-name">end</tt><tt class="py-op">=</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
 <a name="L1154"></a><tt class="py-lineno">1154</tt>  <tt class="py-line">            <tt class="py-comment"># find() will not return vals &gt; numpoints or &lt; 0</tt> </tt>
 <a name="L1155"></a><tt class="py-lineno">1155</tt>  <tt class="py-line"><tt class="py-comment"></tt>            <tt class="py-name">hit_end</tt> <tt class="py-op">=</tt> <tt class="py-name">lo_ix</tt> <tt class="py-op">==</tt> <tt class="py-number">0</tt> <tt class="py-keyword">or</tt> <tt class="py-name">hi_ix</tt> <tt class="py-op">==</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">numpoints</tt> </tt>
@@ -1913,6 +1985,7 @@ PyDSTool.utils.find" class="py-name" href="#" onclick="return doclink('link-281'
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1937,6 +2010,7 @@ PyDSTool.t" class="py-name" href="#" onclick="return doclink('link-282', 't', 'l
 PyDSTool.Toolbox.DSSRT_tools.t
 PyDSTool.Toolbox.InputProfile.t
 PyDSTool.Toolbox.ModelHelper.t
+PyDSTool.Toolbox.NineML.t
 PyDSTool.Toolbox.adjointPRC.t
 PyDSTool.Toolbox.dataanalysis.t
 PyDSTool.Toolbox.fracdim.t
@@ -1998,7 +2072,7 @@ expandto(location.href);
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:43 2011
+    Generated by Epydoc 3.0.1 on Fri May  4 15:24:15 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

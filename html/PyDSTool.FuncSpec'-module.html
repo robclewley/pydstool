@@ -152,7 +152,7 @@ and for manipulation of abstraction digraphs.
         <span class="summary-sig-arg">indentstr</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
         <span class="summary-sig-arg">typestr</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
         <span class="summary-sig-arg">endstatementchar</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
-        <span class="summary-sig-arg">parseFunc</span>=<span class="summary-sig-default">&lt;function idfn at 0x170dbf0&gt;</span>)</span><br />
+        <span class="summary-sig-arg">parseFunc</span>=<span class="summary-sig-default">&lt;function idfn at 0x1565470&gt;</span>)</span><br />
       Process substitutions of reused terms.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.FuncSpec%27-pysrc.html#_processReused">source&nbsp;code</a></span>
@@ -186,12 +186,33 @@ and for manipulation of abstraction digraphs.
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="PyDSTool.FuncSpec%27-module.html#renameClashingAuxFnPars" class="summary-sig-name">renameClashingAuxFnPars</a>(<span class="summary-sig-arg">fnspecs</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.FuncSpec%27-module.html#makePartialJac" class="summary-sig-name">makePartialJac</a>(<span class="summary-sig-arg">spec_pair</span>,
+        <span class="summary-sig-arg">varnames</span>,
+        <span class="summary-sig-arg">select</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Use this when parameters have been added to a modified Generator which
+might clash with aux fn argument names.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="PyDSTool.FuncSpec%27-pysrc.html#makePartialJac">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="PyDSTool.FuncSpec%27-module.html#resolveClashingAuxFnPars" class="summary-sig-name">resolveClashingAuxFnPars</a>(<span class="summary-sig-arg">fnspecs</span>,
+        <span class="summary-sig-arg">varspecs</span>,
         <span class="summary-sig-arg">parnames</span>)</span><br />
       Use this when parameters have been added to a modified Generator 
       which might clash with aux fn argument names.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="PyDSTool.FuncSpec%27-pysrc.html#renameClashingAuxFnPars">source&nbsp;code</a></span>
+            <span class="codelink"><a href="PyDSTool.FuncSpec%27-pysrc.html#resolveClashingAuxFnPars">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -634,24 +655,56 @@ and for manipulation of abstraction digraphs.
   </td>
 </tr>
 </table>
-<a name="renameClashingAuxFnPars"></a>
+<a name="makePartialJac"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr><td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">renameClashingAuxFnPars</span>(<span class="sig-arg">fnspecs</span>,
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">makePartialJac</span>(<span class="sig-arg">spec_pair</span>,
+        <span class="sig-arg">varnames</span>,
+        <span class="sig-arg">select</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.FuncSpec%27-pysrc.html#makePartialJac">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Use this when parameters have been added to a modified Generator which
+might clash with aux fn argument names. (E.g., used by find_nullclines).
+
+'select' option (list of varnames) selects those entries from the Jac of the varnames,
+   e.g. for constructing Jacobian w.r.t. 'parameters' using a parameter formerly
+   a variable (e.g. for find_nullclines).
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="resolveClashingAuxFnPars"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">resolveClashingAuxFnPars</span>(<span class="sig-arg">fnspecs</span>,
+        <span class="sig-arg">varspecs</span>,
         <span class="sig-arg">parnames</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="PyDSTool.FuncSpec%27-pysrc.html#renameClashingAuxFnPars">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="PyDSTool.FuncSpec%27-pysrc.html#resolveClashingAuxFnPars">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
   <p>Use this when parameters have been added to a modified Generator which
-  might clash with aux fn argument names. (E.g., used by 
-  find_nullclines)</p>
+  might clash with aux fn argument names. (E.g., used by find_nullclines). 
+  Will remove arguments that are now considered parameters by the system, 
+  in both the function definitions and their use in specs for the 
+  variables.</p>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -1243,7 +1296,7 @@ ModelSpec internal helper class: auxfnDBclass object
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:22 2011
+    Generated by Epydoc 3.0.1 on Fri May  4 15:24:02 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

@@ -176,8 +176,9 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="_process_expr"></a><span class="summary-sig-name">_process_expr</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">expr</span>)</span></td>
+          <td><span class="summary-sig"><a href="PyDSTool.Toolbox.dssrt.dssrt_assistant-class.html#_process_expr" class="summary-sig-name" onclick="show_private();">_process_expr</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">expr</span>)</span><br />
+      Create two Symbolic.Fun(ction) versions of the given expression:</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Toolbox.dssrt-pysrc.html#dssrt_assistant._process_expr">source&nbsp;code</a></span>
             
@@ -226,10 +227,69 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="calc_taus_infs"></a><span class="summary-sig-name">calc_taus_infs</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a name="calc_tau"></a><span class="summary-sig-name">calc_tau</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">target</span>,
+        <span class="summary-sig-arg">pt</span>)</span><br />
+      Calculate tau of target variable directly from a given single point 
+      containing only the state variables.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="PyDSTool.Toolbox.dssrt-pysrc.html#dssrt_assistant.calc_tau">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="calc_inf"></a><span class="summary-sig-name">calc_inf</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">target</span>,
+        <span class="summary-sig-arg">pt</span>)</span><br />
+      Calculate inf of target variable directly from a given single point 
+      containing only the state variables.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="PyDSTool.Toolbox.dssrt-pysrc.html#dssrt_assistant.calc_inf">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="PyDSTool.Toolbox.dssrt.dssrt_assistant-class.html#calc_psi" class="summary-sig-name">calc_psi</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">target</span>,
+        <span class="summary-sig-arg">pt</span>,
+        <span class="summary-sig-arg">focus</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Calculate Psi of focus variable w.r.t.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="PyDSTool.Toolbox.dssrt-pysrc.html#dssrt_assistant.calc_psi">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="PyDSTool.Toolbox.dssrt.dssrt_assistant-class.html#calc_taus_infs" class="summary-sig-name">calc_taus_infs</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">focus</span>=<span class="summary-sig-default">False</span>)</span><br />
-      if focus=True (default False), results are only returned for the 
-      variable of focus given by focus_var attribute</td>
+      Calculate taus and infs from given trajectory.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Toolbox.dssrt-pysrc.html#dssrt_assistant.calc_taus_infs">source&nbsp;code</a></span>
             
@@ -245,7 +305,8 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="calc_Is"></a><span class="summary-sig-name">calc_Is</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td><span class="summary-sig"><a name="calc_Is"></a><span class="summary-sig-name">calc_Is</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Calculate currents from given trajectory</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Toolbox.dssrt-pysrc.html#dssrt_assistant.calc_Is">source&nbsp;code</a></span>
             
@@ -261,7 +322,8 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="calc_psis"></a><span class="summary-sig-name">calc_psis</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td><span class="summary-sig"><a name="calc_psis"></a><span class="summary-sig-name">calc_psis</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Calculate Psis from given trajectory</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Toolbox.dssrt-pysrc.html#dssrt_assistant.calc_psis">source&nbsp;code</a></span>
             
@@ -408,6 +470,90 @@ object --+
   </dl>
 </td></tr></table>
 </div>
+<a name="_process_expr"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_process_expr</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">expr</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Toolbox.dssrt-pysrc.html#dssrt_assistant._process_expr">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Create two Symbolic.Fun(ction) versions of the given expression:
+
+(1) The first is intended for processing post-integration
+pointsets to yield the dominant scale Psi quantities,
+when the pointsets contain already-computed auxiliary variables
+for taus, infs, etc.
+
+(2) The second is intended for on-demand calculation of Psi's
+when only the system's state variables are given, thus
+taus and infs etc. must be computed this class. If user did not
+provide the dssrt_fn functions this will be ignored and not created.
+
+The returned pair of pairs is
+ ((arg_list_signature (1), symbolic function (1)),
+  (arg_list_signature (2), symbolic function (2)))
+unless None was passed (in which case None is returned).
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="calc_psi"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">calc_psi</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">target</span>,
+        <span class="sig-arg">pt</span>,
+        <span class="sig-arg">focus</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Toolbox.dssrt-pysrc.html#dssrt_assistant.calc_psi">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Calculate Psi of focus variable w.r.t. the target variable directly 
+  from a given single point containing only the state variables.</p>
+  <p>If focus is None (default) then focus_var attribute is assumed.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="calc_taus_infs"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">calc_taus_infs</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">focus</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Toolbox.dssrt-pysrc.html#dssrt_assistant.calc_taus_infs">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Calculate taus and infs from given trajectory.</p>
+  <p>If focus=True (default False), results are only returned for the 
+  variable of focus given by focus_var attribute</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
 <br />
 <!-- ==================== NAVIGATION BAR ==================== -->
 <table class="navbar" border="0" width="100%" cellpadding="0"
@@ -440,7 +586,7 @@ object --+
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:28 2011
+    Generated by Epydoc 3.0.1 on Fri May  4 15:24:08 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

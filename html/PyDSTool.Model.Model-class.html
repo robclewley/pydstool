@@ -75,15 +75,7 @@ object --+
 </dd></dl>
 
 <hr />
-<p>General-purpose Hybrid Model abstract class.</p>
-  <p>obsvars and intvars are dictionaries model variable declarations must 
-  be of the form `name: valtype`, where valtype is float or int. obsvars 
-  specifies the observable variables for this model, which must be present 
-  in all trajectory segments (regardless of which other variables are 
-  specified in those segments). intvars specifies non-observable (internal)
-  variables for the model, which may or may not be present in trajectory 
-  segments, depending on reductions, etc., that are present in the 
-  sub-model (e.g. generator) that determines the trajectory segment.</p>
+<p>General-purpose Hybrid and Non-Hybrid Model abstract class.</p>
 
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
@@ -175,16 +167,16 @@ object --+
       
     </td>
   </tr>
-<tr>
+<tr class="private">
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="generateParamInfo"></a><span class="summary-sig-name">generateParamInfo</span>(<span class="summary-sig-arg">self</span>)</span><br />
+          <td><span class="summary-sig"><a href="PyDSTool.Model.Model-class.html#_generateParamInfo" class="summary-sig-name" onclick="show_private();">_generateParamInfo</a>(<span class="summary-sig-arg">self</span>)</span><br />
       Record parameter info locally, for future queries.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="PyDSTool.Model-pysrc.html#Model.generateParamInfo">source&nbsp;code</a></span>
+            <span class="codelink"><a href="PyDSTool.Model-pysrc.html#Model._generateParamInfo">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -694,11 +686,11 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="renameTraj"></a><span class="summary-sig-name">renameTraj</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.Model.Model-class.html#renameTraj" class="summary-sig-name">renameTraj</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">trajname</span>,
         <span class="summary-sig-arg">newname</span>,
         <span class="summary-sig-arg">force</span>=<span class="summary-sig-default">False</span>)</span><br />
-      Rename stored trajectory</td>
+      Rename stored trajectory.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Model-pysrc.html#Model.renameTraj">source&nbsp;code</a></span>
             
@@ -717,8 +709,8 @@ object --+
           <td><span class="summary-sig"><a name="getTrajModelName"></a><span class="summary-sig-name">getTrajModelName</span>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">trajname</span>,
         <span class="summary-sig-arg">t</span>=<span class="summary-sig-default">None</span>)</span><br />
-      Return the named trajectory's associated Model(s), specific to time t
-      if given.</td>
+      Return the named trajectory's associated sub-model(s) used to create 
+      it, specific to time t if given.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Model-pysrc.html#Model.getTrajModelName">source&nbsp;code</a></span>
             
@@ -877,8 +869,8 @@ object --+
         <span class="summary-sig-arg">thi</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">doEvents</span>=<span class="summary-sig-default">True</span>,
         <span class="summary-sig-arg">precise</span>=<span class="summary-sig-default">False</span>)</span><br />
-      Uniformly sample the named trajectory over range indicated, including
-      any event points.</td>
+      Uniformly sample the named trajectory over range indicated,
+including any event points.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Model-pysrc.html#Model.sample">source&nbsp;code</a></span>
             
@@ -888,19 +880,19 @@ object --+
       
     </td>
   </tr>
-<tr>
+<tr class="private">
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="showModelInfo"></a><span class="summary-sig-name">showModelInfo</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a name="_infostr"></a><span class="summary-sig-name">_infostr</span>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">dsName</span>=<span class="summary-sig-default">None</span>,
-        <span class="summary-sig-arg">returnInfo</span>=<span class="summary-sig-default">False</span>,
         <span class="summary-sig-arg">verbosity</span>=<span class="summary-sig-default">0</span>)</span><br />
-      Display information about named sub-model</td>
+      Return string information about named sub-model (if given by dsName) 
+      at given verbosity level (default 0)</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="PyDSTool.Model-pysrc.html#Model.showModelInfo">source&nbsp;code</a></span>
+            <span class="codelink"><a href="PyDSTool.Model-pysrc.html#Model._infostr">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -1199,7 +1191,8 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="resetEventTimes"></a><span class="summary-sig-name">resetEventTimes</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td><span class="summary-sig"><a name="resetEventTimes"></a><span class="summary-sig-name">resetEventTimes</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Internal method</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Model-pysrc.html#Model.resetEventTimes">source&nbsp;code</a></span>
             
@@ -1237,7 +1230,7 @@ object --+
           <td><span class="summary-sig"><a name="searchForNames"></a><span class="summary-sig-name">searchForNames</span>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">template</span>)</span><br />
       Find parameter / variables names matching template in the model's 
-      generators or sub-models.</td>
+      generators or sub-models: the returned result is a list.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Model-pysrc.html#Model.searchForNames">source&nbsp;code</a></span>
             
@@ -1256,7 +1249,7 @@ object --+
           <td><span class="summary-sig"><a name="searchForVars"></a><span class="summary-sig-name">searchForVars</span>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">template</span>)</span><br />
       Find variable and auxiliary variable names that have to be in every 
-      generator or sub-model: the result is a list.</td>
+      generator or sub-model: the returned result is a list.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Model-pysrc.html#Model.searchForVars">source&nbsp;code</a></span>
             
@@ -1416,6 +1409,26 @@ object --+
         object.__init__
         <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="_generateParamInfo"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_generateParamInfo</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Model-pysrc.html#Model._generateParamInfo">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Record parameter info locally, for future queries. Internal use 
+  only.</p>
+  <dl class="fields">
   </dl>
 </td></tr></table>
 </div>
@@ -1663,6 +1676,29 @@ Permitted keys: 'pars', 'algparams', 'checklevel', 'abseps',
   </dl>
 </td></tr></table>
 </div>
+<a name="renameTraj"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">renameTraj</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">trajname</span>,
+        <span class="sig-arg">newname</span>,
+        <span class="sig-arg">force</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Model-pysrc.html#Model.renameTraj">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Rename stored trajectory. Force option (default False) will overwrite 
+  any existing trajectory with the new name.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
 <a name="getTrajEventTimes"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -1800,13 +1836,26 @@ WARNING: THIS FUNCTION IS NOT 'SAFE' -- IT DOES NOT CHECK THAT VALS
     </td>
   </tr></table>
   
-  <p>Uniformly sample the named trajectory over range indicated, including 
-  any event points. (e.g. use this call for plotting purposes.)</p>
-  <p>precise=False attempts to use the underlying mesh of the trajectory to
-  return a Pointset more quickly. Currently, this can only be used for 
-  trajectories that have a single segment.</p>
-  <p>If dt is not given, the underlying time mesh is used, if 
-  available.</p>
+  <pre class="literalblock">
+Uniformly sample the named trajectory over range indicated,
+including any event points. (e.g. use this call for plotting purposes.)
+Outputs a Pointset from the trajectory over a given range.
+
+Arguments:
+
+  trajname   Name of stored trajectory to sample
+  coords     (optional) list of variable names to include in output
+  dt         (optional) step size to use in sampling of independent variable
+             If not given, the underlying time mesh is used, if available.
+  tlo        (optional) Start value for independent variable, default 0
+  thi        (optional) End value for independent variable, default last value
+  doEvents   (optional) include any event points in output, default True
+  precise    (optional) The default value, False, causes an attempt to use
+             the underlying mesh of the trajectory to return a Pointset more
+             quickly. Currently, this can only be used for trajectories that
+             have a single segment (non-hybrid).
+
+</pre>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -2307,7 +2356,7 @@ flagVal is applied to every listed event in every listed generator, if
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:27 2011
+    Generated by Epydoc 3.0.1 on Fri May  4 15:24:07 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

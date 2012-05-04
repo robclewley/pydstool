@@ -925,7 +925,7 @@ Includes AST code by Pearu Peterson and Ryan Gutenkunst,
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="readArgs"></a><span class="summary-sig-name">readArgs</span>(<span class="summary-sig-arg">argstr</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.parseUtils-module.html#readArgs" class="summary-sig-name">readArgs</a>(<span class="summary-sig-arg">argstr</span>,
         <span class="summary-sig-arg">lbchar</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">(</code><code class="variable-quote">'</code></span>,
         <span class="summary-sig-arg">rbchar</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">)</code><code class="variable-quote">'</code></span>)</span><br />
       Parse arguments out of string beginning and ending with braces 
@@ -948,7 +948,7 @@ Includes AST code by Pearu Peterson and Ryan Gutenkunst,
           <td><span class="summary-sig"><a href="PyDSTool.parseUtils-module.html#findEndBrace" class="summary-sig-name">findEndBrace</a>(<span class="summary-sig-arg">s</span>,
         <span class="summary-sig-arg">lbchar</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">(</code><code class="variable-quote">'</code></span>,
         <span class="summary-sig-arg">rbchar</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">)</code><code class="variable-quote">'</code></span>)</span><br />
-      Find position in string (or list of strings) s at which final 
+      Find position in string (or list of strings), s, at which final 
       matching brace occurs (if at all).</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.parseUtils-pysrc.html#findEndBrace">source&nbsp;code</a></span>
@@ -966,7 +966,8 @@ Includes AST code by Pearu Peterson and Ryan Gutenkunst,
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a name="makeParList"></a><span class="summary-sig-name">makeParList</span>(<span class="summary-sig-arg">objlist</span>,
-        <span class="summary-sig-arg">prefix</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>)</span></td>
+        <span class="summary-sig-arg">prefix</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>)</span><br />
+      wrap objlist into a comma separated string of str(objects)</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.parseUtils-pysrc.html#makeParList">source&nbsp;code</a></span>
             
@@ -2293,6 +2294,30 @@ Includes AST code by Pearu Peterson and Ryan Gutenkunst,
   </dl>
 </td></tr></table>
 </div>
+<a name="readArgs"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">readArgs</span>(<span class="sig-arg">argstr</span>,
+        <span class="sig-arg">lbchar</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">(</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">rbchar</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">)</code><code class="variable-quote">'</code></span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.parseUtils-pysrc.html#readArgs">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Parse arguments out of string beginning and ending with braces 
+  (default: round brace).</p>
+  <p>Returns a triple: [success_boolean, list of arguments, number of 
+  args]</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
 <a name="findEndBrace"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -2309,8 +2334,11 @@ Includes AST code by Pearu Peterson and Ryan Gutenkunst,
     </td>
   </tr></table>
   
-  <p>Find position in string (or list of strings) s at which final matching
-  brace occurs (if at all). If not found, returns None.</p>
+  <p>Find position in string (or list of strings), s, at which final 
+  matching brace occurs (if at all). If not found, returns None.</p>
+  <p>s[0] must be the left brace character. Default left and right braces 
+  are '(' and ')'. Change them with the optional second and third 
+  arguments.</p>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -3126,7 +3154,7 @@ ModelSpec internal helper class: auxfnDBclass object
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:26 2011
+    Generated by Epydoc 3.0.1 on Fri May  4 15:24:06 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

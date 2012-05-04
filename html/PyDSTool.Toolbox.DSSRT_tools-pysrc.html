@@ -202,13 +202,14 @@ PyDSTool.utils.remain" class="py-name" href="#" onclick="return doclink('link-17
 <a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">                                      <tt class="py-string">"external variables at this time"</tt><tt class="py-op">)</tt> </tt>
 <a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-string">"Finding graph layout for network..."</tt> </tt>
 <a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">        <tt id="link-18" class="py-name" targets="Variable PyDSTool.Toolbox.neuralcomp.V=PyDSTool.Toolbox.neuralcomp-module.html#V"><a title="PyDSTool.Toolbox.neuralcomp.V" class="py-name" href="#" onclick="return doclink('link-18', 'V', 'link-18');">V</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
-<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">        <tt id="link-19" class="py-name" targets="Variable PyDSTool.E=PyDSTool-module.html#E,Variable PyDSTool.ModelSpec'.E=PyDSTool.ModelSpec%27-module.html#E,Variable PyDSTool.Symbolic.E=PyDSTool.Symbolic-module.html#E,Variable PyDSTool.Toolbox.ActivationFuncs.E=PyDSTool.Toolbox.ActivationFuncs-module.html#E,Variable PyDSTool.Toolbox.DSSRT_tools.E=PyDSTool.Toolbox.DSSRT_tools-module.html#E,Variable PyDSTool.Toolbox.InputProfile.E=PyDSTool.Toolbox.InputProfile-module.html#E,Variable PyDSTool.Toolbox.ModelHelper.E=PyDSTool.Toolbox.ModelHelper-module.html#E,Variable PyDSTool.Toolbox.adjointPRC.E=PyDSTool.Toolbox.adjointPRC-module.html#E,Variable PyDSTool.Toolbox.dataanalysis.E=PyDSTool.Toolbox.dataanalysis-module.html#E,Variable PyDSTool.Toolbox.fracdim.E=PyDSTool.Toolbox.fracdim-module.html#E,Variable PyDSTool.Toolbox.makeSloppyModel.E=PyDSTool.Toolbox.makeSloppyModel-module.html#E,Variable PyDSTool.Toolbox.neuralcomp.E=PyDSTool.Toolbox.neuralcomp-module.html#E,Variable PyDSTool.Toolbox.phaseplane.E=PyDSTool.Toolbox.phaseplane-module.html#E,Variable PyDSTool.Toolbox.synthetic_data.E=PyDSTool.Toolbox.synthetic_data-module.html#E,Variable PyDSTool.Toolbox.syntheticdata.E=PyDSTool.Toolbox.syntheticdata-module.html#E"><a title="PyDSTool.E
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">        <tt id="link-19" class="py-name" targets="Variable PyDSTool.E=PyDSTool-module.html#E,Variable PyDSTool.ModelSpec'.E=PyDSTool.ModelSpec%27-module.html#E,Variable PyDSTool.Symbolic.E=PyDSTool.Symbolic-module.html#E,Variable PyDSTool.Toolbox.ActivationFuncs.E=PyDSTool.Toolbox.ActivationFuncs-module.html#E,Variable PyDSTool.Toolbox.DSSRT_tools.E=PyDSTool.Toolbox.DSSRT_tools-module.html#E,Variable PyDSTool.Toolbox.InputProfile.E=PyDSTool.Toolbox.InputProfile-module.html#E,Variable PyDSTool.Toolbox.ModelHelper.E=PyDSTool.Toolbox.ModelHelper-module.html#E,Variable PyDSTool.Toolbox.NineML.E=PyDSTool.Toolbox.NineML-module.html#E,Variable PyDSTool.Toolbox.adjointPRC.E=PyDSTool.Toolbox.adjointPRC-module.html#E,Variable PyDSTool.Toolbox.dataanalysis.E=PyDSTool.Toolbox.dataanalysis-module.html#E,Variable PyDSTool.Toolbox.fracdim.E=PyDSTool.Toolbox.fracdim-module.html#E,Variable PyDSTool.Toolbox.makeSloppyModel.E=PyDSTool.Toolbox.makeSloppyModel-module.html#E,Variable PyDSTool.Toolbox.neuralcomp.E=PyDSTool.Toolbox.neuralcomp-module.html#E,Variable PyDSTool.Toolbox.phaseplane.E=PyDSTool.Toolbox.phaseplane-module.html#E,Variable PyDSTool.Toolbox.synthetic_data.E=PyDSTool.Toolbox.synthetic_data-module.html#E,Variable PyDSTool.Toolbox.syntheticdata.E=PyDSTool.Toolbox.syntheticdata-module.html#E"><a title="PyDSTool.E
 PyDSTool.ModelSpec'.E
 PyDSTool.Symbolic.E
 PyDSTool.Toolbox.ActivationFuncs.E
 PyDSTool.Toolbox.DSSRT_tools.E
 PyDSTool.Toolbox.InputProfile.E
 PyDSTool.Toolbox.ModelHelper.E
+PyDSTool.Toolbox.NineML.E
 PyDSTool.Toolbox.adjointPRC.E
 PyDSTool.Toolbox.dataanalysis.E
 PyDSTool.Toolbox.fracdim.E
@@ -252,7 +253,7 @@ PyDSTool.parseUtils.symbolMapClass.items" class="py-name" href="#" onclick="retu
 <a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">                    <tt class="py-keyword">if</tt> <tt class="py-name">invar</tt> <tt class="py-op">==</tt> <tt class="py-name">var</tt><tt class="py-op">:</tt> </tt>
 <a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">                        <tt class="py-keyword">raise</tt> <tt class="py-name">ValueError</tt><tt class="py-op">(</tt><tt class="py-string">"Internal error: invar == var"</tt><tt class="py-op">)</tt> </tt>
 <a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">                    <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
-<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">                        <tt id="link-24" class="py-name" targets="Variable PyDSTool.Generator.ADMC_ODEsystem'.e=PyDSTool.Generator.ADMC_ODEsystem%27-module.html#e,Variable PyDSTool.Generator.DDEsystem.e=PyDSTool.Generator.DDEsystem-module.html#e,Variable PyDSTool.Generator.Dopri_ODEsystem'.e=PyDSTool.Generator.Dopri_ODEsystem%27-module.html#e,Variable PyDSTool.Generator.EmbeddedSysGen'.e=PyDSTool.Generator.EmbeddedSysGen%27-module.html#e,Variable PyDSTool.Generator.Euler_ODEsystem'.e=PyDSTool.Generator.Euler_ODEsystem%27-module.html#e,Variable PyDSTool.Generator.ExplicitFnGen'.e=PyDSTool.Generator.ExplicitFnGen%27-module.html#e,Variable PyDSTool.Generator.ExtrapolateTable'.e=PyDSTool.Generator.ExtrapolateTable%27-module.html#e,Variable PyDSTool.Generator.ImplicitFnGen'.e=PyDSTool.Generator.ImplicitFnGen%27-module.html#e,Variable PyDSTool.Generator.InterpolateTable'.e=PyDSTool.Generator.InterpolateTable%27-module.html#e,Variable PyDSTool.Generator.LookupTable'.e=PyDSTool.Generator.LookupTable%27-module.html#e,Variable PyDSTool.Generator.MapSystem'.e=PyDSTool.Generator.MapSystem%27-module.html#e,Variable PyDSTool.Generator.ODEsystem'.e=PyDSTool.Generator.ODEsystem%27-module.html#e,Variable PyDSTool.Generator.Radau_ODEsystem'.e=PyDSTool.Generator.Radau_ODEsystem%27-module.html#e,Variable PyDSTool.Generator.Vode_ODEsystem'.e=PyDSTool.Generator.Vode_ODEsystem%27-module.html#e,Variable PyDSTool.Generator.allimports.e=PyDSTool.Generator.allimports-module.html#e,Variable PyDSTool.Generator.baseclasses.e=PyDSTool.Generator.baseclasses-module.html#e,Variable PyDSTool.Generator.e=PyDSTool.Generator-module.html#e,Variable PyDSTool.ModelSpec'.e=PyDSTool.ModelSpec%27-module.html#e,Variable PyDSTool.PyCont.ContClass'.e=PyDSTool.PyCont.ContClass%27-module.html#e,Variable PyDSTool.Symbolic.e=PyDSTool.Symbolic-module.html#e,Variable PyDSTool.Toolbox.dataanalysis.e=PyDSTool.Toolbox.dataanalysis-module.html#e,Variable PyDSTool.Toolbox.phaseplane.e=PyDSTool.Toolbox.phaseplane-module.html#e,Variable PyDSTool.Toolbox.synthetic_data.e=PyDSTool.Toolbox.synthetic_data-module.html#e,Variable PyDSTool.Toolbox.syntheticdata.e=PyDSTool.Toolbox.syntheticdata-module.html#e,Variable matplotlib.pylab.e=matplotlib.pylab-module.html#e"><a title="PyDSTool.Generator.ADMC_ODEsystem'.e
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">                        <tt id="link-24" class="py-name" targets="Variable PyDSTool.Generator.ADMC_ODEsystem'.e=PyDSTool.Generator.ADMC_ODEsystem%27-module.html#e,Variable PyDSTool.Generator.DDEsystem.e=PyDSTool.Generator.DDEsystem-module.html#e,Variable PyDSTool.Generator.Dopri_ODEsystem'.e=PyDSTool.Generator.Dopri_ODEsystem%27-module.html#e,Variable PyDSTool.Generator.EmbeddedSysGen'.e=PyDSTool.Generator.EmbeddedSysGen%27-module.html#e,Variable PyDSTool.Generator.Euler_ODEsystem'.e=PyDSTool.Generator.Euler_ODEsystem%27-module.html#e,Variable PyDSTool.Generator.ExplicitFnGen'.e=PyDSTool.Generator.ExplicitFnGen%27-module.html#e,Variable PyDSTool.Generator.ExtrapolateTable'.e=PyDSTool.Generator.ExtrapolateTable%27-module.html#e,Variable PyDSTool.Generator.ImplicitFnGen'.e=PyDSTool.Generator.ImplicitFnGen%27-module.html#e,Variable PyDSTool.Generator.InterpolateTable'.e=PyDSTool.Generator.InterpolateTable%27-module.html#e,Variable PyDSTool.Generator.LookupTable'.e=PyDSTool.Generator.LookupTable%27-module.html#e,Variable PyDSTool.Generator.MapSystem'.e=PyDSTool.Generator.MapSystem%27-module.html#e,Variable PyDSTool.Generator.ODEsystem'.e=PyDSTool.Generator.ODEsystem%27-module.html#e,Variable PyDSTool.Generator.Radau_ODEsystem'.e=PyDSTool.Generator.Radau_ODEsystem%27-module.html#e,Variable PyDSTool.Generator.Vode_ODEsystem'.e=PyDSTool.Generator.Vode_ODEsystem%27-module.html#e,Variable PyDSTool.Generator.allimports.e=PyDSTool.Generator.allimports-module.html#e,Variable PyDSTool.Generator.baseclasses.e=PyDSTool.Generator.baseclasses-module.html#e,Variable PyDSTool.Generator.e=PyDSTool.Generator-module.html#e,Variable PyDSTool.ModelSpec'.e=PyDSTool.ModelSpec%27-module.html#e,Variable PyDSTool.PyCont.ContClass'.e=PyDSTool.PyCont.ContClass%27-module.html#e,Variable PyDSTool.Symbolic.e=PyDSTool.Symbolic-module.html#e,Variable PyDSTool.Toolbox.NineML.e=PyDSTool.Toolbox.NineML-module.html#e,Variable PyDSTool.Toolbox.dataanalysis.e=PyDSTool.Toolbox.dataanalysis-module.html#e,Variable PyDSTool.Toolbox.phaseplane.e=PyDSTool.Toolbox.phaseplane-module.html#e,Variable PyDSTool.Toolbox.synthetic_data.e=PyDSTool.Toolbox.synthetic_data-module.html#e,Variable PyDSTool.Toolbox.syntheticdata.e=PyDSTool.Toolbox.syntheticdata-module.html#e,Variable matplotlib.pylab.e=matplotlib.pylab-module.html#e"><a title="PyDSTool.Generator.ADMC_ODEsystem'.e
 PyDSTool.Generator.DDEsystem.e
 PyDSTool.Generator.Dopri_ODEsystem'.e
 PyDSTool.Generator.EmbeddedSysGen'.e
@@ -272,6 +273,7 @@ PyDSTool.Generator.e
 PyDSTool.ModelSpec'.e
 PyDSTool.PyCont.ContClass'.e
 PyDSTool.Symbolic.e
+PyDSTool.Toolbox.NineML.e
 PyDSTool.Toolbox.dataanalysis.e
 PyDSTool.Toolbox.phaseplane.e
 PyDSTool.Toolbox.synthetic_data.e
@@ -288,6 +290,7 @@ PyDSTool.Toolbox.ActivationFuncs.E
 PyDSTool.Toolbox.DSSRT_tools.E
 PyDSTool.Toolbox.InputProfile.E
 PyDSTool.Toolbox.ModelHelper.E
+PyDSTool.Toolbox.NineML.E
 PyDSTool.Toolbox.adjointPRC.E
 PyDSTool.Toolbox.dataanalysis.E
 PyDSTool.Toolbox.fracdim.E
@@ -316,6 +319,7 @@ PyDSTool.Generator.e
 PyDSTool.ModelSpec'.e
 PyDSTool.PyCont.ContClass'.e
 PyDSTool.Symbolic.e
+PyDSTool.Toolbox.NineML.e
 PyDSTool.Toolbox.dataanalysis.e
 PyDSTool.Toolbox.phaseplane.e
 PyDSTool.Toolbox.synthetic_data.e
@@ -329,6 +333,7 @@ PyDSTool.Toolbox.ActivationFuncs.E
 PyDSTool.Toolbox.DSSRT_tools.E
 PyDSTool.Toolbox.InputProfile.E
 PyDSTool.Toolbox.ModelHelper.E
+PyDSTool.Toolbox.NineML.E
 PyDSTool.Toolbox.adjointPRC.E
 PyDSTool.Toolbox.dataanalysis.E
 PyDSTool.Toolbox.fracdim.E
@@ -356,6 +361,7 @@ PyDSTool.Generator.e
 PyDSTool.ModelSpec'.e
 PyDSTool.PyCont.ContClass'.e
 PyDSTool.Symbolic.e
+PyDSTool.Toolbox.NineML.e
 PyDSTool.Toolbox.dataanalysis.e
 PyDSTool.Toolbox.phaseplane.e
 PyDSTool.Toolbox.synthetic_data.e
@@ -368,6 +374,7 @@ PyDSTool.Toolbox.ActivationFuncs.E
 PyDSTool.Toolbox.DSSRT_tools.E
 PyDSTool.Toolbox.InputProfile.E
 PyDSTool.Toolbox.ModelHelper.E
+PyDSTool.Toolbox.NineML.E
 PyDSTool.Toolbox.adjointPRC.E
 PyDSTool.Toolbox.dataanalysis.E
 PyDSTool.Toolbox.fracdim.E
@@ -383,6 +390,7 @@ PyDSTool.Toolbox.ActivationFuncs.E
 PyDSTool.Toolbox.DSSRT_tools.E
 PyDSTool.Toolbox.InputProfile.E
 PyDSTool.Toolbox.ModelHelper.E
+PyDSTool.Toolbox.NineML.E
 PyDSTool.Toolbox.adjointPRC.E
 PyDSTool.Toolbox.dataanalysis.E
 PyDSTool.Toolbox.fracdim.E
@@ -477,6 +485,7 @@ PyDSTool.Toolbox.ActivationFuncs.E
 PyDSTool.Toolbox.DSSRT_tools.E
 PyDSTool.Toolbox.InputProfile.E
 PyDSTool.Toolbox.ModelHelper.E
+PyDSTool.Toolbox.NineML.E
 PyDSTool.Toolbox.adjointPRC.E
 PyDSTool.Toolbox.dataanalysis.E
 PyDSTool.Toolbox.fracdim.E
@@ -514,6 +523,7 @@ PyDSTool.Toolbox.ActivationFuncs.E
 PyDSTool.Toolbox.DSSRT_tools.E
 PyDSTool.Toolbox.InputProfile.E
 PyDSTool.Toolbox.ModelHelper.E
+PyDSTool.Toolbox.NineML.E
 PyDSTool.Toolbox.adjointPRC.E
 PyDSTool.Toolbox.dataanalysis.E
 PyDSTool.Toolbox.fracdim.E
@@ -567,13 +577,15 @@ PyDSTool.common.PiecewisePolynomial.append" class="py-name" href="#" onclick="re
 <a name="L189"></a><tt class="py-lineno">189</tt>  <tt class="py-line">                <tt class="py-name">x1</tt> <tt class="py-op">=</tt> <tt id="link-54" class="py-name"><a title="PyDSTool.Toolbox.neuralcomp.V" class="py-name" href="#" onclick="return doclink('link-54', 'V', 'link-18');">V</a></tt><tt class="py-op">[</tt><tt class="py-name">invar</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">pos</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
 <a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line">                <tt class="py-name">y1</tt> <tt class="py-op">=</tt> <tt id="link-55" class="py-name"><a title="PyDSTool.Toolbox.neuralcomp.V" class="py-name" href="#" onclick="return doclink('link-55', 'V', 'link-18');">V</a></tt><tt class="py-op">[</tt><tt class="py-name">invar</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">pos</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
 <a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line">                <tt class="py-name">D</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">x1</tt><tt class="py-op">-</tt><tt class="py-name">x2</tt><tt class="py-op">,</tt> <tt class="py-name">y1</tt><tt class="py-op">-</tt><tt class="py-name">y2</tt><tt class="py-op">]</tt> </tt>
-<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line">                <tt class="py-name">sgnx</tt> <tt class="py-op">=</tt> <tt id="link-56" class="py-name" targets="Variable PyDSTool.Generator.Euler_ODEsystem'.sign=PyDSTool.Generator.Euler_ODEsystem%27-module.html#sign,Variable PyDSTool.Generator.Vode_ODEsystem'.sign=PyDSTool.Generator.Vode_ODEsystem%27-module.html#sign,Variable PyDSTool.Interval'.sign=PyDSTool.Interval%27-module.html#sign,Variable PyDSTool.PyCont.ContClass'.sign=PyDSTool.PyCont.ContClass%27-module.html#sign,Variable PyDSTool.PyCont.Continuation.sign=PyDSTool.PyCont.Continuation-module.html#sign,Variable PyDSTool.PyCont.misc.sign=PyDSTool.PyCont.misc-module.html#sign,Variable PyDSTool.Toolbox.ParamEst.sign=PyDSTool.Toolbox.ParamEst-module.html#sign,Variable PyDSTool.Toolbox.dataanalysis.sign=PyDSTool.Toolbox.dataanalysis-module.html#sign,Variable PyDSTool.Toolbox.phaseplane.sign=PyDSTool.Toolbox.phaseplane-module.html#sign,Variable PyDSTool.Toolbox.synthetic_data.sign=PyDSTool.Toolbox.synthetic_data-module.html#sign,Variable PyDSTool.Toolbox.syntheticdata.sign=PyDSTool.Toolbox.syntheticdata-module.html#sign,Variable PyDSTool.common.sign=PyDSTool.common-module.html#sign,Variable matplotlib.pylab.sign=matplotlib.pylab-module.html#sign"><a title="PyDSTool.Generator.Euler_ODEsystem'.sign
+<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line">                <tt class="py-name">sgnx</tt> <tt class="py-op">=</tt> <tt id="link-56" class="py-name" targets="Variable PyDSTool.Generator.Euler_ODEsystem'.sign=PyDSTool.Generator.Euler_ODEsystem%27-module.html#sign,Variable PyDSTool.Generator.Vode_ODEsystem'.sign=PyDSTool.Generator.Vode_ODEsystem%27-module.html#sign,Variable PyDSTool.Interval'.sign=PyDSTool.Interval%27-module.html#sign,Variable PyDSTool.PyCont.ContClass'.sign=PyDSTool.PyCont.ContClass%27-module.html#sign,Variable PyDSTool.PyCont.Continuation.sign=PyDSTool.PyCont.Continuation-module.html#sign,Variable PyDSTool.PyCont.misc.sign=PyDSTool.PyCont.misc-module.html#sign,Variable PyDSTool.Toolbox.NineML.sign=PyDSTool.Toolbox.NineML-module.html#sign,Variable PyDSTool.Toolbox.ParamEst.sign=PyDSTool.Toolbox.ParamEst-module.html#sign,Variable PyDSTool.Toolbox.PySCes_SBML.sign=PyDSTool.Toolbox.PySCes_SBML-module.html#sign,Variable PyDSTool.Toolbox.dataanalysis.sign=PyDSTool.Toolbox.dataanalysis-module.html#sign,Variable PyDSTool.Toolbox.phaseplane.sign=PyDSTool.Toolbox.phaseplane-module.html#sign,Variable PyDSTool.Toolbox.synthetic_data.sign=PyDSTool.Toolbox.synthetic_data-module.html#sign,Variable PyDSTool.Toolbox.syntheticdata.sign=PyDSTool.Toolbox.syntheticdata-module.html#sign,Variable PyDSTool.common.sign=PyDSTool.common-module.html#sign,Variable matplotlib.pylab.sign=matplotlib.pylab-module.html#sign"><a title="PyDSTool.Generator.Euler_ODEsystem'.sign
 PyDSTool.Generator.Vode_ODEsystem'.sign
 PyDSTool.Interval'.sign
 PyDSTool.PyCont.ContClass'.sign
 PyDSTool.PyCont.Continuation.sign
 PyDSTool.PyCont.misc.sign
+PyDSTool.Toolbox.NineML.sign
 PyDSTool.Toolbox.ParamEst.sign
+PyDSTool.Toolbox.PySCes_SBML.sign
 PyDSTool.Toolbox.dataanalysis.sign
 PyDSTool.Toolbox.phaseplane.sign
 PyDSTool.Toolbox.synthetic_data.sign
@@ -586,7 +598,9 @@ PyDSTool.Interval'.sign
 PyDSTool.PyCont.ContClass'.sign
 PyDSTool.PyCont.Continuation.sign
 PyDSTool.PyCont.misc.sign
+PyDSTool.Toolbox.NineML.sign
 PyDSTool.Toolbox.ParamEst.sign
+PyDSTool.Toolbox.PySCes_SBML.sign
 PyDSTool.Toolbox.dataanalysis.sign
 PyDSTool.Toolbox.phaseplane.sign
 PyDSTool.Toolbox.synthetic_data.sign
@@ -597,15 +611,17 @@ matplotlib.pylab.sign" class="py-name" href="#" onclick="return doclink('link-57
 <a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line">                    <tt class="py-name">theta2</tt> <tt class="py-op">=</tt> <tt id="link-58" class="py-name" targets="Variable PyDSTool.Symbolic.atan=PyDSTool.Symbolic-module.html#atan"><a title="PyDSTool.Symbolic.atan" class="py-name" href="#" onclick="return doclink('link-58', 'atan', 'link-58');">atan</a></tt><tt class="py-op">(</tt><tt class="py-name">abs</tt><tt class="py-op">(</tt><tt class="py-name">D</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">/</tt><tt class="py-name">abs</tt><tt class="py-op">(</tt><tt class="py-name">D</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
 <a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line">                <tt class="py-keyword">except</tt> <tt class="py-name">ZeroDivisionError</tt><tt class="py-op">:</tt> </tt>
 <a name="L197"></a><tt class="py-lineno">197</tt>  <tt class="py-line">                    <tt class="py-name">theta2</tt> <tt class="py-op">=</tt> <tt class="py-name">pi_</tt><tt class="py-op">/</tt><tt class="py-number">2.</tt> </tt>
-<a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line">                <tt class="py-name">link_x1</tt> <tt class="py-op">=</tt> <tt class="py-name">x1</tt><tt class="py-op">-</tt><tt class="py-name">sgnx</tt><tt class="py-op">*</tt><tt class="py-name">r1</tt><tt class="py-op">*</tt><tt id="link-59" class="py-name" targets="Variable PyDSTool.PyCont.ContClass'.cos=PyDSTool.PyCont.ContClass%27-module.html#cos,Variable PyDSTool.Symbolic.cos=PyDSTool.Symbolic-module.html#cos,Variable PyDSTool.Toolbox.dataanalysis.cos=PyDSTool.Toolbox.dataanalysis-module.html#cos,Variable PyDSTool.Toolbox.phaseplane.cos=PyDSTool.Toolbox.phaseplane-module.html#cos,Variable PyDSTool.Toolbox.synthetic_data.cos=PyDSTool.Toolbox.synthetic_data-module.html#cos,Variable PyDSTool.Toolbox.syntheticdata.cos=PyDSTool.Toolbox.syntheticdata-module.html#cos,Variable matplotlib.pylab.cos=matplotlib.pylab-module.html#cos"><a title="PyDSTool.PyCont.ContClass'.cos
+<a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line">                <tt class="py-name">link_x1</tt> <tt class="py-op">=</tt> <tt class="py-name">x1</tt><tt class="py-op">-</tt><tt class="py-name">sgnx</tt><tt class="py-op">*</tt><tt class="py-name">r1</tt><tt class="py-op">*</tt><tt id="link-59" class="py-name" targets="Variable PyDSTool.PyCont.ContClass'.cos=PyDSTool.PyCont.ContClass%27-module.html#cos,Variable PyDSTool.Symbolic.cos=PyDSTool.Symbolic-module.html#cos,Variable PyDSTool.Toolbox.NineML.cos=PyDSTool.Toolbox.NineML-module.html#cos,Variable PyDSTool.Toolbox.dataanalysis.cos=PyDSTool.Toolbox.dataanalysis-module.html#cos,Variable PyDSTool.Toolbox.phaseplane.cos=PyDSTool.Toolbox.phaseplane-module.html#cos,Variable PyDSTool.Toolbox.synthetic_data.cos=PyDSTool.Toolbox.synthetic_data-module.html#cos,Variable PyDSTool.Toolbox.syntheticdata.cos=PyDSTool.Toolbox.syntheticdata-module.html#cos,Variable matplotlib.pylab.cos=matplotlib.pylab-module.html#cos"><a title="PyDSTool.PyCont.ContClass'.cos
 PyDSTool.Symbolic.cos
+PyDSTool.Toolbox.NineML.cos
 PyDSTool.Toolbox.dataanalysis.cos
 PyDSTool.Toolbox.phaseplane.cos
 PyDSTool.Toolbox.synthetic_data.cos
 PyDSTool.Toolbox.syntheticdata.cos
 matplotlib.pylab.cos" class="py-name" href="#" onclick="return doclink('link-59', 'cos', 'link-59');">cos</a></tt><tt class="py-op">(</tt><tt class="py-name">theta2</tt><tt class="py-op">)</tt> </tt>
-<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line">                <tt class="py-name">link_y1</tt> <tt class="py-op">=</tt> <tt class="py-name">y1</tt><tt class="py-op">-</tt><tt class="py-name">sgny</tt><tt class="py-op">*</tt><tt class="py-name">r1</tt><tt class="py-op">*</tt><tt id="link-60" class="py-name" targets="Variable PyDSTool.PyCont.ContClass'.sin=PyDSTool.PyCont.ContClass%27-module.html#sin,Variable PyDSTool.Symbolic.sin=PyDSTool.Symbolic-module.html#sin,Variable PyDSTool.Toolbox.dataanalysis.sin=PyDSTool.Toolbox.dataanalysis-module.html#sin,Variable PyDSTool.Toolbox.phaseplane.sin=PyDSTool.Toolbox.phaseplane-module.html#sin,Variable PyDSTool.Toolbox.synthetic_data.sin=PyDSTool.Toolbox.synthetic_data-module.html#sin,Variable PyDSTool.Toolbox.syntheticdata.sin=PyDSTool.Toolbox.syntheticdata-module.html#sin,Variable matplotlib.pylab.sin=matplotlib.pylab-module.html#sin"><a title="PyDSTool.PyCont.ContClass'.sin
+<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line">                <tt class="py-name">link_y1</tt> <tt class="py-op">=</tt> <tt class="py-name">y1</tt><tt class="py-op">-</tt><tt class="py-name">sgny</tt><tt class="py-op">*</tt><tt class="py-name">r1</tt><tt class="py-op">*</tt><tt id="link-60" class="py-name" targets="Variable PyDSTool.PyCont.ContClass'.sin=PyDSTool.PyCont.ContClass%27-module.html#sin,Variable PyDSTool.Symbolic.sin=PyDSTool.Symbolic-module.html#sin,Variable PyDSTool.Toolbox.NineML.sin=PyDSTool.Toolbox.NineML-module.html#sin,Variable PyDSTool.Toolbox.dataanalysis.sin=PyDSTool.Toolbox.dataanalysis-module.html#sin,Variable PyDSTool.Toolbox.phaseplane.sin=PyDSTool.Toolbox.phaseplane-module.html#sin,Variable PyDSTool.Toolbox.synthetic_data.sin=PyDSTool.Toolbox.synthetic_data-module.html#sin,Variable PyDSTool.Toolbox.syntheticdata.sin=PyDSTool.Toolbox.syntheticdata-module.html#sin,Variable matplotlib.pylab.sin=matplotlib.pylab-module.html#sin"><a title="PyDSTool.PyCont.ContClass'.sin
 PyDSTool.Symbolic.sin
+PyDSTool.Toolbox.NineML.sin
 PyDSTool.Toolbox.dataanalysis.sin
 PyDSTool.Toolbox.phaseplane.sin
 PyDSTool.Toolbox.synthetic_data.sin
@@ -613,6 +629,7 @@ PyDSTool.Toolbox.syntheticdata.sin
 matplotlib.pylab.sin" class="py-name" href="#" onclick="return doclink('link-60', 'sin', 'link-60');">sin</a></tt><tt class="py-op">(</tt><tt class="py-name">theta2</tt><tt class="py-op">)</tt> </tt>
 <a name="L200"></a><tt class="py-lineno">200</tt>  <tt class="py-line">                <tt class="py-name">link_x2</tt> <tt class="py-op">=</tt> <tt class="py-name">x2</tt><tt class="py-op">+</tt><tt class="py-name">sgnx</tt><tt class="py-op">*</tt><tt class="py-name">r2</tt><tt class="py-op">*</tt><tt id="link-61" class="py-name"><a title="PyDSTool.PyCont.ContClass'.cos
 PyDSTool.Symbolic.cos
+PyDSTool.Toolbox.NineML.cos
 PyDSTool.Toolbox.dataanalysis.cos
 PyDSTool.Toolbox.phaseplane.cos
 PyDSTool.Toolbox.synthetic_data.cos
@@ -620,6 +637,7 @@ PyDSTool.Toolbox.syntheticdata.cos
 matplotlib.pylab.cos" class="py-name" href="#" onclick="return doclink('link-61', 'cos', 'link-59');">cos</a></tt><tt class="py-op">(</tt><tt class="py-name">theta2</tt><tt class="py-op">)</tt> </tt>
 <a name="L201"></a><tt class="py-lineno">201</tt>  <tt class="py-line">                <tt class="py-name">link_y2</tt> <tt class="py-op">=</tt> <tt class="py-name">y2</tt><tt class="py-op">+</tt><tt class="py-name">sgny</tt><tt class="py-op">*</tt><tt class="py-name">r2</tt><tt class="py-op">*</tt><tt id="link-62" class="py-name"><a title="PyDSTool.PyCont.ContClass'.sin
 PyDSTool.Symbolic.sin
+PyDSTool.Toolbox.NineML.sin
 PyDSTool.Toolbox.dataanalysis.sin
 PyDSTool.Toolbox.phaseplane.sin
 PyDSTool.Toolbox.synthetic_data.sin
@@ -783,7 +801,7 @@ PyDSTool.utils.remain" class="py-name" href="#" onclick="return doclink('link-83
 <a name="L305"></a><tt class="py-lineno">305</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">v</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">varsall</tt><tt class="py-op">:</tt> </tt>
 <a name="L306"></a><tt class="py-lineno">306</tt>  <tt class="py-line">            <tt class="py-name">domain_interval</tt> <tt class="py-op">=</tt> <tt id="link-84" class="py-name"><a title="PyDSTool.common.args.copy
 PyDSTool.parseUtils.symbolMapClass.copy" class="py-name" href="#" onclick="return doclink('link-84', 'copy', 'link-5');">copy</a></tt><tt class="py-op">(</tt><tt class="py-name">fsDict</tt><tt class="py-op">[</tt><tt class="py-name">model</tt><tt class="py-op">.</tt><tt class="py-name">_FScompatibleNamesInv</tt><tt class="py-op">(</tt><tt class="py-name">v</tt><tt class="py-op">)</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">domain</tt><tt class="py-op">[</tt><tt class="py-number">2</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
-<a name="L307"></a><tt class="py-lineno">307</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt id="link-85" class="py-name" targets="Variable PyDSTool.Generator.ADMC_ODEsystem'.isfinite=PyDSTool.Generator.ADMC_ODEsystem%27-module.html#isfinite,Variable PyDSTool.Generator.Dopri_ODEsystem'.isfinite=PyDSTool.Generator.Dopri_ODEsystem%27-module.html#isfinite,Variable PyDSTool.Generator.EmbeddedSysGen'.isfinite=PyDSTool.Generator.EmbeddedSysGen%27-module.html#isfinite,Variable PyDSTool.Generator.Euler_ODEsystem'.isfinite=PyDSTool.Generator.Euler_ODEsystem%27-module.html#isfinite,Variable PyDSTool.Generator.ExplicitFnGen'.isfinite=PyDSTool.Generator.ExplicitFnGen%27-module.html#isfinite,Variable PyDSTool.Generator.ExtrapolateTable'.isfinite=PyDSTool.Generator.ExtrapolateTable%27-module.html#isfinite,Variable PyDSTool.Generator.ImplicitFnGen'.isfinite=PyDSTool.Generator.ImplicitFnGen%27-module.html#isfinite,Variable PyDSTool.Generator.InterpolateTable'.isfinite=PyDSTool.Generator.InterpolateTable%27-module.html#isfinite,Variable PyDSTool.Generator.LookupTable'.isfinite=PyDSTool.Generator.LookupTable%27-module.html#isfinite,Variable PyDSTool.Generator.MapSystem'.isfinite=PyDSTool.Generator.MapSystem%27-module.html#isfinite,Variable PyDSTool.Generator.ODEsystem'.isfinite=PyDSTool.Generator.ODEsystem%27-module.html#isfinite,Variable PyDSTool.Generator.Radau_ODEsystem'.isfinite=PyDSTool.Generator.Radau_ODEsystem%27-module.html#isfinite,Variable PyDSTool.Generator.Vode_ODEsystem'.isfinite=PyDSTool.Generator.Vode_ODEsystem%27-module.html#isfinite,Method PyDSTool.Interval'.Interval.isfinite()=PyDSTool.Interval%27.Interval-class.html#isfinite,Variable PyDSTool.Interval'.isfinite=PyDSTool.Interval%27-module.html#isfinite,Variable PyDSTool.ModelConstructor'.isfinite=PyDSTool.ModelConstructor%27-module.html#isfinite,Variable PyDSTool.ModelSpec'.isfinite=PyDSTool.ModelSpec%27-module.html#isfinite,Variable PyDSTool.PyCont.ContClass'.isfinite=PyDSTool.PyCont.ContClass%27-module.html#isfinite,Variable PyDSTool.PyCont.Continuation.isfinite=PyDSTool.PyCont.Continuation-module.html#isfinite,Variable PyDSTool.PyCont.misc.isfinite=PyDSTool.PyCont.misc-module.html#isfinite,Variable PyDSTool.Symbolic.isfinite=PyDSTool.Symbolic-module.html#isfinite,Variable PyDSTool.Toolbox.dataanalysis.isfinite=PyDSTool.Toolbox.dataanalysis-module.html#isfinite,Variable PyDSTool.Toolbox.event_driven_simulator.isfinite=PyDSTool.Toolbox.event_driven_simulator-module.html#isfinite,Variable PyDSTool.Toolbox.phaseplane.isfinite=PyDSTool.Toolbox.phaseplane-module.html#isfinite,Variable PyDSTool.Toolbox.synthetic_data.isfinite=PyDSTool.Toolbox.synthetic_data-module.html#isfinite,Variable PyDSTool.Toolbox.syntheticdata.isfinite=PyDSTool.Toolbox.syntheticdata-module.html#isfinite,Variable PyDSTool.Variable'.isfinite=PyDSTool.Variable%27-module.html#isfinite,Variable PyDSTool.common.isfinite=PyDSTool.common-module.html#isfinite,Variable PyDSTool.utils.isfinite=PyDSTool.utils-module.html#isfinite,Variable matplotlib.pylab.isfinite=matplotlib.pylab-module.html#isfinite"><a title="PyDSTool.Generator.ADMC_ODEsystem'.isfinite
+<a name="L307"></a><tt class="py-lineno">307</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt id="link-85" class="py-name" targets="Variable PyDSTool.Generator.ADMC_ODEsystem'.isfinite=PyDSTool.Generator.ADMC_ODEsystem%27-module.html#isfinite,Variable PyDSTool.Generator.Dopri_ODEsystem'.isfinite=PyDSTool.Generator.Dopri_ODEsystem%27-module.html#isfinite,Variable PyDSTool.Generator.EmbeddedSysGen'.isfinite=PyDSTool.Generator.EmbeddedSysGen%27-module.html#isfinite,Variable PyDSTool.Generator.Euler_ODEsystem'.isfinite=PyDSTool.Generator.Euler_ODEsystem%27-module.html#isfinite,Variable PyDSTool.Generator.ExplicitFnGen'.isfinite=PyDSTool.Generator.ExplicitFnGen%27-module.html#isfinite,Variable PyDSTool.Generator.ExtrapolateTable'.isfinite=PyDSTool.Generator.ExtrapolateTable%27-module.html#isfinite,Variable PyDSTool.Generator.ImplicitFnGen'.isfinite=PyDSTool.Generator.ImplicitFnGen%27-module.html#isfinite,Variable PyDSTool.Generator.InterpolateTable'.isfinite=PyDSTool.Generator.InterpolateTable%27-module.html#isfinite,Variable PyDSTool.Generator.LookupTable'.isfinite=PyDSTool.Generator.LookupTable%27-module.html#isfinite,Variable PyDSTool.Generator.MapSystem'.isfinite=PyDSTool.Generator.MapSystem%27-module.html#isfinite,Variable PyDSTool.Generator.ODEsystem'.isfinite=PyDSTool.Generator.ODEsystem%27-module.html#isfinite,Variable PyDSTool.Generator.Radau_ODEsystem'.isfinite=PyDSTool.Generator.Radau_ODEsystem%27-module.html#isfinite,Variable PyDSTool.Generator.Vode_ODEsystem'.isfinite=PyDSTool.Generator.Vode_ODEsystem%27-module.html#isfinite,Method PyDSTool.Interval'.Interval.isfinite()=PyDSTool.Interval%27.Interval-class.html#isfinite,Variable PyDSTool.Interval'.isfinite=PyDSTool.Interval%27-module.html#isfinite,Variable PyDSTool.ModelConstructor'.isfinite=PyDSTool.ModelConstructor%27-module.html#isfinite,Variable PyDSTool.ModelSpec'.isfinite=PyDSTool.ModelSpec%27-module.html#isfinite,Variable PyDSTool.PyCont.ContClass'.isfinite=PyDSTool.PyCont.ContClass%27-module.html#isfinite,Variable PyDSTool.PyCont.Continuation.isfinite=PyDSTool.PyCont.Continuation-module.html#isfinite,Variable PyDSTool.PyCont.misc.isfinite=PyDSTool.PyCont.misc-module.html#isfinite,Variable PyDSTool.Symbolic.isfinite=PyDSTool.Symbolic-module.html#isfinite,Variable PyDSTool.Toolbox.NineML.isfinite=PyDSTool.Toolbox.NineML-module.html#isfinite,Variable PyDSTool.Toolbox.PySCes_SBML.isfinite=PyDSTool.Toolbox.PySCes_SBML-module.html#isfinite,Variable PyDSTool.Toolbox.dataanalysis.isfinite=PyDSTool.Toolbox.dataanalysis-module.html#isfinite,Variable PyDSTool.Toolbox.event_driven_simulator.isfinite=PyDSTool.Toolbox.event_driven_simulator-module.html#isfinite,Variable PyDSTool.Toolbox.phaseplane.isfinite=PyDSTool.Toolbox.phaseplane-module.html#isfinite,Variable PyDSTool.Toolbox.synthetic_data.isfinite=PyDSTool.Toolbox.synthetic_data-module.html#isfinite,Variable PyDSTool.Toolbox.syntheticdata.isfinite=PyDSTool.Toolbox.syntheticdata-module.html#isfinite,Variable PyDSTool.Variable'.isfinite=PyDSTool.Variable%27-module.html#isfinite,Variable PyDSTool.common.isfinite=PyDSTool.common-module.html#isfinite,Variable PyDSTool.utils.isfinite=PyDSTool.utils-module.html#isfinite,Variable matplotlib.pylab.isfinite=matplotlib.pylab-module.html#isfinite"><a title="PyDSTool.Generator.ADMC_ODEsystem'.isfinite
 PyDSTool.Generator.Dopri_ODEsystem'.isfinite
 PyDSTool.Generator.EmbeddedSysGen'.isfinite
 PyDSTool.Generator.Euler_ODEsystem'.isfinite
@@ -804,6 +822,8 @@ PyDSTool.PyCont.ContClass'.isfinite
 PyDSTool.PyCont.Continuation.isfinite
 PyDSTool.PyCont.misc.isfinite
 PyDSTool.Symbolic.isfinite
+PyDSTool.Toolbox.NineML.isfinite
+PyDSTool.Toolbox.PySCes_SBML.isfinite
 PyDSTool.Toolbox.dataanalysis.isfinite
 PyDSTool.Toolbox.event_driven_simulator.isfinite
 PyDSTool.Toolbox.phaseplane.isfinite
@@ -835,6 +855,8 @@ PyDSTool.PyCont.ContClass'.isfinite
 PyDSTool.PyCont.Continuation.isfinite
 PyDSTool.PyCont.misc.isfinite
 PyDSTool.Symbolic.isfinite
+PyDSTool.Toolbox.NineML.isfinite
+PyDSTool.Toolbox.PySCes_SBML.isfinite
 PyDSTool.Toolbox.dataanalysis.isfinite
 PyDSTool.Toolbox.event_driven_simulator.isfinite
 PyDSTool.Toolbox.phaseplane.isfinite
@@ -1114,7 +1136,8 @@ PyDSTool.parseUtils.symbolMapClass.iteritems" class="py-name" href="#" onclick="
 <a name="L468"></a><tt class="py-lineno">468</tt>  <tt class="py-line"><tt class="py-docstring">        Uses the 'precise' trajectory sample option for trajectories with</tt> </tt>
 <a name="L469"></a><tt class="py-lineno">469</tt>  <tt class="py-line"><tt class="py-docstring">        variable time-steps. Use precise=False option for</tt> </tt>
 <a name="L470"></a><tt class="py-lineno">470</tt>  <tt class="py-line"><tt class="py-docstring">        trajectories calculated at fixed time steps."""</tt> </tt>
-<a name="L471"></a><tt class="py-lineno">471</tt>  <tt class="py-line">        <tt class="py-name">ptset</tt> <tt class="py-op">=</tt> <tt class="py-name">traj</tt><tt class="py-op">.</tt><tt id="link-138" class="py-name" targets="Method PyDSTool.Model.Model.sample()=PyDSTool.Model.Model-class.html#sample,Method PyDSTool.Trajectory'.HybridTrajectory.sample()=PyDSTool.Trajectory%27.HybridTrajectory-class.html#sample,Method PyDSTool.Trajectory'.Trajectory.sample()=PyDSTool.Trajectory%27.Trajectory-class.html#sample"><a title="PyDSTool.Model.Model.sample
+<a name="L471"></a><tt class="py-lineno">471</tt>  <tt class="py-line">        <tt class="py-name">ptset</tt> <tt class="py-op">=</tt> <tt class="py-name">traj</tt><tt class="py-op">.</tt><tt id="link-138" class="py-name" targets="Method PyDSTool.Interval'.Interval.sample()=PyDSTool.Interval%27.Interval-class.html#sample,Method PyDSTool.Model.Model.sample()=PyDSTool.Model.Model-class.html#sample,Method PyDSTool.Trajectory'.HybridTrajectory.sample()=PyDSTool.Trajectory%27.HybridTrajectory-class.html#sample,Method PyDSTool.Trajectory'.Trajectory.sample()=PyDSTool.Trajectory%27.Trajectory-class.html#sample"><a title="PyDSTool.Interval'.Interval.sample
+PyDSTool.Model.Model.sample
 PyDSTool.Trajectory'.HybridTrajectory.sample
 PyDSTool.Trajectory'.Trajectory.sample" class="py-name" href="#" onclick="return doclink('link-138', 'sample', 'link-138');">sample</a></tt><tt class="py-op">(</tt><tt class="py-name">dt</tt><tt class="py-op">=</tt><tt class="py-name">dt</tt><tt class="py-op">,</tt> <tt class="py-name">coords</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">varsall</tt><tt class="py-op">,</tt> <tt class="py-name">precise</tt><tt class="py-op">=</tt><tt class="py-name">precise</tt><tt class="py-op">)</tt> </tt>
 <a name="L472"></a><tt class="py-lineno">472</tt>  <tt class="py-line">        <tt id="link-139" class="py-name" targets="Function PyDSTool.Points.exportPointset()=PyDSTool.Points-module.html#exportPointset"><a title="PyDSTool.Points.exportPointset" class="py-name" href="#" onclick="return doclink('link-139', 'exportPointset', 'link-139');">exportPointset</a></tt><tt class="py-op">(</tt><tt class="py-name">ptset</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-name">filename</tt><tt class="py-op">:</tt> <tt class="py-name">tuple</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-string">'t'</tt><tt class="py-op">]</tt><tt class="py-op">+</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">varsall</tt><tt class="py-op">)</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
@@ -1132,6 +1155,7 @@ PyDSTool.Toolbox.ActivationFuncs.E
 PyDSTool.Toolbox.DSSRT_tools.E
 PyDSTool.Toolbox.InputProfile.E
 PyDSTool.Toolbox.ModelHelper.E
+PyDSTool.Toolbox.NineML.E
 PyDSTool.Toolbox.adjointPRC.E
 PyDSTool.Toolbox.dataanalysis.E
 PyDSTool.Toolbox.fracdim.E
@@ -1155,6 +1179,7 @@ PyDSTool.Toolbox.ActivationFuncs.E
 PyDSTool.Toolbox.DSSRT_tools.E
 PyDSTool.Toolbox.InputProfile.E
 PyDSTool.Toolbox.ModelHelper.E
+PyDSTool.Toolbox.NineML.E
 PyDSTool.Toolbox.adjointPRC.E
 PyDSTool.Toolbox.dataanalysis.E
 PyDSTool.Toolbox.fracdim.E
@@ -1186,6 +1211,7 @@ PyDSTool.Generator.e
 PyDSTool.ModelSpec'.e
 PyDSTool.PyCont.ContClass'.e
 PyDSTool.Symbolic.e
+PyDSTool.Toolbox.NineML.e
 PyDSTool.Toolbox.dataanalysis.e
 PyDSTool.Toolbox.phaseplane.e
 PyDSTool.Toolbox.synthetic_data.e
@@ -1211,6 +1237,7 @@ PyDSTool.Generator.e
 PyDSTool.ModelSpec'.e
 PyDSTool.PyCont.ContClass'.e
 PyDSTool.Symbolic.e
+PyDSTool.Toolbox.NineML.e
 PyDSTool.Toolbox.dataanalysis.e
 PyDSTool.Toolbox.phaseplane.e
 PyDSTool.Toolbox.synthetic_data.e
@@ -1235,6 +1262,7 @@ PyDSTool.Generator.e
 PyDSTool.ModelSpec'.e
 PyDSTool.PyCont.ContClass'.e
 PyDSTool.Symbolic.e
+PyDSTool.Toolbox.NineML.e
 PyDSTool.Toolbox.dataanalysis.e
 PyDSTool.Toolbox.phaseplane.e
 PyDSTool.Toolbox.synthetic_data.e
@@ -1260,6 +1288,7 @@ PyDSTool.Generator.e
 PyDSTool.ModelSpec'.e
 PyDSTool.PyCont.ContClass'.e
 PyDSTool.Symbolic.e
+PyDSTool.Toolbox.NineML.e
 PyDSTool.Toolbox.dataanalysis.e
 PyDSTool.Toolbox.phaseplane.e
 PyDSTool.Toolbox.synthetic_data.e
@@ -1284,6 +1313,7 @@ PyDSTool.Generator.e
 PyDSTool.ModelSpec'.e
 PyDSTool.PyCont.ContClass'.e
 PyDSTool.Symbolic.e
+PyDSTool.Toolbox.NineML.e
 PyDSTool.Toolbox.dataanalysis.e
 PyDSTool.Toolbox.phaseplane.e
 PyDSTool.Toolbox.synthetic_data.e
@@ -1329,7 +1359,7 @@ expandto(location.href);
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:47 2011
+    Generated by Epydoc 3.0.1 on Fri May  4 15:24:25 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

@@ -653,6 +653,26 @@ If the interval is not specified fully on initialisation then operations
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
+          <td><span class="summary-sig"><a href="PyDSTool.Interval%27.Interval-class.html#sample" class="summary-sig-name">sample</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dt</span>,
+        <span class="summary-sig-arg">strict</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">avoidendpoints</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Sample the interval, returning a list.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="PyDSTool.Interval%27-pysrc.html#Interval.sample">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
           <td><span class="summary-sig"><a name="set"></a><span class="summary-sig-name">set</span>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">arg</span>)</span><br />
       Define interval in an Interval object</td>
@@ -675,9 +695,9 @@ If the interval is not specified fully on initialisation then operations
         <span class="summary-sig-arg">dt</span>,
         <span class="summary-sig-arg">strict</span>=<span class="summary-sig-default">False</span>,
         <span class="summary-sig-arg">avoidendpoints</span>=<span class="summary-sig-default">False</span>)</span><br />
-      Uniformly sample the interval, returning a Pointset.</td>
+      Sample the interval, returning a list.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="PyDSTool.Interval%27-pysrc.html#Interval.uniformSample">source&nbsp;code</a></span>
+            <span class="codelink"><a href="PyDSTool.Interval%27-pysrc.html#Interval.sample">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -843,6 +863,44 @@ If the interval is not specified fully on initialisation then operations
   </dl>
 </td></tr></table>
 </div>
+<a name="sample"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">sample</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">dt</span>,
+        <span class="sig-arg">strict</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">avoidendpoints</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Interval%27-pysrc.html#Interval.sample">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Sample the interval, returning a list.
+
+Arguments:
+
+dt : sample step
+
+strict : (Boolean) This option forces dt to be used throughout the interval,
+  with a final step of &lt; dt if not commensurate. Default of False
+  is used for auto-selection of sample rate to fit interval
+  (choice based on dt argument).
+
+avoidendpoints : (Boolean, default False). When True, ensures that the first and
+  last independent variable (&quot;t&quot;) values are not included, offset by
+  an amount given by self._abseps (the endpoint tolerance).
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
 <a name="uniformSample"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -856,17 +914,27 @@ If the interval is not specified fully on initialisation then operations
         <span class="sig-arg">avoidendpoints</span>=<span class="sig-default">False</span>)</span>
   </h3>
   </td><td align="right" valign="top"
-    ><span class="codelink"><a href="PyDSTool.Interval%27-pysrc.html#Interval.uniformSample">source&nbsp;code</a></span>&nbsp;
+    ><span class="codelink"><a href="PyDSTool.Interval%27-pysrc.html#Interval.sample">source&nbsp;code</a></span>&nbsp;
     </td>
   </tr></table>
   
-  <p>Uniformly sample the interval, returning a Pointset.</p>
-  <p>'Strict' option forces dt to be used throughout the interval, with a 
-  final step of &lt; dt if not commensurate. Default strict = False used 
-  for auto-selection of sample rate to fit interval (choice based on dt 
-  argument).</p>
-  <p>avoidendpoints = True (default False) ensures that the first and last 
-  independent variable (&quot;t&quot;) values are not included.</p>
+  <pre class="literalblock">
+Sample the interval, returning a list.
+
+Arguments:
+
+dt : sample step
+
+strict : (Boolean) This option forces dt to be used throughout the interval,
+  with a final step of &lt; dt if not commensurate. Default of False
+  is used for auto-selection of sample rate to fit interval
+  (choice based on dt argument).
+
+avoidendpoints : (Boolean, default False). When True, ensures that the first and
+  last independent variable (&quot;t&quot;) values are not included, offset by
+  an amount given by self._abseps (the endpoint tolerance).
+
+</pre>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -903,7 +971,7 @@ If the interval is not specified fully on initialisation then operations
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:26 2011
+    Generated by Epydoc 3.0.1 on Fri May  4 15:24:06 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

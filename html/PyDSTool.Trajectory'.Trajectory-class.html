@@ -310,7 +310,8 @@ object --+
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a name="delete_variables"></a><span class="summary-sig-name">delete_variables</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">coords</span>)</span></td>
+        <span class="summary-sig-arg">coords</span>)</span><br />
+      coords is a list of coordinate names to remove</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Trajectory%27-pysrc.html#Trajectory.delete_variables">source&nbsp;code</a></span>
             
@@ -326,10 +327,11 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="getEventTimes"></a><span class="summary-sig-name">getEventTimes</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.Trajectory%27.Trajectory-class.html#getEventTimes" class="summary-sig-name">getEventTimes</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">evnames</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">asGlobalTime</span>=<span class="summary-sig-default">True</span>)</span><br />
-      Return list of times at which events occurred.</td>
+      Returns a list of times at which the named events occurred in global 
+      time, unless asGlobalTime option set to False (default is True).</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Trajectory%27-pysrc.html#Trajectory.getEventTimes">source&nbsp;code</a></span>
             
@@ -348,8 +350,8 @@ object --+
           <td><span class="summary-sig"><a href="PyDSTool.Trajectory%27.Trajectory-class.html#getEvents" class="summary-sig-name">getEvents</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">evnames</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">asGlobalTime</span>=<span class="summary-sig-default">True</span>)</span><br />
-      Collect all events throughout trajectory in global time, unless 
-      asGlobalTime option set to False (default is True).</td>
+      Returns a pointset of all named events occuring in global time, 
+      unless asGlobalTime option set to False (default is True).</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Trajectory%27-pysrc.html#Trajectory.getEvents">source&nbsp;code</a></span>
             
@@ -383,7 +385,9 @@ object --+
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a name="mapNames"></a><span class="summary-sig-name">mapNames</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">themap</span>)</span></td>
+        <span class="summary-sig-arg">themap</span>)</span><br />
+      themap is a symbolMapClass mapping object for remapping coordinate 
+      names</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Trajectory%27-pysrc.html#Trajectory.mapNames">source&nbsp;code</a></span>
             
@@ -650,6 +654,29 @@ object --+
   </dl>
 </td></tr></table>
 </div>
+<a name="getEventTimes"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getEventTimes</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">evnames</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">asGlobalTime</span>=<span class="sig-default">True</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Trajectory%27-pysrc.html#Trajectory.getEventTimes">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns a list of times at which the named events occurred in global 
+  time, unless asGlobalTime option set to False (default is True). If no 
+  events are named, all are used.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
 <a name="getEvents"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -666,9 +693,9 @@ object --+
     </td>
   </tr></table>
   
-  <p>Collect all events throughout trajectory in global time, unless 
-  asGlobalTime option set to False (default is True).</p>
-  <p>Returns a pointset.</p>
+  <p>Returns a pointset of all named events occuring in global time, unless
+  asGlobalTime option set to False (default is True). If no events are 
+  named, all are used.</p>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -775,7 +802,7 @@ If dt is not given, the underlying time mesh is used, if available.
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:30 2011
+    Generated by Epydoc 3.0.1 on Fri May  4 15:24:10 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

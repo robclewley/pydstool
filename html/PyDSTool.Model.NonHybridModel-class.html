@@ -187,10 +187,10 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="Rhs"></a><span class="summary-sig-name">Rhs</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.Model.NonHybridModel-class.html#Rhs" class="summary-sig-name">Rhs</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">t</span>,
         <span class="summary-sig-arg">xdict</span>,
-        <span class="summary-sig-arg">pdict</span>,
+        <span class="summary-sig-arg">pdict</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">asarray</span>=<span class="summary-sig-default">False</span>)</span><br />
       Direct access to a generator's Rhs function.</td>
           <td align="right" valign="top">
@@ -208,10 +208,10 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="Jacobian"></a><span class="summary-sig-name">Jacobian</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.Model.NonHybridModel-class.html#Jacobian" class="summary-sig-name">Jacobian</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">t</span>,
         <span class="summary-sig-arg">xdict</span>,
-        <span class="summary-sig-arg">pdict</span>,
+        <span class="summary-sig-arg">pdict</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">asarray</span>=<span class="summary-sig-default">False</span>)</span><br />
       Direct access to a generator's Jacobian function (if defined).</td>
           <td align="right" valign="top">
@@ -229,10 +229,10 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="JacobianP"></a><span class="summary-sig-name">JacobianP</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.Model.NonHybridModel-class.html#JacobianP" class="summary-sig-name">JacobianP</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">t</span>,
         <span class="summary-sig-arg">xdict</span>,
-        <span class="summary-sig-arg">pdict</span>,
+        <span class="summary-sig-arg">pdict</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">asarray</span>=<span class="summary-sig-default">False</span>)</span><br />
       Direct access to a generator's JacobianP function (if defined).</td>
           <td align="right" valign="top">
@@ -250,10 +250,10 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="MassMatrix"></a><span class="summary-sig-name">MassMatrix</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.Model.NonHybridModel-class.html#MassMatrix" class="summary-sig-name">MassMatrix</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">t</span>,
         <span class="summary-sig-arg">xdict</span>,
-        <span class="summary-sig-arg">pdict</span>,
+        <span class="summary-sig-arg">pdict</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">asarray</span>=<span class="summary-sig-default">False</span>)</span><br />
       Direct access to a generator's MassMatrix function (if defined).</td>
           <td align="right" valign="top">
@@ -271,13 +271,13 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="AuxVars"></a><span class="summary-sig-name">AuxVars</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.Model.NonHybridModel-class.html#AuxVars" class="summary-sig-name">AuxVars</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">t</span>,
         <span class="summary-sig-arg">xdict</span>,
-        <span class="summary-sig-arg">pdict</span>,
+        <span class="summary-sig-arg">pdict</span>=<span class="summary-sig-default">None</span>,
         <span class="summary-sig-arg">asarray</span>=<span class="summary-sig-default">False</span>)</span><br />
-      Direct access to a generator's auxiliary variables definition (if 
-      defined).</td>
+      Direct access to a generator's auxiliary variables
+definition (if defined).</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Model-pysrc.html#NonHybridModel.AuxVars">source&nbsp;code</a></span>
             
@@ -293,10 +293,10 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="compute"></a><span class="summary-sig-name">compute</span>(<span class="summary-sig-arg">self</span>,
+          <td><span class="summary-sig"><a href="PyDSTool.Model.NonHybridModel-class.html#compute" class="summary-sig-name">compute</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">trajname</span>,
         <span class="summary-sig-arg">**kw</span>)</span><br />
-      Compute a trajectory out of constituent segments.</td>
+      Compute a non-hybrid trajectory.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Model-pysrc.html#NonHybridModel.compute">source&nbsp;code</a></span>
             
@@ -331,8 +331,10 @@ object --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="_infostr"></a><span class="summary-sig-name">_infostr</span>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">verbose</span>=<span class="summary-sig-default">1</span>)</span></td>
+          <td><span class="summary-sig"><a href="PyDSTool.Model.NonHybridModel-class.html#_infostr" class="summary-sig-name" onclick="show_private();">_infostr</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">verbose</span>=<span class="summary-sig-default">1</span>)</span><br />
+      Return string information about named sub-model (if given by dsName) 
+      at given verbosity level (default 0)</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.Model-pysrc.html#NonHybridModel._infostr">source&nbsp;code</a></span>
             
@@ -357,7 +359,6 @@ object --+
       <code><a href="PyDSTool.Model.Model-class.html#defaultVars">defaultVars</a></code>,
       <code><a href="PyDSTool.Model.Model-class.html#forceIntVars">forceIntVars</a></code>,
       <code><a href="PyDSTool.Model.Model-class.html#forceObsVars">forceObsVars</a></code>,
-      <code><a href="PyDSTool.Model.Model-class.html#generateParamInfo">generateParamInfo</a></code>,
       <code><a href="PyDSTool.Model.Model-class.html#getDSAlgPars">getDSAlgPars</a></code>,
       <code><a href="PyDSTool.Model.Model-class.html#getDSEventActive">getDSEventActive</a></code>,
       <code><a href="PyDSTool.Model.Model-class.html#getDSEventTerm">getDSEventTerm</a></code>,
@@ -397,12 +398,12 @@ object --+
       <code><a href="PyDSTool.Model.Model-class.html#showDSEventInfo">showDSEventInfo</a></code>,
       <code><a href="PyDSTool.Model.Model-class.html#showDef">showDef</a></code>,
       <code><a href="PyDSTool.Model.Model-class.html#showEventSpec">showEventSpec</a></code>,
-      <code><a href="PyDSTool.Model.Model-class.html#showModelInfo">showModelInfo</a></code>,
       <code><a href="PyDSTool.Model.Model-class.html#showSpec">showSpec</a></code>,
       <code><a href="PyDSTool.Model.Model-class.html#sub_models">sub_models</a></code>
       </p>
     <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="PyDSTool.Model.Model-class.html">Model</a></code></b> (private):
       <code><a href="PyDSTool.Model.Model-class.html#_delTraj" onclick="show_private();">_delTraj</a></code>,
+      <code><a href="PyDSTool.Model.Model-class.html#_generateParamInfo" onclick="show_private();">_generateParamInfo</a></code>,
       <code><a href="PyDSTool.Model.Model-class.html#_makeDefaultVarNames" onclick="show_private();">_makeDefaultVarNames</a></code>,
       <code><a href="PyDSTool.Model.Model-class.html#_prepareCompute" onclick="show_private();">_prepareCompute</a></code>,
       <code><a href="PyDSTool.Model.Model-class.html#_set_for_hybrid_DS" onclick="show_private();">_set_for_hybrid_DS</a></code>,
@@ -540,6 +541,241 @@ object --+
   </dl>
 </td></tr></table>
 </div>
+<a name="Rhs"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">Rhs</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">t</span>,
+        <span class="sig-arg">xdict</span>,
+        <span class="sig-arg">pdict</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">asarray</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Model-pysrc.html#NonHybridModel.Rhs">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Direct access to a generator's Rhs function.
+Parameters:
+
+  t        time (can use 0 for an autonomous system)
+  xdict    state dictionary or Point.
+  pdict    parameter dictionary or Point
+           (optional, default current parameters)
+  asarray  (Bool, optional, default False) If true, will return an array
+           in state name alphabetical order, else a Point
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="Jacobian"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">Jacobian</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">t</span>,
+        <span class="sig-arg">xdict</span>,
+        <span class="sig-arg">pdict</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">asarray</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Model-pysrc.html#NonHybridModel.Jacobian">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Direct access to a generator's Jacobian function (if defined).
+
+Arguments:
+
+  t        time (can use 0 for an autonomous system)
+  xdict    state dictionary or Point.
+  pdict    parameter dictionary or Point
+           (optional, default current parameters)
+  asarray  (Bool, optional, default False) If true, will return an array
+           in state name alphabetical order, else a Point
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="JacobianP"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">JacobianP</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">t</span>,
+        <span class="sig-arg">xdict</span>,
+        <span class="sig-arg">pdict</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">asarray</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Model-pysrc.html#NonHybridModel.JacobianP">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Direct access to a generator's JacobianP function (if defined).
+
+Arguments:
+
+  t        time (can use 0 for an autonomous system)
+  xdict    state dictionary or Point.
+  pdict    parameter dictionary or Point
+           (optional, default current parameters)
+  asarray  (Bool, optional, default False) If true, will return an array
+           in state name alphabetical order, else a Point
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="MassMatrix"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">MassMatrix</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">t</span>,
+        <span class="sig-arg">xdict</span>,
+        <span class="sig-arg">pdict</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">asarray</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Model-pysrc.html#NonHybridModel.MassMatrix">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Direct access to a generator's MassMatrix function (if defined).
+
+Arguments:
+
+  t        time (can use 0 for an autonomous system)
+  xdict    state dictionary or Point.
+  pdict    parameter dictionary or Point
+           (optional, default current parameters)
+  asarray  (Bool, optional, default False) If true, will return an array
+           in state name alphabetical order, else a Point
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="AuxVars"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">AuxVars</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">t</span>,
+        <span class="sig-arg">xdict</span>,
+        <span class="sig-arg">pdict</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">asarray</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Model-pysrc.html#NonHybridModel.AuxVars">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Direct access to a generator's auxiliary variables
+definition (if defined).
+
+Arguments:
+
+  t        time (can use 0 for an autonomous system)
+  xdict    state dictionary or Point.
+  pdict    parameter dictionary or Point
+           (optional, default current parameters)
+  asarray  (Bool, optional, default False) If true, will return an array
+           in state name alphabetical order, else a Point
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="compute"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">compute</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">trajname</span>,
+        <span class="sig-arg">**kw</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Model-pysrc.html#NonHybridModel.compute">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Compute a non-hybrid trajectory. Returns a Trajectory object.
+
+Arguments (non-keyword):
+  trajname   Name of trajectory to create (string)
+
+Arguments (keyword only, all optional):
+  force      (Bool, default False) - force overwrite of any trajectory
+             stored in this object with the same name
+  verboselevel  (int, default 0)
+  ics        initial conditions dict or Point
+  pars       parameters dict or Point
+  tdata      time data (interval as sequence of 2 numeric values)
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_infostr"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_infostr</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">verbose</span>=<span class="sig-default">1</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.Model-pysrc.html#NonHybridModel._infostr">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return string information about named sub-model (if given by dsName) 
+  at given verbosity level (default 0)</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="PyDSTool.Model.Model-class.html#_infostr" onclick="show_private();">Model._infostr</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
 <br />
 <!-- ==================== NAVIGATION BAR ==================== -->
 <table class="navbar" border="0" width="100%" cellpadding="0"
@@ -572,7 +808,7 @@ object --+
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Wed Dec 21 17:46:27 2011
+    Generated by Epydoc 3.0.1 on Fri May  4 15:24:07 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
