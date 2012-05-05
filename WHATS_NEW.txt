@@ -1,6 +1,15 @@
 Release notes: Highlights of new features
 =========================================
 
+version 0.88 04 May 2012
+------------------------
+
+ * Added initial demos for NineML and PySCeS interfacing
+ * Added minor functions to support user-defined Jacobian
+ * Cleaned up default imports - provided plt alias for pyplot
+ * More code commenting and docstrings
+ * Minor bug fixes and internal code efficiency improvements
+
 version 0.88 21 Dec 2011
 ------------------------
 
