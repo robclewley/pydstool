@@ -30,7 +30,8 @@ _functions = ['intersect', 'remain', 'union', 'cartesianProduct',
               'makeDataDict', 'makeImplicitFunc', 'orderEventData',
               'saveObjects', 'loadObjects', 'info', 'compareList',
               'findClosestArray', 'findClosestPointIndex', 'find',
-              'makeMfileFunction', 'make_RHS_wrap', 'make_Jac_wrap']
+              'makeMfileFunction', 'make_RHS_wrap', 'make_Jac_wrap',
+              'progressBar']
 
 _mappings = ['_implicitSolveMethods', '_1DimplicitSolveMethods']
 
@@ -576,6 +577,20 @@ def make_Jac_wrap(gen, xdict_base, x0_names, use_gen_params=False, overflow_pena
 
     return Jac_wrap
 
+
+## ------------------------------------------------------------
+
+# User-interaction utilities
+
+def progressBar(i, total, width=50):
+    """Print an increasing number of dashes up to given width, reflecting
+    i / total fraction of progress. Prints and refreshes on one line.
+    """
+    percent = float(i)/total
+    dots = int(percent*width)
+    progress = str('[').ljust(dots+1, '-')
+    sys.stdout.write('\r'+progress.ljust(width, ' ')+str('] %.2f%%' % (percent*100.)))
+    sys.stdout.flush()
 
 
 ## ------------------------------------------------------------
