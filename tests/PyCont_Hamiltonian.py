@@ -56,7 +56,7 @@ PCargs.MinStepSize = 0.000001
 PCargs.MaxStepSize = 0.01
 PCargs.StepSize = 0.01
 PCargs.MaxNumPoints = 100
-PCargs.NumSPOut = 10;
+PCargs.NumSPOut = 10
 PCargs.SaveEigen = False
 PyCont.newCurve(PCargs)
 
