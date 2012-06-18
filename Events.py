@@ -659,7 +659,10 @@ class Event(object):
         """
         self.fval = None
         if state is None or self.dircode == 0:
-            self.prevsign = self.prevsign_IC
+            if self.prevsign_IC is None and state is not None:
+                self.prevsign = self.prevprevsign
+            else:
+                self.prevsign = self.prevsign_IC
         elif state == 'prev':
             self.prevsign = self.prevprevsign
         elif state == 'on':
