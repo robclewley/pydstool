@@ -908,7 +908,9 @@ class Pointset(Point):
 
     def addlabel(self, ix, label, info=None):
         """Add string label to indexed point. info dictionary is optional"""
-        if ix in range(len(self)):
+        if ix < 0:
+            ix = len(self)+ix
+        if ix in xrange(len(self)):
             self.labels.update(ix, label, info)
         else:
             raise ValueError("Index out of range")
