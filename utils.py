@@ -17,8 +17,9 @@ try:
 except AttributeError:
     # newer version of scipy
     newton_meth = zeros.newton
-import time, sys, os
+import time, sys, os, platform
 import copy
+
 
 # --------------------------------------------------------------------
 
@@ -31,7 +32,7 @@ _functions = ['intersect', 'remain', 'union', 'cartesianProduct',
               'saveObjects', 'loadObjects', 'info', 'compareList',
               'findClosestArray', 'findClosestPointIndex', 'find',
               'makeMfileFunction', 'make_RHS_wrap', 'make_Jac_wrap',
-              'progressBar']
+              'progressBar', 'distutil_destination']
 
 _mappings = ['_implicitSolveMethods', '_1DimplicitSolveMethods']
 
@@ -732,3 +733,32 @@ def makeDataDict(fieldnames, fieldvalues):
         return dict(zip(fieldnames, [a.tolist() for a in fieldvalues]))
     else:
         return dict(zip(fieldnames, fieldvalues))
+
+
+# ------------------------
+
+def distutil_destination():
+    """Internal utility that makes the goofy destination directory string so that PyDSTool
+    can find where the distutils fortran/gcc compilers put things.
+
+    If your temp directory turns out to be different to the one created here, contact us
+    on sourceforge.net, but in the meantime you can override destdir with whatever directory
+    name you find that is being used.
+    """
+    osname = str.lower(platform.system())
+    pyname = platform.python_version_tuple()
+    machinename = platform.machine()
+    if osname == 'linux':
+        destdir = 'src.'+osname+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
+    elif osname == 'darwin':
+        osver = platform.mac_ver()[0].split('.')
+        if int(scipy.__version__.split('.')[1]) > 5 and len(osver)>1 and osver != ['']:
+            destdir = 'src.macosx-'+osver[0]+'.'+osver[1]+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
+        else:
+            destdir = 'src.'+osname+'-'+platform.release()+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
+    elif osname == 'windows':
+        destdir = 'src.win32-'+pyname[0]+'.'+pyname[1]
+    else:
+        destdir = ''
+
+    return destdir
