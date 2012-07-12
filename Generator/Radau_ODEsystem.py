@@ -32,26 +32,6 @@ _pydstool_path = PyDSTool.__path__[0]
 rout = redirc.Redirector(redirc.STDOUT)
 rerr = redirc.Redirector(redirc.STDERR)
 
-def distutil_destination():
-    """Makes the goofy destination directory string so that we can find where the distutils
-    fortran compiler puts things."""
-    osname = str.lower(platform.system())
-    pyname = platform.python_version_tuple()
-    machinename = platform.machine()
-    if osname == 'linux':
-        destdir = 'src.'+osname+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
-    elif osname == 'darwin':
-        osver = platform.mac_ver()[0].split('.')
-        if int(scipy.__version__.split('.')[1]) > 5 and len(osver)>1 and osver != ['']:
-            destdir = 'src.macosx-'+osver[0]+'.'+osver[1]+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
-        else:
-            destdir = 'src.'+osname+'-'+platform.release()+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
-    elif osname == 'windows':
-        destdir = 'src.win32-'+pyname[0]+'.'+pyname[1]
-    else:
-        destdir = ''
-
-    return destdir
 
 
 class radau(integrator):
