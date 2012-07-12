@@ -538,12 +538,12 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
             assert isinstant == False
             gatevar = Par(s)
         else:
-            if isinstance(sinf, QuantSpec):
+            if isinstance(sinf, (Quantity, QuantSpec)):
                 sinf_term = Var(sinf(), name=s+'inf')
             elif isinstance(sinf, str):
                 sinf_term = Var(sinf, name=s+'inf')
             else:
-                raise TypeError("sinf argument must be a string or a QuantSpec")
+                raise TypeError("sinf argument must be a string, Quantity or a QuantSpec")
             if isinstant:
                 if noauxs:
                     gatevar = Var(sinf_term(), name=s, domain=[0,1],
@@ -556,12 +556,12 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
                     gatevar = Var(sinf_term(), name=s, domain=[0,1],
                                  specType='ExpFuncSpec')
             else:
-                if isinstance(taus, QuantSpec):
+                if isinstance(taus, (Quantity, QuantSpec)):
                     taus_term = Var(taus(), name='tau'+s)
                 elif isinstance(taus, str):
                     taus_term = Var(taus, name='tau'+s)
                 else:
-                    raise TypeError("taus argument must be a string or a QuantSpec")
+                    raise TypeError("taus argument must be a string, Quantity or a QuantSpec")
                 # temporary declaration of symbol s (the argument string) as a Var
                 s_ = Var(s)
                 if noauxs:
@@ -713,13 +713,13 @@ def makeChannel_rates(name,voltage=voltage,
             assert isinstant == False
             gatevar = Par(s)
         else:
-            if isinstance(arate, QuantSpec):
+            if isinstance(arate, (Quantity, QuantSpec)):
                 aterm = Var(arate(), name='a'+s)
             elif isinstance(arate, str):
                 aterm = Var(arate, name='a'+s)
             else:
                 raise TypeError("arate argument must be a string or QuantSpec")
-            if isinstance(brate, QuantSpec):
+            if isinstance(brate, (Quantity, QuantSpec)):
                 bterm = Var(brate(), name='b'+s)
             elif isinstance(brate, str):
                 bterm = Var(brate, name='b'+s)
@@ -762,18 +762,18 @@ def makeChannel_rates(name,voltage=voltage,
     if s2 is not None:
         assert s is not None, "Must use first gating variable name first!"
         assert spow2 != 0, "Do not use second gating variable with spow2 = 0!"
-        if isinstance(arate2, QuantSpec):
+        if isinstance(arate2, (Quantity, QuantSpec)):
             aterm2 = Var(arate2(), name='a'+s2)
         elif isinstance(arate2, str):
             aterm2 = Var(arate2, name='a'+s2)
         else:
-            raise TypeError("arate2 argument must be a string or QuantSpec")
-        if isinstance(brate2, QuantSpec):
+            raise TypeError("arate2 argument must be a string, Quantity or QuantSpec")
+        if isinstance(brate2, (Quantity, QuantSpec)):
             bterm2 = Var(brate2(), name='b'+s2)
         elif isinstance(brate2, str):
             bterm2 = Var(brate2, name='b'+s2)
         else:
-            raise TypeError("brate2 argument must be a string or QuantSpec")
+            raise TypeError("brate2 argument must be a string, Quantity or QuantSpec")
         s2_ = Var(s2)
         if isinstant2:
             if noauxs:
