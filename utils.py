@@ -745,6 +745,7 @@ def distutil_destination():
     on sourceforge.net, but in the meantime you can override destdir with whatever directory
     name you find that is being used.
     """
+    import scipy
     osname = str.lower(platform.system())
     pyname = platform.python_version_tuple()
     machinename = platform.machine()
