@@ -1074,7 +1074,7 @@ class HybridTrajectory(Trajectory):
         return info(self, "Hybrid Trajectory")
 
 
-    def __call__(self, t, coords=None, checklevel=0,
+    def __call__(self, t, coords=None, checklevel=None,
                  asGlobalTime=False, asmap=False):
         """Evaluate a parameterized hybrid trajectory at given independent
         variable value(s), interpreted as global times if optional
