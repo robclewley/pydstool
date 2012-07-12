@@ -61,7 +61,7 @@ _functions = ['find_nullclines', 'make_distance_to_line_auxfn',
               'is_min_bracket', 'find_nearest_sample_points_by_angle',
               'closest_perp_distance_between_splines',
               'closest_perp_distance_between_sample_points',
-              'closest_perp_distance_on_spline',
+              'closest_perp_distance_on_spline', 'project_point',
               'line_intersection', 'find_saddle_manifolds',
               'plot_PP_vf', 'plot_PP_fps', 'show_PPs', 'get_PP']
 
@@ -1784,7 +1784,35 @@ def line_intersection(A, B, C, D):
     return Point2D( A.x+(ua*(B.x-A.x)), A.y+(ua*(B.y-A.y)) )
 
 
+def project_point(A, C, vec1, vec2=None):
+    """Project point A onto line given by C and vector vec1,
+    along the vector vec2.
+
+    Assume A and C have fields 'x' and 'y', e.g. is a Point2D object.
+    vec1 and vec2 (optional) are vectors with fields x and y.
+
+    If vec2 is not given, it is chosen to be perpendicular to vec1.
+    """
+    if vec2 is None:
+        vec2 = get_perp(vec1)
+    A = Point2D(A)
+    C = Point2D(C)
+    B = A + vec2
+    D = C + vec1
+    return line_intersection(A, B, C, D)
+
+
+
 class fixedpoint_nD(object):
+    """IMPORTANT: Any complex eigenvectors are stored as pairs of real eigenvectors,
+        with the understanding that the corresponding complex eigenvalues indicate the
+        use of these eigenvectors as a solution basis with the trig functions.
+
+
+    The full, possibly complex eigenvectors are always available using np.linalg(fp.D)
+    for a fixedpoint_nD object 'fp'.
+    """
+
     _classifcations = ('spiral', 'node', 'saddle')
     _stability = ('s','c','u')
 
@@ -1814,9 +1842,13 @@ class fixedpoint_nD(object):
         else:
             try:
                 self.D = asarray(jac(**jac_test_arg))
-            except:
-                # placeholder
-                raise
+            except TypeError:
+                # last chance if 2D
+                try:
+                    self.D = asarray(jac(jac_test_arg['t'], jac_test_arg[self.fp_coords[0]],
+                                                            jac_test_arg[self.fp_coords[1]]))
+                except:
+                    raise
         assert self.D.shape == (self.dimension, self.dimension)
         assert normord > 0
         self.normord = normord
@@ -1849,25 +1881,57 @@ class fixedpoint_nD(object):
         self.description = description
 
     def _get_eigen(self):
+        """Uses numpy linalg.eig to compute eigenvalues and right eigenvectors
+        of this fixed point.
+
+        IMPORTANT: Any complex eigenvectors are stored as pairs of real eigenvectors,
+        with the understanding that the corresponding complex eigenvalues indicate the
+        use of these eigenvectors as a solution basis with the trig functions.
+
+        The full, possibly complex eigenvectors are always available using np.linalg(fp.D)
+        for a fixedpoint_nD object 'fp'.
+        """
         evals, evecs_array = np.linalg.eig(self.D)
+        evecs_array = evecs_array.T
         evecs_pt = []
-        for i, v in enumerate(self.fp_coords):
-            d = {}
-            for j, w in enumerate(self.fp_coords):
-                # funky indexing is to recover the float value
-                # from a 0-dimensional array (e.g. array(0.5))
-                # that has no length
-                d[w] = real(evecs_array.T[i][j])[()]
-            evecs_pt.append(Point(d))
+        if all(isreal(evals)):
+            for i, v in enumerate(self.fp_coords):
+                d = {}
+                for j, w in enumerate(self.fp_coords):
+                    d[w] = float(real(evecs_array[i][j]))
+                evecs_pt.append(Point(d))
+        else:
+            # go through e'vecs and identify repeated real parts, turn the imaginary
+            # parts into an additional e'vec
+            for vec in evecs_array:
+                if all(imag(vec) == 0):
+                    # all real
+                    d = {}
+                    for j, w in enumerate(self.fp_coords):
+                        d[w] = float(real(vec[j]))
+                    evecs_pt.append(Point(d))
+                else:
+                    # two eigenvectors, one each from real and imaginary parts
+                    d1 = {}
+                    d2 = {}
+                    for j, w in enumerate(self.fp_coords):
+                        d1[w] = float(real(vec[j]))
+                        d2[w] = float(imag(vec[j]))
+                    p1 = Point(d1)
+                    p2 = Point(d2)
+                    found = False
+                    for p in evecs_pt:
+                        # the complex eigenvectors will come in conjugate pairs,
+                        # so only include one set
+                        if p == p1 or p == -p1 or p == p2 or p == -p2:
+                            found = True
+                    if not found:
+                        evecs_pt.append(p1)
+                        evecs_pt.append(p2)
         self.evals = evals
-        evecs_normed = []
-        for ev in evecs_pt:
-            assert ev._normord == self.normord, "Mismatching norm order for eigenvector"
-            n = norm(ev, self.normord)
-            if n != 1:
-                ev = ev/n
-            evecs_normed.append(ev)
-        self.evecs = tuple(evecs_normed)
+        # ! don't norm the evecs, because ones originating from imaginary parts will be off
+        #   relative to the real parts
+        self.evecs = tuple(evecs_pt)
 
     def _ensure_jac(self, jac):
         if jac is None:
@@ -1888,6 +1952,13 @@ class fixedpoint_nD(object):
 
 
 class fixedpoint_2D(fixedpoint_nD):
+    """IMPORTANT: Any complex eigenvectors are stored as pairs of real eigenvectors,
+        with the understanding that the corresponding complex eigenvalues indicate the
+        use of these eigenvectors as a solution basis with the trig functions.
+
+    The full, possibly complex eigenvectors are always available using np.linalg(fp.D)
+    for a fixedpoint_nD object 'fp'.
+    """
     def __init__(self, gen, pt, coords=None, jac=None, description='', normord=2, eps=1e-12):
         fixedpoint_nD.__init__(self, gen, pt, coords, jac, description=description,
                                normord=normord, eps=eps)
