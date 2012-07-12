@@ -122,7 +122,8 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
      takes four arguments (model, ic, pertcoord, pertsize) and returns the new
      point ic (not just ic[pertcoord]).
     Use settle=0 to perform no forward integration before the time window in
-     which the perturbation will be applied (e.g. for non-cycles).
+     which the perturbation will be applied, or a fraction < 1 to ensure an
+     integration past the event point (e.g. for non-cycles).
     Use stop_at_t to calculate a partial PRC, from perturbation time 0 to this
      value.
     Use force_T to force the period to be whatever value you like.
@@ -175,11 +176,21 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
             evts = model.getTrajEventTimes('pert', evname)
         if verbose:
             print "    Last event:", evts[-1]
-        val = -np.mod(evts[-1]+t0, T)/T
-        if abs(val) > 0.5:
-            val = val+1
+        if i == 0:
+            # make sure to always use the same event number
+            evnum = max(0,len(evts)-2)
+        val = -np.mod(evts[evnum]+t0, T)/T
+        ## assume continuity of PRC: hack-fix modulo wart by testing these vals
+        # and using the closest to previous value
+        if i > 0:
+            test_vals = np.array([val-2, val-1, val-0.5, val, val+0.5, val+1, val+2])
+            m = np.argmin(abs(PRCvals[-1] - test_vals))
+            val = test_vals[m]
+            if verbose and abs(PRCvals[-1] - val) > 0.05:
+                print "\nCorrected value", i, PRCvals, val
         PRCvals.append(val)
-    return Pointset(coordarray=[PRCvals], coordnames=['D_phase'], indepvararray=ref_ts[:i], indepvarname='t')
+    return Pointset(coordarray=[PRCvals], coordnames=['D_phase'],
+                    indepvararray=ref_ts[:len(PRCvals)], indepvarname='t')
 
 
 def compare_pert(model, ref_traj_period, evname, pertcoord, pertsize, t0, settle=5,
