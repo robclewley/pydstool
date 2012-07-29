@@ -43,7 +43,7 @@ try:
 except AttributeError:
     # newer version of scipy
     newton_meth = zeros.newton
-from scipy import linspace, isfinite, sign, alltrue, sometrue, arctan
+from scipy import linspace, isfinite, sign, alltrue, sometrue, arctan, arctan2
 
 from random import uniform
 import copy
@@ -67,7 +67,7 @@ _functions = ['find_nullclines', 'make_distance_to_line_auxfn',
 
 _classes = ['distance_to_pointset', 'mesh_patch_2D', 'dx_scaled_2D',
             'phaseplane', 'fixedpoint_nD', 'fixedpoint_2D', 'nullcline',
-            'Point2D', 'plotter_2D']
+            'Point2D', 'plotter_2D', 'local_linear_2D']
 
 _features = ['inflection_zone_leaf', 'inflection_zone_node',
              'max_curvature_zone_leaf', 'max_curvature_zone_node']
@@ -2015,6 +2015,201 @@ class fixedpoint_2D(fixedpoint_nD):
         else:
             ixs = self.point._map_names_to_ixs(restrict_to_coords)
             return self.point.coordarray[ixs]
+
+
+class local_linear_2D(object):
+    """Create local 2D linear system from a nonlinear system at a specified point.
+
+    This class is specific to conductance-based Hodgkin-Huxley-like models.
+    It assumes all variables can be given in conditionally-linear form
+
+        tau_x(<other_vars>) x' = x_inf(<other_vars>) - x
+
+    for some set of other variables (possibly none). Thus, a DSSRT assistant object is passed
+    in to help with these quantities.
+    """
+
+    def __init__(self, model, da, voltage, other_var, init_pt, with_exit_auxfn=True, targlang='python', max_t=5,
+                 name='nulls', extra_vinf_terms='', extra_pars=None):
+        """da is a DSSRT assistant object associated with the model (for Psi dominance values, not Omegas).
+        Hold all system vars constant that are not part of the 2D system specified by pair (voltage, other_var).
+
+        extra v_inf terms should include a + or -, and should be given as a single string.
+        """
+        self.voltage = voltage
+        self.other_var = other_var
+        varsPP_orig = [other_var.replace('.','_'), voltage]
+        x = other_var.split('.')[-1]   # remove any hierarchical components: e.g., Na.m -> m
+        self.xvar = x
+        varsPP = [x, 'v']
+        if isinstance(model, NonHybridModel):
+            self.gen = model.registry.values()[0]
+        elif isinstance(model, Generator.Generator):
+            self.gen = model
+        else:
+            raise TypeError("Pass Generator or NonHybridModel object")
+        self.varsPP = varsPP
+        self.varsPP_orig = varsPP_orig
+        self.da = da
+        #self.jac_spec, self.new_fnspecs = prepJacobian(self.gen.funcspec._initargs['varspecs'], varsPP_orig,
+        #                        self.gen.funcspec._initargs['fnspecs'])
+
+        self.gen.set(ics=init_pt)
+        self.lin = None
+
+        # make local linear system spec
+        DSargs = args()
+        vfn_str = '(vinf(%s)-v)/tauv' % x
+        xfn_str = '(%sinf(v)-%s)/tau%s' % (x, x, x)
+        DSargs.varspecs = {'v': vfn_str, 'vdot': vfn_str}
+        DSargs.varspecs[x] = xfn_str
+        DSargs.varspecs[x+'dot'] = xfn_str
+        DSargs.xdomain = {'v': [-130, 70]}
+        DSargs.xdomain[x] = [0,1]
+
+        if extra_vinf_terms == '':
+            vinf_def = 'psi%s*(%s-%s0) + vinf0' % (x,x,x)
+        else:
+            vinf_def = 'psi%s*(%s-%s0) + vinf0 + %s' % (x,x,x,extra_vinf_terms)
+        auxdict = {'vinf': ([x], vinf_def),
+                   x+'inf': (['v'], 'D%sinf*(v-v0)+%sinf0' % (x,x)),
+                   'fni'+x: ([x], '(%s-%sinf0)/D%sinf + v0' % (x,x,x))}
+
+        ov = varsPP_orig[0]
+
+
+        xinf_defstr = self.gen.funcspec._initargs['varspecs'][self.varsPP_orig[0]+'inf']
+        self.Dxinf_quant = Diff(xinf_defstr, voltage)
+
+        # initiatialize linear system
+        pt = self.gen._FScompatibleNames(filteredDict(init_pt,
+                                self.gen._FScompatibleNamesInv(self.gen.funcspec.vars)))
+        v0 = init_pt[voltage]
+        x0 = init_pt[other_var]
+        DSargs.pars = {'v0': v0, x+'0': x0,
+                       'tauv': da.calc_tau(voltage, init_pt),
+                       'tau'+x: da.calc_tau(other_var, init_pt),
+                       'D'+x+'inf': self.Dxinf_quant.eval({voltage: v0}).tonumeric(),
+                       x+'inf0': da.calc_inf(other_var, init_pt),
+                       'psi'+x: da.calc_psi(other_var, init_pt),
+                       'vinf0': da.calc_inf(voltage, init_pt)}
+        if extra_pars is not None:
+            DSargs.pars.update(extra_pars)
+
+        DSargs.auxvars = [var+'dot' for var in varsPP]
+        DSargs.fnspecs = auxdict
+        DSargs.algparams = {'init_step':0.001, 'max_step': 0.001, 'max_pts': 10000}
+        DSargs.checklevel = 0
+        DSargs.ics = {'v': init_pt[voltage], x: init_pt[other_var]}
+        DSargs.tdata = [0, max_t]
+        DSargs.name = 'lin_'+name
+
+        if with_exit_auxfn:
+            res = make_distance_to_line_auxfn('exit_line', 'exit_fn',
+                                  [var+'1' for var in varsPP], True)
+            man_pars = res['pars']
+            man_auxfns = res['auxfn']
+            for p in man_pars:
+                DSargs.pars[p] = 0
+
+            DSargs.fnspecs.update(man_auxfns)
+            thresh_ev = Events.makeZeroCrossEvent(expr='exit_fn(%s,%s)' %(varsPP[0], varsPP[1]),
+                                                dircode=0,
+                                                argDict={'name': 'exit_ev',
+                                                         'eventtol': 1e-8,
+                                                         'eventdelay': 1e-3,
+                                                         'starttime': 0,
+                                                         'precise': True,
+                                                         'active': True,
+                                                         'term': False},
+                                                varnames=varsPP,
+                                                fnspecs=man_auxfns,
+                                                parnames=man_pars,
+                                                targetlang=targlang
+                                                )
+            DSargs.events = [thresh_ev]
+        if targlang == 'c':
+            print "Warning! Did you delete any existing linear systems?"
+            self.lin = Generator.Dopri_ODEsystem(DSargs)
+        else:
+            self.lin = Generator.Vode_ODEsystem(DSargs)
+
+        # build jac info for linear system
+        self.jac_spec, self.new_fnspecs = prepJacobian(self.lin.funcspec._initargs['varspecs'], varsPP,
+                                self.lin.funcspec._initargs['fnspecs'])
+
+
+    def localize(self, pt):
+        """pt is a Point in *all* of the original model var names
+        """
+        pt = filteredDict(pt, self.gen._FScompatibleNamesInv(self.gen.funcspec.vars))
+        v0 = pt[self.voltage]
+        x0 = pt[self.other_var]
+        x = self.xvar
+        da = self.da
+        self.lin.set(pars = {'v0': v0, x+'0': x0,
+                       'tauv': da.calc_tau(self.voltage, pt),
+                       'tau'+x: da.calc_tau(self.other_var, pt),
+                       'D'+x+'inf': self.Dxinf_quant.eval({self.voltage: v0}).tonumeric(),
+                       x+'inf0': da.calc_inf(self.other_var, pt),
+                       'psi'+x: da.calc_psi(self.other_var, pt),
+                       'vinf0': da.calc_inf(self.voltage, pt)})
+        self.lin.set(ics={'v': v0, x: x0})
+
+
+    def analyze(self, pt):
+        """Perform local analysis at given point in *all* of the original model var names
+        Re-localization can be avoided (for testing stationarity assumptions) using pt=None.
+        """
+        x = self.xvar
+        if pt is not None:
+            self.localize(pt)
+        varsPP = self.varsPP
+        self.scope = self.lin.pars.copy()
+        self.scope.update(self.new_fnspecs)
+        self.jac_fn = expr2fun(self.jac_spec, ensure_args=['t'], **self.scope)
+        # expect only one fixed point for the linear system!
+        vlim = 100
+        xlim = 1
+        i = 1
+        fp_coords = None
+        while i < 10:
+            try:
+                fp_coords = find_fixedpoints(self.lin, subdomain={'v': [-vlim, vlim],
+                                                                  x: [-xlim, xlim]})[0]
+            except IndexError:
+                vlim += 200
+                xlim += 2
+                i += 1
+            else:
+                break
+        if fp_coords is None:
+            raise ValueError("No linear system fixed points found!")
+        else:
+            fp = fixedpoint_2D(self.lin, Point(fp_coords), coords=varsPP, jac=self.jac_fn)
+
+        self.fp = fp
+
+        eval_fast_ix = argmax(abs(fp.evals))
+        eval_slow_ix = argmin(abs(fp.evals))
+        self.eval_fast = fp.evals[eval_fast_ix]
+        self.evec_fast = fp.evecs[eval_fast_ix]
+        self.eval_slow = fp.evals[eval_slow_ix]
+        self.evec_slow = fp.evecs[eval_slow_ix]
+
+        # angles associated with eigenvectors
+        alpha = abs(arctan2( self.evec_slow[x], self.evec_slow['v'] ))
+        alphap = abs(arctan2( self.evec_fast[x], self.evec_fast['v'] ))
+        self.s = sin(alphap) / sin(alpha+alphap)
+        self.s2 = sin(alphap + arctan(self.lin.pars['D%sinf' % self.xvar])) / sin(alpha+alphap)
+        self.alpha = alpha
+        self.alphap = alphap
+
+        # angles associated with nullclines
+        self.theta = arctan(self.lin.pars['D%sinf' % self.xvar])
+        self.gamma = arctan2(1, self.lin.pars['psi%s' % self.xvar])
+        self.phi = self.gamma - self.theta
+
 
 
 def make_distance_to_known_line_auxfn(fname, p, dp=None, q=None):
