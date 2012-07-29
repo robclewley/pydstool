@@ -407,7 +407,13 @@ def makeExtInputConductanceChannel(name, voltage=voltage,
     if vrev is None:
         vrevpar = Par('vrev')
     elif isinstance(vrev, str):
-        vrevpar = Par(vrev, 'vrev')
+        try:
+            val = float(vrev)
+        except ValueError:
+            # allow for ModelSpec reference to or function of other variables
+            vrevpar = QuantSpec('vrev', vrev)
+        else:
+            vrevpar = Par(vrev, 'vrev')
     elif isinstance(vrev, float) or isinstance(vrev, int):
         vrevpar = Par(repr(vrev), 'vrev')
     else:
@@ -471,7 +477,13 @@ def makeFunctionConductanceChannel(name, parameter_name,
     if vrev is None:
         vrevpar = Par('vrev')
     elif isinstance(vrev, str):
-        vrevpar = Par(vrev, 'vrev')
+        try:
+            val = float(vrev)
+        except ValueError:
+            # allow for ModelSpec reference to or function of other variables
+            vrevpar = QuantSpec('vrev', vrev)
+        else:
+            vrevpar = Par(vrev, 'vrev')
     elif isinstance(vrev, float) or isinstance(vrev, int):
         vrevpar = Par(repr(vrev), 'vrev')
     else:
@@ -581,7 +593,13 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
     if vrev is None:
         vrevpar = Par('vrev')
     elif isinstance(vrev, str):
-        vrevpar = Par(vrev, 'vrev')
+        try:
+            val = float(vrev)
+        except ValueError:
+            # allow for ModelSpec reference to or function of other variables
+            vrevpar = QuantSpec('vrev', vrev)
+        else:
+            vrevpar = Par(vrev, 'vrev')
     elif isinstance(vrev, float) or isinstance(vrev, int):
         vrevpar = Par(repr(vrev), 'vrev')
     else:
@@ -756,7 +774,13 @@ def makeChannel_rates(name,voltage=voltage,
     if vrev is None:
         vrevpar = Par('vrev')
     elif isinstance(vrev, str):
-        vrevpar = Par(vrev, 'vrev')
+        try:
+            val = float(vrev)
+        except ValueError:
+            # allow for ModelSpec reference to or function of other variables
+            vrevpar = QuantSpec('vrev', vrev)
+        else:
+            vrevpar = Par(vrev, 'vrev')
     elif isinstance(vrev, float) or isinstance(vrev, int):
         vrevpar = Par(repr(vrev), 'vrev')
     else:
