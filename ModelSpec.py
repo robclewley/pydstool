@@ -107,7 +107,8 @@ class ModelSpec(object):
        FuncSpec instantiation.
 
        Use globalRefs option to declare global variables used in the
-       definitions that are not defined in them (e.g. time).
+       definitions that are not defined in them (e.g. time as 't', although
+       this one is included as globalRef by default).
 
        Default for multiple quantity definitions is to unravel them.
        Use multiDefUnravel=False to override this.
@@ -130,11 +131,15 @@ class ModelSpec(object):
         #self.validate()
         if not self.isDefined(True, ignoreInputs):
             raise AssertionError("Model spec not fully defined")
+        if globalRefs is None:
+            globalRefs = ['t']
+        elif 't' not in globalRefs:
+            globalRefs.append('t')
         if not self.isComplete(globalRefs):
-            if globalRefs is None:
-                print "Unresolved symbols:",  self.freeSymbols
-            else:
-                print "Unresolved symbols:", remain(self.freeSymbols, globalRefs)
+##            if globalRefs is None:
+##                print "Unresolved symbols:",  self.freeSymbols
+##            else:
+            print "Unresolved symbols:", remain(self.freeSymbols, globalRefs)
             raise ValueError("Cannot flatten incomplete functional "
                              "specification")
         if self.funcSpecDict == {} or force:
