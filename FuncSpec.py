@@ -170,7 +170,7 @@ class FuncSpec(object):
                                      'arithmetic operators')
                 for s in term:
                     if self.targetlang == 'python':
-                        if s in '[]{}~!@#$%&\|?><^':
+                        if s in '[]{}~@#$%&\|?^': # <>! now OK, e.g. for "if" statements
                             print "Error in term:", term
                             raise ValueError('terms to be substituted must be '
                                 'alphanumeric or contain arithmetic operators '
