@@ -267,7 +267,7 @@ def connectWithSynapse(synname, syntypestr, source_cell, dest_cell,
 
 
 def makeSynapseChannel(name, gatevarname=None, voltage=voltage, typestr=None,
-                       vrev=None, g=None, noauxs=True, subclass=channel,
+                       vrev=None, g=None, parlist=None, noauxs=True, subclass=channel,
                        gamma1=None, gamma2=None):
     """Make a chemical or electrical (gap junction) synapse channel in a soma.
     To select these, the typestr argument must be one of 'exc', 'inh', or 'gap'.
@@ -390,7 +390,7 @@ def makeExtInputCurrentChannel(name, noauxs=True, subclass=channel,
 
 
 def makeExtInputConductanceChannel(name, voltage=voltage,
-                                   g=None, vrev=None,
+                                   g=None, vrev=None, parlist=None,
                                    noauxs=True, subclass=channel,
                                    gamma1=None, gamma2=None):
     """External input signal used as a conductance. Supply the Input having
@@ -423,9 +423,9 @@ def makeExtInputConductanceChannel(name, voltage=voltage,
     # unresolved name!)
     inp = Input('', 'ext_input', [0,Inf], specType='ExpFuncSpec')
     I_ext = Var(gpar*inp*(v_pot-vrevpar), 'I', specType='ExpFuncSpec')
-    if noauxs:
-        channel_Iext.add([inp, I_ext, gpar, vrevpar])
-    else:
+    channel_Iext.add(declare_list)
+    channel_Iext.add([inp, I_ext])
+    if not noauxs:
         I_cond = Var(gpar*inp, 'cond', [0,Inf], specType='ExpFuncSpec')   # no conductance for this plain current
         I_shunt = Var(I_cond*vrevpar, 'shunt', specType='ExpFuncSpec')    # technically not a shunt but acts like a V-independent shunt!
         arg_list = ['ext_input']
@@ -439,8 +439,7 @@ def makeExtInputConductanceChannel(name, voltage=voltage,
         shunt_fn = Fun(gpar*inp()*vrevpar, arg_list, 'dssrt_fn_shunt')
         I_fn = Fun(gpar*inp()*(v_pot-vrevpar), arg_list+[voltage],
                    'dssrt_fn_I')
-        channel_Iext.add([inp, I_ext, I_cond, I_shunt, gpar, vrevpar,
-                          cond_fn, shunt_fn, I_fn])
+        channel_Iext.add([I_cond, I_shunt, cond_fn, shunt_fn, I_fn])
         if gamma1 is not None:
             raise ValueError("gamma1 must be None")
         channel_Iext.gamma1 = {}
@@ -448,6 +447,74 @@ def makeExtInputConductanceChannel(name, voltage=voltage,
             gamma2 = {}
         channel_Iext.gamma2 = gamma2
     return channel_Iext
+
+
+def makeFunctionConductanceChannel(name, parameter_name,
+                                   func_def_str,
+                                   voltage=voltage,
+                                   g=None, vrev=None, parlist=None,
+                                   noauxs=True, subclass=channel,
+                                   gamma1=None, gamma2=None):
+    """Explicit function waveform used as a conductance, e.g. for an alpha-function
+    post-synaptic response. Creates a time-activated event to trigger the waveform
+    based on a named parameter. The function will be a function of (local/relative)
+    time t only.
+
+    Returns a channel-type object by default, or some user-defined subclass if desired.
+    """
+    if g is None:
+        gpar = Par('g')
+    elif isinstance(g, str):
+        gpar = Par(g, 'g')
+    else:
+        gpar = Par(repr(g), 'g')
+    if vrev is None:
+        vrevpar = Par('vrev')
+    elif isinstance(vrev, str):
+        vrevpar = Par(vrev, 'vrev')
+    elif isinstance(vrev, float) or isinstance(vrev, int):
+        vrevpar = Par(repr(vrev), 'vrev')
+    else:
+        # allow for ModelSpec function of other variables
+        vrevpar = vrev
+    if hasattr(vrevpar, 'name'):
+        declare_list = [gpar, vrevpar]
+    else:
+        declare_list = [gpar]
+    func_def = QuantSpec('f', func_def_str)
+    # define parameters based on remaining free names in definition
+    declare_list.extend([Par(0, pname) for pname in remain(func_def.freeSymbols,
+                                                           ['t'])])
+    fun_par = Par(0, parameter_name)
+    inp = Fun('if(t > %s, %s, 0)' % (parameter_name, func_def_str),
+              ['t'], 'func', [-Inf,Inf], specType='ExpFuncSpec')
+    v_pot = Var(voltage)   # this is to provide the local name only
+    I_ext = Var(gpar*'func(t)'*(v_pot-vrevpar), 'I', specType='ExpFuncSpec')
+    channel_Ifunc = subclass(name)
+    declare_list.extend([fun_par, inp, I_ext])
+    channel_Ifunc.add(declare_list)
+    if not noauxs:
+        I_cond = Var(gpar*'func(t)', 'cond', [0,Inf], specType='ExpFuncSpec')   # no conductance for this plain current
+        I_shunt = Var(I_cond*vrevpar, 'shunt', specType='ExpFuncSpec')    # technically not a shunt but acts like a V-independent shunt!
+        arg_list = ['t']
+        if not isinstance(vrevpar, Par):
+            if parlist is not None:
+                avoid_pars = [str(q) for q in parlist if isinstance(q, Par)]
+            else:
+                avoid_pars = []
+            arg_list.extend(remain(vrevpar.freeSymbols, avoid_pars))
+        cond_fn = Fun(gpar*'func(t)', arg_list, 'dssrt_fn_cond')
+        shunt_fn = Fun(gpar*'func(t)'*vrevpar, arg_list, 'dssrt_fn_shunt')
+        I_fn = Fun(gpar*'func(t)'*(v_pot-vrevpar), arg_list+[voltage],
+                   'dssrt_fn_I')
+        channel_Ifunc.add([I_cond, I_shunt, cond_fn, shunt_fn, I_fn])
+        if gamma1 is not None:
+            raise ValueError("gamma1 must be None")
+        channel_Ifunc.gamma1 = {}
+        if gamma2 is None:
+            gamma2 = {}
+        channel_Ifunc.gamma2 = gamma2
+    return channel_Ifunc
 
 
 def makeBiasChannel(name, I=None, noauxs=True, subclass=channel,
