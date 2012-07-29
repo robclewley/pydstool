@@ -104,7 +104,7 @@ def one_period_traj(model, ev_name, ev_t_tol, ev_norm_tol, T_est,
         raise RuntimeError("Failure to converge after 80 iterations")
 
 
-def _default_pert(model, ic, pertcoord, pertsize):
+def _default_pert(model, ic, pertcoord, pertsize, t0):
     ic[pertcoord] += pertsize
     return ic
 
@@ -112,15 +112,18 @@ def _default_pert(model, ic, pertcoord, pertsize):
 def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
               settle=5, verbose=False, skip=1, do_pert=_default_pert,
               keep_trajs=False, stop_at_t=np.inf, force_T=np.nan):
-    """Pass a Generator or Model instance for model.
+    """Return a Pointset with dependent variable 'D_phase', measured from 0 to 1,
+    where D_phase > 0 is an advance.
+
+    Pass a Generator or Model instance for model.
     Pass a Trajectory or Pointset for the ref_traj_period argument.
     Pass the event name in the model that indicates the periodicity.
     Use skip > 1 to sub-sample the points computed along the trajectory at
      the skip rate.
     Use a do_pert function to do any non-standard perturbation, e.g. if there
      are domain boundary conditions that need special treatment. This function
-     takes four arguments (model, ic, pertcoord, pertsize) and returns the new
-     point ic (not just ic[pertcoord]).
+     takes four or five arguments (model, ic, pertcoord, pertsize, perttime=None)
+     and returns the new point ic (not just ic[pertcoord]).
     Use settle=0 to perform no forward integration before the time window in
      which the perturbation will be applied, or a fraction < 1 to ensure an
      integration past the event point (e.g. for non-cycles).
@@ -162,8 +165,7 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
     for i, t0 in enumerate(ref_ts):
         if t0 > stop_at_t:
             break
-        ic = ref_pts[i]
-        ic = do_pert(model, ic, pertcoord, pertsize)
+        ic = do_pert(model, ref_pts[i], pertcoord, pertsize, t0)
         if verbose:
             print i, "of", len(ref_ts), ": t0 = ", t0, "of", T, "  t_end", settle*T+t0
             print "   ", ic
@@ -179,7 +181,7 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
         if i == 0:
             # make sure to always use the same event number
             evnum = max(0,len(evts)-2)
-        val = -np.mod(evts[evnum]+t0, T)/T
+        val = (T-np.mod(evts[evnum]+t0, T))/T
         ## assume continuity of PRC: hack-fix modulo wart by testing these vals
         # and using the closest to previous value
         if i > 0:
@@ -188,6 +190,12 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
             val = test_vals[m]
             if verbose and abs(PRCvals[-1] - val) > 0.05:
                 print "\nCorrected value", i, PRCvals, val
+        else:
+            # i = 0. Check that value is adjusted to be closest to zero,
+            # given that we assume the minimum will be at the beginning of the run.
+            test_vals = np.array([val-1, val, val+1])
+            m = np.argmin(abs(test_vals))
+            val = test_vals[m]
         PRCvals.append(val)
     return Pointset(coordarray=[PRCvals], coordnames=['D_phase'],
                     indepvararray=ref_ts[:len(PRCvals)], indepvarname='t')
