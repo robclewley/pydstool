@@ -523,7 +523,7 @@ class GeneratorConstructor(object):
         a.auxvars = auxvarnames
         a.fnspecs = self.userfns
         try:
-            a.fnspecs.update(flatspec['auxfns'])
+            a.fnspecs.update(FScompatibleNames(flatspec['auxfns']))
         except KeyError:
             # no aux fns defined in flat spec!
             pass
