@@ -565,7 +565,7 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
                 taus=None,spow=1,s2=None,isinstant2=False,sinf2=None,taus2=None,
                 spow2=1,vrev=None,g=None,
                 parlist=None, noauxs=True, subclass=channel,
-                gamma1=None, gamma2=None):
+                gamma1=None, gamma2=None, nonlocal_variables=None):
     """Make an ionic membrane channel using the steady state and rate function formalism.
 
     i.e., that the gating variable s has a differential equation in the form:
@@ -581,6 +581,9 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
 
     Provide any additional Par or Fun objects necessary for the complete definition of the
     channel kinetics in the optional parlist argument.
+
+    nonlocal_variables list (optional) provides string names of any dynamic variables
+    referenced in the declared specifications that are not local to this channel.
 
     Returns a channel-type object by default, or some user-defined subclass if desired.
     """
@@ -611,6 +614,8 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
         declare_list = [gpar]
     thischannel = subclass(name)
     v_pot = Var(voltage)   # this is to provide the local name only
+    if nonlocal_variables is None:
+        nonlocal_variables = []
     # deal with gating variable, if present
     if s is None:
         condQ = gpar
@@ -635,8 +640,9 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
                                  specType='ExpFuncSpec')
                 else:
                     taus_term = Var('0', name='tau'+s)
-                    taus_fn = Fun( '0', [v_pot], 'dssrt_fn_tau'+s )
-                    sinf_fn = Fun( sinf_term(), [v_pot],
+                    taus_fn = Fun( '0', [v_pot]+nonlocal_variables,
+                                   'dssrt_fn_tau'+s )
+                    sinf_fn = Fun( sinf_term(), [v_pot]+nonlocal_variables,
                                 'dssrt_fn_'+s+'inf' )
                     gatevar = Var(sinf_term(), name=s, domain=[0,1],
                                  specType='ExpFuncSpec')
@@ -653,8 +659,9 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
                     gatevar = Var( (sinf_term() - s_) / taus_term(), name=s,
                                  domain=[0,1], specType='RHSfuncSpec')
                 else:
-                    taus_fn = Fun( taus_term(), [v_pot], 'dssrt_fn_tau'+s )
-                    sinf_fn = Fun( sinf_term(), [v_pot],
+                    taus_fn = Fun( taus_term(), [v_pot]+nonlocal_variables,
+                                   'dssrt_fn_tau'+s )
+                    sinf_fn = Fun( sinf_term(), [v_pot]+nonlocal_variables,
                                 'dssrt_fn_'+s+'inf' )
                     gatevar = Var( (sinf_term() - s_) / taus_term(), name=s,
                                  domain=[0,1], specType='RHSfuncSpec')
@@ -680,8 +687,9 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
                               specType='ExpFuncSpec')
             else:
                 taus2_term = Var('0', name='tau'+s2)
-                taus2_fn = Fun( '0', [v_pot], 'dssrt_fn_tau'+s2 )
-                sinf2_fn = Fun( sinf2_term(), [v_pot],
+                taus2_fn = Fun( '0', [v_pot]+nonlocal_variables,
+                                'dssrt_fn_tau'+s2 )
+                sinf2_fn = Fun( sinf2_term(), [v_pot]+nonlocal_variables,
                                 'dssrt_fn_'+s2+'inf' )
                 gatevar2 = Var(sinf2_term(), name=s2, domain=[0,1],
                               specType='ExpFuncSpec')
@@ -696,8 +704,9 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
                 gatevar2 = Var( (sinf2_term() - s2_) / taus2_term(), name=s2,
                               domain=[0,1], specType='RHSfuncSpec')
             else:
-                taus2_fn = Fun( taus2_term(), [v_pot], 'dssrt_fn_tau'+s2 )
-                sinf2_fn = Fun( sinf2_term(), [v_pot],
+                taus2_fn = Fun( taus2_term(), [v_pot]+nonlocal_variables,
+                                'dssrt_fn_tau'+s2 )
+                sinf2_fn = Fun( sinf2_term(), [v_pot]+nonlocal_variables,
                                 'dssrt_fn_'+s2+'inf' )
                 gatevar2 = Var( (sinf2_term() - s2_) / taus2_term(), name=s2,
                               domain=[0,1], specType='RHSfuncSpec')
@@ -719,15 +728,19 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
             arg_list = [s]
         if s2 is not None:
             arg_list.append(s2)
-        if not isinstance(vrevpar, Par):
+        # vrev may be a Par, a singleton reference to another parameter already defined,
+        # which counts the same; or else a compound reference (function of parameters)
+        if not isinstance(vrevpar, Par) and vrevpar.freeSymbols != [str(vrevpar)]:
             if parlist is not None:
                 avoid_pars = [str(q) for q in parlist if isinstance(q, Par)]
             else:
                 avoid_pars = []
             arg_list.extend(remain(vrevpar.freeSymbols, avoid_pars))
-        cond_fn = Fun(condQ(), arg_list, 'dssrt_fn_cond')
-        shunt_fn = Fun(cond()*vrevpar, arg_list, 'dssrt_fn_shunt')
-        I_fn = Fun(cond()*(v_pot-vrevpar), arg_list+[voltage],
+        condQ_var_free = intersect(condQ.freeSymbols, nonlocal_variables)
+        cond_var_free = intersect(cond.freeSymbols, nonlocal_variables)
+        cond_fn = Fun(condQ(), arg_list+condQ_var_free, 'dssrt_fn_cond')
+        shunt_fn = Fun(cond()*vrevpar, arg_list+cond_var_free, 'dssrt_fn_shunt')
+        I_fn = Fun(cond()*(v_pot-vrevpar), arg_list+[voltage]+cond_var_free,
                    'dssrt_fn_I')
         declare_list.extend([I,cond,shunt, cond_fn, shunt_fn, I_fn])
         if gamma1 is None:
@@ -746,7 +759,7 @@ def makeChannel_rates(name,voltage=voltage,
                       s=None,isinstant=False,arate=None,brate=None,spow=1,
                       s2=None,isinstant2=False,arate2=None,brate2=None,spow2=1,
                       vrev=None,g=None,parlist=None,noauxs=True,subclass=channel,
-                      gamma1=None, gamma2=None):
+                      gamma1=None, gamma2=None, nonlocal_variables=None):
     """Make an ionic membrane channel using the forward and backward rate formalism.
 
     i.e., that the gating variable s has a differential equation in the form:
@@ -762,6 +775,9 @@ def makeChannel_rates(name,voltage=voltage,
 
     Provide any additional Par or Fun objects necessary for the complete definition of the
     channel kinetics in the optional parlist argument.
+
+    nonlocal_variables list (optional) provides string names of any dynamic variables
+    referenced in the declared specifications that are not local to this channel.
 
     Returns a channel-type object by default, or some user-defined subclass if desired.
     """
@@ -792,6 +808,8 @@ def makeChannel_rates(name,voltage=voltage,
         declare_list = [gpar]
     thischannel = subclass(name)
     v_pot = Var(voltage)   # this is to provide the local name only
+    if nonlocal_variables is None:
+        nonlocal_variables = []
     # deal with gating variable, if present
     if s is None:
         condQ = gpar
@@ -825,9 +843,11 @@ def makeChannel_rates(name,voltage=voltage,
                 else:
                     taus_term = Var('0', name='tau'+s)
                     sinf_term = Var( aterm/(aterm+bterm), name=s+'inf')
-                    taus_fn = Fun( '0', [voltage], 'dssrt_fn_tau'+s )
-                    sinf_fn = Fun( aterm()/(aterm()+bterm()), [voltage],
-                                'dssrt_fn_'+s+'inf' )
+                    taus_fn = Fun( '0', [voltage]+nonlocal_variables,
+                                   'dssrt_fn_tau'+s )
+                    sinf_fn = Fun( aterm()/(aterm()+bterm()),
+                                   [voltage]+nonlocal_variables,
+                                   'dssrt_fn_'+s+'inf' )
                     gatevar = Var( aterm()/(aterm()+bterm()), name=s,
                                  domain=[0,1], specType='ExpFuncSpec')
             else:
@@ -837,10 +857,11 @@ def makeChannel_rates(name,voltage=voltage,
                 else:
                     taus_term = Var( 1/(aterm+bterm), name='tau'+s)
                     sinf_term = Var( aterm*taus_term, name=s+'inf')
-                    taus_fn = Fun( 1/(aterm()+bterm()), [voltage],
+                    taus_fn = Fun( 1/(aterm()+bterm()), [voltage]+nonlocal_variables,
                                    'dssrt_fn_tau'+s )
-                    sinf_fn = Fun( aterm()/(aterm()+bterm()), [voltage],
-                                'dssrt_fn_'+s+'inf' )
+                    sinf_fn = Fun( aterm()/(aterm()+bterm()),
+                                   [voltage]+nonlocal_variables,
+                                   'dssrt_fn_'+s+'inf' )
                     gatevar = Var( aterm()*(1-s_)-bterm()*s_, name=s,
                                  domain=[0,1], specType='RHSfuncSpec')
             if not noauxs:
@@ -873,8 +894,10 @@ def makeChannel_rates(name,voltage=voltage,
             else:
                 taus2_term = Var( '0', name='tau'+s2)
                 sinf2_term = Var( aterm2()/(aterm2()+bterm2()), name=s2+'inf')
-                taus2_fn = Fun( '0', [voltage], 'dssrt_fn_tau'+s2 )
-                sinf2_fn = Fun( aterm2()/(aterm2()+bterm2()), [voltage],
+                taus2_fn = Fun( '0', [voltage]+nonlocal_variables,
+                                'dssrt_fn_tau'+s2 )
+                sinf2_fn = Fun( aterm2()/(aterm2()+bterm2()),
+                                [voltage]+nonlocal_variables,
                                 'dssrt_fn_'+s2+'inf' )
                 gatevar2 = Var( aterm2()/(aterm2()+bterm2()), name=s2,
                               domain=[0,1], specType='ExpFuncSpec')
@@ -885,8 +908,10 @@ def makeChannel_rates(name,voltage=voltage,
             else:
                 taus2_term = Var( 1/(aterm2()+bterm2()), name='tau'+s2)
                 sinf2_term = Var( aterm2()*taus2_term(), name=s2+'inf')
-                taus2_fn = Fun( 1/(aterm2()+bterm2()), [voltage], 'dssrt_fn_tau'+s2 )
-                sinf2_fn = Fun( aterm2()/(aterm2()+bterm2()), [voltage],
+                taus2_fn = Fun( 1/(aterm2()+bterm2()), [voltage]+nonlocal_variables,
+                                'dssrt_fn_tau'+s2 )
+                sinf2_fn = Fun( aterm2()/(aterm2()+bterm2()),
+                                [voltage]+nonlocal_variables,
                                 'dssrt_fn_'+s2+'inf' )
                 gatevar2 = Var(aterm2()*(1-s2_)-bterm2()*s2_, name=s2,
                                domain=[0,1], specType='RHSfuncSpec')
@@ -909,15 +934,20 @@ def makeChannel_rates(name,voltage=voltage,
             arg_list = [s]
         if s2 is not None:
             arg_list.append(s2)
-        if not isinstance(vrevpar, Par):
+        # vrev may be a Par, a singleton reference to another parameter already defined,
+        # which counts the same; or else a compound reference (function of parameters)
+        if not isinstance(vrevpar, Par) and vrevpar.freeSymbols != [str(vrevpar)]:
             if parlist is not None:
                 avoid_pars = [str(q) for q in parlist if isinstance(q, Par)]
             else:
                 avoid_pars = []
             arg_list.extend(remain(vrevpar.freeSymbols, avoid_pars))
-        cond_fn = Fun(condQ(), arg_list, 'dssrt_fn_cond')
-        shunt_fn = Fun(cond()*vrevpar, arg_list, 'dssrt_fn_shunt')
-        I_fn = Fun(cond()*(v_pot-vrevpar), arg_list+[voltage], 'dssrt_fn_I')
+        condQ_var_free = intersect(condQ.freeSymbols, nonlocal_variables)
+        cond_var_free = intersect(cond.freeSymbols, nonlocal_variables)
+        cond_fn = Fun(condQ(), arg_list+condQ_var_free, 'dssrt_fn_cond')
+        shunt_fn = Fun(cond()*vrevpar, arg_list+cond_var_free, 'dssrt_fn_shunt')
+        I_fn = Fun(cond()*(v_pot-vrevpar), arg_list+[voltage]+cond_var_free,
+                   'dssrt_fn_I')
         declare_list.extend([I,cond,shunt, cond_fn, shunt_fn, I_fn])
         if gamma1 is None:
             gamma1 = {}
