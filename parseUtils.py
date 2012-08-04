@@ -14,6 +14,7 @@ from common import *
 import re
 import math, random
 from numpy import alltrue, sometrue
+import numpy as np
 from copy import copy, deepcopy
 import parser, symbol, token
 
@@ -1030,6 +1031,17 @@ class symbolMapClass(object):
         except AttributeError:
             # was passed a dict
             self.lookupDict.update(amap)
+
+    def reorder(self):
+        """Return numpy array of indices that can be used to re-order
+        a list of values that have been sorted by this symbol map object,
+        so that the list becomes ordered according to the alphabetical
+        order of the map's keys.
+        """
+        # sorted by keys
+        keys, vals = sortedDictLists(self.lookupDict, byvalue=False)
+        return np.argsort(vals)
+
 
     def __len__(self):
         return len(self.lookupDict)
@@ -2292,19 +2304,28 @@ def addArgToCalls(source, callfns, arg, notFirst=''):
             if currpos+candidate_pos-1 >= 0:
                 if not isNameToken(source[currpos+candidate_pos-1]):
                     findposlist.append(candidate_pos)
+                    # remove so that findpos except clause doesn't get confused
+                    findposlist_candidates.remove(candidate_pos)
             else:
                 # no earlier character in source, so must be OK
                 findposlist.append(candidate_pos)
+                # remove so that findpos except clause doesn't get confused
+                findposlist_candidates.remove(candidate_pos)
         try:
             findpos = min(filter(lambda x:x>=0,findposlist))+currpos
         except ValueError:
-            if currpos < len(source) and len(findposlist_candidates) > 0 and \
-                       findposlist_candidates[0] >= 0:
-                currpos += findposlist_candidates[0] + 2
-                output += source[:findposlist_candidates[0]+2]
-                continue
-            else:
-                done = True
+            # findposlist is empty
+            done = True
+            # commented this stuff out from before this function only ever
+            # dealt with a singleton callfns list - probably the source of
+            # the original bug!
+##            if currpos < len(source) and len(findposlist_candidates) > 0 and \
+##                       findposlist_candidates[0] >= 0:
+##                currpos += findposlist_candidates[0] + 2
+##                output += source[:findposlist_candidates[0]+2]
+##                continue
+##            else:
+##                done = True
         if not done:
             # find start and end braces
             startbrace = source[findpos:].find('(')+findpos
