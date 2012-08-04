@@ -1710,12 +1710,12 @@ class NonHybridModel(Model):
         old_ics = ds.initialconditions.copy()
         ds.initialconditions.update(x_fs)
         x_fs.update(ds.initialconditions)
-        # don't need to convert pdict names to FS-compatible as they sort
-        # the same
         if pdict is None:
             pdict = self.pars
         if asarray:
-            rhsval = array(ds.Rhs(t, x_fs, pdict))
+            # some may not be in the same order, so must inefficiently ensure
+            # re-ordered according to alphabetical order of non-FS compatible names
+            rhsval = array(ds.Rhs(t, x_fs, pdict))[fscm.reorder()]
         else:
             rhsval = Point({'coorddict': dict(zip(fscmInv(vars),
                                               ds.Rhs(t, x_fs, pdict))),
@@ -1748,12 +1748,10 @@ class NonHybridModel(Model):
         old_ics = ds.initialconditions.copy()
         ds.initialconditions.update(x_fs)
         x_fs.update(ds.initialconditions)
-        # don't need to convert pdict names to FS-compatible as they sort
-        # the same
         if pdict is None:
             pdict = self.pars
         if asarray:
-            J = array(ds.Jacobian(t, x_fs, pdict))
+            J = array(ds.Jacobian(t, x_fs, pdict))[fscm.reorder()]
         else:
             J = Pointset({'coorddict': dict(zip(fscmInv(vars),
                                          ds.Jacobian(t, x_fs, pdict))),
@@ -1785,12 +1783,10 @@ class NonHybridModel(Model):
         old_ics = ds.initialconditions.copy()
         ds.initialconditions.update(x_fs)
         x_fs.update(ds.initialconditions)
-        # don't need to convert pdict names to FS-compatible as they sort
-        # the same
         if pdict is None:
             pdict = self.pars
         if asarray:
-            Jp = array(ds.JacobianP(t, x_fs, pdict))
+            Jp = array(ds.JacobianP(t, x_fs, pdict))[fscm.reorder()]
         else:
             Jp = Pointset({'coorddict': dict(zip(fscmInv(ds.get('funcspec').pars),
                                           ds.JacobianP(t, x_fs, pdict))),
@@ -1823,12 +1819,10 @@ class NonHybridModel(Model):
         old_ics = ds.initialconditions.copy()
         ds.initialconditions.update(x_fs)
         x_fs.update(ds.initialconditions)
-        # don't need to convert pdict names to FS-compatible as they sort
-        # the same
         if pdict is None:
             pdict = self.pars
         if asarray:
-            M = array(ds.MassMatrix(t, x_fs, pdict))
+            M = array(ds.MassMatrix(t, x_fs, pdict))[fscm.reorder()]
         else:
             M = Point({'coorddict': dict(zip(fscmInv(vars),
                                         ds.MassMatrix(t, x_fs, pdict))),
@@ -1858,12 +1852,10 @@ class NonHybridModel(Model):
         old_ics = ds.initialconditions.copy()
         ds.initialconditions.update(x_fs)
         x_fs.update(ds.initialconditions)
-        # don't need to convert pdict names to FS-compatible as they sort
-        # the same
         if pdict is None:
             pdict = self.pars
         if asarray:
-            A = array(ds.AuxVars(t, x_fs, pdict))
+            A = array(ds.AuxVars(t, x_fs, pdict))[fscm.reorder()]
         else:
             A = Point({'coorddict': dict(zip(fscmInv(ds.get('funcspec').auxvars),
                                 ds.AuxVars(t, x_fs, pdict))),
@@ -2560,8 +2552,6 @@ class HybridModel(Model):
             dsi = self.modelInfo[dsName]['dsi']
         except KeyError:
             raise ValueError("No DS named %s was found"%dsName)
-        # don't need to convert pdict names to FS-compatible as they sort
-        # the same
         if pdict is None:
             pdict = self.pars
         if asarray:
@@ -2590,8 +2580,6 @@ class HybridModel(Model):
             dsi = self.modelInfo[dsName]['dsi']
         except KeyError:
             raise ValueError("No DS named %s was found"%dsName)
-        # don't need to convert pdict names to FS-compatible as they sort
-        # the same
         if pdict is None:
             pdict = self.pars
         if dsi.haveJacobian():
@@ -2623,8 +2611,6 @@ class HybridModel(Model):
         except KeyError:
             raise ValueError("No DS named %s was found"%dsName)
         if dsi.haveJacobian_pars():
-            # don't need to convert pdict names to FS-compatible as they sort
-            # the same
             if pdict is None:
                 pdict = self.pars
             if asarray:
@@ -2654,8 +2640,6 @@ class HybridModel(Model):
             dsi = self.modelInfo[dsName]['dsi']
         except KeyError:
             raise ValueError("No DS named %s was found"%dsName)
-        # don't need to convert pdict names to FS-compatible as they sort
-        # the same
         if pdict is None:
             pdict = self.pars
         if asarray:
@@ -2685,8 +2669,6 @@ class HybridModel(Model):
             dsi = self.modelInfo[dsName]['dsi']
         except KeyError:
             raise ValueError("No DS named %s was found"%dsName)
-        # don't need to convert pdict names to FS-compatible as they sort
-        # the same
         if pdict is None:
             pdict = self.pars
         if asarray:
