@@ -618,6 +618,10 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
 
     x_null_pts = []
     y_null_pts = []
+    # None dummies in case only_var avoids calculating one of them (for purposes
+    # of returning the right set of arguments at end)
+    x_null = None
+    y_null = None
 
     seed_pts_x = []
     seed_pts_y = []
