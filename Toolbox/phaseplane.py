@@ -1097,13 +1097,17 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
 
 
 
-def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1e3, eps=1e-8,
+def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1000, eps=1e-8,
                      t=0, jac=None):
     """Find fixed points of a system in a given sub-domain (dictionary),
     on the assumption that they are isolated points. subdomain may contain
     pairs (min, max) or singleton values that fix those state variables
     and restrict the fixed point search to the remaining sub-system on the
     given ranges. (default to domains given in generator).
+
+    n = initial number of meshpoints for fsolve (default 5) in each dimension,
+      but total number of seed points tested is bounded by n**D < maxsearch
+      (default 1000).
 
     Returns list of dictionaries mapping the variable names to the values.
 
