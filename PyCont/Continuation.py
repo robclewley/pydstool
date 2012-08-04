@@ -222,7 +222,7 @@ class Continuation(object):
         self.allvars = self.sysfunc.allvars = self.coords + self.params
 
         # Initialize vars and pars based on initpoint
-        self.initpoint = self.model.query('ics') #gensys.initialconditions.copy()
+        self.initpoint = self.model.query('ics')
         for k, v in args['initpoint'].iteritems():
             if k in self.varslist or k in args['auxpars']:
                 self.initpoint[k] = v
@@ -233,7 +233,6 @@ class Continuation(object):
             self.initpoint[p] = self.parsdict[p]
 
         self.initpoint = tocoords(self, self.initpoint.copy())
-        #self.initpoint = tocoords(self, args['initpoint'])
 
         if 'initdirec' not in args:
             self.initdirec = None
@@ -2944,7 +2943,7 @@ class LimitCycleCurve(Continuation):
             upslen = 0
             T = CheckHopf(self, x0)
         else:
-            t = c0['cycle']['t']
+            t = c0['cycle']['t'].copy()
             if T is None:
                 T = t[-1] - t[0]
             t.resize((len(t),1))
