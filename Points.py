@@ -633,7 +633,7 @@ class Pointset(Point):
             elif isinstance(vals, ndarray):
                 # call 'array' constructor to ensure copy is made in case
                 # either array is independently changed.
-                if rank(vals) == 0:
+                if rank(vals) in [0,2]:
                     self.indepvararray = array(vals.ravel())
                 else:
                     self.indepvararray = array(vals)
