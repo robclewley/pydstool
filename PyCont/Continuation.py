@@ -572,8 +572,9 @@ class Continuation(object):
 
            Inputs:
 
-               coords -- tuple of coordinates (None defaults to the first free
+               coords -- pair of coordinates (None defaults to the first free
                    parameter and the first state variable)
+                   Use a 3-tuple to export to geomview.
                dirs -- tuple of coordinate directions IF coord is not in regular coords
                origin -- Useful if want affine coordinates
         """

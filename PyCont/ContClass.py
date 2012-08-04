@@ -287,7 +287,7 @@ class ContClass(Utility):
 
 
     def exportGeomview(self, coords=None, filename="geom.dat"):
-        if  coords is not None and len(coords) == 3:
+        if coords is not None and len(coords) == 3:
             GeomviewOutput = "(progn (geometry " + self.model.name + " { LIST {: axes_" + self.model.name + "}"
             for cname, curve in self.curves.iteritems():
                 GeomviewOutput += " {: " + cname + "}"
@@ -331,8 +331,9 @@ class ContClass(Utility):
 
            Inputs:
 
-               coords -- tuple of coordinates (None defaults to the first free
-                   parameter and the first state variable)
+               coords -- pair of coordinates (None defaults to the first free
+                   parameter and the first state variable).
+                   Use a 3-tuple to export to geomview.
         """
         if coords is not None and len(coords) == 3:
             self.exportGeomview(coords)
