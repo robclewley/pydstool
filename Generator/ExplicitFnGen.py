@@ -351,10 +351,15 @@ class ExplicitFnGen(ctsGen):
     def AuxVars(self, t, xdict, pdict=None, asarray=True):
         """asarray is an unused, dummy argument for compatibility with
         Model.AuxVars"""
-        x = sortedDictValues(filteredDict(xdict, self.funcspec.vars))
+        # also, ensure xdict doesn't contain elements like array([4.1]) instead of 4
+        x = [float(val) for val in sortedDictValues(filteredDict(self._FScompatibleNames(xdict),
+                                                                 self.funcspec.vars))]
         if pdict is None:
             pdict = self.pars
-        p = sortedDictValues(pdict)
+            # internal self.pars already is FS-compatible
+            p = sortedDictValues(pdict)
+        else:
+            p = sortedDictValues(self._FScompatibleNames(pdict))
         i = _pollInputs(sortedDictValues(self.inputs), t, self.checklevel)
         return apply(getattr(self, self.funcspec.auxspec[1]), [t, x, p+i])
 

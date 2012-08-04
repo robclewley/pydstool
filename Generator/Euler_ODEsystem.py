@@ -547,14 +547,19 @@ class Euler_ODEsystem(ODEsystem):
 
     def Rhs(self, t, xdict, pdict=None, asarray=True):
         """asarray is an unused, dummy argument for compatibility with Model.Rhs"""
-        # don't need to convert names to FS-compatible as they sort
-        # the same
+        # must convert names to FS-compatible as '.' sorts before letters
+        # while '_' sorts after!
         # also, ensure xdict doesn't contain elements like array([4.1]) instead of 4
-        x = [float(val) for val in sortedDictValues(filteredDict(xdict, self.funcspec.vars))]
+        x = [float(val) for val in sortedDictValues(filteredDict(self._FScompatibleNames(xdict),
+                                                                 self.funcspec.vars))]
         if pdict is None:
             pdict = self.pars
-        p = sortedDictValues(pdict)
-        i = _pollInputs(sortedDictValues(self.inputs), t, self.checklevel)
+            # internal self.pars already is FS-compatible
+            p = sortedDictValues(pdict)
+        else:
+            p = sortedDictValues(self._FScompatibleNames(pdict))
+        i = _pollInputs(sortedDictValues(self.inputs),
+                        t, self.checklevel)
         return apply(getattr(self, self.funcspec.spec[1]), [t, x, p+i])
 
 
@@ -563,12 +568,16 @@ class Euler_ODEsystem(ODEsystem):
         Model.Jacobian"""
         if self.haveJacobian():
             # also, ensure xdict doesn't contain elements like array([4.1]) instead of 4
-            x = [float(val) for val in sortedDictValues(filteredDict(xdict,
+            x = [float(val) for val in sortedDictValues(filteredDict(self._FScompatibleNames(xdict),
                                                                      self.funcspec.vars))]
             if pdict is None:
                 pdict = self.pars
-            p = sortedDictValues(pdict)
-            i = _pollInputs(sortedDictValues(self.inputs), t, self.checklevel)
+                # internal self.pars already is FS-compatible
+                p = sortedDictValues(pdict)
+            else:
+                p = sortedDictValues(self._FScompatibleNames(pdict))
+            i = _pollInputs(sortedDictValues(self.inputs),
+                        t, self.checklevel)
             return apply(getattr(self, self.funcspec.auxfns["Jacobian"][1]), \
                          [t, x, p+i])
         else:
@@ -580,12 +589,16 @@ class Euler_ODEsystem(ODEsystem):
         Model.JacobianP"""
         if self.haveJacobian_pars():
             # also, ensure xdict doesn't contain elements like array([4.1]) instead of 4
-            x = [float(val) for val in sortedDictValues(filteredDict(xdict,
+            x = [float(val) for val in sortedDictValues(filteredDict(self._FScompatibleNames(xdict),
                                                                      self.funcspec.vars))]
             if pdict is None:
                 pdict = self.pars
-            p = sortedDictValues(pdict)
-            i = _pollInputs(sortedDictValues(self.inputs), t, self.checklevel)
+                # internal self.pars already is FS-compatible
+                p = sortedDictValues(pdict)
+            else:
+                p = sortedDictValues(self._FScompatibleNames(pdict))
+            i = _pollInputs(sortedDictValues(self.inputs),
+                        t, self.checklevel)
             return apply(getattr(self, self.funcspec.auxfns["Jacobian_pars"][1]), \
                         [t, x, p+i])
         else:
@@ -596,12 +609,16 @@ class Euler_ODEsystem(ODEsystem):
         """asarray is an unused, dummy argument for compatibility with
         Model.AuxVars"""
         # also, ensure xdict doesn't contain elements like array([4.1]) instead of 4
-        x = [float(val) for val in sortedDictValues(filteredDict(xdict,
+        x = [float(val) for val in sortedDictValues(filteredDict(self._FScompatibleNames(xdict),
                                                                  self.funcspec.vars))]
         if pdict is None:
             pdict = self.pars
-        p = sortedDictValues(pdict)
-        i = _pollInputs(sortedDictValues(self.inputs), t, self.checklevel)
+            # internal self.pars already is FS-compatible
+            p = sortedDictValues(pdict)
+        else:
+            p = sortedDictValues(self._FScompatibleNames(pdict))
+        i = _pollInputs(sortedDictValues(self.inputs),
+                        t, self.checklevel)
         return apply(getattr(self, self.funcspec.auxspec[1]), [t, x, p+i])
 
 

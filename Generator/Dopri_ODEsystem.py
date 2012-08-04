@@ -1239,14 +1239,14 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                       "value is %i"%self.algparams['max_pts']
 #                avstep = (self.algparams['init_step']+self.diagnostics.outputStats['last_step'])/2.
                 if self.diagnostics.outputStats['last_time']-tbegin > 0:
-                    ms = int(round(self.algparams['max_pts'] / \
+                    ms = str(int(round(self.algparams['max_pts'] / \
                               (self.diagnostics.outputStats['last_time'] - \
-                               tbegin)*(tend-tbegin)))
+                               tbegin)*(tend-tbegin))))
                 else:
-                    ms = Inf
+                    ms = 'Inf'
                 print "(recommended value for this trajectory segment is " + \
                       "estimated to be %s (saved in diagnostics.errors attribute))"%str(ms)
-                diagnost_info += " -- recommended value is %i" % ms
+                diagnost_info += " -- recommended value is " + ms
             self.diagnostics.errors.append((E_COMPUTFAIL,
                                     (self._solver.lastTime, diagnost_info)))
             raise PyDSTool_ExistError("No trajectory created")
@@ -1254,13 +1254,18 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
 
     def Rhs(self, t, xdict, pdict=None, asarray=True):
         """asarray is an unused, dummy argument for compatibility with Model.Rhs"""
-        # don't need to convert names to FS-compatible as they sort
-        # the same
-        x = sortedDictValues(filteredDict(xdict, self.funcspec.vars))
+        # must convert names to FS-compatible as '.' sorts before letters
+        # while '_' sorts after!
+        x = sortedDictValues(filteredDict(self._FScompatibleNames(xdict),
+                                          self.funcspec.vars))
         if pdict is None:
             pdict = self.pars
-        p = sortedDictValues(pdict)
-        i = _pollInputs(sortedDictValues(self.inputs), t, self.checklevel)
+            # internal self.pars already is FS-compatible
+            p = sortedDictValues(pdict)
+        else:
+            p = sortedDictValues(self._FScompatibleNames(pdict))
+        i = _pollInputs(sortedDictValues(self.inputs),
+                        t, self.checklevel)
         self._ensure_solver({'params': p, 't0': 0, 'tend': 1})
         self._ensure_inputs()
         return self._solver.Rhs(t, x, p+i)[0]
@@ -1270,11 +1275,16 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
         """asarray is an unused, dummy argument for compatibility with
         Model.Jacobian"""
         if self.haveJacobian():
-            x = sortedDictValues(filteredDict(xdict, self.funcspec.vars))
+            x = sortedDictValues(filteredDict(self._FScompatibleNames(xdict),
+                                              self.funcspec.vars))
             if pdict is None:
                 pdict = self.pars
-            p = sortedDictValues(pdict)
-            i = _pollInputs(sortedDictValues(self.inputs), t, self.checklevel)
+                # internal self.pars already is FS-compatible
+                p = sortedDictValues(pdict)
+            else:
+                p = sortedDictValues(self._FScompatibleNames(pdict))
+            i = _pollInputs(sortedDictValues(self.inputs),
+                            t, self.checklevel)
             self._ensure_solver({'params': p, 't0': 0, 'tend': 1})
             self._ensure_inputs()
             return self._solver.Jacobian(t, x, p+i)[0]
@@ -1286,11 +1296,16 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
         """asarray is an unused, dummy argument for compatibility with
         Model.JacobianP"""
         if self.haveJacobian_pars():
-            x = sortedDictValues(filteredDict(xdict, self.funcspec.vars))
+            x = sortedDictValues(filteredDict(self._FScompatibleNames(xdict),
+                                              self.funcspec.vars))
             if pdict is None:
                 pdict = self.pars
-            p = sortedDictValues(pdict)
-            i = _pollInputs(sortedDictValues(self.inputs), t, self.checklevel)
+                # internal self.pars already is FS-compatible
+                p = sortedDictValues(pdict)
+            else:
+                p = sortedDictValues(self._FScompatibleNames(pdict))
+            i = _pollInputs(sortedDictValues(self.inputs),
+                            t, self.checklevel)
             self._ensure_solver({'params': p, 't0': 0, 'tend': 1})
             self._ensure_inputs()
             return self._solver.JacobianP(t, x, p+i)[0]
@@ -1301,11 +1316,16 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
     def AuxVars(self, t, xdict, pdict=None, asarray=True):
         """asarray is an unused, dummy argument for compatibility with
         Model.AuxVars"""
-        x = sortedDictValues(filteredDict(xdict, self.funcspec.vars))
+        x = sortedDictValues(filteredDict(self._FScompatibleNames(xdict),
+                                          self.funcspec.vars))
         if pdict is None:
             pdict = self.pars
-        p = sortedDictValues(pdict)
-        i = _pollInputs(sortedDictValues(self.inputs), t, self.checklevel)
+            # internal self.pars already is FS-compatible
+            p = sortedDictValues(pdict)
+        else:
+            p = sortedDictValues(self._FScompatibleNames(pdict))
+        i = _pollInputs(sortedDictValues(self.inputs),
+                        t, self.checklevel)
         self._ensure_solver({'params': p, 't0': 0, 'tend': 1})
         self._ensure_inputs()
         return self._solver.AuxFunc(t, x, p+i)[0]
