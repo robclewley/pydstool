@@ -954,7 +954,7 @@ class dssrt_assistant(object):
             #self.gamma1 = ?
             #self.gamma2 = ?
             # Can expect only mspec
-            self._init_from_MSpec(self.model._mspecdict.values()[0].modelspec)
+            self._init_from_MSpec(self.model._mspecdict.values()[0]['modelspec'])
         all_inputs = []
         for ins in self.gamma1.values() + self.gamma2.values():
             try:
