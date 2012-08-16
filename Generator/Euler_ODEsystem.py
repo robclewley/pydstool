@@ -183,6 +183,7 @@ class Euler_ODEsystem(ODEsystem):
                                           strict=True,
                                           avoidendpoints=True)
                 notDone = False
+        first_found_t = None
         eventslist = self.eventstruct.query(['active', 'notvarlinked'])
         termevents = self.eventstruct.query(['term'], eventslist)
         tmesh.pop(0)  # get rid of first entry for initial condition
