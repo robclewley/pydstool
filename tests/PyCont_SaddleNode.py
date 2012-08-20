@@ -1,8 +1,6 @@
 """PyCont test for saddle-node bifurcations.
 
    Drew LaMar 2006
-
-BUG:  Radau breaks.
 """
 
 from PyDSTool import *
@@ -21,7 +19,7 @@ DSargs.ics = icdict
 
 testDS = Generator.Radau_ODEsystem(DSargs)
 
-testDS.haveJacobian()
+#testDS.haveJacobian()
 
 # Set up continuation class
 PyCont = ContClass(testDS)
