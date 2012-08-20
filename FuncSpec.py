@@ -2435,11 +2435,15 @@ def resolveClashingAuxFnPars(fnspecs, varspecs, parnames):
             for arg in args_list:
                 qarg = QuantSpec('a', arg)
                 # if parameter appears in a compound expression in the argument,
-                # then we don't know how to process it, so raise exception
-                if len(qarg) > 1 and any([p in qarg for p in parnames]):
-                    raise ValueError("Cannot process argument to aux fn %s"%f)
-                # do not put raw parameter name arguments into new arg list
-                if arg not in parnames:
+                # then we don't know how to process it, so issue warning [was: raise exception]
+                if len(qarg.parser.tokenized) > 1:
+                    if any([p in qarg for p in parnames]):
+                        # do not put raw parameter name arguments into new arg list
+                        #raise ValueError("Cannot process argument to aux fn %s"%f)
+                        print "Warning: some auxiliary function parameters clash in function %s" %f
+                    new_args_list.append(arg)
+                elif arg not in parnames:
+                    # do not put raw parameter name arguments into new arg list
                     new_args_list.append(arg)
             new_argstr = ','.join(new_args_list)
             # update vspec and q for next f
