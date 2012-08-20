@@ -22,7 +22,7 @@ print '-------- Model test'
 all_model_names = ['leak', 'spike']
 
 # 'excited' is an internal variable of the model, and is used to
-# ensure that the.compute() method can determine which Generator
+# ensure that the compute() method can determine which Generator
 # to start the calculation with
 leak_event_args = {'name': 'threshold',
                    'eventtol': 1e-3,
