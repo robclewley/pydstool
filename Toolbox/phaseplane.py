@@ -915,13 +915,20 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 y_null = array([P_y['null_curve_y'].sol[xname],
                                 P_y['null_curve_y'].sol[yname]]).T
             try:
-                x_vals = y_null[:,0]
-                y_vals = y_null[:,1]
+                # dummy statement to test result
+                y_null[:,0], y_null[:,1]
             except IndexError:
                 raise PyDSTool_ExistError('null_curve_y failed: points were out of domain')
             y_null = uniquePoints(y_null)
-            # add fixed points to nullcline, assuming sufficient accuracy
-            fp_ixs = [findClosestPointIndex(pt, y_null) for pt in add_fp_pts]
+            # Occasional oservation: PyCont can mess up ordering of first few points
+            # Future idea: Try dodging those if the result wasn't monotonic.
+
+            # Add fixed points to nullcline, assuming sufficient accuracy and monotonicity
+            try:
+                fp_ixs = [findClosestPointIndex(pt, y_null) for pt in add_fp_pts]
+            except ValueError:
+                print "Try adjusting crop_tol_pc down to zero if non-monotonicity is at domain endpoints"
+                raise
             for n, ix in enumerate(fp_ixs):
                 # +n offsets fact that n entries were already added
                 y_null = np.insert(y_null, ix+n, add_fp_pts[n], axis=0)
@@ -1081,12 +1088,17 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 x_null = array([P_x['null_curve_x'].sol[xname],
                                 P_x['null_curve_x'].sol[yname]]).T
             try:
-                x_vals = x_null[:,0]
+                # dummy statement to test result
+                x_null[:,0], x_null[:,1]
             except IndexError:
                 raise PyDSTool_ExistError('null_curve_x failed: points were out of domain')
             x_null = uniquePoints(x_null)
-            # add fixed points to nullcline, assuming sufficient accuracy
-            fp_ixs = [findClosestPointIndex(pt, x_null) for pt in add_fp_pts]
+            # Add fixed points to nullcline, assuming sufficient accuracy
+            try:
+                fp_ixs = [findClosestPointIndex(pt, x_null) for pt in add_fp_pts]
+            except ValueError:
+                print "Try adjusting crop_tol_pc down to zero if non-monotonicity is at domain endpoints"
+                raise
             for n, ix in enumerate(fp_ixs):
                 # +n offsets fact that n entries were already added
                 x_null = np.insert(x_null, ix+n, add_fp_pts[n], axis=0)
@@ -1821,7 +1833,7 @@ class fixedpoint_nD(object):
     for a fixedpoint_nD object 'fp'.
     """
 
-    _classifcations = ('spiral', 'node', 'saddle')
+    _classifications = None
     _stability = ('s','c','u')
 
     def __init__(self, gen, pt, coords=None, jac=None, description='',
@@ -1941,37 +1953,11 @@ class fixedpoint_nD(object):
         #   relative to the real parts
         self.evecs = tuple(evecs_pt)
 
-    def _ensure_jac(self, jac):
-        if jac is None:
-            raise NotImplementedError('Currently, Jacobian must be supplied for nD')
-        else:
-            return jac
-
-    def __getitem__(self, k):
-        return self.point[k]
-
-    def __setitem__(self, k, v):
-        self.point[k] = v
-
-    def _classify(self):
-        if self.dimension == 2:
-            print "Use fixedpoint_2D class"
-        raise NotImplementedError("Not implemented for n dimensions where n != 2")
-
-
-class fixedpoint_2D(fixedpoint_nD):
-    """IMPORTANT: Any complex eigenvectors are stored as pairs of real eigenvectors,
-        with the understanding that the corresponding complex eigenvalues indicate the
-        use of these eigenvectors as a solution basis with the trig functions.
-
-    The full, possibly complex eigenvectors are always available using np.linalg(fp.D)
-    for a fixedpoint_nD object 'fp'.
-    """
-    def __init__(self, gen, pt, coords=None, jac=None, description='', normord=2, eps=1e-12):
-        fixedpoint_nD.__init__(self, gen, pt, coords, jac, description=description,
-                               normord=normord, eps=eps)
-        if self.dimension != 2:
-            raise TypeError("This class is for 2D systems only")
+##    def _ensure_jac(self, jac):
+##        if jac is None:
+##            raise NotImplementedError('Currently, Jacobian must be supplied for nD')
+##        else:
+##            return jac
 
     def _ensure_jac(self, jac):
         # overrides nD versions
@@ -1991,6 +1977,55 @@ class fixedpoint_2D(fixedpoint_nD):
                 else:
                     raise NotImplementedError('Jacobian is not the right shape')
         return jac
+
+    def __getitem__(self, k):
+        return self.point[k]
+
+    def __setitem__(self, k, v):
+        self.point[k] = v
+
+    def _classify(self):
+        if self.dimension == 2:
+            print "Use fixedpoint_2D class"
+
+        real_evals = (isreal(self.evals[0]), isreal(self.evals[1]))
+        equal_evals = abs(self.evals[0] - self.evals[1]) < self.eps
+        zero_evals = (abs(self.evals[0]) < self.eps,
+                      abs(self.evals[1]) < self.eps)
+##        if alltrue(real_evals):
+##            sign_evals = (sign(self.evals[0]), sign(self.evals[1]))
+##            if sign_evals[0] == sign_evals[1]:
+##                self.classification = 'node-like'
+##            else:
+##                self.classification = 'saddle-like'
+##        else:
+##            self.classification = 'spiral-like'
+        real_parts = real(self.evals)
+        if alltrue(real_parts<0):
+            self.stability = 's'
+        elif alltrue(real_parts==0):
+            self.stability = 'c'
+        else:
+            self.stability = 'u'
+        self.degenerate = sometrue(zero_evals) or equal_evals
+
+
+
+class fixedpoint_2D(fixedpoint_nD):
+    """IMPORTANT: Any complex eigenvectors are stored as pairs of real eigenvectors,
+        with the understanding that the corresponding complex eigenvalues indicate the
+        use of these eigenvectors as a solution basis with the trig functions.
+
+    The full, possibly complex eigenvectors are always available using np.linalg(fp.D)
+    for a fixedpoint_nD object 'fp'.
+    """
+    _classifcations = ('spiral', 'node', 'saddle')
+
+    def __init__(self, gen, pt, coords=None, jac=None, description='', normord=2, eps=1e-12):
+        fixedpoint_nD.__init__(self, gen, pt, coords, jac, description=description,
+                               normord=normord, eps=eps)
+        if self.dimension != 2:
+            raise TypeError("This class is for 2D systems only")
 
     def _classify(self):
         real_evals = (isreal(self.evals[0]), isreal(self.evals[1]))
