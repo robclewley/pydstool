@@ -1863,12 +1863,14 @@ class fixedpoint_nD(object):
             try:
                 self.D = asarray(jac(**jac_test_arg))
             except TypeError:
-                # last chance if 2D
                 try:
-                    self.D = asarray(jac(jac_test_arg['t'], jac_test_arg[self.fp_coords[0]],
-                                                            jac_test_arg[self.fp_coords[1]]))
+                    self.D = asarray(jac(jac_test_arg['t'], [jac_test_arg[xvar] for xvar in self.fp_coords]))
                 except:
-                    raise
+                    # last chance if taken directly from DS.Jacobian method
+                    try:
+                        self.D = asarray(jac(jac_test_arg['t'], filteredDict(jac_test_arg, self.fp_coords)))
+                    except:
+                        raise
         assert self.D.shape == (self.dimension, self.dimension)
         assert normord > 0
         self.normord = normord
