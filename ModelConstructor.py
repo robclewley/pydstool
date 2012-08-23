@@ -1466,8 +1466,11 @@ class EvMapping(object):
 
     defStrings (list of valid python statements) overrides assignDict if supplied at
     initialization, to permit full flexibility in the contents of the
-    event mapping function. These strings must use "xdict" and "pdict" to reference
-    the variables and parameters, respectively.
+    event mapping function. These strings must use "xdict", "pdict", and "idict"
+    to reference the variables, parameters, and inputs, respectively. Time is 't'.
+    Any other special arguments can be accessed by adding them to this object as
+    an attribute after its creation, and referring to it with the prefix 'self.'
+    in the defString.
 
     Use activeDict to map named events to a given setting for 'active' (Boolean).
     """
