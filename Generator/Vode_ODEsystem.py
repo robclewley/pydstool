@@ -37,13 +37,15 @@ class Vode_ODEsystem(ODEsystem):
 
     Uses Python target language only for functional specifications."""
 
+    _paraminfo = {'init_step': 'Fixed step size for time mesh.',
+                  'strictdt': 'Boolean determining whether to evenly space time mesh (default=False), or to use exactly dt spacing.',
+                  'stiff': 'Boolean to activate the BDF method, otherwise Adams method used. Default False.',
+                  'use_special': "Switch for using special times",
+                  'specialtimes': "List of special times to use during integration",}
+
     def __init__(self, kw):
         ODEsystem.__init__(self, kw)
-        self._paraminfo = {'init_step': 'Fixed step size for time mesh.',
-                           'strictdt': 'Boolean determining whether to evenly space time mesh (default=False), or to use exactly dt spacing.',
-                           'stiff': 'Boolean to activate the BDF method, otherwise Adams method used. Default False.',
-                           'use_special': "Switch for using special times",
-                           'specialtimes': "List of special times to use during integration",}
+
         self.diagnostics._errorcodes = \
                 {0: 'Unrecognized error code returned (see stderr output)',
                 -1: 'Excess work done on this call. (Perhaps wrong method MF.)',
@@ -361,6 +363,7 @@ class Vode_ODEsystem(ODEsystem):
             except IndexError:
                 # empty
                 break
+            last_t = solver.t   # a record of previous time for use by event detector
             try:
                 errcode = solver.integrate(new_t)
             except:
@@ -440,15 +443,15 @@ class Vode_ODEsystem(ODEsystem):
                         if prevevt_time is None:
                             ignore_ev = False
                         else:
-                            if solver.t-dt-prevevt_time < ev.eventinterval:
+                            if last_t-prevevt_time < ev.eventinterval:
                                 ignore_ev = True
                             else:
                                 ignore_ev = False
                         if not ignore_ev:
-                            nontermprecevs.append((solver.t-dt, solver.t, (evname, ev)))
+                            nontermprecevs.append((last_t, solver.t, (evname, ev)))
                             # be conservative as to where the event is, so
                             # that don't miss any events.
-                            lastevtime[evname] = solver.t-dt
+                            lastevtime[evname] = last_t # solver.t-dt
                         ev.reset() #ev.prevsign = None #
                 do_termevs = []
                 if termevsflagged != []:
@@ -464,7 +467,7 @@ class Vode_ODEsystem(ODEsystem):
                             ignore_ev = False
                         else:
 ##                            print "  ... comparison = %f < %f"%(solver.t-dt-prevevt_time, e[1].eventinterval)
-                            if solver.t-dt-prevevt_time < e[1].eventinterval:
+                            if last_t-prevevt_time < e[1].eventinterval:
                                 ignore_ev = True
 ##                                print "VODE ignore ev"
                             else:
@@ -517,7 +520,7 @@ class Vode_ODEsystem(ODEsystem):
                             # get dt added back to first new meshpoint
                             # (solver.t is the step *after* the event was
                             # detected)
-                            told = solver.t-dt
+                            told = last_t # solver.t-dt without the loss of precision from subtraction
                         else:
                             raise ValueError("Event %s found too "%evnames[0]+\
                                  "close to local start time: try decreasing "
