@@ -8,6 +8,7 @@
 
 %{
 #include <numpy/libnumarray.h>
+#include "interface.h"
 %}
 
 %init %{
@@ -60,26 +61,26 @@ import_libnumarray();
 
 %typemap(freearg) double* {
 	if($1) free($1);
-}	
+}
 
 
 
-extern PyObject* Integrate(double *ic, double t, double hinit, double hmax, 
-		    double safety, 
-		    double jacRecompute, double newtonStop, 
+extern PyObject* Integrate(double *ic, double t, double hinit, double hmax,
+		    double safety,
+		    double jacRecompute, double newtonStop,
 		    double stepChangeLB, double stepChangeUB,
 		    double stepSizeLB, double stepSizeUB,
 		    int hessenberg,  int maxNewton,
 		    int newtonStart, int index1dim, int index2dim,
-		    int index3dim, int stepSizeStrategy, 
+		    int index3dim, int stepSizeStrategy,
 		    int DAEstructureM1, int DAEstructureM2,
-		    int useJac, int useMass, int verbose,  
+		    int useJac, int useMass, int verbose,
 		    int calcAux, int calcSpecTimes);
 
-extern PyObject* InitBasic(int PhaseDim, int ParamDim, int nAux, int nEvents, int nExtInputs,	     
+extern PyObject* InitBasic(int PhaseDim, int ParamDim, int nAux, int nEvents, int nExtInputs,
 		    int HasJac, int HasJacP, int HasMass, int extraSize);
 
-extern PyObject* CleanUp( void );  
+extern PyObject* CleanUp( void );
 
 extern PyObject* InitInteg(int Maxpts, double *atol, double *rtol );
 
@@ -91,12 +92,12 @@ extern PyObject* InitEvents( int Maxevtpts, int *EventActive, int *EventDir, int
 
 extern PyObject* ClearEvents( void );
 
-extern PyObject* InitExtInputs( int nExtInputs, int *extInputLens, double *extInputVals, 
+extern PyObject* InitExtInputs( int nExtInputs, int *extInputLens, double *extInputVals,
 			 double *extInputTimes);
 
 extern PyObject* ClearExtInputs( void );
 
-extern PyObject* SetRunParameters(double *ic, double *pars, double gt0, double t0, 
+extern PyObject* SetRunParameters(double *ic, double *pars, double gt0, double t0,
 			   	double tend, int refine, int specTimeLen, double *specTimes,
 				double *upperBounds, double *lowerBounds );
 
