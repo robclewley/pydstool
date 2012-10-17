@@ -112,11 +112,11 @@ print '-------- IF network test with delayed pulse coupling'
 
 print "Building coupled IF model\n"
 
-delay = Par('5', 'delay')
+delay = Par('9', 'delay')
 vreset = Par('-90', 'Vreset')
 threshval = Par('-58', 'threshval')
-syn_sign = Par('-1', 'syn_sign')
-syn_strength = Par('10', 'syn_strength')
+syn_sign = Par('1', 'syn_sign')
+syn_strength = Par('0.2', 'syn_strength')
 
 IFmodelC = ModelConstructor('IFmodel', indepvar=('t',[0,10000]),
                           eventtol=1e-2)
