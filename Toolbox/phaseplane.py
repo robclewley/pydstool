@@ -62,7 +62,7 @@ _functions = ['find_nullclines', 'make_distance_to_line_auxfn',
               'closest_perp_distance_between_splines',
               'closest_perp_distance_between_sample_points',
               'closest_perp_distance_on_spline', 'project_point',
-              'line_intersection', 'find_saddle_manifolds',
+              'line_intersection', 'find_saddle_manifolds', 'make_Jac',
               'plot_PP_vf', 'plot_PP_fps', 'show_PPs', 'get_PP']
 
 _classes = ['distance_to_pointset', 'mesh_patch_2D', 'dx_scaled_2D',
@@ -431,6 +431,42 @@ class distance_to_pointset(object):
                 dmax_old = (d,i)
         return {'max': {1: dict(zip(self._keys,dmax)),
                         2: dict(zip(self._keys,dmax_old))}}
+
+
+def make_Jac(DS, varnames=None):
+    """Make a callable Python function for the Jacobian of dynamical system DS.
+    If DS is not a Generator or non-hybrid Model object, i.e. a HybridModel, then
+    there will be an exception raised unless the model contains only one sub-system.
+
+    If the optional varnames argument is given, the function's arguments will be
+    restricted to the given list.
+    """
+    if varnames is None:
+        varnames = DS.query('vars')
+    subdomain = {}
+    fixedvars = remain(DS.query('vars'), varnames)
+    for k in fixedvars:
+        subdomain[k] = DS.query('ics')[k]
+
+    if isinstance(DS, Generator.Generator):
+        gen = DS
+    else:
+        # assume Model with
+        sub = DS.sub_models()
+        assert len(sub) == 1, \
+               "Pass in sub-model explicitly if more than one in model"
+        sub_sub = sub[0].sub_models()
+        assert len(sub_sub) == 1, \
+               "Pass in sub-model explicitly if more than one in model"
+        gen = sub_sub[0]
+    jac, new_fnspecs = prepJacobian(gen.funcspec._initargs['varspecs'],
+                                    varnames,
+                                    gen.funcspec._initargs['fnspecs'])
+
+    scope = copy.copy(DS.query('pars'))
+    scope.update(subdomain)
+    scope.update(new_fnspecs)
+    return expr2fun(jac, ensure_args=['t'], **scope)
 
 
 def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
@@ -927,11 +963,13 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             try:
                 fp_ixs = [findClosestPointIndex(pt, y_null) for pt in add_fp_pts]
             except ValueError:
-                print "Try adjusting crop_tol_pc down to zero if non-monotonicity is at domain endpoints"
-                raise
-            for n, ix in enumerate(fp_ixs):
-                # +n offsets fact that n entries were already added
-                y_null = np.insert(y_null, ix+n, add_fp_pts[n], axis=0)
+                print "Non-monotonic data computed. Try (1) reducing max_step, (2) crop_tol_pc down to zero if non-monotonicity"
+                print " is at domain endpoints, or (3) normalize tolerances for fixed points with that of nullclines."
+                print " Not including fixed points in nullcline data"
+            else:
+                for n, ix in enumerate(fp_ixs):
+                    # +n offsets fact that n entries were already added
+                    y_null = np.insert(y_null, ix+n, add_fp_pts[n], axis=0)
 
         # X
         if xname in do_vars:
@@ -1097,11 +1135,13 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             try:
                 fp_ixs = [findClosestPointIndex(pt, x_null) for pt in add_fp_pts]
             except ValueError:
-                print "Try adjusting crop_tol_pc down to zero if non-monotonicity is at domain endpoints"
-                raise
-            for n, ix in enumerate(fp_ixs):
-                # +n offsets fact that n entries were already added
-                x_null = np.insert(x_null, ix+n, add_fp_pts[n], axis=0)
+                print "Non-monotonic data computed. Try (1) reducing max_step, (2) crop_tol_pc down to zero if non-monotonicity"
+                print " is at domain endpoints, or (3) normalize tolerances for fixed points with that of nullclines."
+                print " Not including fixed points in nullcline data"
+            else:
+                for n, ix in enumerate(fp_ixs):
+                    # +n offsets fact that n entries were already added
+                    x_null = np.insert(x_null, ix+n, add_fp_pts[n], axis=0)
 
     else:
         x_null = x_null_fsolve
@@ -1955,14 +1995,7 @@ class fixedpoint_nD(object):
         #   relative to the real parts
         self.evecs = tuple(evecs_pt)
 
-##    def _ensure_jac(self, jac):
-##        if jac is None:
-##            raise NotImplementedError('Currently, Jacobian must be supplied for nD')
-##        else:
-##            return jac
-
     def _ensure_jac(self, jac):
-        # overrides nD versions
         if jac is None:
             try:
                 J = self.gen.Jacobian(0, self.gen.initialconditions)
@@ -1970,15 +2003,24 @@ class fixedpoint_nD(object):
                 # no full Jac available
                 raise NotImplementedError('Jacobian not available')
             else:
-                # in the future, make a jac function that extracts
+                # !!! in the future, make a jac function that extracts
                 # the n components from Jacobian (if n < gen.dimension)
+                # Must name it jac_fn because otherwise will eval to None
+                # due to clash with this method's argument
                 if J.shape[0] == J.shape[1] == self.dimension:
-                    def jac(t, x, y):
-                        return self.gen.Jacobian(t, {self.fp_coords[0]: x,
-                                                self.fp_coords[1]: y})
+                    arg_str = ', '.join(self.fp_coords)
+                    entries = []
+                    for n in range(self.dimension):
+                        entries.append("self.fp_coords[%s]: %s" % (n, self.fp_coords[n]) )
+                    dict_str = "{" + ",".join(entries) + "})\n"
+                    jac_def_str = "def jac_fn(t, " + arg_str + "):\n\t" + \
+                        "return self.gen.Jacobian(t, " + dict_str
+                    exec jac_def_str in locals(), globals()
+                    return jac_fn
                 else:
                     raise NotImplementedError('Jacobian is not the right shape')
         return jac
+
 
     def __getitem__(self, k):
         return self.point[k]
@@ -2065,7 +2107,7 @@ class fixedpoint_2D(fixedpoint_nD):
 class local_linear_2D(object):
     """Create local 2D linear system from a nonlinear system at a specified point.
 
-    This class is specific to conductance-based Hodgkin-Huxley-like models.
+    Currently, this class is specific to conductance-based Hodgkin-Huxley-like models.
     It assumes all variables can be given in conditionally-linear form
 
         tau_x(<other_vars>) x' = x_inf(<other_vars>) - x
