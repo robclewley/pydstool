@@ -13,7 +13,6 @@ clean:
 cleanup:
 	rm -rf *.pyc *~
 	rm -rf tests/*.so tests/dop853_* tests/radau5_* tests/auto_* tests/fort.* tests/*.pkl tests/dopri853_temp
-	rm -rf .svn
 	rm -f .DS_Stor*
 
 
