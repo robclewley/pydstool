@@ -1998,7 +1998,9 @@ class PointInfo(object):
         elif isinstance(key1, dict):
             if key2 is None and info is None:
                 for k, v in key1.iteritems():
-                    if isinstance(k, _int_types) and k >= 0:
+                    if isinstance(k, _int_types):
+                        if k < 0:
+                            k = k + len(self.by_index)
                         if isinstance(v, str):
                             k2 = v
                             k3 = {}
