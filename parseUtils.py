@@ -2366,8 +2366,9 @@ def proper_match(specstr, term):
     ix = 0
     term_len = len(term)
     while ix < len(specstr) and term_len > 0:
-        pos = specstr[ix:].find(term) + ix
-        if pos > -1:
+        found_ix = specstr[ix:].find(term)
+        pos = found_ix + ix
+        if found_ix > -1:
             try:
                 if specstr[pos + term_len] not in [')', '+', '-', '/', '*', ' ',
                                           ']', ',', '<', '>', '=', '&', '^']:
