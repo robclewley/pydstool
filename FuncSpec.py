@@ -74,7 +74,7 @@ class FuncSpec(object):
         self._protected_auxnames = copy(self._builtin_auxnames)
         self._protected_reusenames = []   # for reusable sub-expression terms
         needKeys = ['name', 'vars']
-        optionalKeys = ['pars', 'inputs', 'varspecs', 'spec',
+        optionalKeys = ['pars', 'inputs', 'varspecs', 'spec', '_for_macro_info',
                    'targetlang', 'fnspecs', 'auxvars', 'reuseterms',
                    'codeinsert_start', 'codeinsert_end', 'ignorespecial']
         self._initargs = deepcopy(kw)
@@ -215,18 +215,31 @@ class FuncSpec(object):
         # (in either python or C, or just for python?)
         assert 'varspecs' in kw or 'spec' in kw, ("Require a functional "
                                 "specification key -- 'spec' or 'varspecs'")
+        if '_for_macro_info' in kw:
+            foundKeys += 1
+            self._varsbyforspec = kw['_for_macro_info'].varsbyforspec
+        else:
+            self._varsbyforspec = {}
         if 'varspecs' in kw:
             if auxvars == []:
                 numaux = 0
             else:
                 numaux = len(auxvars)
-            if len(kw['varspecs']) != len(vars)+numaux:
+            if '_for_macro_info' in kw:
+                if kw['_for_macro_info'].numfors > 0:
+                    num_varspecs = len(vars) - kw['_for_macro_info'].totvars + \
+                                   kw['_for_macro_info'].numfors
+                else:
+                    num_varspecs = len(vars)
+            else:
+                num_varspecs = len(vars)
+            if len(kw['varspecs']) != num_varspecs+numaux:
                 print "# state variables: ", len(vars)
                 print "# auxiliary variables: ", numaux
                 print "# of variable specs: ", len(kw['varspecs'])
                 raise ValueError('Incorrect size of varspecs')
             self.varspecs = deepcopy(kw['varspecs'])
-            foundKeys += 1
+            foundKeys += 1  # for varspecs
         else:
             self.varspecs = {}
         self.codeinserts = {'start': '', 'end': ''}
@@ -487,12 +500,25 @@ class FuncSpec(object):
 
         assert self.varspecs != {}, 'varspecs attribute must be defined'
         specnames_unsorted = self.varspecs.keys()
-        specname_vars = intersect(self.vars, specnames_unsorted)
+        _vbfs_inv = invertMap(self._varsbyforspec)
+        # Process state variable specifications
+        if len(_vbfs_inv) > 0:
+            specname_vars = []
+            specname_auxvars = []
+            for varname in self.vars:
+                # check if varname belongs to a for macro grouping in self.varspecs
+                specname = _vbfs_inv[varname]
+                if specname not in specname_vars:
+                    specname_vars.append(specname)
+            for varname in self.auxvars:
+                # check if varname belongs to a for macro grouping in self.varspecs
+                specname = _vbfs_inv[varname]
+                if specname not in specname_auxvars:
+                    specname_auxvars.append(specname)
+        else:
+            specname_vars = intersect(self.vars, specnames_unsorted)
+            specname_auxvars = intersect(self.auxvars, specnames_unsorted)
         specname_vars.sort()
-        assert self.vars == specname_vars, ('Mismatch between declared '
-                                        ' variable names and varspecs keys')
-        specnames_unsorted = self.varspecs.keys()
-        specname_auxvars = intersect(self.auxvars, specnames_unsorted)
         specname_auxvars.sort()
         specnames = specname_vars + specname_auxvars  # sorted *individually*
         specnames_temp = copy(specnames)
@@ -505,10 +531,10 @@ class FuncSpec(object):
                 assert rightbrack_ix - leftbrack_ix == 2, ('Misuse of square '
                                  'brackets in spec definition. Expected single'
                                  ' character between left and right brackets.')
-                if specname in self.vars:
-                    foundvar = True
-                else:
-                    foundvar = False  # auxiliary variable instead
+##                if remain(self._varsbyforspec[specname], self.vars) == []:
+##                    foundvar = True
+##                else:
+##                    foundvar = False  # auxiliary variable instead
                 rootstr = specname[:leftbrack_ix]
                 istr = specname[leftbrack_ix+1]
                 specstr = self.varspecs[specname]
@@ -548,24 +574,24 @@ class FuncSpec(object):
                 # now we update the dictionary of specnames with the
                 # processed, expanded versions
                 specnames.remove(specname)
-                if foundvar:
-                    assert rootstr+'['+istr+']' in self.vars, ('Mismatch '
-                                                 'between declared variables '
-                                               'and loop index in `for` macro')
-                    self.vars.remove(specname)
-                else:
-                    assert rootstr+'['+istr+']' in self.auxvars, ('Mismatch '
-                                                 'between declared variables '
-                                               'and loop index in `for` macro')
-                    self.auxvars.remove(specname)
+##                if foundvar:
+##                    assert rootstr+'['+istr+']' in self.varspecs, ('Mismatch '
+##                                                 'between declared variables '
+##                                               'and loop index in `for` macro')
+##                    #self.vars.remove(specname)
+##                else:
+##                    assert rootstr+'['+istr+']' in self.varspecs, ('Mismatch '
+##                                                 'between declared variables '
+##                                               'and loop index in `for` macro')
+##                    self.auxvars.remove(specname)
                 del(self.varspecs[specname])
                 for sname in specnames_gen:
                     self.varspecs[sname] = varspecs[sname]
                     specnames.append(sname)
-                    if foundvar:
-                        self.vars.append(sname)
-                    else:
-                        self.auxvars.append(sname)
+##                    if foundvar:
+##                        self.vars.append(sname)
+##                    else:
+##                        self.auxvars.append(sname)
             elif test_sum == -2:
                 pass
                 # no brackets found. regular definition line. take no action.
@@ -983,15 +1009,29 @@ class FuncSpec(object):
                                              ' call')
         assert self.varspecs != {}, 'varspecs attribute must be defined'
         specnames_unsorted = self.varspecs.keys()
+        _vbfs_inv = invertMap(self._varsbyforspec)
         # Process state variable specifications
-        specname_vars = intersect(self.vars, specnames_unsorted)
+        if len(_vbfs_inv) > 0:
+            specname_vars = []
+            specname_auxvars = []
+            for varname in self.vars:
+                # check if varname belongs to a for macro grouping in self.varspecs
+                specname = _vbfs_inv[varname]
+                if varname not in specname_vars:
+                    specname_vars.append(varname)
+            for varname in self.auxvars:
+                # check if varname belongs to a for macro grouping in self.varspecs
+                specname = _vbfs_inv[varname]
+                if varname not in specname_auxvars:
+                    specname_auxvars.append(varname)
+        else:
+            specname_vars = intersect(self.vars, specnames_unsorted)
+            specname_auxvars = intersect(self.auxvars, specnames_unsorted)
         specname_vars.sort()
         for vn, vs in self.varspecs.items():
             if any([pt in vs for pt in ('^', '**')]):
                 self.varspecs[vn] = convertPowers(vs, 'pow')
         self.vars.sort()
-        assert self.vars == specname_vars, ('Mismatch between declared '
-                                        ' variable names and varspecs keys')
         reusestr, specupdated = self._processReusedPy(specname_vars,
                                                       self.varspecs)
         self.varspecs.update(specupdated)
@@ -999,7 +1039,6 @@ class FuncSpec(object):
         specstr_py = self._genSpecFnPy('_specfn', reusestr+temp, 'xnew',
                                        specname_vars, docodeinserts=True)
         # Process auxiliary variable specifications
-        specname_auxvars = intersect(self.auxvars, specnames_unsorted)
         specname_auxvars.sort()
         assert self.auxvars == specname_auxvars, \
                    ('Mismatch between declared auxiliary'
@@ -1778,7 +1817,24 @@ class FuncSpec(object):
                                              ' call')
         assert self.varspecs != {}, 'varspecs attribute must be defined'
         specnames_unsorted = self.varspecs.keys()
-        specname_vars = intersect(self.vars, specnames_unsorted)
+        _vbfs_inv = invertMap(self._varsbyforspec)
+        # Process state variable specifications
+        if len(_vbfs_inv) > 0:
+            specname_vars = []
+            specname_auxvars = []
+            for varname in self.vars:
+                # check if varname belongs to a for macro grouping in self.varspecs
+                specname = _vbfs_inv[varname]
+                if varname not in specname_vars:
+                    specname_vars.append(varname)
+            for varname in self.auxvars:
+                # check if varname belongs to a for macro grouping in self.varspecs
+                specname = _vbfs_inv[varname]
+                if varname not in specname_auxvars:
+                    specname_auxvars.append(varname)
+        else:
+            specname_vars = intersect(self.vars, specnames_unsorted)
+            specname_auxvars = intersect(self.auxvars, specnames_unsorted)
         specname_vars.sort()
         # sorted version of var and par names
         vnames = specname_vars
@@ -1816,7 +1872,6 @@ class FuncSpec(object):
                                        True)
         self.spec = specstr_C
         # produce auxiliary variables specification
-        specname_auxvars = intersect(self.auxvars, specnames_unsorted)
         specname_auxvars.sort()
         assert self.auxvars == specname_auxvars, \
                    ('Mismatch between declared auxiliary'
