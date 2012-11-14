@@ -1748,7 +1748,19 @@ def invertMap(themap):
     but if argument is a parseUtils.symbolMapClass then that type is
     returned."""
     if isinstance(themap, dict):
-        return dict(map(lambda (k,v): (v,k), themap.iteritems()))
+        try:
+            return dict(map(lambda (k,v): (v,k), themap.iteritems()))
+        except TypeError:
+            # e.g., list objects are unhashable
+            # try it the slow way for this case
+            result = {}
+            for k, v in themap.iteritems():
+                if isinstance(v, (list,tuple)):
+                    for val in v:
+                        result[val] = k
+                else:
+                    result[v] = k
+            return result
     elif isinstance(themap, (list,tuple)):
         # input domain is the position index
         return dict(zip(themap, range(len(themap))))
