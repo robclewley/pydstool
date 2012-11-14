@@ -147,14 +147,17 @@ assert tmm.auxfns.testmin2(1.0, 2.0) == 2.25
 assert tmm.Rhs(0, {'z0': 0.5, 'z1': 0.2, 'z2': 2.1})[1] == 5.2
 
 DSargs2 = args(name='test2',
-              pars={'p0': 0, 'p1': 1, 'p2': 2},
-              varspecs={'y[i]': 'for(i, 0, 1, y[i]+if(y[i+1]<2, 2+p[i]+getbound(y2,0), indexfunc([i])+y[i+1]) - 3)',
+              pars={'par0': 0, 'par1': 1, 'par2': 2},
+              varspecs={'y[i]': "for(i, 0, 1, y[i]+if(y[i+1]<2, 2+par[i]+getbound(y2,0), indexfunc([i])+y[i+1]) - 3)",
                         'y2': '0'
                         },
               xdomain={'y2': [-10,10]},
-              fnspecs=fnspecs
+              fnspecs=fnspecs,
+              ics={'y0': 0, 'y1': 0, 'y2': 0.1}
               )
 tm2 = Generator.Vode_ODEsystem(DSargs2)
+tm2.set(tdata=[0,10])
+traj = tm2.compute('test')
 assert allclose(tm2.Rhs(0, {'y0':0, 'y1': 0.3, 'y2': 5}), array([-11. ,  2.3+pi,  0. ]))
 
 # show example of summing where i != p defines the sum range, and p is a special value (here, 2)
@@ -164,6 +167,8 @@ DSargs3 = args(name='test3',
               fnspecs=fnspecs
               )
 tm3 = Generator.Vode_ODEsystem(DSargs3)
+tm3.set(tdata=[0,10], ics={'x': 1})
+traj = tm3.compute('test')
 assert allclose(tm3.Rhs(0, {'x': 0}), 8*pi)
 
 print "  ...passed"

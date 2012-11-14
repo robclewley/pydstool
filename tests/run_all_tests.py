@@ -104,6 +104,7 @@ symbolic_list = [
 
 # Dopri integration; requires external C compiler
 dopri_list = [
+    'basic_gen_tests_C',
     'imprecise_event_test',
     'interp_dopri_test',
     'dopri_event_test',
