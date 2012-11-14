@@ -6,7 +6,7 @@ from PyDSTool.utils import *
 from PyDSTool.common import *
 from PyDSTool.Symbolic import ensureStrArgDict, Quantity, QuantSpec
 from PyDSTool.Trajectory import Trajectory
-from PyDSTool.parseUtils import symbolMapClass
+from PyDSTool.parseUtils import symbolMapClass, readArgs
 from PyDSTool.Variable import Variable, iscontinuous
 from PyDSTool.Points import Pointset
 import PyDSTool.Events as Events
@@ -462,9 +462,12 @@ class Generator(object):
         # extended by its own dispatch method and by process_system
         fs_args = {'name': self.name,
                    'ignorespecial': []}
-        if 'varspecs' not in keys:
-            fs_args['varspecs'] = kw['varspecs']
+        # make sure to do varspecs first in case of FOR macros
+        self._kw_process_varspecs(kw, fs_args)
         for key in keys:
+            if key == 'varspecs':
+                # already did it
+                continue
             f = getattr(self, '_kw_process_'+key)
             # f can update fs_args in place
             f(kw, fs_args)
@@ -481,6 +484,36 @@ class Generator(object):
         else:
             raise PyDSTool_KeyError("Keyword 'varspecs' missing from "
                                     "argument")
+        all_vars = []
+        # record number of variables defined by macros for FuncSpec checks
+        fs_args['_for_macro_info'] = args(totvars=0, numfors=0, varsbyforspec={})
+        for specname, specstr in fs_args['varspecs'].items():
+            if not '[' in specname:
+                all_vars.append(specname)
+                fs_args['_for_macro_info'].varsbyforspec[specname] = [specname]
+                continue
+            # assume this will be a FOR macro (FuncSpec will check properly later)
+            assert specstr[:4] == 'for(', ('Expected `for` macro when '
+                        'square brackets used in name definition')
+            # read contents of braces
+            ok, arglist, nargs = readArgs(specstr[3:])
+            if not ok:
+                raise ValueError('Error finding '
+                                 'arguments applicable to `for` '
+                                 'macro')
+            rootstr = specname[:specname.find('[')]
+            assert len(arglist) == 4, ('Wrong number of arguments passed '
+                                   'to `for` macro. Expected 4')
+            ilo = int(arglist[1])
+            ihi = int(arglist[2])
+            new_vars = [rootstr+str(i) for i in range(ilo,ihi+1)]
+            all_vars.extend(new_vars)
+            fs_args['_for_macro_info'].numfors += 1
+            fs_args['_for_macro_info'].totvars += (ihi-ilo+1)
+            fs_args['_for_macro_info'].varsbyforspec[specname] = new_vars
+        # Temporary record of all var names, will be deleted before finalizing
+        # class initialization
+        self.__all_vars = all_vars
 
     def _kw_process_tdomain(self, kw, fs_args):
         if 'tdomain' in kw:
@@ -591,17 +624,17 @@ class Generator(object):
             for k, v in dict(kw['ics']).iteritems():
                 self._xdatadict[self._FScompatibleNames(str(k))] = ensurefloat(v)
             self.initialconditions = self._xdatadict.copy()
-            unspecd = remain(self._xdatadict.keys(), fs_args['varspecs'].keys())
+            unspecd = remain(self._xdatadict.keys(), self.__all_vars)
             if unspecd != []:
-                # ics were declared for variables not in varspecs
-                raise ValueError("Missing varspec entries for declared ICs: " + str(unspecd))
-            for name in remain(fs_args['varspecs'].keys(),
+                    # ics were declared for variables not in varspecs
+                    raise ValueError("Missing varspec entries for declared ICs: " + str(unspecd))
+            for name in remain(self.__all_vars,
                                self._xdatadict.keys()):
                 self.initialconditions[name] = NaN
             self.foundKeys += 1
         else:
             self._xdatadict = {}
-            for name in fs_args['varspecs']:
+            for name in self.__all_vars:
                 self.initialconditions[name] = NaN
 
     def _kw_process_allvars(self, kw, fs_args):
@@ -612,7 +645,7 @@ class Generator(object):
                 auxvars = self._FScompatibleNames([str(v) for v in kw['auxvars']])
             else:
                 auxvars = self._FScompatibleNames([str(kw['auxvars'])])
-            vars = remain(fs_args['varspecs'].keys(), auxvars)
+            vars = remain(self.__all_vars, auxvars)
             self.foundKeys += 1
         elif 'vars' in kw:
             assert 'auxvars' not in kw, \
@@ -621,12 +654,13 @@ class Generator(object):
                 vars = self._FScompatibleNames([str(v) for v in kw['vars']])
             else:
                 vars = self._FScompatibleNames([str(kw['vars'])])
-            auxvars = remain(fs_args['varspecs'].keys(), vars)
+            auxvars = remain(self.__all_vars, vars)
             self.foundKeys += 1
         else:
             # default is that all are considered regular vars
             auxvars = []
-            vars = fs_args['varspecs'].keys()
+            vars = self.__all_vars
+        # vars will never have any macro spec names
         fs_args['vars'] = vars
         self.dimension = len(vars)
         if auxvars != []:
