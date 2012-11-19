@@ -1587,7 +1587,7 @@ class parserObject(object):
                 for tok in tokenized:
                     # does symbol appear in quotes inside token?
                     # if so, then it's a literal and not a free symbol
-                    if sym in tok:
+                    if ('"' in tok or "'" in tok) and sym in tok:
                         start_ix = tok.index(sym)
                         end_ix = start_ix + len(sym) - 1
                         if len(tok) > end_ix and start_ix > 0:
