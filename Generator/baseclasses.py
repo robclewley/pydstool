@@ -486,7 +486,7 @@ class Generator(object):
                                     "argument")
         all_vars = []
         # record number of variables defined by macros for FuncSpec checks
-        fs_args['_for_macro_info'] = args(totvars=0, numfors=0, varsbyforspec={})
+        fs_args['_for_macro_info'] = args(totforvars=0, numfors=0, varsbyforspec={})
         for specname, specstr in fs_args['varspecs'].items():
             if not '[' in specname:
                 all_vars.append(specname)
@@ -509,7 +509,7 @@ class Generator(object):
             new_vars = [rootstr+str(i) for i in range(ilo,ihi+1)]
             all_vars.extend(new_vars)
             fs_args['_for_macro_info'].numfors += 1
-            fs_args['_for_macro_info'].totvars += (ihi-ilo+1)
+            fs_args['_for_macro_info'].totforvars += (ihi-ilo+1)
             fs_args['_for_macro_info'].varsbyforspec[specname] = new_vars
         # Temporary record of all var names, will be deleted before finalizing
         # class initialization
