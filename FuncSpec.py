@@ -227,13 +227,14 @@ class FuncSpec(object):
                 numaux = len(auxvars)
             if '_for_macro_info' in kw:
                 if kw['_for_macro_info'].numfors > 0:
-                    num_varspecs = len(vars) - kw['_for_macro_info'].totvars + \
+                    num_varspecs = numaux + len(vars) - kw['_for_macro_info'].totforvars + \
                                    kw['_for_macro_info'].numfors
                 else:
-                    num_varspecs = len(vars)
+                    num_varspecs = numaux + len(vars)
             else:
-                num_varspecs = len(vars)
-            if len(kw['varspecs']) != num_varspecs+numaux:
+                num_varspecs = numaux + len(vars)
+            if len(kw['varspecs']) != len(self._varsbyforspec) and \
+               len(kw['varspecs']) != num_varspecs:
                 print "# state variables: ", len(vars)
                 print "# auxiliary variables: ", numaux
                 print "# of variable specs: ", len(kw['varspecs'])
