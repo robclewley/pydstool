@@ -101,6 +101,8 @@ def one_period_traj(model, ev_name, ev_t_tol, ev_norm_tol, T_est,
             model.set(algparams={'poly_interp': old_interp_setting})
         return ref_traj, ref_pts, T_final
     else:
+        print "norm check was", norm_check
+        print "t check was", t_check
         raise RuntimeError("Failure to converge after 80 iterations")
 
 
@@ -135,9 +137,13 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
     offset by a constant amount to the rest of the PRC. This is a "wart" that
     needs improvement.
     """
+    tag_pts = False
     if not isinstance(model, Model.Model):
         # temporarily embed into a model object
         model = embed(model)
+        if keep_trajs:
+            tag_pts = True
+            print "Note: model object will be stored in PRC attribute _model"
     try:
         all_pts = ref_traj_period.sample()
         ref_pts = all_pts[::skip]
@@ -197,8 +203,13 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
             m = np.argmin(abs(test_vals))
             val = test_vals[m]
         PRCvals.append(val)
-    return Pointset(coordarray=[PRCvals], coordnames=['D_phase'],
+    PRC = Pointset(coordarray=[PRCvals], coordnames=['D_phase'],
                     indepvararray=ref_ts[:len(PRCvals)], indepvarname='t')
+    if tag_pts:
+        PRC._model = model
+    else:
+        PRC._model = None
+    return PRC
 
 
 def compare_pert(model, ref_traj_period, evname, pertcoord, pertsize, t0, settle=5,
