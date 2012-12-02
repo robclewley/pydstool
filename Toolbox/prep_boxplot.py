@@ -1,8 +1,6 @@
 from PyDSTool import remain, loadObjects, array, save_fig, arange, args
 from matplotlib.font_manager import FontProperties
-from matplotlib.pylab import figure, plot, hold, \
-     axes, title, xlabel, ylabel, draw, \
-     boxplot, text
+from PyDSTool.matplotlib_import import *
 from scipy import mean
 
 ##symbol_map = {'isomap': {
@@ -169,7 +167,7 @@ def prep_boxplots(data, xlabel_str, figname='', fignum=1, do_legend=1,
 ##        if k == 'eps':
 ##            kstr = '\\epsilon'
 ##        else:
-##            kstr = k 
+##            kstr = k
             text(x_legend+3*width/4, y_legend-width*2., "%s=%d"%(k,s),
                  fontproperties=font)
             y_legend -= ylegstep

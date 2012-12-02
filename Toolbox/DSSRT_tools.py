@@ -480,12 +480,12 @@ def plotNetworkGraph(dssrt_obj):
         E = dssrt_obj._E
     except AttributeError:
         raise TypeError("Invalid DSSRT_info object for plotNetworkGraph")
-    pylab.figure()
+    plt.figure()
     for v in V.itervalues():
-        pylab.plot([v.pos[0]],[v.pos[1]],'ko')
+        plt.plot([v.pos[0]],[v.pos[1]],'ko')
     for elist in E.itervalues():
         for e in elist:
-            pylab.plot([e.u.pos[0],e.v.pos[0]],
+            plt.plot([e.u.pos[0],e.v.pos[0]],
                        [e.u.pos[1],e.v.pos[1]],
                        'k-')
-    pylab.axis([0,1,0,1])
+    plt.axis([0,1,0,1])

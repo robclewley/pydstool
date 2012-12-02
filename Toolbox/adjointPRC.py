@@ -198,10 +198,10 @@ def adjointPRC(model, limit_cycle, vname, freepar, numIntervals=500,
         cyc_scale = abs(max(cycle_true[vname])-min(cycle_true[vname]))
         PRC_scale = abs(max(PRC[vname])-min(PRC[vname]))
         cyc_rescale = PRC_scale/cyc_scale
-        pylab.figure()
+        plt.figure()
         plot(PRC['t'], PRC[vname], 'r', linewidth=2)
         plot(cycle_true['t'], cyc_rescale*(cycle_true[vname]-cyc_offset))
-        pylab.title('PRC overlay on (cycle%+.2e)*%.2e'%(cyc_offset,
+        plt.title('PRC overlay on (cycle%+.2e)*%.2e'%(cyc_offset,
                                                   cyc_rescale))
         show()
 

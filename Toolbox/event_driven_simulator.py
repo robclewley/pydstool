@@ -4,7 +4,7 @@ from PyDSTool.utils import remain, info
 from PyDSTool.Points import Point, Pointset
 from numpy import array, asarray, NaN, Inf, isfinite
 from PyDSTool import figure, plot
-from pylab import gca
+from PyDSTool.matplotlib_import import gca
 from copy import copy
 
 _classes = ['connection', 'node', 'simulator', 'composed_map1D',

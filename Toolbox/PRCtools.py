@@ -5,7 +5,7 @@ import numpy as np
 from PyDSTool import Pointset, Model, embed
 from PyDSTool.Trajectory import pointset_to_traj
 
-from pylab import figure, plot
+from PyDSTool.matplotlib_import import *
 
 #__all__ = []
 

@@ -1676,7 +1676,7 @@ def plot_psis(da, cols=None, do_vars=None, do_log=True, use_prefix=True):
 
     Requires matplotlib.
     """
-    from pylab import plot
+    from PyDSTool.matplotlib_import import plot
     pts=da.psi_pts
     if use_prefix:
         root = 'psi_'+da.focus_var+'_'

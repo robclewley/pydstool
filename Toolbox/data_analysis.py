@@ -24,8 +24,7 @@ try:
 except:
     def PCANode(*args, **kwargs):
         raise ImportError("MDP must be installed for this functionality")
-from matplotlib.pylab import figure, plot, hold, polyfit, \
-     bar, subplot, axes, title, xlabel, ylabel, draw, semilogy
+from PyDSTool.matplotlib_import import *
 from copy import copy
 
 

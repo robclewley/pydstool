@@ -12,9 +12,7 @@ from PyDSTool.common import _seq_types
 from PyDSTool.Toolbox.data_analysis import *
 from numpy import extract, mean, std, ndarray
 from scipy.linalg import norm
-from matplotlib.pylab import figure, plot, hold, polyfit, \
-     bar, subplot, axes, title, xlabel, ylabel, draw, \
-     getp, setp, gca, savefig, scatter, colorbar
+from PyDSTool.matplotlib_import import *
 from matplotlib import cm
 from time import localtime
 from copy import copy
