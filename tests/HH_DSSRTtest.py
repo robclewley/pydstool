@@ -527,6 +527,6 @@ for i, bpval in enumerate(bifpar_range):
 plt.figure()
 plt.plot(bifpar_range, period_data_hyb, 'ko')
 plt.plot(bifpar_range, period_data_orig, 'kx')
-print "\nDepending on your platform and pylab configuration you may need"
+print "\nDepending on your platform and matplotlib configuration you may need"
 print " to execute the plt.show() command to see the plots"
 # plt.show()

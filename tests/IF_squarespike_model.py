@@ -159,6 +159,6 @@ if __name__=='__main__':
     assert allclose(evs['threshold'][1]['v'], -60, 1e-3), \
              "Problem with hybrid events"
 
-    print "\nDepending on your platform and pylab configuration you may need"
+    print "\nDepending on your platform and matplotlib configuration you may need"
     print " to execute the plt.show() command to see the plots"
     # plt.show()
