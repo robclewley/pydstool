@@ -3,23 +3,6 @@
     Drew LaMar, May 2006
 """
 
-# ----------------------------------------------------------------------------
-# Version History:
-#   February 2007
-#       Works with SciPy 0.5.2
-#
-#   September 2006
-#       Added get method
-#       BUG FIX: refresh() now refreshes figures not axes (didn't work with axes)
-#           This is a Subplot issue.
-#       BUG FIX: set title of axes was calling pylab instead of directly
-#       Added KeyEvent class used by 'highlight' method in plot_cycles
-#
-#   June 2006
-#       Created pargs class and initializeDisplay method
-#
-# ----------------------------------------------------------------------------
-
 from PyDSTool.common import args
 from PyDSTool.matplotlib_import import *
 
@@ -351,29 +334,29 @@ class pargs(args):
 
         if not self.has_key('deleted'):
             if 'fig' in self.keys():
-                pylab.figure(self.fig.number)
-                pylab.draw()
+                plt.figure(self.fig.number)
+                plt.draw()
             elif 'axes' in self.keys():
-                pylab.figure(self.axes.figure.number)
-                #Would like to say: pylab.axes(self.axes)  Doesn't work, though.
-                pylab.draw()
+                plt.figure(self.axes.figure.number)
+                #Would like to say: plt.axes(self.axes)  Doesn't work, though.
+                plt.draw()
             elif 'curve' in self.keys():
-                pylab.figure(self.curve[0].figure.number)
-                pylab.draw()
+                plt.figure(self.curve[0].figure.number)
+                plt.draw()
             elif 'point' in self.keys():
-                pylab.figure(self.point[0].figure.number)
-                pylab.draw()
+                plt.figure(self.point[0].figure.number)
+                plt.draw()
             elif 'cycle' in self.keys():
-                pylab.figure(self.cycle[0].figure.number)
-                pylab.draw()
+                plt.figure(self.cycle[0].figure.number)
+                plt.draw()
             else:   # Only here in plot structure
-                fig = pylab.gcf()
+                fig = plt.gcf()
                 for k, v in self.iteritems():
                     if isinstance(v, pargs):
                         v.refresh()
 
         if fig is not None: # Reset to current figure
-            pylab.figure(fig.number)
+            plt.figure(fig.number)
 
     def clean(self):
         """Cleans plotting structure (e.g. deleted)  Also gets rid of nonexisting figures
@@ -387,14 +370,14 @@ class pargs(args):
                     deleted.append(k)
                     recursive_clean = False
                 elif v.has_key('fig'):
-                    fig_check = pylab.figure(v.fig.number)
+                    fig_check = plt.figure(v.fig.number)
                     if fig_check != v.fig:
-                        pylab.close(fig_check)
+                        plt.close(fig_check)
                         deleted.append(k)
                         recursive_clean = False
                 elif v.has_key('axes'):
                     try:
-                        fig_axes = pylab.axes(v.axes)
+                        fig_axes = plt.axes(v.axes)
                     except:
                         fig_axes = None
 
@@ -402,14 +385,14 @@ class pargs(args):
                         deleted.append(k)
                         recursive_clean = False
                     elif fig_axes not in v.axes.figure.axes:
-                        print 'Warning:  Axes were deleted without using pylab.delaxes().'
+                        print 'Warning:  Axes were deleted without using plt.delaxes().'
                         v.axes.figure.axes.append(fig_axes)
-                        pylab.draw()
+                        plt.draw()
                 elif v.has_key('curve'):
                     for piece in v.curve:
                         if piece not in piece.axes.lines:
                             deleted.append(k)
-                            v.delete()    # Remove remaining pieces of curve in pylab
+                            v.delete()    # Remove remaining pieces of curve in pyplot
                             recursive_clean = False
                             break
                 elif v.has_key('cycle'):
@@ -437,14 +420,14 @@ class pargs(args):
     def clear(self, refresh=True):
         if not self.has_key('deleted'):
             if self.has_key('fig'):
-                pylab.figure(self.fig.number)
-                pylab.clf()
+                plt.figure(self.fig.number)
+                plt.clf()
                 remove = [k for k in self.keys() if k != 'fig']
             elif self.has_key('axes'):
                 title = self.axes.title.get_text()
                 self.axes.clear()
-                pylab.axes(self.axes)
-                pylab.title(title)
+                plt.axes(self.axes)
+                plt.title(title)
                 remove = [k for k in self.keys() if k != 'axes']
                 if refresh:
                     self.refresh()
@@ -483,11 +466,11 @@ class pargs(args):
         if not self.has_key('deleted'):
             if self.has_key('fig'):
                 self.clear(refresh=False)
-                pylab.close()
+                plt.close()
                 self.deleted = True
             elif self.has_key('axes'):
                 self.clear(refresh=False)
-                pylab.delaxes()
+                plt.delaxes()
                 self.deleted = True
             elif self.has_key('curve'):
                 self.clear(refresh=False)
@@ -541,8 +524,8 @@ class KeyEvent(object):
         for line in self.cycles:
             line.set(linewidth=self.bgd_lw)
         self.cycles[0].set(linewidth=self.fgd_lw)
-        pylab.draw()
-        pylab.connect('key_press_event', self.__call__)
+        plt.draw()
+        plt.connect('key_press_event', self.__call__)
 
     def __call__(self, event):
         if event.key == 'right': self.change_curr(1)
@@ -567,7 +550,7 @@ class KeyEvent(object):
         for ct, line in enumerate(self.cycles):
             if ct != self.curr:
                 line.set(linewidth=self.bgd_lw)
-        pylab.draw()
+        plt.draw()
 
         print 'Background linewidth = %f' % self.bgd_lw
 
@@ -581,7 +564,7 @@ class KeyEvent(object):
                 self.fgd_lw -= 0.1
 
         self.cycles[self.curr].set(linewidth=self.fgd_lw)
-        pylab.draw()
+        plt.draw()
 
         print 'Foreground linewidth = %f' % self.fgd_lw
 
@@ -593,7 +576,7 @@ class KeyEvent(object):
             self.curr = (self.curr-1) % len(self.cycles)
         self.cycles[self.curr].set(linewidth=self.fgd_lw)
         self.axes.set_title(self.cycles[self.curr].get_label())
-        pylab.draw()
+        plt.draw()
 
 def initializeDisplay(plot, figure=None, axes=None):
     """If figure = 'new', then it will create a new figure with name fig#
@@ -607,26 +590,26 @@ def initializeDisplay(plot, figure=None, axes=None):
     # Handle figure
     if figure is None:
         if len(plot) <= 3:
-            figure = pylab.gcf()
+            figure = plt.gcf()
         else:
             raise ValueError('Please specify a figure.')
 
     cfl = None
-    if isinstance(figure, pylab.Figure):
+    if isinstance(figure, plt.Figure):
         for k, v in plot.iteritems():
             if isinstance(v, pargs) and v.fig == figure:
                 cfl = k
                 break
     elif isinstance(figure, str):
         if figure == 'new':
-            figure = pylab.figure()
+            figure = plt.figure()
         else:
             cfl = figure
             if cfl not in plot.keys():
                 plot[cfl] = pargs()
-                plot[cfl].fig = pylab.figure()
+                plot[cfl].fig = plt.figure()
     elif isinstance(figure, int):
-        fighandle = pylab.figure(figure)
+        fighandle = plt.figure(figure)
         cfl = 'fig' + str(figure)
         if cfl not in plot.keys():
             plot[cfl] = pargs()
@@ -643,22 +626,22 @@ def initializeDisplay(plot, figure=None, axes=None):
         plot[cfl] = pargs()
         plot[cfl].fig = figure
 
-    pylab.figure(plot[cfl].fig.number)
+    plt.figure(plot[cfl].fig.number)
 
     # Handle axes
     if not axes:
         if len(plot[cfl]) <= 2:
-            axes = pylab.gca()
+            axes = plt.gca()
         else:
             raise 'Please specify axes.'
     elif isinstance(axes, tuple):
         if len(axes) == 3:
-            axes = pylab.subplot(axes[0],axes[1],axes[2])
+            axes = plt.subplot(axes[0],axes[1],axes[2])
         else:
             raise 'Tuple must be of length 3'
 
     cal = None
-    if isinstance(axes, pylab.Axes):
+    if isinstance(axes, plt.Axes):
         for k, v in plot[cfl].iteritems():
             if isinstance(v, pargs) and v.axes == axes:
                 cal = k
@@ -677,10 +660,10 @@ def initializeDisplay(plot, figure=None, axes=None):
         cal = axes
         if cal not in plot[cfl].keys():
             plot[cfl][cal] = pargs()
-            plot[cfl][cal].axes = pylab.axes()
+            plot[cfl][cal].axes = plt.axes()
             plot[cfl][cal].axes.set_title(cal)
 
-    pylab.axes(plot[cfl][cal].axes)
+    plt.axes(plot[cfl][cal].axes)
 
     plot._cfl = cfl
     plot._cal = cal

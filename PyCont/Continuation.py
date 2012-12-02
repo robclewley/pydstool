@@ -645,13 +645,13 @@ class Continuation(object):
                                       for x in self.sol],['S','U','N'])
                 for stabtype, stablist in stabdict.iteritems():
                     for curve in stablist:
-                        self.plot[cfl][cal][name].curve.extend(pylab.plot(X[0][curve[0]:curve[1]], \
+                        self.plot[cfl][cal][name].curve.extend(plt.plot(X[0][curve[0]:curve[1]], \
                                                                           X[1][curve[0]:curve[1]], \
                             bif_curve_colors[self.curvetype]+stab_line_styles[stabtype], **disp_args))
             else:
                 if 'label' not in disp_args:
                     disp_args['label'] = name
-                self.plot[cfl][cal][name].curve.extend(pylab.plot(X[0], X[1], \
+                self.plot[cfl][cal][name].curve.extend(plt.plot(X[0], X[1], \
                                 bif_curve_colors[self.curvetype], **disp_args))
 
             # Take care of labels
@@ -668,8 +668,8 @@ class Continuation(object):
                         ylab = ylab[0:ylab.rfind('_'+smtype)]
                         break
 
-            pylab.xlabel(xlab)
-            pylab.ylabel(ylab)
+            plt.xlabel(xlab)
+            plt.ylabel(ylab)
 
             # Prints special points
             if points:
@@ -698,7 +698,7 @@ class Continuation(object):
                                 ptname = point.labels[bftype]['name']
                                 self.plot[cfl][cal][name][ptname] = pargs()
                                 self.plot[cfl][cal][name][ptname].point = \
-                                        pylab.plot([X[0]], [X[1]],
+                                        plt.plot([X[0]], [X[1]],
                                                    bif_point_colors[bftype],
                                                    label='_nolegend_')
 
@@ -710,7 +710,7 @@ class Continuation(object):
                                     va = 'bottom'
 
                                 self.plot[cfl][cal][name][ptname].text = \
-                                    pylab.text(X[0], X[1], '  '+ ptname,
+                                    plt.text(X[0], X[1], '  '+ ptname,
                                                ha=ha, va=va)
 
 
@@ -2616,7 +2616,7 @@ class LimitCycleCurve(Continuation):
                 # Check axes input
                 if axes is None:
                     axes = (1,1,[1])
-                elif isinstance(axes, pylab.Axes):
+                elif isinstance(axes, plt.Axes):
                     raise TypeError('Axes must be a tuple or None')
                 elif isinstance(axes[2], int):
                     axes = list(axes)
@@ -2625,7 +2625,7 @@ class LimitCycleCurve(Continuation):
                 # Initialize figure
                 initializeDisplay(self.plot, figure=figure, \
                                   axes=(axes[0], axes[1], axes[2][0]))
-                figure = pylab.gcf()
+                figure = plt.gcf()
             elif method != 'highlight':
                 raise NotImplementedError('Requested method is not implemented')
 
@@ -2641,10 +2641,10 @@ class LimitCycleCurve(Continuation):
                 # Handle when cycnum is 0 (i.e. new axes)
                 if cycnum == 0:
                     if axnum < len(axes[2]):
-                        axbox = pylab.subplot(axes[0], axes[1], axes[2][axnum])
+                        axbox = plt.subplot(axes[0], axes[1], axes[2][axnum])
                     else:
-                        figure = pylab.figure()
-                        axbox = pylab.subplot(1,1,1)
+                        figure = plt.figure()
+                        axbox = plt.subplot(1,1,1)
                     initializeDisplay(self.plot, figure=figure, axes=axbox)
                     cfl = self.plot._cfl
                     cal = self.plot._cal
@@ -2696,25 +2696,25 @@ class LimitCycleCurve(Continuation):
                 disp_args['color'] = \
                     bif_point_colors[cycle.name.strip('0123456789')][-1]
             self.plot[cfl][cal][cycle.name].cycle = \
-                    pylab.plot(X[0], X[1], **disp_args)
+                    plt.plot(X[0], X[1], **disp_args)
 
             # Last curve of axes was drawn, so clean up axes
             if (cyct == len(cycles)-1) or (method=='stack' and \
                                            cycnum == cycperaxes-1):
                 # Handle x labels and limits
-                pylab.xlabel(coords[0])
+                plt.xlabel(coords[0])
                 if coords[0] == 't':
-                    pylab.xlim([0, t1])
+                    plt.xlim([0, t1])
                     if normalized:
-                        pylab.xlabel('Period')
+                        plt.xlabel('Period')
 
                 # Handle y labels and limits
                 if not method or method == 'highlight':
-                    pylab.ylabel(coords[1])
+                    plt.ylabel(coords[1])
                 else:
                     yticklocs = (1-(0.5+arange(cycperaxes))/cycperaxes)
-                    pylab.yticks(yticklocs, cyclenames)
-                    pylab.ylim([0, 1])
+                    plt.yticks(yticklocs, cyclenames)
+                    plt.ylim([0, 1])
 
                 self.plot[cfl][cal].refresh()
 

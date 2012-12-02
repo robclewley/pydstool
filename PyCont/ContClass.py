@@ -16,11 +16,7 @@ from PyDSTool.common import pickle, Utility, args, filteredDict
 from PyDSTool.utils import remain
 import PyDSTool.Redirector as redirc
 from PyDSTool.errors import *
-try:
-    from pylab import *
-except ImportError:
-    print "Warning: matplotlib failed to import properly and so is not"
-    print "  providing a graphing interface"
+from PyDSTool.matplotlib_import import *
 
 from numpy import dot as matrixmultiply
 from numpy import array, float, complex, int, float64, complex64, int32, \
