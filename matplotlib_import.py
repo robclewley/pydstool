@@ -1,27 +1,19 @@
 """
-    Plotting imports for PyDSTool, from Matplotlib.
+    Plotting imports for PyDSTool, from Matplotlib's pyplot library.
 
     Robert Clewley, March 2006.
 """
-
-# --------------------------------------------------------------------------
-# VERSION HISTORY
-#
-# v1.1, August 2006
-#   Added save_fig function to save figure in multiple formats.
-#
-# --------------------------------------------------------------------------
-
-__all__ = ['plot', 'pylab', 'save_fig']
 
 from numpy import Inf, NaN, isfinite, int, int8, int16, int32, int64, float, float32, float64
 import matplotlib
 ver = matplotlib.__version__.split(".")
 try:
     if int(ver[0]) == 0 and int(ver[1]) < 65:
-        import matplotlib.matlab as pylab
+        import matplotlib.matlab as plt
+        from matplotlib.matlab import *
     else:
-        import matplotlib.pylab as pylab
+        import matplotlib.pyplot as plt
+        from matplotlib.pyplot import *
 except RuntimeError, err:
     if str(err) == 'could not open display':
         failed=True
@@ -41,7 +33,7 @@ if failed:
 
     print "Warning: matplotlib failed to import properly and so is not"
     print "  providing a graphing interface"
-    pylab = None   # will cause an error if someone tries to access in order to plot
+    plt = None   # will cause an error if someone tries to access in order to plot
 else:
     import os
     from Trajectory import Trajectory
@@ -68,7 +60,7 @@ else:
                 except:
                     raise RuntimeError("Could not sample trajectory with "
                                        "default options for plotting")
-        return pylab.plot(*tuple(new_args), **kw)
+        return plt.plot(*tuple(new_args), **kw)
 
     def save_fig(fignum, fname, formats=['png','svg','eps']):
         """Save figure fignum to multiple files with different formats
@@ -76,5 +68,5 @@ else:
         These are platform-dependent and are specific to matplotlib's support.
         """
         for f in formats:
-            pylab.figure(fignum).savefig(fname+'.'+f)
+            plt.figure(fignum).savefig(fname+'.'+f)
 
