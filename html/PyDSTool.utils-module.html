@@ -282,6 +282,26 @@ x0_names.</td>
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
+          <td><span class="summary-sig"><a href="PyDSTool.utils-module.html#progressBar" class="summary-sig-name">progressBar</a>(<span class="summary-sig-arg">i</span>,
+        <span class="summary-sig-arg">total</span>,
+        <span class="summary-sig-arg">width</span>=<span class="summary-sig-default">50</span>)</span><br />
+      Print an increasing number of dashes up to given width, reflecting i 
+      / total fraction of progress.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="PyDSTool.utils-pysrc.html#progressBar">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
           <td><span class="summary-sig"><a href="PyDSTool.utils-module.html#saveObjects" class="summary-sig-name">saveObjects</a>(<span class="summary-sig-arg">objlist</span>,
         <span class="summary-sig-arg">filename</span>,
         <span class="summary-sig-arg">force</span>=<span class="summary-sig-default">False</span>)</span><br />
@@ -414,6 +434,25 @@ x0_names.</td>
       Zip arrays of field names and values into a dictionary.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="PyDSTool.utils-pysrc.html#makeDataDict">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="PyDSTool.utils-module.html#distutil_destination" class="summary-sig-name">distutil_destination</a>()</span><br />
+      Internal utility that makes the goofy destination directory string so
+      that PyDSTool can find where the distutils fortran/gcc compilers put 
+      things.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="PyDSTool.utils-pysrc.html#distutil_destination">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -1358,6 +1397,28 @@ function.
   </dl>
 </td></tr></table>
 </div>
+<a name="progressBar"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">progressBar</span>(<span class="sig-arg">i</span>,
+        <span class="sig-arg">total</span>,
+        <span class="sig-arg">width</span>=<span class="sig-default">50</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.utils-pysrc.html#progressBar">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Print an increasing number of dashes up to given width, reflecting i /
+  total fraction of progress. Prints and refreshes on one line.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
 <a name="saveObjects"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -1490,6 +1551,30 @@ function.
   <p>Zip arrays of field names and values into a dictionary. For instance, 
   to use in Generator initialization arguments.</p>
   <p>Deprecated as of v0.89.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="distutil_destination"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">distutil_destination</span>()</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="PyDSTool.utils-pysrc.html#distutil_destination">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Internal utility that makes the goofy destination directory string so 
+  that PyDSTool can find where the distutils fortran/gcc compilers put 
+  things.</p>
+  <p>If your temp directory turns out to be different to the one created 
+  here, contact us on sourceforge.net, but in the meantime you can override
+  destdir with whatever directory name you find that is being used.</p>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -1915,7 +2000,7 @@ function.
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Fri May  4 15:24:06 2012
+    Generated by Epydoc 3.0.1 on Sun Dec  2 23:44:19 2012
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
