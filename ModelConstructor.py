@@ -1472,6 +1472,12 @@ class EvMapping(object):
     an attribute after its creation, and referring to it with the prefix 'self.'
     in the defString.
 
+    Important: All changes to the variables, parameters etc. occur in place and
+    immediately. As such, the order of the operations matters, and all references
+    *do not* refer to the pre-event values. The order of operations is not
+    guaranteed when specifying using the assignDict, but can be with an explicit
+    defString argument instead.
+
     Use activeDict to map named events to a given setting for 'active' (Boolean).
     """
 
