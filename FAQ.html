@@ -116,7 +116,7 @@ odesys.Rhs(<args>) and can call odesys.compute() etc. as usual.
 
 <p><b>2.3 : When using Dopri and Radau, why does python completely crash when I run an integration? (It works in Vode)</b></p>
 
-<p>One possibility is that you have changed something structural about your model in the python definitions but not deleted the DLL that is compiled for the model in your working directory (the .so or .pyd file named after your model). That file must be deleted while not currently using it inside any python application, and recreated for the changed version of the model. Python does not have a way to refresh DLLs dynamically if they have already been loaded once and need to be changed.</p>
+<p>(For instance, you may get a "Bus Error".) One possibility is that you have changed something structural about your model in the python definitions but not deleted the DLL that is compiled for the model in your working directory (the .so or .pyd file named after your model). That file must be deleted while not currently using it inside any python application, and recreated for the changed version of the model. Python does not have a way to refresh DLLs dynamically if they have already been loaded once and need to be changed.</p>
 <p>Another possibility is that you ran out of memory. On some platforms you may see an assertion fail message about memory.c at the time of the crash. In that case you probably have the integrator's max_pts or maxevpts algorithmic parameter set too large, and python cannot allocate the memory when you begin the integration.</p>
 <a name="3">
 <h2>3. Questions about documentation</h2>
