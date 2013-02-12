@@ -1330,7 +1330,7 @@ class Point2D(Point):
 
     def toPoint(self):
         """Coerce to regular PyDSTool.Point object"""
-        return Point(coorddict={xname: self.x, yname: self.y},
+        return Point(coorddict={self.xname: self.x, self.yname: self.y},
                      coordtype=float,
                      norm=self._normord,
                      labels=self.labels)
@@ -2117,7 +2117,7 @@ class local_linear_2D(object):
     """
 
     def __init__(self, model, da, voltage, other_var, init_pt, with_exit_auxfn=True, targlang='python', max_t=5,
-                 name='nulls', extra_vinf_terms='', extra_pars=None):
+                 name='nulls', extra_vinf_terms='', extra_pars=None, tol=1e-8):
         """da is a DSSRT assistant object associated with the model (for Psi dominance values, not Omegas).
         Hold all system vars constant that are not part of the 2D system specified by pair (voltage, other_var).
 
@@ -2143,6 +2143,7 @@ class local_linear_2D(object):
 
         self.gen.set(ics=init_pt)
         self.lin = None
+        self.tol = tol
 
         # make local linear system spec
         DSargs = args()
@@ -2203,8 +2204,8 @@ class local_linear_2D(object):
             thresh_ev = Events.makeZeroCrossEvent(expr='exit_fn(%s,%s)' %(varsPP[0], varsPP[1]),
                                                 dircode=0,
                                                 argDict={'name': 'exit_ev',
-                                                         'eventtol': 1e-8,
-                                                         'eventdelay': 1e-3,
+                                                         'eventtol': tol,
+                                                         'eventdelay': min(1e-3,tol*100),
                                                          'starttime': 0,
                                                          'precise': True,
                                                          'active': True,
@@ -2224,6 +2225,12 @@ class local_linear_2D(object):
         # build jac info for linear system
         self.jac_spec, self.new_fnspecs = prepJacobian(self.lin.funcspec._initargs['varspecs'], varsPP,
                                 self.lin.funcspec._initargs['fnspecs'])
+##        scope = self.lin.pars.copy()
+##        print scope
+##        scope.update(self.new_fnspecs)
+        scope = self.new_fnspecs
+        self.jac_fn = expr2fun(self.jac_spec, ensure_args=['t'], ensure_dynamic=self.lin.pars,
+                               **scope)
 
 
     def localize(self, pt):
@@ -2252,9 +2259,6 @@ class local_linear_2D(object):
         if pt is not None:
             self.localize(pt)
         varsPP = self.varsPP
-        self.scope = self.lin.pars.copy()
-        self.scope.update(self.new_fnspecs)
-        self.jac_fn = expr2fun(self.jac_spec, ensure_args=['t'], **self.scope)
         # expect only one fixed point for the linear system!
         vlim = 100
         xlim = 1
@@ -2262,8 +2266,9 @@ class local_linear_2D(object):
         fp_coords = None
         while i < 10:
             try:
-                fp_coords = find_fixedpoints(self.lin, subdomain={'v': [-vlim, vlim],
-                                                                  x: [-xlim, xlim]})[0]
+                fp_coords = find_fixedpoints(self.lin, eps=self.tol,
+                                             subdomain={'v': [-vlim, vlim],
+                                                        x: [-xlim, xlim]})[0]
             except IndexError:
                 vlim += 200
                 xlim += 2
@@ -2273,7 +2278,8 @@ class local_linear_2D(object):
         if fp_coords is None:
             raise ValueError("No linear system fixed points found!")
         else:
-            fp = fixedpoint_2D(self.lin, Point(fp_coords), coords=varsPP, jac=self.jac_fn)
+            fp = fixedpoint_2D(self.lin, Point(fp_coords), coords=varsPP, jac=self.jac_fn,
+                               eps=self.tol/10.)
 
         self.fp = fp
 
