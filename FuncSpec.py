@@ -424,13 +424,17 @@ class FuncSpec(object):
                             ['abs', 'min', 'max', 'and', 'or', 'not',
                              'True', 'False']
         # other checks
-        assert reduce(bool.__and__, [name_chars_RE.match(n[0]) \
-                                     is not None for n in allnames]), \
-                        ('variable, parameter, and input names must not '
+        first_char_check = [alphabet_chars_RE.match(n[0]) \
+                                     is not None for n in allnames]
+        if not all(first_char_check):
+            print "Offending names:", [n for i, n in enumerate(allnames) \
+                                       if not first_char_check[i]]
+            raise ValueError('Variable, parameter, and input names must not '
                          'begin with non-alphabetic chars')
-        assert reduce(bool.__and__, [n not in allnames for n in \
-                                     allprotectednames]), \
-                        ('variable, parameter, and input names must not '
+        protected_overlap = intersect(allnames, allprotectednames)
+        if protected_overlap != []:
+            print "Overlapping names:", protected_overlap
+            raise ValueError('Variable, parameter, and input names must not '
                          'overlap with protected math / aux function names')
         ## Not yet implemented ?
         # verify that targetlang is consistent with spec contents?
@@ -561,9 +565,12 @@ class FuncSpec(object):
                            + ['abs', 'and', 'or', 'not', 'True', 'False']
                 assert istr not in allnames, ('loop index in `for` macro '
                                               'must not be a reserved name')
+                assert alphabet_chars_RE.match(istr[0]) is not None, \
+                       ('loop index symbol in `for` macro must start with '
+                        'a letter')
                 for ichar in istr:
                     assert name_chars_RE.match(ichar) is not None, \
-                                               ('loop index in `for` macro '
+                                         ('loop index symbol in `for` macro '
                                                 'must be alphanumeric')
                 ilo = int(arglist[1])
                 ihi = int(arglist[2])
