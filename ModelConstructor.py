@@ -1534,6 +1534,9 @@ class EvMapping(object):
             return False
 
     def makeCallFn(self):
+        """Note that the function created alters xdict, pdict, idict, and estruct
+        *in place*, and does not return any values.
+        """
         indent = "  "
         fnString = """def evmapping(self, xdict, pdict, idict, estruct, t):"""
         if self.defString == "" and self.assignDict == {} and self.activeDict == {}:
