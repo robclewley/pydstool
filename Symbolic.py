@@ -378,14 +378,14 @@ def _propagate_str_eval(s):
 def _join_sublist(qspec, math_globals, local_free, eval_at_runtime):
     if qspec.isvector():
         sl = qspec.fromvector()
-        # sl is guaranteed to be QuantSpecs
+        # sl is guaranteed to be seq of QuantSpecs
         return "["+",".join([str(_eval(q, math_globals, local_free,
                         eval_at_runtime)) for q in sl])+"]"
     else:
         return str(_eval(qspec, math_globals, local_free, eval_at_runtime))
 
 
-def expr2fun(qexpr, ensure_args=None, **values):
+def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, **values):
     """qexpr is a string, Quantity, or QuantSpec object.
     values is a dictionary binding free names to numerical values
     or other objects defined at runtime that are in local scope.
@@ -408,6 +408,11 @@ def expr2fun(qexpr, ensure_args=None, **values):
     ensure_args list of strings, e.g. when creating a Jacobian
     that is expected to always take 't' as an argument even if
     the system is autonomous.
+
+    You can force the function to expect a dictionary of dynamically
+    accessible numeric values that can be looked up during function
+    evaluation, using the optional ensure_dynamic dictionary. Later,
+    you can modify the values in this dictionary directly.
 
     The arguments to the returned callable function object are
     given by its attribute '_args', and its definition string by
@@ -444,7 +449,7 @@ def expr2fun(qexpr, ensure_args=None, **values):
             local_funcs[k] = Var(k)  # placeholder
             eval_at_runtime.append(k)
             for vfree in vs.freeSymbols:
-                if vfree not in values and vfree not in math_globals:
+                if vfree not in values and vfree not in math_globals and vfree not in ensure_dynamic:
                     raise ValueError("Free name %s inside function %s must be bound" % (vfree, k))
             embed_funcs[k] = (fnsig, fndef)
         else:
@@ -473,6 +478,19 @@ def expr2fun(qexpr, ensure_args=None, **values):
     except TypeError, e:
         raise TypeError("Invalid qexpr argument type: " + str(e))
     fspec = qvar.eval(**valDict)
+
+    dyn_map = symbolMapClass()
+    temp_dynamic = {}
+    if ensure_dynamic is not None:
+        dyn_keys = ensure_dynamic.keys()
+        dyn_vals = ["self._pardict['%s']" %d for d in dyn_keys]
+        dyn_map.update(dict(zip(dyn_keys, dyn_vals)))
+        eval_at_runtime.extend(dyn_keys)
+        for k in dyn_keys:
+            temp_dynamic[k] = Var(k)
+    else:
+        dyn_keys = []
+
     for fname, (fnsig, fndef) in embed_funcs.iteritems():
         qtemp = QuantSpec('q', fndef)
         for emb_fname in embed_funcs.keys():
@@ -481,10 +499,12 @@ def expr2fun(qexpr, ensure_args=None, **values):
             if emb_fname in qtemp:
                 # replace all occurrences
                 qtemp.mapNames({emb_fname: 'self.'+emb_fname})
+            qtemp.mapNames(dyn_map)
         new_fndef = str(qtemp.eval(**filteredDict(valDict, fnsig, neg=True)).renderForCode())
         embed_funcs[fname] = (fnsig, new_fndef)
+
     free.extend(remain(fspec.freeSymbols,
-                  math_globals.keys()+local_free.keys()+embed_funcs.keys()))
+                  math_globals.keys()+local_free.keys()+embed_funcs.keys()+dyn_keys))
     # hack to exclude object references which will be taken care of at runtime
     # or string literals that aren't supposed to be free symbols
     free = [sym for sym in free if not \
@@ -509,6 +529,7 @@ def expr2fun(qexpr, ensure_args=None, **values):
     local_free.update(dict(zip(free, [QuantSpec(symb) for symb in free])))
     scope = filteredDict(local_free, [k for k, v in local_free.iteritems() if v is not None])
     scope.update(local_funcs)
+    scope.update(temp_dynamic)
     fspec.mapNames(h_map)
     eval_globals = math_globals.copy()
     eval_globals['max'] = QuantSpec('max', '__temp_max__')
@@ -524,10 +545,12 @@ def expr2fun(qexpr, ensure_args=None, **values):
         if eval_at_runtime != []:
             fspec_eval.mapNames(dict(zip(mapnames,
                                     ['self.'+k for k in mapnames])))
+            fspec_eval.mapNames(dyn_map)
         fspec_str = str(fspec_eval)
     else:
         fspec_eval = _eval(fspec, eval_globals,
                            scope, eval_at_runtime)
+
     def append_call_parens(k):
         """For defined references to future fn_wrapper attributes that need
         calling to evaluate, append the call parentheses for the text that
@@ -589,6 +612,9 @@ class fn_wrapper(object):
         raise
     evalfunc = fn_wrapper()
     evalfunc.__dict__.update(defs)
+    if dyn_keys != []:
+        # don't make copy to allow automatic update
+        evalfunc._pardict = ensure_dynamic
     evalfunc._args = arglist
     evalfunc._call_spec = fspec_str
     evalfunc._namemap = h_map
