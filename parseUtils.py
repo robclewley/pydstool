@@ -134,7 +134,7 @@ _objects = ['protected_auxnamesDB', 'protected_allnames', 'protected_macronames'
 _classes = ['symbolMapClass', 'parserObject', 'auxfnDBclass']
 
 _constants = ['name_chars_RE', 'num_chars', 'ZEROS', 'ONES', 'NAMESEP',
-              '_indentstr']
+              '_indentstr', 'alphabet_chars_RE', 'alphanumeric_chars_RE']
 
 _symbfuncs = ['simplify', 'simplify_str', 'ensurebare', 'ensureparen',
              'trysimple', 'ensuredecimalconst', 'doneg', 'dosub', 'doadd',
@@ -150,7 +150,8 @@ __all__ = _functions + _classes + _objects + _constants + _symbfuncs + _symbcons
 
 ## constants for parsing
 name_chars_RE = re.compile('\w')
-alphabet_chars_RE = re.compile('[a-zA-Z0-9]')   # without the '_'
+alphanumeric_chars_RE = re.compile('[a-zA-Z0-9]')   # without the '_'
+alphabet_chars_RE = re.compile('[a-zA-Z]')
 num_chars = map(lambda i: str(i), range(10))
 
 if DO_POW:
@@ -1728,12 +1729,16 @@ def replaceSep(spec, sourcesep=NAMESEP, targetsep="_"):
     string. e.g. "." -> "_"
     Only replaces the character between name tokens, not between numbers."""
 
-    for char in sourcesep:
-        if alphabet_chars_RE.match(char) is not None:
-            raise ValueError("Source separator must be non-alphanumeric")
-    for char in targetsep:
-        if alphabet_chars_RE.match(char) is not None:
-            raise ValueError("Target separator must be non-alphanumeric")
+    try:
+        assert all([alphanumeric_chars_RE.match(char) is None \
+                    for char in sourcesep])
+    except AssertionError:
+        raise ValueError("Source separator must be non-alphanumeric")
+    try:
+        assert all([alphanumeric_chars_RE.match(char) is None \
+                    for char in targetsep])
+    except AssertionError:
+        raise ValueError("Target separator must be non-alphanumeric")
     if isinstance(spec, str):
         return replaceSepStr(spec, sourcesep, targetsep)
     else:
