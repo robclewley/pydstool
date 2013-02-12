@@ -12,7 +12,7 @@ from scipy.special import *
 pars = {'alpha': 0.1,
         'p': 0.5,
         'theta': 0.,
-        'gamma': 0.,
+        'gam': 0.,
         'lambda': 0.,
         'chi': 1.}
 
@@ -20,8 +20,8 @@ icdict = {'m': 1., 'r': 1, 'C': 0., 's': 0}
 
 # Set up model
 auxfndict = {'sigsq': (['s', 'r'], 'alpha*(4.*p*(1.-p)*r+pow((1.-chi)*s+lambda,2))'), \
-             'yp': (['m', 's', 'r'], '(2.*(1.-p)*m-gamma*s-theta)/sqrt(2*alpha*(4*p*(1-p)*r+pow((1-chi)*s+lambda,2)))'), \
-             'ym': (['m', 's', 'r'], '(2.*(-p)*m-gamma*s-theta)/sqrt(2*alpha*(4*p*(1-p)*r+pow((1-chi)*s+lambda,2)))')}
+             'yp': (['m', 's', 'r'], '(2.*(1.-p)*m-gam*s-theta)/sqrt(2*alpha*(4*p*(1-p)*r+pow((1-chi)*s+lambda,2)))'), \
+             'ym': (['m', 's', 'r'], '(2.*(-p)*m-gam*s-theta)/sqrt(2*alpha*(4*p*(1-p)*r+pow((1-chi)*s+lambda,2)))')}
 
 mstr = '-m + 0.5*special_erf(yp(m,s,r)) - 0.5*  special_erf(ym(m,s,r))'
 sstr = '-s + p*  special_erf(yp(m,s,r)) + (1-p)*special_erf(ym(m,s,r))'
