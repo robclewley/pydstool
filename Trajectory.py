@@ -35,7 +35,8 @@ __all__ = ['Trajectory', 'HybridTrajectory', 'numeric_to_traj',
 
 
 def numeric_to_traj(vals, trajname, coordnames, indepvar=None, indepvarname='t',
-                    indepdomain=None, all_types_float=True, discrete=True):
+                    indepdomain=None, all_types_float=True, discrete=True,
+                    event_times=None, event_vals=None):
     """Utility function to convert one or more numeric type to a Trajectory.
     Option to make the trajectory parameterized or not, by pasing an indepvar
     value.
@@ -45,39 +46,77 @@ def numeric_to_traj(vals, trajname, coordnames, indepvar=None, indepvarname='t',
 
     To create interpolated (continuously defined) trajectories, set
     discrete=False, otherwise leave at its default value of True.
+
+    If event_times and event_vals dictionaries (default None) are given, this
+    will place them in the resulting Trajectory.
     """
     vars = numeric_to_vars(vals, coordnames, indepvar, indepvarname,
                            indepdomain, all_types_float, discrete)
-    return Trajectory(trajname, vars.values(),
+    if event_times is not None:
+        return Trajectory(trajname, vars.values(),
+                      parameterized=indepvar is not None,
+                      eventTimes=event_times, events=event_vals)
+    else:
+        return Trajectory(trajname, vars.values(),
                       parameterized=indepvar is not None)
 
-def convert_ptlabel_events(pts):
+def convert_ptlabel_events(pts, return_vals_dict=False):
     """Creates an eventTimes-like dictionary from a pointset's labels.
-    (Event X time recorded in a label is recorded as "Event:X")
+    (Event X time recorded in a label is recorded as "Event:X").
+
+    With return_vals_dict=True (default False), the corresponding dictionary
+    of pointlists for those events will be returned.
     """
     ev_labels = []
     for l in pts.labels.getLabels():
         if 'Event:' in l:
             ev_labels.append(l[6:])
     event_times = {}
+    event_vals = {}
     for l in ev_labels:
         ts = []
+        ixlist = []
         ix_dict = pts.labels.by_label['Event:'+l]
         # don't use tdict in labels in case indepvararray has been re-scaled
         for ix in ix_dict.keys():
             ts.append(pts.indepvararray[ix])
+            ixlist.append(ix)
         ts.sort()
+        if return_vals_dict:
+            ixlist.sort()
+            event_vals[l] = pointsToPointset([pts[ix] for ix in ixlist],
+                                             't', ts)
         event_times[l] = ts
-    return event_times
+    if return_vals_dict:
+        return event_times, event_vals
+    else:
+        return event_times
 
-def pointset_to_traj(pts):
+
+def pointset_to_traj(pts, events=None):
     """Convert a pointset into a trajectory using linear interpolation, retaining
-    parameterization by an independent variable if present."""
+    parameterization by an independent variable if present.
+
+    If events (default None) is a corresponding event structure's dictionary
+    from a Generator object (gen.eventstruct.events), this will preserve the
+    events found in the pointset and place them in the resulting Trajectory.
+    """
+    if events is not None:
+        all_ev_names = events.keys()
+        ev_times, ev_vals = convert_ptlabel_events(pts, True)
+        unused_keys = remain(all_ev_names, ev_times.keys())
+        for k in unused_keys:
+            ev_times[k] = []
+            ev_vals[k] = None
+    else:
+        ev_times = ev_vals = None
     if isparameterized(pts):
         return numeric_to_traj(pts.coordarray, pts.name, pts.coordnames, pts.indepvararray,
-                               pts.indepvarname, discrete=False)
+                               pts.indepvarname, discrete=False,
+                               event_times=ev_times, event_vals=ev_vals)
     else:
-        return numeric_to_traj(pts.coordarray, pts.name, pts.coordnames, discrete=False)
+        return numeric_to_traj(pts.coordarray, pts.name, pts.coordnames, discrete=False,
+                               event_times=ev_times, event_vals=ev_vals)
 
 
 class Trajectory(object):
