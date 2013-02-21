@@ -1165,20 +1165,32 @@ class Continuation(object):
                         num += 1
             self.new_sol_segment = copy(self.sol)
         else:
-            sol1 = self.sol[-1]
+            # find final non-MX point that has the correct label for this curve type
+            pt_type = self.curvetype.split('-')[0]
+            i = -1
+            while True:
+                try:
+                    sol1 = self.sol[i]
+                except IndexError:
+                    raise IndexError("Not enough points found")
+                if 'MX' not in sol1.labels and pt_type in sol1.labels:
+                    break
+                else:
+                    # !!! some points do not seem to have any labels
+                    # unclear whether these are legit points or not, so
+                    # ignore for now and keep going
+                    i -= 1
+
             # Set start point (if bif point, set to startx)
-            if sol1.labels['P'].has_key('startx'):
-                x0 = sol1.labels['P']['startx']
+            if sol1.labels[pt_type].has_key('startx'):
+                x0 = sol1.labels[pt_type]['startx']
             else:
                 x0 = sol1
 
             try:
-                v0 = sol1.labels['P']['data'].V
+                v0 = sol1.labels[pt_type]['data'].V
             except:
-                try:
-                    v0 = sol1.labels['MX']['data'].V
-                except:
-                    v0 = None
+                v0 = None
 
             if sol1.labels[self.curvetype.split('-')[0]]['data'].has_key('ds'):
                 self.StepSize = min(self.StepSize,
@@ -1193,10 +1205,10 @@ class Continuation(object):
             except:
                 pass
 
-            try:
-                self.sol.labels.remove(len(self.sol)-1,'MX')
-            except:
-                pass
+            #try:
+            #    self.sol.labels.remove(len(self.sol)-1,'MX')
+            #except:
+            #    pass
 
             for pttype in self.LocBifPoints + other_special_points:
                 if self.sol.bylabel(pttype) is not None:
@@ -1237,8 +1249,14 @@ class Continuation(object):
             sol0 = self.sol[0]
 
             # Type of end point
-            etype0 = sol0.labels.has_key('P') and 'P' or 'MX'
-            etype1 = self.sol[-1].labels.has_key('P') and 'P' or 'MX'
+            if sol0.labels.has_key('P'):
+                etype0 = 'P'
+            else:
+                etype0 = 'MX'
+            if self.sol[-1].labels.has_key('P'):
+                etype1 = 'P'
+            else:
+                etype1 = 'MX'
 
             # Turn tangent vectors around (for non auto only)
             if not self.UseAuto:
