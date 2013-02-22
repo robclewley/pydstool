@@ -917,8 +917,9 @@ class FuncSpec(object):
                             auxname, ":", badparnames
                     #print auxinfo[0]
                     #print auxparlist
-                    raise ValueError("Cannot use protected names for auxiliary "
-                                       "function parameters")
+                    raise ValueError("Cannot use protected names (including" \
+                        " globally visible system parameters for auxiliary " \
+                                  "function arguments")
                 # special symbols to allow in parsing function body
                 specials = auxparlist
                 specials.remove('parsinps')
