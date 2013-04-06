@@ -233,6 +233,7 @@ def find_regime_transition(criteria_list, min_t=-np.Inf):
             if not transition_criteria.precondition(epochs):
                 record[np.Inf] = (criterion_ix, None, 'transitional_precondition', (None, None), transition_criteria.record)
                 return np.Inf, record
+        # Check global criteria if present
         for epix, ep in enumerate(epochs):
             if check_global and not global_criteria(ep) and ep.t1 >= min_t:
                 if ep.t0 < min_t:
@@ -242,7 +243,9 @@ def find_regime_transition(criteria_list, min_t=-np.Inf):
                 else:
                     glt0 = min_t
                     glt1 = ep.t0
-                    record[glt0] = (criterion_ix, epix, 'global', (glt0, glt1), global_criteria.record)
+                    # record was recorded at glt0 prior to Feb 2013, but this was inconsistent with
+                    # return values at end of function
+                    record[glt1] = (criterion_ix, epix, 'global', (glt0, glt1), global_criteria.record)
                     #print "B", glt0, glt1
                     break
             if check_trans:
@@ -267,9 +270,13 @@ def find_regime_transition(criteria_list, min_t=-np.Inf):
                     break
         if trans_found:
             record[trt0] = (criterion_ix, epix, 'transitional', (trt0, trt1), transition_criteria.record)
-        if check_global and (np.isfinite(glt0) or np.isfinite(glt1)):
+        if check_global and not (np.isinf(glt0) and np.isinf(glt1)):
+            # glt1 can be infinite provided glt0 is finite
+            # glt0 can be -inf provided glt1 is finite
             global_intervals.append(Interval('glob', float, [glt0, glt1]))
-        if check_trans and (np.isfinite(trt0) or np.isfinite(trt1)):
+        if check_trans and not (np.isinf(trt0) and np.isinf(trt1)):
+            # trt1 can be infinite provided trt0 is finite
+            # trt0 can be -inf provided trt1 is finite
             transition_intervals.append(Interval('tran', float, [trt0, trt1]))
     tri0 = Interval('tran_result', float, [-np.Inf, np.Inf])
     for i in transition_intervals:
@@ -1368,13 +1375,15 @@ class dssrt_assistant(object):
                 psis[inp] = np.array([NaN]*len(pts))
             else:
                 args, f = psi_info
+                # make copy in case remove an argument
+                temp_args = copy.copy(args)
                 if 't' in args:
                     tix = args.index('t')
-                    args.remove('t')
-                    arg_ixs = pts._map_names_to_ixs(args)
+                    temp_args.remove('t')
+                    arg_ixs = pts._map_names_to_ixs(temp_args)
                     arg_ixs.insert(tix, all_coords.shape[1]-1)
                 else:
-                    arg_ixs = pts._map_names_to_ixs(args)
+                    arg_ixs = pts._map_names_to_ixs(temp_args)
                 try:
                     psis[inp] = np.array([f(*val_array.flatten()) \
                                       for val_array in all_coords[:,[arg_ixs]]])
