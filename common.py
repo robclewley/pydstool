@@ -223,6 +223,10 @@ class predicate_op(object):
     def evaluate(self, obj):
         raise NotImplementedError
 
+    def __repr__(self):
+        return self.name + '(' + \
+               ', '.join([repr(p) for p in self.predicates]) + ')'
+
 
 class and_op(predicate_op):
     name = 'AND'
@@ -278,6 +282,11 @@ class predicate(object):
 
     def evaluate(self, obj):
         raise NotImplementedError
+
+    def __repr__(self):
+        return self.name + '(' + self.subject + ')'
+
+    __str__ = __repr__
 
 
 class null_predicate_class(predicate):
