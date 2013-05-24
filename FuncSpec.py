@@ -450,16 +450,18 @@ class FuncSpec(object):
                                                 'of unique ordered pairs')
         # Verify all names in dependencies are in self.vars
         # and that (i,o) pairs are unique in dependencies
+        all_vars = self.vars+self.auxvars
         for d in dependencies:
-            assert len(d) == 2, 'dependencies must be ordered pairs'
-            i = d[0]
-            o = d[1]
+            try:
+                i, o = d
+            except:
+                raise ValueError('dependencies must be ordered pairs')
             firstpos = dependencies.index(d)
             assert d not in dependencies[firstpos+1:], \
                    'dependency pairs must be unique'
-            assert i in self.vars+self.auxvars, 'unknown variable name in dependencies'
+            assert i in all_vars, 'unknown variable name %s in dependencies'%i
             assert o in self.vars or o in self.inputs, \
-                   'unknown variable name in dependencies'
+                   'unknown variable name %s in dependencies'%o
         # No need to verify that dependencies are consistent with spec,
         # if spec was generated automatically
 
