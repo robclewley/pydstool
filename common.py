@@ -246,21 +246,22 @@ class not_op(predicate_op):
     name = 'NOT'
 
     def __init__(self, predicate):
-        self.predicate = predicate
+        # make a singleton so that inherited repr works
+        self.predicates = [predicate]
         self.record = []
 
     def precondition(self, objlist):
-        res = self.predicate.precondition(objlist)
-        self.record = [self.name, self.predicate.record]
+        res = self.predicates[0].precondition(objlist)
+        self.record = [self.name, self.predicates[0].record]
         return res
 
     def __call__(self, obj):
         res = self.evaluate(obj)
-        self.record = [self.name, self.predicate.record]
+        self.record = [self.name, self.predicates[0].record]
         return res
 
     def evaluate(self, obj):
-        return not self.predicate(obj)
+        return not self.predicates[0](obj)
 
 
 class predicate(object):
@@ -1580,7 +1581,7 @@ def makeSeqUnique(seq, asarray=False):
         return [set.setdefault(e,e) for e in seq if e not in set]
 
 
-def object2str(x):
+def object2str(x, digits=5):
     """Convert occurrences of types / classes,
     to pretty-printable strings."""
     try:
@@ -1591,7 +1592,7 @@ def object2str(x):
             rx = "["
             if len(x)>0:
                 for o in x:
-                    rx += object2str(o) + ", "
+                    rx += object2str(o, digits) + ", "
                 return rx[:-2]+"]"
             else:
                 return rx+"]"
@@ -1599,7 +1600,7 @@ def object2str(x):
             rx = "("
             if len(x)>0:
                 for o in x:
-                    rx += object2str(o) + ", "
+                    rx += object2str(o, digits) + ", "
                 return rx[:-2]+")"
             else:
                 return rx+")"
@@ -1607,13 +1608,16 @@ def object2str(x):
             rx = "{"
             if len(x)>0:
                 for k, o in x.iteritems():
-                    rx += object2str(k) + ": " + object2str(o) + ", "
+                    rx += object2str(k, digits) + ": " + object2str(o, digits) + ", "
                 return rx[:-2]+"}"
             else:
                 return rx+"}"
         elif isinstance(x, str):
             # this removes extraneous single quotes around dict keys, for instance
             return x
+        elif isinstance(x, float):
+            format_str = '"%%.%if"'%digits
+            return eval(format_str + '%x')
         else:
             return repr(x)
     except:
@@ -1910,8 +1914,7 @@ def sortedDictItems(d, byvalue=True, onlykeys=None, reverse=False):
     sorted by value (default) or key.
     Adapted from an original function by Duncan Booth.
     """
-    ks, vs = sortedDictLists(d, byvalue, onlykeys, reverse)
-    return zip(ks,vs)
+    return zip(*sortedDictLists(d, byvalue, onlykeys, reverse))
 
 # ----------------------------------------------------------------------
 
