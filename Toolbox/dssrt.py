@@ -196,6 +196,7 @@ def find_ep_ix(eps, t):
             raise ValueError("t must be in the epochs' time intervals")
 
 
+### Currently unused
 class regime(object):
     def __init__(self, epochs, global_criteria, transition_criteria):
         self.epochs = epochs
@@ -209,118 +210,320 @@ class regime(object):
         self.transition_criteria = transition_criteria
 
 
-def find_regime_transition(criteria_list, min_t=-np.Inf):
-    global_intervals = []
-    transition_intervals = []
-    record = {}
-    for criterion_ix, (epochs, global_criteria, transition_criteria) in enumerate(criteria_list):
-        check_global = global_criteria is not None
-        check_trans = transition_criteria is not None
-        # global criteria: record OK interval
-        # transition criteria: record last available ep.t1 in which post-
-        #  transition_criteria continue to hold using transition_criteria(ep)
-        #  and find earliest available overlap between all of these intervals
-        glt0 = np.Inf
-        glt1 = np.Inf
-        trt0 = np.Inf
-        trt1 = np.Inf
-        trans_found = False
-        #print "***"
-        if not check_global and not check_trans:
-            # nothing to check for this criterion!
-            continue
-        if check_trans:
-            if not transition_criteria.precondition(epochs):
-                record[np.Inf] = (criterion_ix, None, 'transitional_precondition', (None, None), transition_criteria.record)
-                return np.Inf, record
+### Currently unused
+#class criterion_record(object):
+#    def __init__(self):
+#        self.time
+
+
+def test_criterion(epochs, glob, trans, min_t, force_precond=False):
+    """Use force_precond (optional, default=False) to force any preconditions
+    to return True. This is useful when recalculating epochs for small segments
+    for which the preconditions are previously known to be OK but would not
+    be met on the small segments.
+    """
+    records = []
+    global_interval = None
+    transition_interval = None
+
+    check_global = glob is not None
+    check_trans = trans is not None
+    # global criteria: record OK interval
+    # transition criteria: record last available ep.t1 in which post-
+    #  transition_criteria continue to hold using transition_criteria(ep)
+    #  and find earliest available overlap between all of these intervals
+    glt0 = np.Inf
+    glt1 = np.Inf
+    trt0 = np.Inf
+    trt1 = np.Inf
+    trans_found = False
+    glob_found = False
+    #print "***"
+    if not check_global and not check_trans:
+        # nothing to check for this criterion!
+        return records, global_interval, transition_interval
+
+    # Check preconditions
+    if check_trans:
+        if not trans.precondition(epochs) and not force_precond:
+            records.append(common.args(time=np.Inf,
+                         epoch=None,
+                         kind='transitional_precondition',
+                         interval=(None,None),
+                         criterion_record=trans.record))
+            return records, global_interval, transition_interval
+
+    for epix, ep in enumerate(epochs):
         # Check global criteria if present
-        for epix, ep in enumerate(epochs):
-            if check_global and not global_criteria(ep) and ep.t1 >= min_t:
-                if ep.t0 < min_t:
-                    # failed on first epoch
-                    record[np.Inf] = (criterion_ix, epix, 'global', (None, None), global_criteria.record)
-                    return np.Inf, record
-                else:
-                    glt0 = min_t
-                    glt1 = ep.t0
-                    # record was recorded at glt0 prior to Feb 2013, but this was inconsistent with
-                    # return values at end of function
-                    record[glt1] = (criterion_ix, epix, 'global', (glt0, glt1), global_criteria.record)
-                    #print "B", glt0, glt1
-                    break
-            if check_trans:
-                if transition_criteria(ep):
-                    if not trans_found:
-                        if ep.t0 < min_t:
-                            if ep.t1 > min_t:
-                                trans_found = True
-                                trt0 = min_t
-                                trt1 = ep.t1
-                        else:
-                            trt0 = ep.t0
-                            trt1 = ep.t1
+        if check_global and not glob(ep) and ep.t1 >= min_t:
+            if ep.t0 < min_t:
+                # failed on first epoch
+                records.append(common.args(time = np.Inf,
+                                     epoch = epix,
+                                     kind = 'global',
+                                     interval = (None, None),
+                                     criterion_record = glob.record))
+                return records, global_interval, transition_interval
+            else:
+                glt0 = min_t
+                glt1 = ep.t0
+                # record time was glt0 prior to Feb 2013, but this was inconsistent with
+                # return values at end of function
+                records.append(common.args(time = glt1,
+                                           epoch = epix,
+                                           kind = 'global',
+                                           interval = (glt0, glt1),
+                                           criterion_record = glob.record))
+                glob_found = True
+                #print "B", glt0, glt1
+                break
+
+        # Check transitional criteria if present
+        if check_trans:
+            if trans(ep):
+                if not trans_found:
+                    if ep.t0 < min_t:
+                        if ep.t1 > min_t:
                             trans_found = True
+                            trt0 = min_t
+                            trt1 = ep.t1
+                        # else ignore: transition not found anywhere within this epoch
                     else:
-                        trt0 = max([min([trt0, ep.t0]), min_t])
-                    trt1 = max([ep.t1, min_t])
-                    #print "C", trt0, trt1
-                elif trans_found:
-                    # may never be reached if end of epochs reached while
-                    # transition_criteria(ep) holds
+                        trt0 = ep.t0
+                        trt1 = ep.t1
+                        trans_found = True
+                else:
+                    trt0 = max([min([trt0, ep.t0]), min_t])
+                trt1 = max([ep.t1, min_t])
+                #print "C", trt0, trt1
+            elif trans_found:
+                # may never be reached if end of epochs reached while
+                # transition_criteria(ep) holds
+                break  # for epochs loop
+
+    if trans_found:
+        records.append(common.args(time = trt0,
+                                   epoch = epix,
+                                   kind = 'transitional',
+                                   interval = (trt0, trt1),
+                                   criterion_record = trans.record))
+    # the last nands might be redundant
+    if check_global and glob_found and not (np.isinf(glt0) and np.isinf(glt1)):
+        # glt1 can be infinite provided glt0 is finite
+        # glt0 can be -inf provided glt1 is finite
+        global_interval = Interval('glob', float, [glt0, glt1])
+    if check_trans and trans_found and not (np.isinf(trt0) and np.isinf(trt1)):
+        # trt1 can be infinite provided trt0 is finite
+        # trt0 can be -inf provided trt1 is finite
+        transition_interval = Interval('tran', float, [trt0, trt1])
+    return records, global_interval, transition_interval
+
+
+
+def find_regime_transition(criteria_list, min_tstart=-np.Inf,
+                           force_precond=False):
+    """Use force_precond (optional, default=False) to force any preconditions
+    to return True during test_criterion call.
+
+    This is useful when recalculating epochs for small segments
+    for which the preconditions are previously known to be OK but would not
+    be met on the small segments.
+    """
+
+    done = False
+    global_intervals = {}  # by criterion
+    transition_intervals = {} # by criterion
+    all_records = {}   # by criterion: records are just for user-readable audit trail
+    trans_earliest_t0_ixs = [None]*len(criteria_list)
+    trans_earliest_t0s = [min_tstart]*len(criteria_list)
+    glob_earliest_t0_ixs = [None]*len(criteria_list)
+    glob_earliest_t0s = [min_tstart]*len(criteria_list)
+    crit_ixs = range(len(criteria_list))
+    re_run = crit_ixs[:]  # initial copy
+    re_run_glob = []
+    re_run_trans = []
+    tstart_trans = tstart_glob = min_tstart
+
+    while not done:
+        # look at different sets of criteria in turn, e.g. based on Psis vs Omegas
+        for criterion_ix, (epochs, global_criteria, transition_criteria) in \
+                                                      enumerate(criteria_list):
+
+            if criterion_ix not in re_run:
+                continue
+
+            # for re-runs, restart at next epoch after previous interval found
+            #
+            if criterion_ix in re_run_trans:
+                try:
+                    tstart_trans = transition_intervals[criterion_ix][trans_earliest_t0_ixs[criterion_ix]][1]
+                except (IndexError, KeyError):
+                    tstart_trans = np.Inf
+            elif len(re_run_trans+re_run_glob)>0:
+                # not the first time through this for loop
+                tstart_trans = np.Inf
+
+            if criterion_ix in re_run_glob:
+                try:
+                    tstart_glob = global_intervals[criterion_ix][glob_earliest_t0_ixs[criterion_ix]][1]
+                except (IndexError, KeyError):
+                    tstart_glob = np.Inf
+            elif len(re_run_trans+re_run_glob)>0:
+                # not the first time through this for loop
+                tstart_glob = np.Inf
+
+            tstart = min(tstart_trans, tstart_glob)
+            if tstart >= epochs[-1].t1:
+                # no epochs left to search. matching failed
+                done = True
+                break
+
+            records, global_interval, transition_interval = \
+                test_criterion(epochs, global_criteria, transition_criteria, tstart,
+                               force_precond=force_precond)
+
+            if criterion_ix in all_records:
+                if records[-1] == all_records[criterion_ix][-1]:
+                    # identical new record, we'll be in an infinite loop
+                    done = True
                     break
-        if trans_found:
-            record[trt0] = (criterion_ix, epix, 'transitional', (trt0, trt1), transition_criteria.record)
-        if check_global and not (np.isinf(glt0) and np.isinf(glt1)):
-            # glt1 can be infinite provided glt0 is finite
-            # glt0 can be -inf provided glt1 is finite
-            global_intervals.append(Interval('glob', float, [glt0, glt1]))
-        if check_trans and not (np.isinf(trt0) and np.isinf(trt1)):
-            # trt1 can be infinite provided trt0 is finite
-            # trt0 can be -inf provided trt1 is finite
-            transition_intervals.append(Interval('tran', float, [trt0, trt1]))
-    tri0 = Interval('tran_result', float, [-np.Inf, np.Inf])
-    for i in transition_intervals:
-        #print "Trans", i[0], i[1]
-        try:
-            tri0 = tri0.intersect(i)
-        except:
-            if tri0 is None:
-                print "No intersection for transition intervals"
-                return np.Inf, record
+                else:
+                    all_records[criterion_ix].extend(records)
             else:
-                raise
-    if tri0 is None:
-        print "No intersection for transition intervals"
-        return np.Inf, record
-    gli0 = Interval('glob_result', float, [-np.Inf, np.Inf])
-    for i in global_intervals:
-        #print "Glob", i[0], i[1]
-        try:
-            gli0 = gli0.intersect(i)
-        except:
-            if gli0 is None:
-                print "No intersection for global intervals"
-                return np.Inf, record
+                all_records[criterion_ix] = records
+
+            if transition_interval is not None:
+                if criterion_ix in transition_intervals:
+                    transition_intervals[criterion_ix].append(transition_interval)
+                    # find max interval t0
+                    trans_earliest_t0_ixs[criterion_ix] = np.argmax([interval[0] for interval in \
+                                                                 transition_intervals[criterion_ix]])
+                    trans_earliest_t0s[criterion_ix] = transition_intervals[criterion_ix][trans_earliest_t0_ixs[criterion_ix]][0]
+                else:
+                    transition_intervals[criterion_ix] = [transition_interval]
+                    trans_earliest_t0s[criterion_ix] = transition_interval[0]
+                    trans_earliest_t0_ixs[criterion_ix] = 0
+
+
+            if global_interval is not None:
+                if criterion_ix in global_intervals:
+                    global_intervals[criterion_ix].append(global_interval)
+                    # find max interval t0
+                    glob_earliest_t0_ixs[criterion_ix] = np.argmax([interval[0] for interval in \
+                                                                 global_intervals[criterion_ix]])
+                    glob_earliest_t0s[criterion_ix] = global_intervals[criterion_ix][glob_earliest_t0_ixs[criterion_ix]][0]
+                else:
+                    global_intervals[criterion_ix] = [global_interval]
+                    glob_earliest_t0s[criterion_ix] = global_interval[0]
+                    glob_earliest_t0_ixs[criterion_ix] = 0
+
+        match_global = global_criteria is None
+        # check across all criteria to see if there's a common global interval
+        match_trans = transition_criteria is None
+        # check across all criteria to see if there's a common transition interval
+        done = match_trans and match_global
+        if done:
+            # nothing to do
+            continue
+
+        # find earliest possible match time for trans and global kinds
+        # i.e. the latest interval t0 across criteria for each kind
+
+        if match_trans:
+            re_run_trans = []
+            tri0 = Interval('tran_result', float, [-np.Inf, np.Inf])
+            for crit_ix in range(len(criteria_list)):
+                # for each criterion, find overlap of their intervals
+                try:
+                    tri0 = tri0.intersect(transition_intervals[crit_ix][trans_earliest_t0_ixs[crit_ix]])
+                except:
+                    # no elements, pass
+                    break
+        else:
+            trans_earliest_crit_ix = np.argmax(trans_earliest_t0s)
+            trans_earliest_t0 = trans_earliest_t0s[trans_earliest_crit_ix]  # may be Inf
+            if np.isfinite(trans_earliest_t0):
+                tri0 = Interval('tran_result', float, [-np.Inf, np.Inf])
+                for crit_ix in range(len(criteria_list)):
+                    # for each criterion, find overlap of their intervals
+                    try:
+                        tri0 = tri0.intersect(transition_intervals[crit_ix][trans_earliest_t0_ixs[crit_ix]])
+                    except:
+                        pass
+                        #if tri0 is None:
+                            #print "No intersection for transition intervals"
+                            #return np.Inf, record
+                        #else:
+                        #    raise
+                if tri0 is None:
+                    # for all criteria that returned earlier intervals, re-run to see if
+                    # they have later intervals that might match using min_t = earliest_t0
+                    re_run_trans = common.remain(crit_ixs, [trans_earliest_crit_ix])
+                else:
+                    match_trans = True
             else:
-                raise
-    if gli0 is None:
-        print "No intersection for global intervals"
-        return np.Inf, record
-    any_trans = len(transition_intervals) > 0
-    any_global = len(global_intervals) > 0
-    if any_trans:
-        if any_global:
+                # no match of common intervals
+                pass
+
+        if match_global:
+            re_run_glob = []
+            gli0 = Interval('glob_result', float, [-np.Inf, np.Inf])
+            for crit_ix in range(len(criteria_list)):
+                # for each criterion, find overlap of their intervals
+                try:
+                    gli0 = gli0.intersect(global_intervals[crit_ix][glob_earliest_t0_ixs[crit_ix]])
+                except:
+                    # no elements, pass
+                    pass
+        else:
+            glob_earliest_crit_ix = np.argmax(glob_earliest_t0s)
+            glob_earliest_t0 = glob_earliest_t0s[glob_earliest_crit_ix]  # may be Inf
+            if np.isfinite(glob_earliest_t0):
+                gli0 = Interval('glob_result', float, [-np.Inf, np.Inf])
+                for crit_ix in range(len(criteria_list)):
+                    # for each criterion, find overlap of their intervals
+                    try:
+                        gli0 = gli0.intersect(global_intervals[crit_ix][glob_earliest_t0_ixs[crit_ix]])
+                    except:
+                        raise
+                        #if gli0 is None:
+                            #print "No intersection for global intervals"
+                            #return np.Inf, record
+                        #else:
+                        #    raise
+                if gli0 is None:
+                    # for all criteria that returned earlier intervals, re-run to see if
+                    # they have later intervals that might match using min_t = earliest_t0
+                    re_run_glob = common.remain(crit_ixs, [glob_earliest_crit_ix])
+                else:
+                    match_global = True
+            else:
+                # no match of common intervals
+                pass
+
+        re_run = re_run_glob[:]
+        re_run.extend(utils.remain(re_run_trans, re_run_glob))
+
+        done = (match_trans and match_global) or re_run == []
+
+    # commented code below is redundant with the if statement lower down
+##    if done and not (match_trans or match_global):
+##        # if matching failed and break statement reached
+##        return np.Inf, all_records
+
+    if match_trans:
+        if match_global:
             if gli0[1] >= tri0[0]:
-                return tri0[0], record
+                return tri0[0], all_records
             else:
-                return gli0[1], record
+                return gli0[1], all_records
         else:
-            return tri0[0], record
+            return tri0[0], all_records
     else:
-        if any_global:
-            return gli0[1], record
+        if match_global:
+            return gli0[1], all_records
         else:
-            return np.Inf, record
+            return np.Inf, all_records
 
 
 
@@ -409,7 +612,7 @@ class epoch(object):
             uo_str = "(ord.)"
         else:
             uo_str = "(~ord.)"
-        str1 = "Epoch for %s at sigma %.5f %s: [%.5f, %.5f]" % \
+        str1 = "Epoch for %s at sigma %.4f %s: [%.4f, %.4f]" % \
              (self.focus_var, self.sigma, uo_str, self.t0, self.t1)
         if verboselevel == 0:
             return str1
@@ -602,7 +805,7 @@ class domscales(object):
         self.opts = check_opts(opts)
 
 
-    def calc_epochs(self, sigma, gamma, relative_ratios=False):
+    def calc_epochs(self, sigma, gamma, relative_ratios=False, ignore_singleton=True):
         """Calculate epochs without cycle checking"""
         assert sigma > 1, "sigma parameter must be > 1"
         assert gamma > 1, "gamma parameter must be > 1"
@@ -671,8 +874,14 @@ class domscales(object):
                 if old_actives == [] and self.num_pts > 1:
                     # first epoch: don't make an epoch object until it ends
                     all_modulatory.update(dict(zip(modulatory,enumerate(modulatory))))
-                elif i - ep_start == 1 and i < self.num_pts-1:
+                elif ignore_singleton and i - ep_start == 1 and i < self.num_pts-1:
                     # ignore epoch made up of single time point
+                    if common.intersect(modulatory, old_actives) != []:
+                        # clash -- cannot be in two places at once: a value was transitional
+                        # so put it in with the current point, assuming that this trend will
+                        # continue
+                        #raise ValueError("Reduce step size! Single time-point epochs are not allowed")
+                        old_actives = common.remain(old_actives, common.intersect(modulatory, old_actives))
                     all_modulatory.update(dict(zip(modulatory,enumerate(modulatory))))
                     ignore_change = True
                 else:
