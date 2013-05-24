@@ -376,7 +376,7 @@ class ContClass(Utility):
         thisplatform = platform.system()
         if thisplatform == 'Windows':
             self._dllext = ".pyd"
-        elif thisplatform in ['Linux', 'IRIX', 'Solaris', 'SunOS', 'Darwin']:
+        elif thisplatform in ['Linux', 'IRIX', 'Solaris', 'SunOS', 'Darwin', 'FreeBSD']:
             self._dllext = '.so'
         else:
             print "Shared library extension not tested on this platform."

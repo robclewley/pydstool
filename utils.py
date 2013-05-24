@@ -751,7 +751,7 @@ def distutil_destination():
     machinename = platform.machine()
     if osname == 'linux':
         destdir = 'src.'+osname+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
-    elif osname == 'darwin':
+    elif osname in ['darwin', 'freebsd']:
         osver = platform.mac_ver()[0].split('.')
         if int(scipy.__version__.split('.')[1]) > 5 and len(osver)>1 and osver != ['']:
             destdir = 'src.macosx-'+osver[0]+'.'+osver[1]+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
