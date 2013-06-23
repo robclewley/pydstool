@@ -476,8 +476,12 @@ class Generator(object):
     def _kw_process_varspecs(self, kw, fs_args):
         if 'varspecs' in kw:
             for varname, varspec in kw['varspecs'].items():
-                assert isinstance(varname, (str, QuantSpec, Quantity)), "Invalid type for Variable name: %s"%str(varname)
-                assert isinstance(varspec, (str, QuantSpec, Quantity)), "Invalid type for Variable %s's specification"%varname
+                if not isinstance(varname, (str, QuantSpec, Quantity)):
+                    print "Expected string, QuantSpec, or Quantity to name variable, got type %s" %(type(varname))
+                    raise PyDSTool_TypeError("Invalid type for Variable name: %s"%str(varname))
+                if not isinstance(varspec, (str, QuantSpec, Quantity)):
+                    print "Expected string, QuantSpec, or Quantity definition for %s, got type %s" %(varname, type(varspec))
+                    raise PyDSTool_TypeError("Invalid type for Variable %s's specification."%varname)
             self.foundKeys += 1
             fs_args['varspecs'] = \
                     self._FScompatibleNames(ensureStrArgDict(kw['varspecs']))
