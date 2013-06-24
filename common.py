@@ -285,7 +285,11 @@ class predicate(object):
         raise NotImplementedError
 
     def __repr__(self):
-        return self.name + '(' + self.subject + ')'
+        if self.subject is None:
+            s = '<no subject>'
+        else:
+            s = self.subject
+        return self.name + '(' + s + ')'
 
     __str__ = __repr__
 
