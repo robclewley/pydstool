@@ -912,6 +912,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                                  extra_link_args=['-w', '-m32'])],
 #                  library_dirs=radlibdirs,
                   libraries=[('radau5',{'sources': fortfilelist,
+                                        'extra_f77_compile_args': ['-w'],
                               'library_dirs': radlibdirs+['./']})])
         except:
             rout.stop()
