@@ -18,7 +18,7 @@ from parseUtils import symbolMapClass, mapNames
 ## Other imports
 from numpy import Inf, NaN, isfinite, array2string, r_, c_, \
     less, greater, linalg, shape, array, argsort, savetxt, \
-    take, zeros, transpose, resize, indices, concatenate, rank
+    take, zeros, transpose, resize, indices, concatenate, rank, isscalar
 
 from numpy import complex, complexfloating, int, integer, \
      float, floating, float64, complex128, int32
@@ -27,6 +27,7 @@ from numpy import any, all, alltrue, sometrue, ndarray
 
 import sys
 from copy import copy, deepcopy
+import warnings
 
 
 __all__ = ['Point', 'Pointset', 'isparameterized', 'pointsToPointset',
@@ -55,7 +56,31 @@ class VarCaller(object):
 
 
 # for internal use
-point_keys = ['coorddict', 'coordarray', 'coordtype', 'norm', 'labels']
+point_keys = ['coorddict', 'coordarray', 'coordnames', 'coordtype', 'norm', 'labels']
+
+
+def _cvt_type(t):
+    """Convert Python type to NumPy type"""
+    try:
+        return _num_equivtype[t]
+    except KeyError:
+        raise TypeError('Coordinate type %s not valid for Point' % str(t))
+
+
+def _check_type(value, ctype):
+    """Smart type checking for scalar values"""
+
+    if not isscalar(value):
+        raise ValueError('Type checking works only for scalar values')
+
+    if isinstance(value, _float_types):
+        assert compareNumTypes(ctype, _float_types), 'type mismatch'
+    elif isinstance(value, _int_types):
+        assert compareNumTypes(ctype, _real_types), 'type mismatch'
+    #elif isinstance(value, _complex_types):
+        #assert compareNumTypes(ctype, complex), 'type mismatch'
+    else:
+        raise TypeError("Must pass numeric type")
 
 
 class Point(object):
@@ -72,115 +97,101 @@ class Point(object):
         self._parameterized = False
         self.labels = {}
         if intersect(kw.keys(), point_keys) == []:
-            # creating Point from dictionary
             temp_kw = {}
             temp_kw['coorddict'] = copy(kw)
             kw = copy(temp_kw)
+
+        # Setting Point type
+        # By default creating 'float' Point.  To make 'int' Point explicitly
+        # set 'coordtype' argument or use 'int' array in 'coordarray' argument.
+        # Explicit type setting has higher priority
+        ctype = _num_equivtype[float]
+        if 'coordarray' in kw and isinstance(kw['coordarray'], ndarray):
+                ctype = _cvt_type(kw['coordarray'].dtype.type)
+        if 'coordtype' in kw:
+                ctype = _cvt_type(kw['coordtype'])
+
+        self.coordtype = ctype
+
+        # Preparing coord data (names and values)
+        coordnames = []
+        coordvalues = []
         if 'coorddict' in kw:
-            coorddict = {}
-            try:
-                ct = kw['coordtype']
-            except KeyError:
-                self.coordtype = float
-            else:
-                try:
-                    self.coordtype = _num_equivtype[ct]
-                except KeyError:
-                    raise TypeError('Coordinate type %s not valid for Point'%str(ct))
-            for c, v in kw['coorddict'].iteritems():
-                if not isinstance(c, str):
-                    c_key = repr(c)
+            vals = []
+            for n, v in kw['coorddict'].iteritems():
+                # Add coord name with type checking
+                coordnames.append(n if isinstance(n, str) else repr(n))
+
+                # Add coord value with type checking
+                ## Extract value from sequence if needed
+                if isinstance(v, (list, tuple, ndarray)):
+                    if len(v) == 0:
+                        raise ValueError('Values sequence must be nonempty')
+                    if len(v) > 1:
+                        warnings.warn(
+                            'Sequence value %s truncated to first element' % v,
+                            UserWarning,
+                            stacklevel=2
+                        )
+                    val = v[0]
                 else:
-                    c_key = c
-                if isinstance(v, list):
-                    coorddict[c_key] = array(v, self.coordtype)
-                elif isinstance(v, ndarray):
-                    if len(v) == 1:
-                        coorddict[c_key] = v[0]
-                    else:
-                        coorddict[c_key] = array(v)
-                    assert compareNumTypes(self.coordtype, coorddict[c_key].dtype.type), \
-                           'type mismatch'
-                elif isinstance(v, _float_types):
-                    assert compareNumTypes(self.coordtype, _float_types), \
-                           'type mismatch'
-                    coorddict[c_key] = array([v], self.coordtype)
-                elif isinstance(v, _int_types):
-                    assert compareNumTypes(self.coordtype, _real_types), \
-                           'type mismatch'
-                    coorddict[c_key] = array([v], self.coordtype)
-##                elif isinstance(v, _complex_types):
-##                    assert compareNumTypes(self.coordtype, complex), 'type mismatch'
-##                    coorddict[c_key] = array([v], self.coordtype)
-                else:
-                    raise TypeError("Must pass numeric type or sequence of "
-                                    "numeric types")
-            self.coordnames = coorddict.keys()
-            # only way to order dictionary keys for array is to sort
-            self.coordnames.sort()
-            self.dimension = len(self.coordnames)
-            datalist = []
-            for c in self.coordnames:
-                assert not isinstance(coorddict[c], (list, tuple)), 'type mismatch'
-                datalist.append(coorddict[c][0])
-            self.coordarray = array(datalist, self.coordtype)
-            r = rank(self.coordarray)
-            if r == 1:
-                pass
-            elif r == 0:
-                self.coordarray = self.coordarray.ravel()
-            else:
-                raise ValueError("Invalid rank for coordinate array: %i"%r)
-            assert self.dimension == self.coordarray.shape[0], "Invalid coord array"
+                    val = v
+                _check_type(val, ctype)
+                vals.append(val)
+
+            coordvalues = array(vals, ctype)
         elif 'coordarray' in kw:
-            # 'coordtype' key is optional unless 'array' is actually a list,
-            # when this key specifies the internal Python to use
-            if isinstance(kw['coordarray'], ndarray):
-                # use 'array' constructor to ensure that copy is made of array
-                # in case either original or new array is independently changed.
-                array_temp = array(kw['coordarray'])
-                try:
-                    self.coordtype = _num_equivtype[array_temp.dtype.type]
-                except KeyError:
-                    raise TypeError('Coordinate type %s not valid for Point'%str(ct))
-            elif isinstance(kw['coordarray'], list):
-                try:
-                    self.coordtype = _num_equivtype[kw['coordtype']]
-                except KeyError:
-                    raise TypeError('Coordinate type %s not valid for Point'%str(ct))
-                array_temp = array(kw['coordarray'], self.coordtype)
+            vals = kw['coordarray']
+            if rank(vals) > 1:
+                raise ValueError("Invalid rank for coordinate array: %i" % rank(vals))
+            if len(vals) == 0:
+                raise ValueError('Values sequence must be nonempty')
+
+            if isinstance(vals, ndarray):
+                _check_type(vals[0], ctype)
+                coordvalues = vals.astype(ctype)
+            elif isinstance(vals, (list, tuple)):
+                for v in vals:
+                    _check_type(v, ctype)
+                coordvalues = array(vals, ctype)
             else:
-                raise TypeError('Coordinate type %s not valid for Point'%str(type(kw['coordarray'])))
-            r = rank(array_temp)
-            if r == 1:
-                self.coordarray = array_temp
-            elif r == 0:
-                self.coordarray = array_temp.ravel()
-            else:
-                raise ValueError("Invalid rank for coordinate array: %i"%r)
-            self.dimension = self.coordarray.shape[0]
+                raise TypeError('Coordinate type %s not valid for Point' % str(type(vals)))
+
             if 'coordnames' in kw:
                 if isinstance(kw['coordnames'], str):
-                    coordnames = [kw['coordnames']]
+                    coordnames = list(kw['coordnames'])
                 else:
                     coordnames = kw['coordnames']
             else:
-                coordnames = [str(cix) for cix in range(self.dimension)]
-            if len(coordnames) != self.dimension:
-                print "Point initialization error:"
-                print "Found coord names: ", coordnames, \
-                             "(dimension = %s)"%len(coordnames)
-                print "vs. data dimension =", self.dimension
-                raise ValueError("Mismatch between number of coordnames and "
-                                 "dimension of data")
-            cs = array(coordnames)
-            order = cs.argsort()
-            self.coordnames = cs[order].tolist()
-            self.coordarray = self.coordarray[order]
+                coordnames = [str(cix) for cix in range(coordvalues.shape[0])]
         else:
             raise ValueError("Missing coord info in keywords")
-        assert isUniqueSeq(self.coordnames), 'Coordinate names must be unique'
+
+        # Sanity checks for prepared data
+        assert isUniqueSeq(coordnames), 'Coordinate names must be unique'
+        if len(coordnames) != coordvalues.shape[0]:
+            msg = "Point initialization error:\n" \
+                  "Found coord names: {} (dimension = {}) " \
+                  "vs. data dimension = {}".format(
+                      coordnames, len(coordnames), coordvalues.shape[0]
+                  )
+            print(msg)
+            raise ValueError("Mismatch between number of coordnames and "
+                             "dimension of data")
+        r = rank(coordvalues)
+        if r == 1:
+            self.coordarray = coordvalues
+        elif r == 0:
+            self.coordarray = coordvalues.ravel()
+
+        # Sorting
+        cnames = array(coordnames)
+        order = cnames.argsort()
+        self.coordnames = cnames[order].tolist()
+        self.coordarray = self.coordarray[order]
+        self.dimension = len(self.coordnames)
         self.makeIxMaps()
+
         if 'norm' in kw:
             if kw['norm'] == 0:
                 raise ValueError("Norm order for point cannot be zero")
@@ -190,7 +201,6 @@ class Point(object):
         # extra information (for special bifurcation point data)
         if 'labels' in kw:
             self.addlabel(kw['labels'])
-
 
     def mapNames(self, themap):
         """Map coordinate names and label(s), using a symbol
