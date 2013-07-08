@@ -1264,6 +1264,7 @@ def makeZeroCrossEvent(expr, dircode, argDict, varnames=[], parnames=[],
         start_code = dummyfuncspec._specStrParse(['inserts'],
                                {'inserts': dummyfuncspec.codeinserts['start']}, '',
                                 noreturndefs=True, ignoreothers=True,
+                                forexternal=True,
                                 doing_inserts=True).strip() + '\n\t'
     else:
         start_code = ''
@@ -1275,10 +1276,11 @@ def makeZeroCrossEvent(expr, dircode, argDict, varnames=[], parnames=[],
                                             forexternal=True)
     # alter par and var name dictionaries used by Events.py
     parsedstr = parsedstr.replace("parsinps[","p[").replace("x[","v[")
+    start_code = start_code.replace("parsinps[","p[").replace("x[","v[")
     if 'parsinps' in parsedstr:
         # then there are aux fns that use it
-        funcstr = start_code + "parsinps=sortedDictValues(p,%s)+sortedDictValues(p,%s)"%(str(parnames),str(inputnames)) +\
-                    "\n\treturn "+parsedstr+"\n"
+        funcstr = "parsinps=sortedDictValues(p,%s)+sortedDictValues(p,%s)"%(str(parnames),str(inputnames)) + \
+                    "\n\t" + start_code + "return "+parsedstr+"\n"
     else:
         funcstr = start_code + "return "+parsedstr+"\n"
     if reuseterms != {}:
