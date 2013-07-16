@@ -4,7 +4,7 @@ from __future__ import division
 from allimports import *
 from PyDSTool.utils import *
 from PyDSTool.common import *
-from PyDSTool.Symbolic import ensureStrArgDict, Quantity, QuantSpec
+from PyDSTool.Symbolic import ensureStrArgDict, Quantity, QuantSpec, mathNameMap
 from PyDSTool.Trajectory import Trajectory
 from PyDSTool.parseUtils import symbolMapClass, readArgs
 from PyDSTool.Variable import Variable, iscontinuous
@@ -29,6 +29,8 @@ __all__ = ['ctsGen', 'discGen', 'theGenSpecHelper', 'Generator',
            'genDB', 'auxfn_container', '_pollInputs']
 
 # -----------------------------------------------------------------------------
+
+smap_mathnames = symbolMapClass(mathNameMap)
 
 class genDBClass(object):
     """This class keeps a record of which non-Python Generators have been
@@ -264,14 +266,15 @@ class Generator(object):
             self.foundKeys += 1
         else:
             self._modeltag = None
+        # the default map allows title-cased quantity objects like
+        # Pow, Exp, etc. to be used in FuncSpec defs, but no need
+        # to keep an inverse map of these below
+        self._FScompatibleNames = smap_mathnames
         if 'FScompatibleNames' in kw:
             sm = kw['FScompatibleNames']
-            if sm is None:
-                sm = symbolMapClass()
-            self._FScompatibleNames = sm
+            if sm is not None:
+                self._FScompatibleNames.update(sm)
             self.foundKeys += 1
-        else:
-            self._FScompatibleNames = symbolMapClass()
         if 'FScompatibleNamesInv' in kw:
             sm = kw['FScompatibleNamesInv']
             if sm is None:
