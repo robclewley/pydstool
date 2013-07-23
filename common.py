@@ -2359,7 +2359,7 @@ class KroghInterpolator(object):
             while s<=k and xi[k-s]==xi[k]:
                 s += 1
             s -= 1
-            Vk[0] = yi[k]/float(spy.factorial(s))
+            Vk[0] = yi[k]/float(spy.misc.factorial(s))
             for i in xrange(k-s):
                 assert xi[i]!=xi[k]
                 if s==0:
@@ -2473,7 +2473,7 @@ class KroghInterpolator(object):
             for i in xrange(1,n-k+1):
                 pi[i] = w[k+i-1]*pi[i-1]+pi[i]
                 cn[k] = cn[k]+pi[i,:,npy.newaxis]*cn[k+i]
-            cn[k]*=factorial(k)
+            cn[k]*=spy.misc.factorial(k)
 
         cn[n,...] = 0
         if not self.vector_valued:
