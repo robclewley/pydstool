@@ -11,7 +11,7 @@
 
 /*  There are not needed anymore, but I am going to keep
     them around for a bit until I am sure that everything
-    works without the mutexs. 
+    works without the mutexs.
     The homecont stuff doesn NOT currently worked multithreaded
     since it has several global variables that need to be
     gotten rid of.
@@ -25,17 +25,17 @@ pthread_mutex_t mutex_for_funi = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
 void *setubv_make_aa_bb_cc(void * arg)
-{  
+{
   /* System generated locals */
   integer dbc_dim1, dicd_dim1, dfdu_dim1, dfdp_dim1;
-  
+
   /* Local variables */
   integer i, j, k, l, m;
   integer k1, l1;
   integer i1,j1;
 
   integer ib, ic, jj;
-  doublereal dt;  
+  doublereal dt;
   integer ib1, ic1;
   integer jp1;
   doublereal ddt;
@@ -49,7 +49,7 @@ void *setubv_make_aa_bb_cc(void * arg)
   doublereal *f;
   doublereal *u, **wploc;
   doublereal *dbc, *fbc, *uic, *uio, *prm, *uid, *uip, *ubc0, *ubc1;
-  
+
   doublereal **ups = larg->ups;
   doublereal **upoldp = larg->upoldp;
   doublereal **udotps = larg->udotps;
@@ -74,7 +74,7 @@ void *setubv_make_aa_bb_cc(void * arg)
   }
   else
       ficd = dicd = NULL;
-  
+
   dfdp = (doublereal *)MALLOC(sizeof(doublereal)*(larg->ndim)*NPARX);
   dfdu = (doublereal *)MALLOC(sizeof(doublereal)*(larg->ndim)*(larg->ndim));
   uold = (doublereal *)MALLOC(sizeof(doublereal)*(larg->ndim));
@@ -97,7 +97,7 @@ void *setubv_make_aa_bb_cc(void * arg)
   dfdp_dim1 = larg->ndim;
 
   /* Generate AA and BB: */
-  
+
   /*      Partition the mesh intervals */
   /*jj will be replaced with loop_start and loop_end*/
   for (jj = larg->loop_start; jj < larg->loop_end; ++jj) {
@@ -129,24 +129,24 @@ void *setubv_make_aa_bb_cc(void * arg)
       for (i = 0; i < NPARX; ++i) {
 	prm[i] = larg->par[i];
       }
-      /*  
+      /*
 	  Ok this is a little wierd, so hold tight.  This function
 	  is actually a pointer to a wrapper function, which eventually
 	  calls the user defined func_.  Which wrapper is used
 	  depends on what kind of problem it is.  The need for
 	  the mutex is because some of these wrappers use a common
-	  block for temporary storage 
+	  block for temporary storage
 	  NOTE!!!:  The icni and bcni wrappers do the same thing,
 	  so if they ever get parallelized they need to be
 	  checked as well.
       */
-#ifdef PTHREADS_USE_FUNI_MUTEX      
+#ifdef PTHREADS_USE_FUNI_MUTEX
 #ifdef PTHREADS
       pthread_mutex_lock(&mutex_for_funi);
 #endif
 #endif
       (*(larg->funi))(larg->iap, larg->rap, larg->ndim, u, uold, larg->icp, prm, 2, f, dfdu, dfdp);
-#ifdef PTHREADS_USE_FUNI_MUTEX      
+#ifdef PTHREADS_USE_FUNI_MUTEX
 #ifdef PTHREADS
       pthread_mutex_unlock(&mutex_for_funi);
 #endif
@@ -169,26 +169,26 @@ void *setubv_make_aa_bb_cc(void * arg)
 	}
       }
     }
-  
+
   }
 
   /*     Generate CC : */
-  
+
   /*     Boundary conditions : */
   if (larg->nbc > 0) {
     for (i = 0; i < larg->ndim; ++i) {
       ubc0[i] = ups[0][i];
       ubc1[i] = ups[larg->na][i];
     }
-    
-#ifdef PTHREADS_USE_BCNI_MUTEX      
+
+#ifdef PTHREADS_USE_BCNI_MUTEX
 #ifdef PTHREADS
     pthread_mutex_lock(&mutex_for_funi);
 #endif
 #endif
-    (*(larg->bcni))(larg->iap, larg->rap, larg->ndim, larg->par, 
+    (*(larg->bcni))(larg->iap, larg->rap, larg->ndim, larg->par,
 	    larg->icp, larg->nbc, ubc0, ubc1, fbc, 2, dbc);
-#ifdef PTHREADS_USE_BCNI_MUTEX      
+#ifdef PTHREADS_USE_BCNI_MUTEX
 #ifdef PTHREADS
     pthread_mutex_unlock(&mutex_for_funi);
 #endif
@@ -202,13 +202,13 @@ void *setubv_make_aa_bb_cc(void * arg)
 	  cc[0][i][k] = ARRAY2D(dbc, i, k);
 	}
 	if(larg->loop_offset + larg->loop_end == larg->na) {
-	  cc[larg->na-1 - larg->loop_offset][i][larg->nra + k] = 
+	  cc[larg->na-1 - larg->loop_offset][i][larg->nra + k] =
 	    ARRAY2D(dbc ,i , larg->ndim + k);
 	}
       }
     }
   }
-  
+
   /*     Integral constraints : */
   if (larg->nint > 0) {
     for (jj = larg->loop_start; jj < larg->loop_end; ++jj) {
@@ -229,25 +229,25 @@ void *setubv_make_aa_bb_cc(void * arg)
 	  uid[i] = udotps[j1 + larg->loop_offset][i1];
 	  uip[i] = upoldp[j1 + larg->loop_offset][i1];
 	}
-	
-#ifdef PTHREADS_USE_ICNI_MUTEX      
+
+#ifdef PTHREADS_USE_ICNI_MUTEX
 #ifdef PTHREADS
 	pthread_mutex_lock(&mutex_for_funi);
 #endif
 #endif
-	(*(larg->icni))(larg->iap, larg->rap, larg->ndim, larg->par, 
-		larg->icp, larg->nint, 
+	(*(larg->icni))(larg->iap, larg->rap, larg->ndim, larg->par,
+		larg->icp, larg->nint,
 		uic, uio, uid, uip, ficd, 2, dicd);
-#ifdef PTHREADS_USE_ICNI_MUTEX      
+#ifdef PTHREADS_USE_ICNI_MUTEX
 #ifdef PTHREADS
 	pthread_mutex_unlock(&mutex_for_funi);
 #endif
 #endif
-	
+
 	for (m = 0; m < larg->nint; ++m) {
 	  for (i = 0; i < larg->ndim; ++i) {
 	    k1 = k * larg->ndim + i;
-	    cc[jj][larg->nbc + m][k1] = 
+	    cc[jj][larg->nbc + m][k1] =
 	      larg->dtm[j] * larg->wi[k ] * ARRAY2D(dicd, m, i);
 	  }
 	}
@@ -266,8 +266,8 @@ void *setubv_make_aa_bb_cc(void * arg)
       for (k = 0; k < larg->ncol; ++k) {
 	k1 = k * larg->ndim + i;
 #ifndef MANIFOLD
-	cc[jj][larg->nrc - 1][k1] = 
-	  larg->dtm[jj] * larg->thu[i] * larg->wi[k] * 
+	cc[jj][larg->nrc - 1][k1] =
+	  larg->dtm[jj] * larg->thu[i] * larg->wi[k] *
 	  udotps[jj + larg->loop_offset][k1];
 #else
         cc[jj][larg->nrc - 1][k1] =
@@ -276,8 +276,8 @@ void *setubv_make_aa_bb_cc(void * arg)
 #endif
       }
 #ifndef MANIFOLD
-      cc[jj][larg->nrc -1][larg->nra + i] = 
-	larg->dtm[jj] * larg->thu[i] * larg->wi[larg->ncol] * 
+      cc[jj][larg->nrc -1][larg->nra + i] =
+	larg->dtm[jj] * larg->thu[i] * larg->wi[larg->ncol] *
 	udotps[jj + 1 + larg->loop_offset][i];
 #else
       cc[jj][larg->nrc -1][larg->nra + i] =
@@ -295,7 +295,7 @@ void *setubv_make_aa_bb_cc(void * arg)
 #endif
 
   setubv_make_fa(*larg);
-  
+
 #ifdef USAGE
   usage_end(fa_usage,"setubv make fa");
 #endif
@@ -327,7 +327,7 @@ void *setubv_make_aa_bb_cc(void * arg)
 }
 
 #ifdef PTHREADS
-int 
+int
 setubv_threads_wrapper(setubv_parallel_arglist data)
 {
   setubv_parallel_arglist *send_data;
@@ -361,7 +361,7 @@ setubv_threads_wrapper(setubv_parallel_arglist data)
   for(i=0;i<global_num_procs;i++) {
     retcode = pthread_join(th[i], &retval);
     if (retcode != 0) fprintf(stderr, "join %d failed %d\n", i, retcode);
-  }  
+  }
   FREE(send_data);
   FREE(th);
 #ifdef USAGE
@@ -374,7 +374,7 @@ setubv_threads_wrapper(setubv_parallel_arglist data)
 #endif
 
 #ifdef MPI
-int 
+int
 setubv_mpi_wrapper(setubv_parallel_arglist data)
 {
   integer loop_start,loop_end;
@@ -404,9 +404,9 @@ setubv_mpi_wrapper(setubv_parallel_arglist data)
   dtm_counts[0] = 0;
   dtm_displacements[0] = 0;
 
-  
+
   for(i=1;i<comm_size;i++){
-    
+
     /*Send message to get worker into setubv mode*/
     {
       int message=AUTO_MPI_SETUBV_MESSAGE;
@@ -445,7 +445,7 @@ setubv_mpi_wrapper(setubv_parallel_arglist data)
     params[9]=data.nca;
     params[10]=data.ndxloc;
     MPI_Bcast(params     ,11,MPI_LONG,0,MPI_COMM_WORLD);
-  }    
+  }
 
   {
     int position=0;
@@ -490,7 +490,7 @@ setubv_mpi_wrapper(setubv_parallel_arglist data)
     MPI_Pack(data.thu    ,(data.ndim)*8,MPI_DOUBLE,buffer,bufsize,&position,MPI_COMM_WORLD);
     MPI_Pack(data.thl    ,NPARX,MPI_DOUBLE,buffer,bufsize,&position,MPI_COMM_WORLD);
     MPI_Pack(data.rldot  ,NPARX,MPI_DOUBLE,buffer,bufsize,&position,MPI_COMM_WORLD);
-    
+
     MPI_Bcast(buffer     ,position,MPI_PACKED,0,MPI_COMM_WORLD);
   }
 
@@ -503,7 +503,7 @@ setubv_mpi_wrapper(setubv_parallel_arglist data)
 }
 #endif
 
-int 
+int
 setubv_default_wrapper(setubv_parallel_arglist data)
 {
   setubv_make_aa_bb_cc((void *)&data);
@@ -511,18 +511,18 @@ setubv_default_wrapper(setubv_parallel_arglist data)
 }
 
 #ifndef MANIFOLD
-int 
-setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer nint, integer ncb, integer nrc, integer nra, integer nca, 
-       FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par, integer *icp, 
-       doublereal rds, doublereal ***aa, doublereal ***bb, doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal *rlcur, 
-       doublereal *rlold, doublereal *rldot, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **dups, 
+int
+setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer nint, integer ncb, integer nrc, integer nra, integer nca,
+       FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par, integer *icp,
+       doublereal rds, doublereal ***aa, doublereal ***bb, doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal *rlcur,
+       doublereal *rlold, doublereal *rldot, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **dups,
        doublereal *dtm, doublereal *thl, doublereal *thu, doublereal **p0, doublereal **p1)
 #else
-int 
-setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer nint, integer nalc, integer ncb, integer nrc, integer nra, integer nca, 
-       FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par, integer *icp, 
-       doublereal *rds, doublereal ***aa, doublereal ***bb, doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal *rlcur, 
-       doublereal *rlold, doublereal *rldot, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **dups, 
+int
+setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer nint, integer nalc, integer ncb, integer nrc, integer nra, integer nca,
+       FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par, integer *icp,
+       doublereal *rds, doublereal ***aa, doublereal ***bb, doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal *rlcur,
+       doublereal *rlold, doublereal *rldot, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **dups,
        doublereal *dtm, doublereal *thl, doublereal *thu, doublereal **p0, doublereal **p1)
 #endif
 {
@@ -530,7 +530,7 @@ setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer
   integer i, j, k;
 
   doublereal *wi, **wp, **wt;
-  
+
 #ifdef USAGE
   struct rusage *initialization_usage,*fc_usage,*parallel_overhead_usage;
   usage_start(&initialization_usage);
@@ -541,7 +541,7 @@ setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer
 
   wint(ncol + 1, wi);
   genwts(ncol, ncol + 1, wt, wp);
-  
+
   /* Initialize to zero. */
   for (i = 0; i < nrc; ++i) {
     fc[i] = 0.;
@@ -554,9 +554,9 @@ setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer
   for (i = 0; i < ncb; ++i) {
     par[icp[i]] = rlcur[i];
   }
-  
+
   /*  NA is the local node's mesh interval number. */
-  
+
   for (i = 0; i < na; ++i) {
     for (j = 0; j < nra; ++j) {
       for (k = 0; k < nca; ++k) {
@@ -578,7 +578,7 @@ setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer
   /*     ** Time evolution computations (parabolic systems) */
   if (ips == 14 || ips == 16) {
     rap->tivp = rlold[0];
-  } 
+  }
 #ifdef USAGE
   usage_end(initialization_usage,"setubv initialization");
 #endif
@@ -586,19 +586,19 @@ setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer
   {
     setubv_parallel_arglist arglist;
 #ifndef MANIFOLD
-    setubv_parallel_arglist_constructor(ndim, ips, na, ncol, nbc, nint, ncb, 
-					nrc, nra, nca, funi, icni, ndxloc, iap, rap, 
-					par, icp, aa, bb, cc, dd, fa, fc, ups, 
-					uoldps, udotps, upoldp, dtm, wp, wt, wi, 
+    setubv_parallel_arglist_constructor(ndim, ips, na, ncol, nbc, nint, ncb,
+					nrc, nra, nca, funi, icni, ndxloc, iap, rap,
+					par, icp, aa, bb, cc, dd, fa, fc, ups,
+					uoldps, udotps, upoldp, dtm, wp, wt, wi,
 					thu, thl, rldot, bcni, &arglist);
 #else
-    setubv_parallel_arglist_constructor(ndim, ips, na, ncol, nbc, nint, nalc, ncb, 
-					nrc, nra, nca, funi, icni, ndxloc, iap, rap, 
-					par, icp, aa, bb, cc, dd, fa, fc, ups, 
-					uoldps, udotps, upoldp, dtm, wp, wt, wi, 
+    setubv_parallel_arglist_constructor(ndim, ips, na, ncol, nbc, nint, nalc, ncb,
+					nrc, nra, nca, funi, icni, ndxloc, iap, rap,
+					par, icp, aa, bb, cc, dd, fa, fc, ups,
+					uoldps, udotps, upoldp, dtm, wp, wt, wi,
 					thu, thl, rldot, bcni, &arglist);
 #endif
-  
+
     switch(global_setubv_type) {
 
 #ifdef PTHREADS
@@ -628,7 +628,7 @@ setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer
 #endif
 
   setubv_make_fa(arglist);
-  
+
 #ifdef USAGE
   usage_end(fa_usage,"setubv make fa");
 #endif
@@ -666,11 +666,11 @@ void setubv_make_fa(setubv_parallel_arglist larg) {
   doublereal **wp = larg.wp;
 
   doublereal **wt = larg.wt;
-  
+
   doublereal **fa = larg.fa;
-  
+
   doublereal **wploc= DMATRIX(larg.ncol+1, larg.ncol);
-  
+
   doublereal *dfdp = (doublereal *)MALLOC(sizeof(doublereal)*(larg.ndim)*NPARX);
   doublereal *dfdu = (doublereal *)MALLOC(sizeof(doublereal)*(larg.ndim)*(larg.ndim));
   doublereal *u    = (doublereal *)MALLOC(sizeof(doublereal)*(larg.ndim));
@@ -702,13 +702,13 @@ void setubv_make_fa(setubv_parallel_arglist larg) {
       for (i = 0; i < NPARX; ++i) {
 	prm[i] = larg.par[i];
       }
-#ifdef PTHREADS_USE_FUNI_MUTEX      
+#ifdef PTHREADS_USE_FUNI_MUTEX
 #ifdef PTHREADS
       pthread_mutex_lock(&mutex_for_funi);
 #endif
 #endif
       (*(larg.funi))(larg.iap, larg.rap, larg.ndim, u, uold, larg.icp, prm, 2, f, dfdu, dfdp);
-#ifdef PTHREADS_USE_FUNI_MUTEX      
+#ifdef PTHREADS_USE_FUNI_MUTEX
 #ifdef PTHREADS
       pthread_mutex_unlock(&mutex_for_funi);
 #endif
@@ -723,7 +723,7 @@ void setubv_make_fa(setubv_parallel_arglist larg) {
 	}
       }
     }
-  
+
   }
   FREE_DMATRIX(wploc);
   FREE(dfdp);
@@ -732,15 +732,15 @@ void setubv_make_fa(setubv_parallel_arglist larg) {
   FREE(uold);
   FREE(f);
   FREE(prm);
-  
+
 }
 
 
 #ifndef MANIFOLD
-void setubv_make_fc_dd(setubv_parallel_arglist larg, doublereal **dups, doublereal *rlcur, 
+void setubv_make_fc_dd(setubv_parallel_arglist larg, doublereal **dups, doublereal *rlcur,
 	     doublereal *rlold, doublereal rds) {
 #else
-void setubv_make_fc_dd(setubv_parallel_arglist larg, doublereal **dups, doublereal *rlcur, 
+void setubv_make_fc_dd(setubv_parallel_arglist larg, doublereal **dups, doublereal *rlcur,
 	     doublereal *rlold, doublereal *rds) {
 #endif
   integer i,j,jj,jp1,k,i1,m,j1;
@@ -751,11 +751,11 @@ void setubv_make_fc_dd(setubv_parallel_arglist larg, doublereal **dups, doublere
   doublereal **ups = larg.ups;
 
   doublereal **uoldps = larg.uoldps;
-  
+
   doublereal **udotps = larg.udotps;
-  
+
   doublereal **upoldp = larg.upoldp;
-  
+
   integer dbc_dim1 = larg.nbc;
   doublereal *dbc  = (doublereal *)MALLOC(sizeof(doublereal)*(larg.nbc)*(2*larg.ndim + NPARX));
   doublereal *fbc  = (doublereal *)MALLOC(sizeof(doublereal)*(larg.nbc));
@@ -764,7 +764,7 @@ void setubv_make_fc_dd(setubv_parallel_arglist larg, doublereal **dups, doublere
   integer dicd_dim1 = larg.nint;
   doublereal *dicd = NULL;
   doublereal *ficd = NULL;
-  
+
   doublereal *uic  = (doublereal *)MALLOC(sizeof(doublereal)*(larg.ndim));
   doublereal *uio  = (doublereal *)MALLOC(sizeof(doublereal)*(larg.ndim));
   doublereal *uid  = (doublereal *)MALLOC(sizeof(doublereal)*(larg.ndim));
@@ -778,20 +778,20 @@ void setubv_make_fc_dd(setubv_parallel_arglist larg, doublereal **dups, doublere
        dicd = (doublereal *)MALLOC(sizeof(doublereal)*(larg.nint)*(larg.ndim + NPARX));
        ficd = (doublereal *)MALLOC(sizeof(doublereal)*(larg.nint));
   }
-  
+
   /* Boundary condition part of FC */
   if (larg.nbc > 0) {
     for (i = 0; i < larg.ndim; ++i) {
       ubc0[i] = ups[0][i];
       ubc1[i] = ups[larg.na][i];
     }
-    
-    (*(larg.bcni))(larg.iap, larg.rap, larg.ndim, larg.par, 
+
+    (*(larg.bcni))(larg.iap, larg.rap, larg.ndim, larg.par,
 		   larg.icp, larg.nbc, ubc0, ubc1, fbc, 2, dbc);
     for (i = 0; i < larg.nbc; ++i) {
       larg.fc[i] = -fbc[i];
       for (k = 0; k < larg.ncb; ++k) {
-	dd[i][k] = 
+	dd[i][k] =
 	  ARRAY2D(dbc, i, (larg.ndim *2) + larg.icp[k]);
       }
     }
@@ -823,15 +823,15 @@ void setubv_make_fc_dd(setubv_parallel_arglist larg, doublereal **dups, doublere
 	  uid[i] = udotps[j1][i1];
 	  uip[i] = upoldp[j1][i1];
 	}
-	
-	(*(larg.icni))(larg.iap, larg.rap, larg.ndim, larg.par, 
-		larg.icp, larg.nint, 
+
+	(*(larg.icni))(larg.iap, larg.rap, larg.ndim, larg.par,
+		larg.icp, larg.nint,
 		uic, uio, uid, uip, ficd, 2, dicd);
-	
+
 	for (m = 0; m < larg.nint; ++m) {
 	  larg.fc[larg.nbc + m] -= larg.dtm[j] * larg.wi[k] * ficd[m];
 	  for (i = 0; i < larg.ncb; ++i) {
-	    dd[larg.nbc + m][i] += 
+	    dd[larg.nbc + m][i] +=
 	      larg.dtm[j] * larg.wi[k] * ARRAY2D(dicd, m, larg.ndim + larg.icp[i]);
 	  }
 	}
@@ -887,24 +887,24 @@ void setubv_parallel_arglist_copy(setubv_parallel_arglist *output,
 
 /* Fill in a setubv_parallel_arglist for the individual variables */
 #ifndef MANIFOLD
-void setubv_parallel_arglist_constructor(integer ndim, integer ips, integer na, integer ncol, 
-					 integer nbc, integer nint, integer ncb, integer nrc, integer nra, integer nca, 
-					 FUNI_TYPE((*funi)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par, 
-					 integer *icp, doublereal ***aa, doublereal ***bb, 
-					 doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal **ups, 
-					 doublereal **uoldps, doublereal **udotps, 
-					 doublereal **upoldp, doublereal *dtm, 
+void setubv_parallel_arglist_constructor(integer ndim, integer ips, integer na, integer ncol,
+					 integer nbc, integer nint, integer ncb, integer nrc, integer nra, integer nca,
+					 FUNI_TYPE((*funi)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par,
+					 integer *icp, doublereal ***aa, doublereal ***bb,
+					 doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal **ups,
+					 doublereal **uoldps, doublereal **udotps,
+					 doublereal **upoldp, doublereal *dtm,
 					 doublereal **wp, doublereal **wt, doublereal *wi,
 					 doublereal *thu, doublereal *thl,
 					 doublereal *rldot, BCNI_TYPE((*bcni)), setubv_parallel_arglist *data) {
 #else
-void setubv_parallel_arglist_constructor(integer ndim, integer ips, integer na, integer ncol, 
-					 integer nbc, integer nint, integer nalc, integer ncb, integer nrc, integer nra, integer nca, 
-					 FUNI_TYPE((*funi)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par, 
-					 integer *icp, doublereal ***aa, doublereal ***bb, 
-					 doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal **ups, 
-					 doublereal **uoldps, doublereal **udotps, 
-					 doublereal **upoldp, doublereal *dtm, 
+void setubv_parallel_arglist_constructor(integer ndim, integer ips, integer na, integer ncol,
+					 integer nbc, integer nint, integer nalc, integer ncb, integer nrc, integer nra, integer nca,
+					 FUNI_TYPE((*funi)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par,
+					 integer *icp, doublereal ***aa, doublereal ***bb,
+					 doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal **ups,
+					 doublereal **uoldps, doublereal **udotps,
+					 doublereal **upoldp, doublereal *dtm,
 					 doublereal **wp, doublereal **wt, doublereal *wi,
 					 doublereal *thu, doublereal *thl,
 					 doublereal *rldot, BCNI_TYPE((*bcni)), setubv_parallel_arglist *data) {
@@ -950,7 +950,7 @@ void setubv_parallel_arglist_constructor(integer ndim, integer ips, integer na, 
   data->thl    = thl;
   data->rldot  = rldot;
   data->bcni   = bcni;
-}  
+}
 
 
 

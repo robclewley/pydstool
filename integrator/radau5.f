@@ -16,22 +16,22 @@ C     CF. SECTION IV.8
 C
 C     AUTHORS: E. HAIRER AND G. WANNER
 C              UNIVERSITE DE GENEVE, DEPT. DE MATHEMATIQUES
-C              CH-1211 GENEVE 24, SWITZERLAND 
+C              CH-1211 GENEVE 24, SWITZERLAND
 C              E-MAIL:  Ernst.Hairer@math.unige.ch
 C                       Gerhard.Wanner@math.unige.ch
-C     
+C
 C     THIS CODE IS PART OF THE BOOK:
 C         E. HAIRER AND G. WANNER, SOLVING ORDINARY DIFFERENTIAL
 C         EQUATIONS II. STIFF AND DIFFERENTIAL-ALGEBRAIC PROBLEMS.
 C         SPRINGER SERIES IN COMPUTATIONAL MATHEMATICS 14,
 C         SPRINGER-VERLAG 1991, SECOND EDITION 1996.
-C      
+C
 C     VERSION OF JULY 9, 1996
 C        (small correction April 14, 2000)
 C
-C     INPUT PARAMETERS  
-C     ----------------  
-C     N           DIMENSION OF THE SYSTEM 
+C     INPUT PARAMETERS
+C     ----------------
+C     N           DIMENSION OF THE SYSTEM
 C
 C     FCN         NAME (EXTERNAL) OF SUBROUTINE COMPUTING THE
 C                 VALUE OF F(X,Y):
@@ -47,7 +47,7 @@ C
 C     XEND        FINAL X-VALUE (XEND-X MAY BE POSITIVE OR NEGATIVE)
 C
 C     H           INITIAL STEP SIZE GUESS;
-C                 FOR STIFF EQUATIONS WITH INITIAL TRANSIENT, 
+C                 FOR STIFF EQUATIONS WITH INITIAL TRANSIENT,
 C                 H=1.D0/(NORM OF F'), USUALLY 1.D-3 OR 1.D-5, IS GOOD.
 C                 THIS CHOICE IS NOT VERY IMPORTANT, THE STEP SIZE IS
 C                 QUICKLY ADAPTED. (IF H=0.D0, THE CODE PUTS H=1.D-6).
@@ -90,7 +90,7 @@ C
 C     MLJAC       SWITCH FOR THE BANDED STRUCTURE OF THE JACOBIAN:
 C                    MLJAC=N: JACOBIAN IS A FULL MATRIX. THE LINEAR
 C                       ALGEBRA IS DONE BY FULL-MATRIX GAUSS-ELIMINATION.
-C                    0<=MLJAC<N: MLJAC IS THE LOWER BANDWITH OF JACOBIAN 
+C                    0<=MLJAC<N: MLJAC IS THE LOWER BANDWITH OF JACOBIAN
 C                       MATRIX (>= NUMBER OF NON-ZERO DIAGONALS BELOW
 C                       THE MAIN DIAGONAL).
 C
@@ -136,21 +136,21 @@ C                 NEED NOT BE DEFINED IF MLMAS=N.
 C                 MUMAS IS SUPPOSED TO BE .LE. MUJAC.
 C
 C     SOLOUT      NAME (EXTERNAL) OF SUBROUTINE PROVIDING THE
-C                 NUMERICAL SOLUTION DURING INTEGRATION. 
+C                 NUMERICAL SOLUTION DURING INTEGRATION.
 C                 IF IOUT=1, IT IS CALLED AFTER EVERY SUCCESSFUL STEP.
-C                 SUPPLY A DUMMY SUBROUTINE IF IOUT=0. 
+C                 SUPPLY A DUMMY SUBROUTINE IF IOUT=0.
 C                 IT MUST HAVE THE FORM
 C                    SUBROUTINE SOLOUT (NR,XOLD,X,Y,CONT,LRC,N,
 C                                       RPAR,IPAR,IRTRN)
 C                    DOUBLE PRECISION X,Y(N),CONT(LRC)
-C                    ....  
+C                    ....
 C                 SOLOUT FURNISHES THE SOLUTION "Y" AT THE NR-TH
 C                    GRID-POINT "X" (THEREBY THE INITIAL VALUE IS
 C                    THE FIRST GRID-POINT).
 C                 "XOLD" IS THE PRECEEDING GRID-POINT.
 C                 "IRTRN" SERVES TO INTERRUPT THE INTEGRATION. IF IRTRN
 C                    IS SET <0, RADAU5 RETURNS TO THE CALLING PROGRAM.
-C           
+C
 C          -----  CONTINUOUS OUTPUT: -----
 C                 DURING CALLS TO "SOLOUT", A CONTINUOUS SOLUTION
 C                 FOR THE INTERVAL [XOLD,X] IS AVAILABLE THROUGH
@@ -178,7 +178,7 @@ C                             N*(LJAC+LMAS+3*LE+12)+20
 C                 WHERE
 C                    LJAC=N              IF MLJAC=N (FULL JACOBIAN)
 C                    LJAC=MLJAC+MUJAC+1  IF MLJAC<N (BANDED JAC.)
-C                 AND                  
+C                 AND
 C                    LMAS=0              IF IMAS=0
 C                    LMAS=N              IF IMAS=1 AND MLMAS=N (FULL)
 C                    LMAS=MLMAS+MUMAS+1  IF MLMAS<N (BANDED MASS-M.)
@@ -188,7 +188,7 @@ C                    LE=2*MLJAC+MUJAC+1 IF MLJAC<N (BANDED JAC.)
 C
 C                 IN THE USUAL CASE WHERE THE JACOBIAN IS FULL AND THE
 C                 MASS-MATRIX IS THE INDENTITY (IMAS=0), THE MINIMUM
-C                 STORAGE REQUIREMENT IS 
+C                 STORAGE REQUIREMENT IS
 C                             LWORK = 4*N*N+12*N+20.
 C                 IF IWORK(9)=M1>0 THEN "LWORK" MUST BE AT LEAST
 C                          N*(LJAC+12)+(N-M1)*(LMAS+3*LE)+20
@@ -206,15 +206,15 @@ C                 "LIWORK" MUST BE AT LEAST 3*N+20.
 C
 C     LIWORK      DECLARED LENGTH OF ARRAY "IWORK".
 C
-C     RPAR, IPAR  REAL AND INTEGER PARAMETERS (OR PARAMETER ARRAYS) WHICH  
+C     RPAR, IPAR  REAL AND INTEGER PARAMETERS (OR PARAMETER ARRAYS) WHICH
 C                 CAN BE USED FOR COMMUNICATION BETWEEN YOUR CALLING
-C                 PROGRAM AND THE FCN, JAC, MAS, SOLOUT SUBROUTINES. 
+C                 PROGRAM AND THE FCN, JAC, MAS, SOLOUT SUBROUTINES.
 C
 C ----------------------------------------------------------------------
-C 
+C
 C     SOPHISTICATED SETTING OF PARAMETERS
 C     -----------------------------------
-C              SEVERAL PARAMETERS OF THE CODE ARE TUNED TO MAKE IT WORK 
+C              SEVERAL PARAMETERS OF THE CODE ARE TUNED TO MAKE IT WORK
 C              WELL. THEY MAY BE DEFINED BY SETTING WORK(1),...
 C              AS WELL AS IWORK(1),... DIFFERENT FROM ZERO.
 C              FOR ZERO INPUT, THE CODE CHOOSES DEFAULT VALUES:
@@ -243,11 +243,11 @@ C
 C       THE FOLLOWING 3 PARAMETERS ARE IMPORTANT FOR
 C       DIFFERENTIAL-ALGEBRAIC SYSTEMS OF INDEX > 1.
 C       THE FUNCTION-SUBROUTINE SHOULD BE WRITTEN SUCH THAT
-C       THE INDEX 1,2,3 VARIABLES APPEAR IN THIS ORDER. 
+C       THE INDEX 1,2,3 VARIABLES APPEAR IN THIS ORDER.
 C       IN ESTIMATING THE ERROR THE INDEX 2 VARIABLES ARE
 C       MULTIPLIED BY H, THE INDEX 3 VARIABLES BY H**2.
 C
-C    IWORK(5)  DIMENSION OF THE INDEX 1 VARIABLES (MUST BE > 0). FOR 
+C    IWORK(5)  DIMENSION OF THE INDEX 1 VARIABLES (MUST BE > 0). FOR
 C              ODE'S THIS EQUALS THE DIMENSION OF THE SYSTEM.
 C              DEFAULT IWORK(5)=N.
 C
@@ -267,7 +267,7 @@ C       IF THE DIFFERENTIAL SYSTEM HAS THE SPECIAL STRUCTURE THAT
 C            Y(I)' = Y(I+M2)   FOR  I=1,...,M1,
 C       WITH M1 A MULTIPLE OF M2, A SUBSTANTIAL GAIN IN COMPUTERTIME
 C       CAN BE ACHIEVED BY SETTING THE PARAMETERS IWORK(9) AND IWORK(10).
-C       E.G., FOR SECOND ORDER SYSTEMS P'=V, V'=G(P,V), WHERE P AND V ARE 
+C       E.G., FOR SECOND ORDER SYSTEMS P'=V, V'=G(P,V), WHERE P AND V ARE
 C       VECTORS OF DIMENSION N/2, ONE HAS TO PUT M1=M2=N/2.
 C       FOR M1>0 SOME OF THE INPUT PARAMETERS HAVE DIFFERENT MEANINGS:
 C       - JAC: ONLY THE ELEMENTS OF THE NON-TRIVIAL PART OF THE
@@ -311,9 +311,9 @@ C              DEFAULT 0.9D0.
 C
 C    WORK(3)   DECIDES WHETHER THE JACOBIAN SHOULD BE RECOMPUTED;
 C              INCREASE WORK(3), TO 0.1 SAY, WHEN JACOBIAN EVALUATIONS
-C              ARE COSTLY. FOR SMALL SYSTEMS WORK(3) SHOULD BE SMALLER 
+C              ARE COSTLY. FOR SMALL SYSTEMS WORK(3) SHOULD BE SMALLER
 C              (0.001D0, SAY). NEGATIV WORK(3) FORCES THE CODE TO
-C              COMPUTE THE JACOBIAN AFTER EVERY ACCEPTED STEP.     
+C              COMPUTE THE JACOBIAN AFTER EVERY ACCEPTED STEP.
 C              DEFAULT 0.001D0.
 C
 C    WORK(4)   STOPPING CRITERION FOR NEWTON'S METHOD, USUALLY CHOSEN <1.
@@ -337,13 +337,13 @@ C              DEFAULT VALUES: WORK(8)=0.2D0, WORK(9)=8.D0
 C
 C-----------------------------------------------------------------------
 C
-C     OUTPUT PARAMETERS 
-C     ----------------- 
+C     OUTPUT PARAMETERS
+C     -----------------
 C     X           X-VALUE FOR WHICH THE SOLUTION HAS BEEN COMPUTED
 C                 (AFTER SUCCESSFUL RETURN X=XEND).
 C
 C     Y(N)        NUMERICAL SOLUTION AT X
-C 
+C
 C     H           PREDICTED STEP SIZE OF THE LAST ACCEPTED STEP
 C
 C     IDID        REPORTS ON SUCCESSFULNESS UPON RETURN:
@@ -355,7 +355,7 @@ C                   IDID=-3  STEP SIZE BECOMES TOO SMALL,
 C                   IDID=-4  MATRIX IS REPEATEDLY SINGULAR.
 C
 C   IWORK(14)  NFCN    NUMBER OF FUNCTION EVALUATIONS (THOSE FOR NUMERICAL
-C                      EVALUATION OF THE JACOBIAN ARE NOT COUNTED)  
+C                      EVALUATION OF THE JACOBIAN ARE NOT COUNTED)
 C   IWORK(15)  NJAC    NUMBER OF JACOBIAN EVALUATIONS (EITHER ANALYTICALLY
 C                      OR NUMERICALLY)
 C   IWORK(16)  NSTEP   NUMBER OF COMPUTED STEPS
@@ -368,7 +368,7 @@ C                      SYSTEMS; THE NSTEP FORWARD-BACKWARD SUBSTITUTIONS,
 C                      NEEDED FOR STEP SIZE SELECTION, ARE NOT COUNTED
 C-----------------------------------------------------------------------
 C *** *** *** *** *** *** *** *** *** *** *** *** ***
-C          DECLARATIONS 
+C          DECLARATIONS
 C *** *** *** *** *** *** *** *** *** *** *** *** ***
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION Y(N),ATOL(*),RTOL(*),WORK(LWORK),IWORK(LIWORK)
@@ -376,7 +376,7 @@ C *** *** *** *** *** *** *** *** *** *** *** *** ***
       LOGICAL IMPLCT,JBAND,ARRET,STARTN,PRED
       EXTERNAL FCN,JAC,MAS,SOLOUT,ADJUSTH
 C *** *** *** *** *** *** ***
-C        SETTING THE PARAMETERS 
+C        SETTING THE PARAMETERS
 C *** *** *** *** *** *** ***
        NFCN=0
        NJAC=0
@@ -386,7 +386,7 @@ C *** *** *** *** *** *** ***
        NDEC=0
        NSOL=0
        ARRET=.FALSE.
-C -------- UROUND   SMALLEST NUMBER SATISFYING 1.0D0+UROUND>1.0D0  
+C -------- UROUND   SMALLEST NUMBER SATISFYING 1.0D0+UROUND>1.0D0
       IF (WORK(1).EQ.0.0D0) THEN
          UROUND=1.0D-16
       ELSE
@@ -521,7 +521,7 @@ C -------- MAXIMAL STEP SIZE
          HMAX=XEND-X
       ELSE
          HMAX=WORK(7)
-      END IF 
+      END IF
 C -------  FACL,FACR     PARAMETERS FOR STEP SIZE SELECTION
       IF(WORK(8).EQ.0.D0)THEN
          FACL=5.D0
@@ -586,7 +586,7 @@ C ------ BANDWITH OF "MAS" NOT SMALLER THAN BANDWITH OF "JAC"
       LDMAS2=MAX(1,LDMAS)
 C ------ HESSENBERG OPTION ONLY FOR EXPLICIT EQU. WITH FULL JACOBIAN
       IF ((IMPLCT.OR.JBAND).AND.IJOB.EQ.7) THEN
-         WRITE(6,*)' HESSENBERG OPTION ONLY FOR EXPLICIT EQUATIONS WITH 
+         WRITE(6,*)' HESSENBERG OPTION ONLY FOR EXPLICIT EQUATIONS WITH
      &FULL JACOBIAN'
          ARRET=.TRUE.
       END IF
@@ -674,10 +674,10 @@ C
      &   CONT,NFCN,NJAC,NSTEP,NACCPT,NREJCT,NDEC,NSOL,RPAR,IPAR,ADJUSTH)
 C ----------------------------------------------------------
 C     CORE INTEGRATOR FOR RADAU5
-C     PARAMETERS SAME AS IN RADAU5 WITH WORKSPACE ADDED 
-C ---------------------------------------------------------- 
-C         DECLARATIONS 
-C ---------------------------------------------------------- 
+C     PARAMETERS SAME AS IN RADAU5 WITH WORKSPACE ADDED
+C ----------------------------------------------------------
+C         DECLARATIONS
+C ----------------------------------------------------------
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION Y(N),Z1(N),Z2(N),Z3(N),Y0(N),SCAL(N),F1(N),F2(N),F3(N)
       DIMENSION FJAC(LDJAC,N),FMAS(LDMAS,NM1),CONT(4*N)
@@ -695,9 +695,9 @@ C *** *** *** *** *** *** ***
 C --------- DUPLIFY N FOR COMMON BLOCK CONT -----
       NN=N
       NN2=2*N
-      NN3=3*N 
+      NN3=3*N
       LRC=4*N
-C -------- CHECK THE INDEX OF THE PROBLEM ----- 
+C -------- CHECK THE INDEX OF THE PROBLEM -----
       INDEX1=NIND1.NE.0
       INDEX2=NIND2.NE.0
       INDEX3=NIND3.NE.0
@@ -738,7 +738,7 @@ C ---------- CONSTANTS ---------
       TI33=-0.59603920482822492497D0
       IF (M1.GT.0) IJOB=IJOB+10
       POSNEG=SIGN(1.D0,XEND-X)
-      HMAXN=MIN(ABS(HMAX),ABS(XEND-X)) 
+      HMAXN=MIN(ABS(HMAX),ABS(XEND-X))
       IF (ABS(H).LE.10.D0*UROUND) H=1.0D-6
       H=MIN(ABS(H),HMAXN)
       H=SIGN(H,POSNEG)
@@ -791,7 +791,7 @@ C *** CALL R CLEWLEY'S STEP ADJUSTMENT FUNCTION FOR EXTERNAL INPUTS
       HHFAC=H
       CALL FCN(N,X,Y,Y0,RPAR,IPAR)
       NFCN=NFCN+1
-C --- BASIC INTEGRATION STEP  
+C --- BASIC INTEGRATION STEP
   10  CONTINUE
 C *** *** *** *** *** *** ***
 C  COMPUTATION OF THE JACOBIAN
@@ -810,7 +810,7 @@ C --- JACOBIAN IS BANDED
                   F2(J)=DSQRT(UROUND*MAX(1.D-5,ABS(Y(J))))
                   Y(J)=Y(J)+F2(J)
                   J=J+MD
-                  IF (J.LE.MM*M2) GOTO 12 
+                  IF (J.LE.MM*M2) GOTO 12
                   CALL FCN(N,X,Y,CONT,RPAR,IPAR)
                   J=K+(MM-1)*M2
                   J1=K
@@ -819,7 +819,7 @@ C --- JACOBIAN IS BANDED
                   Y(J)=F1(J)
                   MUJACJ=MUJACP-J1-M1
                   DO L=LBEG,LEND
-                     FJAC(L+MUJACJ,J)=(CONT(L)-Y0(L))/F2(J) 
+                     FJAC(L+MUJACJ,J)=(CONT(L)-Y0(L))/F2(J)
                   END DO
                   J=J+MD
                   J1=J1+MD
@@ -853,16 +853,16 @@ C --- COMPUTE THE MATRICES E1 AND E2 AND THEIR DECOMPOSITIONS
       BETAN=BETA/H
       CALL DECOMR(N,FJAC,LDJAC,FMAS,LDMAS,MLMAS,MUMAS,
      &            M1,M2,NM1,FAC1,E1,LDE1,IP1,IER,IJOB,CALHES,IPHES)
-C      WRITE(6,979)X   
+C      WRITE(6,979)X
 C      WRITE(6,*) ' DECOMR ', MLMAS, ' ', NM1
       IF (IER.NE.0) THEN
-C         WRITE(6,979)X   
+C         WRITE(6,979)X
 C         WRITE(6,*) ' DECOMR ',LDMAS,' ',NM1
          GOTO 78
       END IF
       CALL DECOMC(N,FJAC,LDJAC,FMAS,LDMAS,MLMAS,MUMAS,
      &            M1,M2,NM1,ALPHN,BETAN,E2R,E2I,LDE1,IP2,IER,IJOB)
-C      WRITE(6,979)X   
+C      WRITE(6,979)X
 C      WRITE(6,*) ' DECOMC '
       IF (IER.NE.0) GOTO 78
       NDEC=NDEC+1
@@ -974,12 +974,12 @@ C ---     BAD CONVERGENCE OR NUMBER OF ITERATIONS TO LARGE
                          REJECT=.TRUE.
                          LAST=.FALSE.
 C                    --- CALL R CLEWLEY'S STEP ADJUSTMENT FUNCTION FOR EXTERNAL INPUTS
-                         CALL ADJUSTH(X,H)                         
+                         CALL ADJUSTH(X,H)
                          IF (CALJAC) GOTO 20
                          GOTO 10
                     END IF
                 ELSE
-C                    WRITE(6,979)X   
+C                    WRITE(6,979)X
 C                    WRITE(6,*) ' LINE 974 '
                     GOTO 78
                 END IF
@@ -997,7 +997,7 @@ C                    WRITE(6,*) ' LINE 974 '
                Z3(I)=T31*F1I+    F2I
             END DO
             IF (FACCON*DYNO.GT.FNEWT) GOTO 40
-C --- ERROR ESTIMATION  
+C --- ERROR ESTIMATION
       CALL ESTRAD (N,FJAC,LDJAC,MLJAC,MUJAC,FMAS,LDMAS,MLMAS,MUMAS,
      &          H,DD1,DD2,DD3,FCN,NFCN,Y0,Y,IJOB,X,M1,M2,NM1,
      &          E1,LDE1,Z1,Z2,Z3,CONT,F1,F2,IP1,IPHES,SCAL,ERR,
@@ -1011,7 +1011,7 @@ C *** *** *** *** *** *** ***
 C  IS THE ERROR SMALL ENOUGH ?
 C *** *** *** *** *** *** ***
       IF (ERR.LT.1.D0) THEN
-C --- STEP IS ACCEPTED  
+C --- STEP IS ACCEPTED
          FIRST=.FALSE.
          NACCPT=NACCPT+1
          IF (PRED) THEN
@@ -1027,9 +1027,9 @@ C       --- PREDICTIVE CONTROLLER OF GUSTAFSSON
          END IF
          XOLD=X
          HOLD=H
-         X=XPH 
+         X=XPH
          DO I=1,N
-            Y(I)=Y(I)+Z3(I)  
+            Y(I)=Y(I)+Z3(I)
             Z2I=Z2(I)
             Z1I=Z1(I)
             CONT(I+N)=(Z2I-Z3(I))/C2M1
@@ -1072,13 +1072,13 @@ C       --- PREDICTIVE CONTROLLER OF GUSTAFSSON
          HNEW=POSNEG*MIN(ABS(HNEW),HMAXN)
          HOPT=HNEW
          HOPT=MIN(H,HNEW)
-         IF (REJECT) HNEW=POSNEG*MIN(ABS(HNEW),ABS(H)) 
+         IF (REJECT) HNEW=POSNEG*MIN(ABS(HNEW),ABS(H))
          REJECT=.FALSE.
          IF ((X+HNEW/QUOT1-XEND)*POSNEG.GE.0.D0) THEN
             H=XEND-X
             LAST=.TRUE.
          ELSE
-            QT=HNEW/H 
+            QT=HNEW/H
             HHFAC=H
             IF (THETA.LE.THET.AND.QT.GE.QUOT1.AND.QT.LE.QUOT2) THEN
 C          --- CALL R CLEWLEY'S STEP ADJUSTMENT FUNCTION FOR EXTERNAL INPUTS
@@ -1098,14 +1098,14 @@ C        longer = XEND-X
          IF (THETA.LE.THET) GOTO 20
          GOTO 10
       ELSE
-C --- STEP IS REJECTED  
+C --- STEP IS REJECTED
          REJECT=.TRUE.
          LAST=.FALSE.
          IF (FIRST) THEN
              H=H*0.1D0
              HHFAC=0.1D0
 C            Smaller step size does not need re-adjusting
-         ELSE 
+         ELSE
              HHFAC=HNEW/H
              H=HNEW
 C        --- CALL R CLEWLEY'S STEP ADJUSTMENT FUNCTION FOR EXTERNAL INPUTS
@@ -1121,7 +1121,7 @@ C --- UNEXPECTED STEP-REJECTION
           NSING=NSING+1
           IF (NSING.GE.5) GOTO 176
       END IF
-      H=H*0.5D0 
+      H=H*0.5D0
       HHFAC=0.5D0
 C     Smaller step size does not need re-adjusting
       REJECT=.TRUE.
@@ -1130,24 +1130,24 @@ C     Smaller step size does not need re-adjusting
       GOTO 10
 C --- FAIL EXIT
  176  CONTINUE
-      WRITE(6,979)X   
+      WRITE(6,979)X
       WRITE(6,*) ' MATRIX IS REPEATEDLY SINGULAR, IER=',IER
       IDID=-4
       RETURN
  177  CONTINUE
-      WRITE(6,979)X   
+      WRITE(6,979)X
       WRITE(6,*) ' STEP SIZE T0O SMALL, H=',H
       IDID=-3
       RETURN
  178  CONTINUE
-      WRITE(6,979)X   
-      WRITE(6,*) ' MORE THAN NMAX =',NMAX,'STEPS ARE NEEDED' 
+      WRITE(6,979)X
+      WRITE(6,*) ' MORE THAN NMAX =',NMAX,'STEPS ARE NEEDED'
       IDID=-2
       RETURN
 C --- EXIT CAUSED BY SOLOUT
  179  CONTINUE
 C      WRITE(6,979)X
- 979  FORMAT(' EXIT OF RADAU5 AT X=',E18.4) 
+ 979  FORMAT(' EXIT OF RADAU5 AT X=',E18.4)
       IDID=2
       RETURN
       END
@@ -1156,7 +1156,7 @@ C     END OF SUBROUTINE RADCOR
 C
 C ***********************************************************
 C
-      DOUBLE PRECISION FUNCTION CONTR5(I,X,CONT,LRC) 
+      DOUBLE PRECISION FUNCTION CONTR5(I,X,CONT,LRC)
 C ----------------------------------------------------------
 C     THIS FUNCTION CAN BE USED FOR CONINUOUS OUTPUT. IT PROVIDES AN
 C     APPROXIMATION TO THE I-TH COMPONENT OF THE SOLUTION AT X.
@@ -1176,7 +1176,7 @@ C     END OF FUNCTION CONTR5
 C
 C ***********************************************************
 C
-      SUBROUTINE DONTR5(Y,YD,I,X,CONT,LRC) 
+      SUBROUTINE DONTR5(Y,YD,I,X,CONT,LRC)
 C ----------------------------------------------------------
 C     THIS FUNCTION CAN BE USED FOR CONINUOUS OUTPUT. IT PROVIDES AN
 C     APPROXIMATION TO THE I-TH COMPONENT OF THE SOLUTION AT X.

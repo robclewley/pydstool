@@ -17,9 +17,9 @@ int main(int argc, char *argv[])
     doublereal u[3] = {0., 0., 0.};
     integer ipar[4] = {0, 1, 2, 10};
     doublereal par[4] = {280., 2.6666666666666665, 10., 0.4332};
-    
+
     Data = (AutoData *)MALLOC(sizeof(AutoData));
-    
+
     BlankData(Data);
     DefaultData(Data);
     Data->iap.irs = 1;
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     Data->iap.nmx = 50;
     Data->rap.rl0 = 200.;
     Data->rap.rl1 = 400.;
-    
+
     // Load data from lor.dat
     FILE *fp = fopen("lor.dat","r");
     if (fp == NULL) {
@@ -54,25 +54,25 @@ int main(int argc, char *argv[])
         }
     }
     fclose(fp);
-    
+
     // Tweak times
     period = cycle[4*116] - cycle[0];
     for (i=116; i>=0; i--)
         cycle[4*i] = (cycle[4*i] - cycle[0])/period;
-    
+
     ups = (doublereal *)MALLOC((Data->iap.ncol*Data->iap.ntst+1)*(Data->iap.ndim+1)*sizeof(doublereal));
     udotps = (doublereal *)MALLOC((Data->iap.ncol*Data->iap.ntst+1)*Data->iap.ndim*sizeof(doublereal));
     rldot = (doublereal *)MALLOC(Data->iap.nicp*sizeof(doublereal));
     prepare_cycle(Data,cycle, 117, ups, udotps, rldot);
-        
+
     Data->icp = (integer *)REALLOC(Data->icp,Data->iap.nicp*sizeof(integer));
     Data->icp[1] = 10;
-    
+
     // Create special point
     CreateSpecialPoint(Data,9,1,u,4,ipar,par,Data->icp,ups,udotps,rldot);
-    
+
     AUTO(Data);
-    
+
     CleanupAll(Data);
     return 0;
 }

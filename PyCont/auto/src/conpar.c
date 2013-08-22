@@ -13,7 +13,7 @@ pthread_mutex_t mutex_for_d = PTHREAD_MUTEX_INITIALIZER;
 void *conpar_process(void * arg)
 {
   integer icf_dim1, irf_dim1;
-  
+
   /* Local variables */
   integer ipiv, jpiv, itmp;
   doublereal tpiv;
@@ -89,10 +89,10 @@ void *conpar_process(void * arg)
   /* Note that the summation of the adjacent overlapped part of C */
   /* is delayed until REDUCE, in order to merge it with other communications.*/
   /* NA is the local NTST. */
-  
+
   irf_dim1 = *nra;
   icf_dim1 = *nca;
-  
+
   /* Condensation of parameters (Elimination of local variables). */
   m1 = *nov + 1;
   m2 = *nca - *nov;
@@ -167,7 +167,7 @@ void *conpar_process(void * arg)
 	      c_offset1[-1 + icf_l_i] -= rm * a_offset2[-1 + icf_l_i];
 	    }
 	    for (l = 0; l < *ncb; ++l) {
-	      /* 
+	      /*
 		 A little explanation of what is going on here
 		 is in order I believe.  This array is
 		 created by a summation across all workers,
@@ -230,14 +230,14 @@ void *conpar_process(void * arg)
 }
 
 #ifdef PTHREADS
-int conpar_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, integer *ncb, 
-			   doublereal ***b, integer *nbc, integer *nrc, doublereal ***c, doublereal **d, 
+int conpar_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, integer *ncb,
+			   doublereal ***b, integer *nbc, integer *nrc, doublereal ***c, doublereal **d,
 			   integer *irf, integer *icf)
 
 {
   /* Aliases for the dimensions of the arrays */
   integer icf_dim1, irf_dim1;
-  
+
   conpar_parallel_arglist *data;
   int i;
   pthread_t *th;
@@ -248,7 +248,7 @@ int conpar_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca
   struct timeval *pthreads_wait;
   time_start(&pthreads_wait);
 #endif
-  
+
   data = (conpar_parallel_arglist *)MALLOC(sizeof(conpar_parallel_arglist)*global_num_procs);
   th = (pthread_t *)MALLOC(sizeof(pthread_t)*global_num_procs);
 
@@ -256,21 +256,21 @@ int conpar_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca
   icf_dim1 = *nca;
 
   for(i=0;i<global_num_procs;i++) {
-    
+
     /*start and end of the computed loop*/
     data[i].loop_start = (i*(*na))/global_num_procs;
     data[i].loop_end = ((i+1)*(*na))/global_num_procs;
-    
-    /*3D Arrays*/ 
+
+    /*3D Arrays*/
     data[i].a = a + data[i].loop_start;
     data[i].b = b + data[i].loop_start;
     data[i].c = c + data[i].loop_start;
-    
+
     /*2D Arrays*/
     data[i].d = d;
     data[i].irf = irf + data[i].loop_start*irf_dim1;
     data[i].icf = icf + data[i].loop_start*icf_dim1;
-    
+
     /*Scalars*/
     data[i].nbc = nbc;
     data[i].nrc = nrc;
@@ -278,10 +278,10 @@ int conpar_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca
     data[i].nov = nov;
     data[i].nra = nra;
     data[i].nca = nca;
-    
+
     data[i].loop_end = data[i].loop_end - data[i].loop_start;
     data[i].loop_start = 0;
-    
+
   }
   pthread_attr_init(&attr);
   pthread_attr_setscope(&attr,PTHREAD_SCOPE_SYSTEM);
@@ -289,11 +289,11 @@ int conpar_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca
     retcode = pthread_create(&th[i], &attr, conpar_process, (void *) &data[i]);
     if (retcode != 0) fprintf(stderr, "create %d failed %d\n", i, retcode);
   }
-  
+
   for(i=0;i<global_num_procs;i++) {
     retcode = pthread_join(th[i], &retval);
     if (retcode != 0) fprintf(stderr, "join %d failed %d\n", i, retcode);
-  }  
+  }
   FREE(data);
   FREE(th);
 #ifdef USAGE
@@ -304,10 +304,10 @@ int conpar_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca
 #endif
 
 #ifdef MPI
-int 
-conpar_mpi_wrapper(integer *nov, integer *na, integer *nra, 
-		   integer *nca, doublereal ***a, integer *ncb, 
-		   doublereal ***b, integer *nbc, integer *nrc, 
+int
+conpar_mpi_wrapper(integer *nov, integer *na, integer *nra,
+		   integer *nca, doublereal ***a, integer *ncb,
+		   doublereal ***b, integer *nbc, integer *nrc,
 		   doublereal ***c, doublereal *d, integer *irf, integer *icf)
 
 {
@@ -344,7 +344,7 @@ conpar_mpi_wrapper(integer *nov, integer *na, integer *nra,
     icf_displacements[0] = 0;
 
     for(i=1;i<comm_size;i++){
-      
+
       /*Send message to get worker into conpar mode*/
       {
 	int message=AUTO_MPI_CONPAR_MESSAGE;
@@ -376,7 +376,7 @@ conpar_mpi_wrapper(integer *nov, integer *na, integer *nra,
       params[4]=*nbc;
       params[5]=*nrc;
 
-      
+
       MPI_Bcast(params        ,6,MPI_LONG,0,MPI_COMM_WORLD);
     }
     MPI_Scatterv(irf,irf_counts,irf_displacements,MPI_LONG,
@@ -419,7 +419,7 @@ conpar_mpi_wrapper(integer *nov, integer *na, integer *nra,
 }
 #endif
 
-int 
+int
 conpar_default_wrapper(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, integer *ncb, doublereal ***b, integer *nbc, integer *nrc, doublereal ***c, doublereal **d, integer *irf, integer *icf)
 
 {
@@ -443,12 +443,12 @@ conpar_default_wrapper(integer *nov, integer *na, integer *nra, integer *nca, do
 }
 
 
-int 
+int
 conpar(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, integer *ncb, doublereal ***b, integer *nbc, integer *nrc, doublereal ***c, doublereal **d, integer *irf, integer *icf)
 {
   /* Aliases for the dimensions of the arrays */
   integer icf_dim1, irf_dim1;
-  
+
   /* Local variables */
   integer i,j;
   integer nex;
@@ -462,7 +462,7 @@ conpar(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, i
   if (nex == 0) {
     return 0;
   }
-  
+
   /*     Initialization */
   for (i = 0; i <*na; ++i) {
     for (j = 0; j < *nra; ++j) {
@@ -476,7 +476,7 @@ conpar(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, i
   switch(global_conpar_type) {
 #ifdef PTHREADS
   case CONPAR_PTHREADS:
-    conpar_threads_wrapper(nov, na, nra, nca, a, 
+    conpar_threads_wrapper(nov, na, nra, nca, a,
 			    ncb, b, nbc, nrc, c, d,irf, icf);
     break;
 #endif
@@ -484,19 +484,19 @@ conpar(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, i
   case CONPAR_MPI:
     if(global_verbose_flag)
       printf("MPI conpar start\n");
-    conpar_mpi_wrapper(nov, na, nra, nca, a, 
+    conpar_mpi_wrapper(nov, na, nra, nca, a,
 			ncb, b, nbc, nrc, c, d,irf, icf);
     if(global_verbose_flag)
       printf("MPI conpar end\n");
     break;
 #endif
   default:
-    conpar_default_wrapper(nov, na, nra, nca, a, 
+    conpar_default_wrapper(nov, na, nra, nca, a,
 			    ncb, b, nbc, nrc, c, d,irf, icf);
     break;
   }
   return 0;
-} 
+}
 
 
 

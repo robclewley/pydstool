@@ -1,4 +1,4 @@
-# 
+#
 #  This file has to be sourced before activating AUTO2000 is you are using
 #  a 'sh' compatible shell, such as sh, bash, ksh, or ash.
 #

@@ -4,7 +4,7 @@ Recent Changes
 New Version:
     - Works with SciPy 0.5.2
     - AUTO works on 64-bit machines
-    
+
 Version 0.3.1:
     New functionality (please see Wiki for details):
 	- Two plotting methods were added to plot_cycles:  'stack' and 'highlight'.
@@ -16,7 +16,7 @@ Version 0.3.1:
 	  computation.  When the info() method is called from the curve class, the description will be displayed.
 	- Added argument SPOut to the LimitCycle class, allowing the user to stop at specified values of variables
 	  or parameters.
-	- Jacobians with respect to variables is now implemented in AUTO interface.  Jacobians with respect to 
+	- Jacobians with respect to variables is now implemented in AUTO interface.  Jacobians with respect to
 	  parameters is currently not working, but will be added very soon in a minor release.
 	- Added get() method to plot class.
 
@@ -26,13 +26,13 @@ Version 0.3.1:
 	- Fixed bug in setting of axes titles.Version 0.2.1:
     - Added example PyCont_LotkaVolterra.py (gonna use this as test example for variable and par bounds)
     - Added example PyCont_PredPrey.py (example with Zero-Hopf point)
-    
+
 Version 0.3.0:
     - Limit cycles using AUTO is now implemented (see PyCont_MorrisLecar_Dopri.py, PyCont_Lorenz.py, and
     PyCont_ABReaction.py)
     - Added more plotting capabilities (see Plotting.py and the Wiki for more information)
     - There are a number of syntax changes.  Please see the Wiki for details.
-    
+
 Version 0.2.2:
     - An initial direction can now be specified for a new curve.  This is useful for following multiple
     branches.  See PyCont_Logistic.py
@@ -40,7 +40,7 @@ Version 0.2.2:
     - Added computeEigen method to curves.  Once the eigen information is computed, you can plot the
     stability of the fixed points by activating the plot_stability flag in the call to display()
     - Added an exportGeomview() method to export the curves to a Geomview data file (default is geom.dat)
-    - Discrete maps are now implemented (curve class FP-C) with the fold, flip and torus bifurcations 
+    - Discrete maps are now implemented (curve class FP-C) with the fold, flip and torus bifurcations
     detected.
     - Added pseudo-arclength continuation (Keller method).  This is unstable right now (trouble detecting
     bifurcation points).  Use only when MoorePenrose gives strange output.

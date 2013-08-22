@@ -53,7 +53,7 @@ void write7(solutionp root) {
       sscanf(line,"%d %d %d %d",&prefix,&junk,&junk,&label);
       if(label != 0) {
 	if(label != current->label) {
-	  fprintf(stderr,"WARNING: Label mismatch between fort.27 and fort.28\nFiles may be corrupt!"); 
+	  fprintf(stderr,"WARNING: Label mismatch between fort.27 and fort.28\nFiles may be corrupt!");
 	}
 	if(current->new_label == DELETED) {
 	  strncpy(&line[10],"   0   0",8);
@@ -115,7 +115,7 @@ void delete(solutionp current, int label) {
 	  current->new_label = DELETED;
 	/*strip the carriage return */
 	fgetc(stdin);
-      } else {	
+      } else {
 	current->new_label = DELETED;
       }
     }
@@ -329,7 +329,7 @@ void type(int type,char *output) {
     break;
   default:
     strcpy(output,"  ");
-  }      
+  }
 }
 
 solutionp parse() {

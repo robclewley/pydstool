@@ -100,7 +100,7 @@ void print_ups_rlcur(iap_type iap,doublereal **ups,doublereal *rlcur) {
   static int num_calls=0;
   char filename[80];
   int i,j;
-  
+
   sprintf(filename,"ups_rlcur%03d",num_calls);
   fp=fopen(filename,"w");
   num_calls++;
@@ -139,13 +139,13 @@ void print_fa_fc(iap_type iap,doublereal **fa,doublereal *fc,char *filename) {
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 solvbv(integer *ifst, iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), doublereal *rds, integer *nllv, doublereal *rlcur, doublereal *rlold, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **dups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal *dtm, doublereal **fa, doublereal *fc, doublereal **p0, doublereal **p1, doublereal *thl, doublereal *thu)
 {
-  
-  
+
+
   /* Local variables */
-  
+
   integer ndim;
   logical ipar;
   integer ncol, nclm, nfpr, nint, nrow, ntst, ntst0;
@@ -154,29 +154,29 @@ solvbv(integer *ifst, iap_type *iap, rap_type *rap, doublereal *par, integer *ic
 #else
 #define nalc 1
 #endif
-  
+
   doublereal **ff, **ft;
-  
+
   integer nbc, iid, iam;
   doublereal det;
   integer ips, nrc;
-  
+
   integer kwt;
-  
+
   static main_auto_storage_type main_auto_storage={NULL,NULL,NULL,NULL,
 						   NULL,NULL,NULL,NULL,
 						   NULL,NULL,NULL,NULL,
 						   NULL,NULL,NULL,NULL,
 						   NULL,NULL,NULL};
-  
+
   /*     N AX is the local N TSTX, which is smaller than the global N TSTX. */
   /*     NODES is the total number of nodes. */
-  
-  
-  /* Sets up and solves the linear equations for one Newton/Chord iteration 
+
+
+  /* Sets up and solves the linear equations for one Newton/Chord iteration
    */
-  
-  
+
+
   /* Most of the required memory is allocated below */
   /* This is an interesting section of code.  The main point
      is that setubv and conpar only get called when ifst
@@ -191,27 +191,27 @@ solvbv(integer *ifst, iap_type *iap, rap_type *rap, doublereal *par, integer *ic
 
   ff = DMATRIX(iap->ndim * iap->ncol, iap->ntst + 1);
   ft = DMATRIX(iap->ndim * iap->ncol, iap->ntst + 1);
-    
+
   if (*ifst==1){
     /* The formulas used for the allocation are somewhat complex, but they
-       are based on following macros (the space after the first letter is 
+       are based on following macros (the space after the first letter is
        for the scripts which detect these things automatically, the original
        name does not have the space:
-       
-       M 1AAR =  (((iap->ndim * iap->ncol ) + iap->ndim ) )      
-       M 2AA  =	((iap->ndim * iap->ncol ) )                     
-       N AX   =	(iap->ntst /NODES+1)                            
-       M 1BB  =	(NPARX)                                         
-       M 2BB  =	((iap->ndim * iap->ncol ) )                     
-       M 1CC  =	((((iap->ndim * iap->ncol ) + iap->ndim ) ) )   
-       M 2CC  =	(((iap->ndim +3) +NINTX+1) )                    
-       M 1DD  =	(((iap->ndim +3) +NINTX+1) )                    
-       M 2DD  =	(NPARX)                                         
-       N RCX  =	((iap->ndim +3) +NINTX+1)                       
-       N CLMX =	((iap->ndim * iap->ncol ) + iap->ndim )         
-       N ROWX =	(iap->ndim * iap->ncol )                        
+
+       M 1AAR =  (((iap->ndim * iap->ncol ) + iap->ndim ) )
+       M 2AA  =	((iap->ndim * iap->ncol ) )
+       N AX   =	(iap->ntst /NODES+1)
+       M 1BB  =	(NPARX)
+       M 2BB  =	((iap->ndim * iap->ncol ) )
+       M 1CC  =	((((iap->ndim * iap->ncol ) + iap->ndim ) ) )
+       M 2CC  =	(((iap->ndim +3) +NINTX+1) )
+       M 1DD  =	(((iap->ndim +3) +NINTX+1) )
+       M 2DD  =	(NPARX)
+       N RCX  =	((iap->ndim +3) +NINTX+1)
+       N CLMX =	((iap->ndim * iap->ncol ) + iap->ndim )
+       N ROWX =	(iap->ndim * iap->ncol )
     */
-    
+
     /* Free floating point arrays */
     FREE_DMATRIX_3D(main_auto_storage.a);
     FREE_DMATRIX_3D(main_auto_storage.b);
@@ -225,7 +225,7 @@ solvbv(integer *ifst, iap_type *iap, rap_type *rap, doublereal *par, integer *ic
     FREE_DMATRIX_3D(main_auto_storage.cc);
     FREE_DMATRIX(main_auto_storage.faa);
     FREE_DMATRIX_3D(main_auto_storage.ca1);
-    
+
     /* Free integer arrays */
     FREE(main_auto_storage.icf);
     FREE(main_auto_storage.irf);
@@ -234,55 +234,55 @@ solvbv(integer *ifst, iap_type *iap, rap_type *rap, doublereal *par, integer *ic
     FREE(main_auto_storage.icf1);
     FREE(main_auto_storage.icf2);
     FREE(main_auto_storage.np);
-    
+
     /*(M 1AAR*M 2AA*N AX) */
     main_auto_storage.a=DMATRIX_3D(iap->ntst + 1,
                                    iap->ncol * iap->ndim,
-                                   (iap->ncol + 1) * iap->ndim); 
-    /*(M 1BB*M 2BB*N AX)*/ 
+                                   (iap->ncol + 1) * iap->ndim);
+    /*(M 1BB*M 2BB*N AX)*/
     main_auto_storage.b=DMATRIX_3D(iap->ntst + 1, iap->ndim * iap->ncol, NPARX);
-    /*(M 1CC*M 2CC*N AX)*/ 
+    /*(M 1CC*M 2CC*N AX)*/
     main_auto_storage.c=DMATRIX_3D(iap->ntst + 1,
                                    iap->nbc + iap->nint + nalc,
                                    (iap->ncol + 1) * iap->ndim);
-    /*(M 1DD*M 2DD)*/ 
+    /*(M 1DD*M 2DD)*/
     main_auto_storage.d=DMATRIX(iap->nbc + iap->nint + nalc, NPARX);
-    /*(iap->ndim * iap->ndim *N AX)*/ 
+    /*(iap->ndim * iap->ndim *N AX)*/
     main_auto_storage.a1=DMATRIX_3D(iap->ntst + 1, iap->ndim, iap->ndim);
-    /*(iap->ndim * iap->ndim *N AX)*/ 
+    /*(iap->ndim * iap->ndim *N AX)*/
     main_auto_storage.a2=DMATRIX_3D(iap->ntst + 1, iap->ndim, iap->ndim);
-    /*(iap->ndim * iap->ndim *N AX)*/ 
+    /*(iap->ndim * iap->ndim *N AX)*/
     main_auto_storage.s1=DMATRIX_3D(iap->ntst + 1, iap->ndim, iap->ndim);
-    /*(iap->ndim * iap->ndim *N AX)*/ 
+    /*(iap->ndim * iap->ndim *N AX)*/
     main_auto_storage.s2=DMATRIX_3D(iap->ntst + 1, iap->ndim, iap->ndim);
-    /*(iap->ndim *N PARX*N AX)*/ 
+    /*(iap->ndim *N PARX*N AX)*/
     main_auto_storage.bb=DMATRIX_3D(iap->ntst + 1, iap->ndim, NPARX);
-    /*(N RCX* iap->ndim *N AX+1)*/ 
+    /*(N RCX* iap->ndim *N AX+1)*/
     main_auto_storage.cc=DMATRIX_3D(iap->ntst + 1, iap->nbc + iap->nint + nalc, iap->ndim);
 
-    /*(iap->ndim *N AX)*/ 
+    /*(iap->ndim *N AX)*/
     main_auto_storage.faa=DMATRIX(iap->ndim, iap->ntst +1);
 
-    /*(iap->ndim * iap->ndim *K REDO)*/ 
+    /*(iap->ndim * iap->ndim *K REDO)*/
     main_auto_storage.ca1=DMATRIX_3D(KREDO, iap->ndim, iap->ndim);
-    
-    /*(N CLMX*N AX)*/ 
+
+    /*(N CLMX*N AX)*/
     main_auto_storage.icf=(integer *)MALLOC(sizeof(integer)*(((iap->ndim * iap->ncol ) + iap->ndim ) * (iap->ntst +1) ) );
-    /*(N ROWX*N AX)*/ 
+    /*(N ROWX*N AX)*/
     main_auto_storage.irf=(integer *)MALLOC(sizeof(integer)*((iap->ndim * iap->ncol ) * (iap->ntst +1) ) );
-    /*(iap->ndim *N AX)*/ 
+    /*(iap->ndim *N AX)*/
     main_auto_storage.ipr=(integer *)MALLOC(sizeof(integer)*(iap->ndim * (iap->ntst +1) ) );
-    /*(iap->ndim *K REDO)*/ 
+    /*(iap->ndim *K REDO)*/
     main_auto_storage.icf11=(integer *)MALLOC(sizeof(integer)*(iap->ndim *KREDO) );
-    /*(iap->ndim *N AX)*/ 
+    /*(iap->ndim *N AX)*/
     main_auto_storage.icf1=(integer *)MALLOC(sizeof(integer)*(iap->ndim * (iap->ntst +1) ));
-    /*(iap->ndim *N AX)*/ 
-    main_auto_storage.icf2=(integer *)MALLOC(sizeof(integer)*(iap->ndim * (iap->ntst +1) )); 
-    /*(2)*/ 
+    /*(iap->ndim *N AX)*/
+    main_auto_storage.icf2=(integer *)MALLOC(sizeof(integer)*(iap->ndim * (iap->ntst +1) ));
+    /*(2)*/
     main_auto_storage.np=(integer *)MALLOC(sizeof(integer)*(2) );
   }
-  
-  
+
+
   iam = iap->mynode;
   kwt = iap->numnodes;
   if (kwt > 1) {
@@ -290,7 +290,7 @@ solvbv(integer *ifst, iap_type *iap, rap_type *rap, doublereal *par, integer *ic
   } else {
     ipar = FALSE_;
   }
-  
+
   ndim = iap->ndim;
   ips = iap->ips;
   ntst = iap->ntst;
@@ -303,19 +303,19 @@ solvbv(integer *ifst, iap_type *iap, rap_type *rap, doublereal *par, integer *ic
   nrc = nbc + nint + nalc;
   nrow = ndim * ncol;
   nclm = nrow + ndim;
-  
+
   if (kwt > ntst) {
     printf("NTST is less than the number of nodes\n");
     exit(0);
   } else {
     partition(&ntst, &kwt, main_auto_storage.np);
   }
-  
+
   /*     NTST0 is the global one, NTST is the local one. */
   /*     The value of NTST may be different in different nodes. */
   ntst0 = ntst;
   ntst = main_auto_storage.np[iam];
-  
+
   if (*ifst == 1) {
 #ifdef USAGE
     struct rusage *setubv_usage;
@@ -323,15 +323,15 @@ solvbv(integer *ifst, iap_type *iap, rap_type *rap, doublereal *par, integer *ic
 #endif
 #ifndef MANIFOLD
     setubv(ndim, ips, ntst, ncol, nbc, nint, nfpr, nrc, nrow, nclm,
-	   funi, bcni, icni, *ndxloc, iap, rap, par, icp, 
-	   *rds, main_auto_storage.a, main_auto_storage.b, main_auto_storage.c, main_auto_storage.d, ft, fc, rlcur, 
-	   rlold, rldot, ups, uoldps, udotps, upoldp, dups, 
+	   funi, bcni, icni, *ndxloc, iap, rap, par, icp,
+	   *rds, main_auto_storage.a, main_auto_storage.b, main_auto_storage.c, main_auto_storage.d, ft, fc, rlcur,
+	   rlold, rldot, ups, uoldps, udotps, upoldp, dups,
 	   dtm, thl, thu, p0, p1);
 #else
     setubv(ndim, ips, ntst, ncol, nbc, nint, nalc, nfpr, nrc, nrow, nclm,
-	   funi, bcni, icni, *ndxloc, iap, rap, par, icp, 
-	   rds, main_auto_storage.a, main_auto_storage.b, main_auto_storage.c, main_auto_storage.d, ft, fc, rlcur, 
-	   rlold, rldot, ups, uoldps, udotps, upoldp, dups, 
+	   funi, bcni, icni, *ndxloc, iap, rap, par, icp,
+	   rds, main_auto_storage.a, main_auto_storage.b, main_auto_storage.c, main_auto_storage.d, ft, fc, rlcur,
+	   rlold, rldot, ups, uoldps, udotps, upoldp, dups,
 	   dtm, thl, thu, p0, p1);
 #endif
 #ifdef USAGE
@@ -341,14 +341,14 @@ solvbv(integer *ifst, iap_type *iap, rap_type *rap, doublereal *par, integer *ic
 #ifndef MANIFOLD
     setrhs(&ndim, &ips, &ntst, &ntst0, main_auto_storage.np, &ncol, &nbc, &nint, &
 	   nfpr, &nrc, &nrow, &nclm, &iam, &kwt, &ipar, funi, bcni, icni,
-	   ndxloc, iap, rap, par, icp, rds, ft, fc, rlcur, 
-	   rlold, rldot, ups, uoldps, udotps, upoldp, dups, dtm, thl, 
+	   ndxloc, iap, rap, par, icp, rds, ft, fc, rlcur,
+	   rlold, rldot, ups, uoldps, udotps, upoldp, dups, dtm, thl,
 	   thu, p0, p1);
 #else
     setrhs(&ndim, &ips, &ntst, &ntst0, main_auto_storage.np, &ncol, &nbc, &nint, &nalc, &
 	   nfpr, &nrc, &nrow, &nclm, &iam, &kwt, &ipar, funi, bcni, icni,
-	   ndxloc, iap, rap, par, icp, rds, ft, fc, rlcur, 
-	   rlold, rldot, ups, uoldps, udotps, upoldp, dups, dtm, thl, 
+	   ndxloc, iap, rap, par, icp, rds, ft, fc, rlcur,
+	   rlold, rldot, ups, uoldps, udotps, upoldp, dups, dtm, thl,
 	   thu, p0, p1);
 #endif
   }
@@ -368,15 +368,15 @@ solvbv(integer *ifst, iap_type *iap, rap_type *rap, doublereal *par, integer *ic
     print_fa_fc(*iap,ft,fc,filename);
   }
 #endif
-  brbd(main_auto_storage.a, main_auto_storage.b, main_auto_storage.c, main_auto_storage.d, ft, fc, p0, p1, 
+  brbd(main_auto_storage.a, main_auto_storage.b, main_auto_storage.c, main_auto_storage.d, ft, fc, p0, p1,
        ifst, &iid, nllv, &det, &ndim, &ntst, &nbc, &nrow, &nclm, &nfpr, &
-       nrc, &iam, &kwt, &ipar, main_auto_storage.a1, main_auto_storage.a2, main_auto_storage.bb, 
-       main_auto_storage.cc, main_auto_storage.faa, main_auto_storage.ca1, main_auto_storage.s1, main_auto_storage.s2, 
-       main_auto_storage.icf11, main_auto_storage.ipr, main_auto_storage.icf1, main_auto_storage.icf2, 
+       nrc, &iam, &kwt, &ipar, main_auto_storage.a1, main_auto_storage.a2, main_auto_storage.bb,
+       main_auto_storage.cc, main_auto_storage.faa, main_auto_storage.ca1, main_auto_storage.s1, main_auto_storage.s2,
+       main_auto_storage.icf11, main_auto_storage.ipr, main_auto_storage.icf1, main_auto_storage.icf2,
        main_auto_storage.irf, main_auto_storage.icf);
-  
+
   /*
-    This is some stuff from the parallel version that isn't needed anymore 
+    This is some stuff from the parallel version that isn't needed anymore
     ----------------------------------------------------------------------
     lenft = ntst * nrow << 3;
     lenff = ntst0 * nrow << 3;
@@ -403,7 +403,7 @@ solvbv(integer *ifst, iap_type *iap, rap_type *rap, doublereal *par, integer *ic
     num_calls++;
     print_fa_fc(*iap,ft,fc,filename);
   }
-#endif  
+#endif
 
   rap->det = det;
   FREE_DMATRIX(ff);
@@ -413,7 +413,7 @@ solvbv(integer *ifst, iap_type *iap, rap_type *rap, doublereal *par, integer *ic
 
 
 /*     ---------- ------- */
-/* Subroutine */ int 
+/* Subroutine */ int
 setfcdd(integer *ifst, doublereal **dd, doublereal *fc, integer *ncb, integer *nrc)
 {
     /* Local variables */
@@ -434,7 +434,7 @@ setfcdd(integer *ifst, doublereal **dd, doublereal *fc, integer *ncb, integer *n
 
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 faft(doublereal **ff, doublereal **fa, integer *ntst, integer *nrow, integer *ndxloc)
 {
     /* Local variables */
@@ -451,7 +451,7 @@ faft(doublereal **ff, doublereal **fa, integer *ntst, integer *nrow, integer *nd
 
 
 /*     ---------- --------- */
-/* Subroutine */ int 
+/* Subroutine */ int
 partition(integer *n, integer *kwt, integer *m)
 {
     /* Local variables */
@@ -463,7 +463,7 @@ partition(integer *n, integer *kwt, integer *m)
     /* Parameter adjustments */
     /*--m;*/
 
-    
+
   t = *n / *kwt;
   s = *n % *kwt;
 
@@ -480,7 +480,7 @@ partition(integer *n, integer *kwt, integer *m)
 
 
 /*     ------- -------- ------ */
-integer 
+integer
 mypart(integer *iam, integer *np)
 {
   /* System generated locals */
@@ -498,7 +498,7 @@ mypart(integer *iam, integer *np)
     /* Parameter adjustments */
     /*--np;*/
 
-    
+
   k = 0;
   for (i = 0; i < *iam; ++i) {
     k += np[i];
@@ -511,7 +511,7 @@ mypart(integer *iam, integer *np)
 
 /*     ---------- ------ */
 #ifndef MANIFOLD
-/* Subroutine */ int 
+/* Subroutine */ int
 setrhs(integer *ndim, integer *ips, integer *na, integer *ntst, integer *np, integer *ncol, integer *nbc, integer *nint, integer *ncb, integer *nrc, integer *nra, integer *nca, integer *iam, integer *kwt, logical *ipar, FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), integer *ndxloc, iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *rds, doublereal **fa, doublereal *fc, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **dups, doublereal *dtm, doublereal *thl, doublereal *thu, doublereal **p0, doublereal **p1)
 #else
 setrhs(integer *ndim, integer *ips, integer *na, integer *ntst, integer *np, integer *ncol, integer *nbc, integer *nint, integer *nalc, integer *ncb, integer *nrc, integer *nra, integer *nca, integer *iam, integer *kwt, logical *ipar, FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), integer *ndxloc, iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *rds, doublereal **fa, doublereal *fc, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **dups, doublereal *dtm, doublereal *thl, doublereal *thu, doublereal **p0, doublereal **p1)
@@ -541,7 +541,7 @@ setrhs(integer *ndim, integer *ips, integer *na, integer *ntst, integer *np, int
   {
     dicd = (doublereal *)MALLOC(sizeof(doublereal)*(iap->nint)*(iap->ndim + NPARX));
     ficd = (doublereal *)MALLOC(sizeof(doublereal)*(iap->nint));
-  }  
+  }
   dfdp = (doublereal *)MALLOC(sizeof(doublereal)*(iap->ndim)*NPARX);
   dfdu = (doublereal *)MALLOC(sizeof(doublereal)*(iap->ndim)*(iap->ndim));
   uold = (doublereal *)MALLOC(sizeof(doublereal)*(iap->ndim));
@@ -573,7 +573,7 @@ setrhs(integer *ndim, integer *ips, integer *na, integer *ntst, integer *np, int
   /*--dtm;*/
   /*--thl;*/
   /*--thu;*/
-    
+
   *iam = iap->mynode;
   *kwt = iap->numnodes;
   if (*kwt > 1) {
@@ -627,7 +627,7 @@ setrhs(integer *ndim, integer *ips, integer *na, integer *ntst, integer *np, int
       for (i = 0; i < NPARX; ++i) {
 	prm[i] = par[i];
       }
-      (*funi)(iap, rap, *ndim, u, uold, icp, prm, 2, f, 
+      (*funi)(iap, rap, *ndim, u, uold, icp, prm, 2, f,
 	      dfdu, dfdp);
       ic1 = ic * *ndim;
       for (i = 0; i < *ndim; ++i) {
@@ -651,7 +651,7 @@ setrhs(integer *ndim, integer *ips, integer *na, integer *ntst, integer *np, int
       ubc0[i] = ups[0][i];
       ubc1[i] = ups[*ntst][i];
     }
-    (*bcni)(iap, rap, *ndim, par, icp, *nbc, ubc0, ubc1, 
+    (*bcni)(iap, rap, *ndim, par, icp, *nbc, ubc0, ubc1,
 	    fbc, 2, dbc);
     for (i = 0; i < *nbc; ++i) {
       fc[i] = -fbc[i];
@@ -684,7 +684,7 @@ setrhs(integer *ndim, integer *ips, integer *na, integer *ntst, integer *np, int
 	  uid[i] = udotps[j1][i1];
 	  uip[i] = upoldp[j1][i1];
 	}
-	(*icni)(iap, rap, *ndim, par, icp, *nint, uic, 
+	(*icni)(iap, rap, *ndim, par, icp, *nint, uic,
 		uio, uid, uip, ficd, 2, dicd);
 	for (m = 0; m < *nint; ++m) {
 	  fc[*nbc + m] -= dtm[j] * wi[k] * ficd[m];
@@ -700,7 +700,7 @@ setrhs(integer *ndim, integer *ips, integer *na, integer *ntst, integer *np, int
     rlsum += thl[icp[i]] * (rlcur[i] - rlold[i]) * rldot[i];
   }
 
-  fc[-1 + *nrc] = *rds - rinpr(iap, ndim, ndxloc, udotps, 
+  fc[-1 + *nrc] = *rds - rinpr(iap, ndim, ndxloc, udotps,
 			       dups, dtm, thu) - rlsum;
 #else
   udotps_off=(iap->ntst + 1)*(iap->ndim * iap->ncol);
@@ -710,7 +710,7 @@ setrhs(integer *ndim, integer *ips, integer *na, integer *ntst, integer *np, int
       rlsum += thl[icp[i]] * (rlcur[i] - rlold[i]) * rldot[i+m*NPARX];
     }
 
-    fc[-1 + *nrc*m] = rds[m] - rinpr(iap, ndim, ndxloc, &(udotps[udotps_off*m]), 
+    fc[-1 + *nrc*m] = rds[m] - rinpr(iap, ndim, ndxloc, &(udotps[udotps_off*m]),
 			         dups, dtm, thu) - rlsum;
    }
 #endif
@@ -741,7 +741,7 @@ setrhs(integer *ndim, integer *ips, integer *na, integer *ntst, integer *np, int
 
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublereal **fa, doublereal *fc, doublereal **p0, doublereal **p1, integer *ifst, integer *idb, integer *nllv, doublereal *det, integer *nov, integer *na, integer *nbc, integer *nra, integer *nca, integer *ncb, integer *nrc, integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal ***a2, doublereal ***bb, doublereal ***cc, doublereal **faa, doublereal ***ca1, doublereal ***s1, doublereal ***s2, integer *icf11, integer *ipr, integer *icf1, integer *icf2, integer *irf, integer *icf)
 {
   doublereal **e;
@@ -750,9 +750,9 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
 
   //DREW WUZ HERE: Condition number for jacobian
   integer i, j, k, ir, ic;
-  
+
   integer cond = 0;
-  
+
   doublereal *svde, *svds, svdu[1], *svdv;
 
   integer svdinf;
@@ -761,7 +761,7 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
 
   integer tmp = 1;
   doublereal tmp_tol = 1.0E-16;
-  
+
   //doublereal timestart;
   //clock_t compcond;
   //DREW WUZ GONE
@@ -772,7 +772,7 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
   sol1 = (doublereal *)MALLOC(sizeof(doublereal)*(*nov)*(*na + 1));
   sol2 = (doublereal *)MALLOC(sizeof(doublereal)*(*nov)*(*na + 1));
   sol3 = (doublereal *)MALLOC(sizeof(doublereal)*(*nov)*(*na + 1));
-  
+
   /* Local */
 
   /* Parameter adjustments */
@@ -799,7 +799,7 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
   /*--b;*/
   /*--a;*/
 
-    
+
   if (*idb > 4 && *iam == 0) {
     print1(nov, na, nra, nca, ncb, nrc, a, b, c, d, &
     	   fa[0], fc);
@@ -814,32 +814,32 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
           integer rdim = gData->iap.ncol*gData->iap.ndim;
           integer cdim = rdim + gData->iap.ndim;
           double sum = 0.0;
-          
+
           rwork = (doublereal *)MALLOC(sizeof(doublereal)*rdim*cdim);
           svde = (doublereal *)MALLOC(sizeof(doublereal)*cdim);
           svds = (doublereal *)MALLOC(sizeof(doublereal)*(rdim+1));
           svdv = (doublereal *)MALLOC(sizeof(doublereal)*cdim*cdim);
           svdwrk = (doublereal *)MALLOC(sizeof(doublereal)*cdim);
-          
+
           for (i=0; i<rdim; i++) {
               for (j=0; j<cdim; j++) {
                   rwork[i*cdim + j] = 0.0;
               }
           }
-          
+
           for (k=0; k<gData->iap.ntst; k++) {
               for (i=0; i<rdim; i++) {
                   for (j=0; j<cdim; j++) {
                       rwork[i*cdim+j] = a[k][i][j];
                   }
-              }              
-              ezsvd(rwork, &rdim, &rdim, &cdim, svds, svde, svdu, &tmp, 
+              }
+              ezsvd(rwork, &rdim, &rdim, &cdim, svds, svde, svdu, &tmp,
                 svdv, &rdim, svdwrk, &tmp, &svdinf, &tmp_tol);
               sum += svds[0]/svds[rdim-1];
           }
           fprintf(stdout,"avg. cond = %lf\n", sum/k);
           fflush(stdout);
-          
+
           FREE(rwork);
           FREE(svde);
           FREE(svds);
@@ -852,13 +852,13 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
           //timestart = clock();
           //compcond = 0;
           integer mdim = gData->iap.ntst*gData->iap.ncol*gData->iap.ndim + gData->iap.nbc + gData->iap.nint + 1;
-        
+
           rwork = (doublereal *)MALLOC(sizeof(doublereal)*mdim*mdim);
           svde = (doublereal *)MALLOC(sizeof(doublereal)*mdim);
           svds = (doublereal *)MALLOC(sizeof(doublereal)*(mdim+1));
           svdv = (doublereal *)MALLOC(sizeof(doublereal)*mdim*mdim);
           svdwrk = (doublereal *)MALLOC(sizeof(doublereal)*mdim);
-    
+
           for (i=0; i<mdim; i++) {
               for (j=0; j<mdim; j++) {
                   rwork[i*mdim+j] = 0.0;
@@ -875,10 +875,10 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
                   for (j=0; j<(gData->iap.ncol+1)*gData->iap.ndim; j++) {
                       // Store a
                       rwork[(i+ir)*mdim + j+ic] = a[k][i][j];
-                  }                  
+                  }
                   // Store b
                   rwork[(i+ir)*mdim + mdim-2] = b[k][i][0];
-                  rwork[(i+ir)*mdim + mdim-1] = b[k][i][1];                  
+                  rwork[(i+ir)*mdim + mdim-1] = b[k][i][1];
               }
               // Store c
               for (i=gData->iap.nbc + gData->iap.nint + 1; i>0; i--) {
@@ -894,7 +894,7 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
               rwork[(mdim-i)*mdim + mdim-1] = d[gData->iap.nbc + gData->iap.nint + 1 - i][1];
           }
           fprintf(stdout,"done!\n");
-          
+
           // Check matrix for row/column of zeroes
           /* for (i=0; i<mdim; i++) {
               zerorc = 1;
@@ -908,11 +908,11 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
                   fprintf(stdout, "OOPS!  Zero row (i=%d)!\n", i);
               }
           } */
-          
+
           if (1) {
               fprintf(stdout,"Checking condition number of jacobian...");
               fflush(stdout);
-              ezsvd(rwork, &mdim, &mdim, &mdim, svds, svde, svdu, &tmp, 
+              ezsvd(rwork, &mdim, &mdim, &mdim, svds, svde, svdu, &tmp,
                 svdv, &mdim, svdwrk, &tmp, &svdinf, &tmp_tol);
               fprintf(stdout,"done!\n");
               fprintf(stdout,"  COND = %lf\n", svds[0]/svds[mdim-1]);
@@ -928,23 +928,23 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
           FREE(svdwrk);
       }
       // DREW WUZ GONE
-  
+
     conpar(nov, na, nra, nca, a, ncb, b, nbc, nrc, c, d, irf, icf);
 #ifdef USAGE
     usage_end(conpar_usage,"all of conpar");
 #endif
-    copycp(*na, *nov, *nra, *nca, a, *ncb, b, *nrc, c, 
+    copycp(*na, *nov, *nra, *nca, a, *ncb, b, *nrc, c,
 	   a1, a2, bb, cc, irf);
-       
+
   }
 
   if (*nllv == 0) {
-    conrhs(nov, na, nra, nca, a, nbc, nrc, c, fa, fc, 
+    conrhs(nov, na, nra, nca, a, nbc, nrc, c, fa, fc,
 	   irf, icf, iam);
     cpyrhs(*na, *nov, *nra, faa, fa, irf);
   } else {
 #ifdef RANDY_FIX
-    /* The faa array needs to be intialized as well, since it 
+    /* The faa array needs to be intialized as well, since it
        it used in the dimrge_ rountine to print stuff out,
        and in the bcksub_ routine for actual computations! */
     {
@@ -964,8 +964,8 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
     struct rusage *reduce_usage;
     usage_start(&reduce_usage);
 #endif
-    reduce(iam, kwt, par, a1, a2, bb, cc, d, na, 
-	   nov, ncb, nrc, s1, s2, ca1, icf1, icf2, 
+    reduce(iam, kwt, par, a1, a2, bb, cc, d, na,
+	   nov, ncb, nrc, s1, s2, ca1, icf1, icf2,
 	   icf11, ipr, nbc);
 #ifdef USAGE
     usage_end(reduce_usage,"all of reduce");
@@ -973,18 +973,18 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
   }
 
   if (*nllv == 0) {
-    redrhs(iam, kwt, par, a1, a2, cc, faa, fc, na, 
+    redrhs(iam, kwt, par, a1, a2, cc, faa, fc, na,
 	   nov, ncb, nrc, ca1, icf1, icf2, icf11, ipr,nbc);
   }
 
-  dimrge(iam, kwt, par, e, cc, d, fc, ifst, na, 
+  dimrge(iam, kwt, par, e, cc, d, fc, ifst, na,
      nrc, nov, ncb, idb, nllv, fcc, p0, p1, det, s1, a2,
 	 faa, bb);
 
-  bcksub(iam, kwt, par, s1, s2, a2, bb, faa, fc, 
+  bcksub(iam, kwt, par, s1, s2, a2, bb, faa, fc,
 	 fcc, sol1, sol2, sol3, na, nov, ncb, icf2);
 
-  infpar(iam, par, a, b, fa, sol1, sol2, fc, na, nov, nra, 
+  infpar(iam, par, a, b, fa, sol1, sol2, fc, na, nov, nra,
 	 nca, ncb, irf, icf);
 
   FREE_DMATRIX(e);
@@ -997,7 +997,7 @@ brbd(doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublere
 
 
 /*     ---------- ------- */
-/* Subroutine */ int 
+/* Subroutine */ int
 setzero(doublereal **fa, doublereal *fc, integer *na, integer *nra, integer *nrc)
 {
     /* Local variables */
@@ -1005,7 +1005,7 @@ setzero(doublereal **fa, doublereal *fc, integer *na, integer *nra, integer *nrc
 
     /* Parameter adjustments */
     /*--fc;*/
-    
+
   for (i = 0; i < *na; ++i) {
     for (j = 0; j < *nra; ++j) {
       fa[j][i] = 0.;
@@ -1021,7 +1021,7 @@ setzero(doublereal **fa, doublereal *fc, integer *na, integer *nra, integer *nrc
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 conrhs(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, integer *nbc, integer *nrc, doublereal ***c, doublereal **fa, doublereal *fc, integer *irf, integer *icf, integer *iam)
 {
   /* System generated locals */
@@ -1036,7 +1036,7 @@ conrhs(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, i
     /*--fc;*/
   irf_dim1 = *nra;
   icf_dim1 = *nca;
-    
+
   nex = *nca - (*nov * 2);
   if (nex == 0) {
     return 0;
@@ -1073,15 +1073,15 @@ conrhs(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, i
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 copycp(integer na, integer nov, integer nra, integer nca, doublereal ***a, integer ncb, doublereal ***b, integer nrc, doublereal ***c, doublereal ***a1, doublereal ***a2, doublereal ***bb, doublereal ***cc, integer *irf)
 {
   /* System generated locals */
-  integer irf_dim1 = nra;  
+  integer irf_dim1 = nra;
 
   /* Local variables */
   integer i, j, k, irfir, ic, ir, ic1, nap1;
-  
+
 /* Local */
 
 /* Copies the condensed sytem generated by CONPAR into workspace. */
@@ -1114,7 +1114,7 @@ copycp(integer na, integer nov, integer nra, integer nca, doublereal ***a, integ
       }
     }
   }
-  
+
   // DREW WUZ HERE
   // Store jacobians along cycle (faster if used copy method)
   if (gData->sflow) {
@@ -1127,13 +1127,13 @@ copycp(integer na, integer nov, integer nra, integer nca, doublereal ***a, integ
           }
       }
   }
-  
+
   return 0;
 } /* copycp_ */
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 cpyrhs(integer na, integer nov, integer nra, doublereal **faa, doublereal **fa, integer *irf)
 {
   /* System generated locals */
@@ -1143,7 +1143,7 @@ cpyrhs(integer na, integer nov, integer nra, doublereal **faa, doublereal **fa, 
   integer i, irfir, ir;
 
 /*     **Copy the RHS */
-    
+
   for (i = 0; i < na; ++i) {
     for (ir = 0; ir < nov; ++ir) {
       irfir = ARRAY2D(irf, nra - nov + ir, i);
@@ -1155,7 +1155,7 @@ cpyrhs(integer na, integer nov, integer nra, doublereal **faa, doublereal **fa, 
 } /* cpyrhs_ */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 redrhs(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal ***a2, doublereal ***cc, doublereal **faa, doublereal *fc, integer *na, integer *nov, integer *ncb, integer *nrc, doublereal ***ca1, integer *icf1, integer *icf2, integer *icf11, integer *ipr, integer *nbc)
 {
   /* System generated locals */
@@ -1177,7 +1177,7 @@ redrhs(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal **
   logical notsend;
   integer nap1, nam1, myright[KREDO], icp1;
 
-  
+
     /* Parameter adjustments */
     /*--fc;*/
   ipr_dim1 = *nov;
@@ -1185,7 +1185,7 @@ redrhs(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal **
   icf2_dim1 = *nov;
   icf1_dim1 = *nov;
 
-    
+
   nbcp1 = *nbc + 1;
   nap1 = *na + 1;
   nam1 = *na - 1;
@@ -1197,7 +1197,7 @@ redrhs(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal **
   notsend = TRUE_;
 
 /* At each recursive level determine the master node (holding the pivot */
-/* row after swapping), which will send the pivot row to the worker node 
+/* row after swapping), which will send the pivot row to the worker node
 */
 /* at distance 2**(K-1) from the master. Here K is the recursion level. */
 
@@ -1324,7 +1324,7 @@ redrhs(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal **
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 dimrge(integer *iam, integer *kwt, logical *par, doublereal **e, doublereal ***cc, doublereal **d, doublereal *fc, integer *ifst, integer *na, integer *nrc, integer *nov, integer *ncb, integer *idb, integer *nllv, doublereal *fcc, doublereal **p0, doublereal **p1, doublereal *det, doublereal ***s, doublereal ***a2, doublereal **faa, doublereal ***bb)
 {
 
@@ -1338,9 +1338,9 @@ dimrge(integer *iam, integer *kwt, logical *par, doublereal **e, doublereal ***c
 
   //DREW WUZ HERE: Condition number for jacobian
   integer ir, ic;
-  
+
   integer cond = 0;
-  
+
   doublereal *svde, *svds, svdu[1], *svdv;
 
   integer svdinf;
@@ -1349,7 +1349,7 @@ dimrge(integer *iam, integer *kwt, logical *par, doublereal **e, doublereal ***c
 
   integer tmp = 1;
   doublereal tmp_tol = 1.0E-16;
-  
+
   //doublereal timestart;
   //clock_t compcond;
   //DREW WUZ GONE
@@ -1362,7 +1362,7 @@ dimrge(integer *iam, integer *kwt, logical *par, doublereal **e, doublereal ***c
   /*--fc;*/
   /*--xe;*/
   /*--fcc;*/
-    
+
   nap1 = *na + 1;
   msglen1 = (*nrc * 8) * *nov;
   /* Computing 2nd power */
@@ -1420,18 +1420,18 @@ dimrge(integer *iam, integer *kwt, logical *par, doublereal **e, doublereal ***c
     }
 
     if (*idb >= 3) {
-      fprintf(fp9," Residuals of reduced system:\n");	
-	  
+      fprintf(fp9," Residuals of reduced system:\n");
+
       fprintf(fp9," ");
       for (i = 0; i < ncrloc; ++i) {
-	fprintf(fp9,"%11.3E",xe[i]);	
+	fprintf(fp9,"%11.3E",xe[i]);
 	if((i+ 1)%10==0)
 	  fprintf(fp9,"\n ");
-	    
+
       }
-      fprintf(fp9,"\n");	
+      fprintf(fp9,"\n");
     }
-    
+
     // DREW WUZ HERE
     if (cond) {
         rwork = (doublereal *)MALLOC(sizeof(doublereal)*ncrloc*ncrloc);
@@ -1442,7 +1442,7 @@ dimrge(integer *iam, integer *kwt, logical *par, doublereal **e, doublereal ***c
         for (i=0; i<ncrloc; i++)
             for (j=0; j<ncrloc; j++)
                 rwork[ncrloc*i+j]=e[i][j];
-        ezsvd(rwork, &ncrloc, &ncrloc, &ncrloc, svds, svde, svdu, &tmp, 
+        ezsvd(rwork, &ncrloc, &ncrloc, &ncrloc, svds, svde, svdu, &tmp,
           svdv, &ncrloc, svdwrk, &tmp, &svdinf, &tmp_tol);
         fprintf(stdout,"  COND = %lf\n", svds[0]/svds[ncrloc-1]);
         fflush(stdout);
@@ -1457,20 +1457,20 @@ dimrge(integer *iam, integer *kwt, logical *par, doublereal **e, doublereal ***c
             [s1 a2 b]
             [c0 cn d]
     */
-    
+
     if (*idb >= 4) {
-    
-      fprintf(fp9," Reduced Jacobian matrix:\n");	
-	      
+
+      fprintf(fp9," Reduced Jacobian matrix:\n");
+
       for (i = 0; i < ncrloc; ++i) {
 	int total_printed = 0;
 	for (j = 0; j < ncrloc; ++j) {
 	  if((total_printed != 0)&&(total_printed % 10 == 0))
-	    fprintf(fp9,"\n");	
-	  fprintf(fp9," %11.3E",e[i][j]);	
+	    fprintf(fp9,"\n");
+	  fprintf(fp9," %11.3E",e[i][j]);
 	  total_printed++;
 	}
-	fprintf(fp9,"\n");	
+	fprintf(fp9,"\n");
       }
     }
 
@@ -1487,14 +1487,14 @@ dimrge(integer *iam, integer *kwt, logical *par, doublereal **e, doublereal ***c
       ge(ncrloc, ncrloc, *e, 1, 1, fcc, 1, xe, det);
     }
     if (*idb >= 4) {
-      fprintf(fp9," Solution vector:\n");	
-	  
+      fprintf(fp9," Solution vector:\n");
+
       for (i = 0; i < ncrloc; ++i) {
 	if((i!=0)&&(i%7==0))
-	  fprintf(fp9,"\n");	
-	fprintf(fp9," %11.3E",fcc[i]);	
+	  fprintf(fp9,"\n");
+	fprintf(fp9," %11.3E",fcc[i]);
       }
-      fprintf(fp9,"\n");	
+      fprintf(fp9,"\n");
     }
 
     k1 = ncrloc;
@@ -1551,7 +1551,7 @@ dimrge(integer *iam, integer *kwt, logical *par, doublereal **e, doublereal ***c
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 bcksub(integer *iam, integer *kwt, logical *par, doublereal ***s1, doublereal ***s2, doublereal ***a2, doublereal ***bb, doublereal **faa, doublereal *fc, doublereal *fcc, doublereal *sol1, doublereal *sol2, doublereal *sol3, integer *na, integer *nov, integer *ncb, integer *icf2)
 {
   /* System generated locals */
@@ -1585,7 +1585,7 @@ bcksub(integer *iam, integer *kwt, logical *par, doublereal ***s1, doublereal **
   sol3_dim1 = *nov;
   sol2_dim1 = *nov;
   sol1_dim1 = *nov;
-    
+
   xkwt = (doublereal) (*kwt);
   {
     doublereal tmp = d_lg10(&xkwt) / r_lg10(2.0);
@@ -1788,7 +1788,7 @@ bcksub(integer *iam, integer *kwt, logical *par, doublereal ***s1, doublereal **
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 infpar(integer *iam, logical *par, doublereal ***a, doublereal ***b, doublereal **fa, doublereal *sol1, doublereal *sol2, doublereal *fc, integer *na, integer *nov, integer *nra, integer *nca, integer *ncb, integer *irf, integer *icf)
 {
   /* System generated locals */
@@ -1813,10 +1813,10 @@ infpar(integer *iam, logical *par, doublereal ***a, doublereal ***b, doublereal 
   sol1_dim1 = *nov;
   irf_dim1 = *nra;
   icf_dim1 = *nca;
-    
+
   nram = *nra - *nov;
 
-/* Backsubstitution in the condensation of parameters; no communication. 
+/* Backsubstitution in the condensation of parameters; no communication.
 */
   for (i = 0; i < *na; ++i) {
     for (ir = nram - 1; ir >= 0; --ir) {
@@ -1856,7 +1856,7 @@ infpar(integer *iam, logical *par, doublereal ***a, doublereal ***b, doublereal 
 
 
 /*     ---------- --- */
-/* Subroutine */ int 
+/* Subroutine */ int
 rd0(integer *iam, integer *kwt, doublereal *d, integer *nrc)
 {
 
@@ -1885,7 +1885,7 @@ rd0(integer *iam, integer *kwt, doublereal *d, integer *nrc)
     /* Parameter adjustments */
     /*--d;*/
 
-    
+
   xkwt = (doublereal) (*kwt);
 
   /* Determine the recursion level */
@@ -1916,7 +1916,7 @@ rd0(integer *iam, integer *kwt, doublereal *d, integer *nrc)
   niam = *nrc;
   msglen = niam * 8;
   for (n = 0; n < nredo; ++n) {
-    /*        **Even nodes send and odd nodes receive from left to right 
+    /*        **Even nodes send and odd nodes receive from left to right
      */
     if (even[n]) {
       csend();
@@ -1935,18 +1935,18 @@ rd0(integer *iam, integer *kwt, doublereal *d, integer *nrc)
 } /* rd0_ */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 print1(integer *nov, integer *na, integer *nra, integer *nca, integer *ncb, integer *nrc, doublereal ***a, doublereal ***b, doublereal ***c, doublereal **d, doublereal **fa, doublereal *fc)
 {
-    
+
 
   /* Local variables */
   integer i, ic, ir;
 
   /* Parameter adjustments */
   /*--fc;*/
-    
-  fprintf(fp9,"AA , BB , FA (Full dimension) :\n");	
+
+  fprintf(fp9,"AA , BB , FA (Full dimension) :\n");
   /* should be 10.3f*/
   for (i = 0; i < *na; ++i) {
     fprintf(fp9,"I=%3ld\n",i + 1);
@@ -1966,28 +1966,28 @@ print1(integer *nov, integer *na, integer *nra, integer *nca, integer *ncb, inte
       }
       if((total_written != 0) && (total_written%12 == 0))
 	fprintf(fp9,"\n");
-      fprintf(fp9," %10.3E",fa[ir][i]);	
-      fprintf(fp9,"\n");	
+      fprintf(fp9," %10.3E",fa[ir][i]);
+      fprintf(fp9,"\n");
     }
   }
 
-  fprintf(fp9,"CC (Full dimension) :\n");	
+  fprintf(fp9,"CC (Full dimension) :\n");
 
   for (i = 0; i < *na; ++i) {
-    fprintf(fp9,"I=%3ld\n",i + 1);	
+    fprintf(fp9,"I=%3ld\n",i + 1);
     for (ir = 0; ir < *nrc; ++ir) {
       int total_written = 0;
       for (ic = 0; ic < *nca; ++ic) {
 	if((total_written != 0) && (total_written%12 == 0))
 	  fprintf(fp9,"\n");
-	fprintf(fp9," %10.3E",c[i][ir][ic]);	
+	fprintf(fp9," %10.3E",c[i][ir][ic]);
 	total_written++;
       }
-      fprintf(fp9,"\n");	
+      fprintf(fp9,"\n");
     }
   }
 
-  fprintf(fp9,"DD , FC\n");	
+  fprintf(fp9,"DD , FC\n");
 
   for (ir = 0; ir < *nrc; ++ir) {
     int total_written = 0;
@@ -1997,7 +1997,7 @@ print1(integer *nov, integer *na, integer *nra, integer *nca, integer *ncb, inte
       fprintf(fp9," %10.3E",d[ir][ic]);
       total_written++;
     }
-    fprintf(fp9," %10.3E\n",fc[ir]);	
+    fprintf(fp9," %10.3E\n",fc[ir]);
   }
 
 
@@ -2010,7 +2010,7 @@ print1(integer *nov, integer *na, integer *nra, integer *nca, integer *ncb, inte
 /*         Dummy Routines for the Sequential Version */
 /* ----------------------------------------------------------------------- */
 /* ----------------------------------------------------------------------- */
-integer 
+integer
 mynode(void)
 {
   integer ret_val;
@@ -2018,7 +2018,7 @@ mynode(void)
   return ret_val;
 }
 
-integer 
+integer
 numnodes(void)
 {
   integer ret_val;
@@ -2027,65 +2027,65 @@ numnodes(void)
 }
 
 
-/* Subroutine */ int 
+/* Subroutine */ int
 gsync(void)
 {
   return 0;
 } /* gsync_ */
 
-doublereal 
+doublereal
 dclock(void)
 {
   real ret_val;
 
   ret_val = (double)0.;
   return ret_val;
-} 
+}
 
 
-/* Subroutine */ int 
+/* Subroutine */ int
 csend(void)
 {
   return 0;
 } /* csend_ */
 
 
-/* Subroutine */ int 
+/* Subroutine */ int
 crecv(void)
 {
   return 0;
 } /* crecv_ */
 
 
-/* Subroutine */ int 
+/* Subroutine */ int
 gdsum(void)
 {
   return 0;
 } /* gdsum_ */
 
 
-/* Subroutine */ int 
+/* Subroutine */ int
 gsendx(void)
 {
   return 0;
 } /* gsendx_ */
 
 
-/* Subroutine */ int 
+/* Subroutine */ int
 gcol(void)
 {
   return 0;
 } /* gcol_ */
 
 
-/* Subroutine */ int 
+/* Subroutine */ int
 led(void)
 {
   return 0;
 } /* led_ */
 
 
-/* Subroutine */ int 
+/* Subroutine */ int
 setiomode(void)
 {
   return 0;

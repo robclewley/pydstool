@@ -8,10 +8,10 @@ integer pow_ii(integer ap, integer bp)
 {
   integer pow, x, n;
   unsigned long u;
-  
+
   x = ap;
   n = bp;
-  
+
   if (n <= 0) {
     if (n == 0 || x == 1)
       return 1;

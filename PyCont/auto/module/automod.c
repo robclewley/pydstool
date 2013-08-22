@@ -9,7 +9,7 @@ AutoData *gIData = NULL;
  **************************************/
 
 PyObject* Compute( void ) {
-    
+
     if (!AUTO(gIData))
         return PackOut(0);
     else {
@@ -28,9 +28,9 @@ PyObject* PackOut(int state) {
     int ind;
     int vardim;
     int extdim = 0;
-    
+
     Complex64 evtemp;
-    
+
     PyObject *OutObj = NULL; /* Overall PyTuple output object */
     PyArrayObject **VarOut = NULL;
     PyArrayObject *ParOut = NULL;
@@ -38,26 +38,26 @@ PyObject* PackOut(int state) {
     PyArrayObject *JacOut0 = NULL;
     PyArrayObject *JacOut1 = NULL;
     PyArrayObject *NitOut = NULL;
-    
+
     PyObject **SPOutTuple = NULL;
     PyObject **SPOutFlowTuple = NULL;
-    
+
     PyArrayObject **SPOut_ups = NULL;
     PyArrayObject **SPOut_udotps = NULL;
     PyArrayObject **SPOut_rldot = NULL;
     PyArrayObject ***SPOut_Flow1 = NULL;
     PyArrayObject ***SPOut_Flow2 = NULL;
-    
+
     assert(gIData);
-    
+
     if (state == FAILURE) {
         Py_INCREF(Py_None);
         return Py_None;
     }
-    
+
     /* for NumArray compatibility */
     import_libnumarray();
-    
+
     // Initialize and store VarOut and ParOut
     if (gIData->u != NULL)
         vardim = 1; // AE
@@ -70,7 +70,7 @@ PyObject* PackOut(int state) {
     }
     ParOut = NA_NewArray(NULL, tFloat64, 2, gIData->num_u, gIData->iap.nicp);
     assert(ParOut);
-    
+
     for(i = 0; i < gIData->num_u; i++) {
         for(j = 0; j < gIData->iap.ndim; j++) {
             if (gIData->u != NULL)
@@ -79,11 +79,11 @@ PyObject* PackOut(int state) {
                 for(k = 0; k < vardim; k++)
                     NA_set2_Float64(VarOut[k], i, j, gIData->usm[k][i][j]);
         }
-        
+
         for(j=0; j < gIData->iap.nicp; j++)
             NA_set2_Float64(ParOut, i, j, gIData->par[i][j]);
     }
-    
+
     // Initialize and store eigenvalues, if computed
     if (gIData->ev != NULL) {
         EvOut = NA_NewArray(NULL, tComplex64, 2, gIData->num_u, gIData->iap.ndim);
@@ -96,7 +96,7 @@ PyObject* PackOut(int state) {
         }
         extdim++;
     }
-    
+
     // Initialize and store jacobian
     if (gIData->sjac) {
         JacOut0 = NA_NewArray(NULL, tFloat64, 2, gIData->num_u, gIData->iap.ndim*gIData->iap.ndim);
@@ -111,7 +111,7 @@ PyObject* PackOut(int state) {
         }
         extdim += 2;
     }
-    
+
     // Initialize and store number of iterations
     if (gIData->snit) {
         NitOut = NA_NewArray(NULL, tInt64, 2, gIData->num_u, 1);
@@ -120,7 +120,7 @@ PyObject* PackOut(int state) {
         }
         extdim += 1;
     }
-    
+
     // Initialize and store SPOut
     SPOutTuple = PyMem_Malloc(gIData->num_sp*sizeof(PyObject *));
     assert(SPOutTuple);
@@ -128,16 +128,16 @@ PyObject* PackOut(int state) {
         SPOutTuple[i] = PyTuple_New(6);
         assert(SPOutTuple);
     }
-    
+
     SPOut_ups = PyMem_Malloc(gIData->num_sp*sizeof(PyArrayObject *));
     assert(SPOut_ups);
-    
+
     SPOut_udotps = PyMem_Malloc(gIData->num_sp*sizeof(PyArrayObject *));
     assert(SPOut_udotps);
-    
+
     SPOut_rldot = PyMem_Malloc(gIData->num_sp*sizeof(PyArrayObject *));
     assert(SPOut_rldot);
-    
+
     if (gIData->sflow) {
         SPOutFlowTuple = PyMem_Malloc(gIData->num_sp*sizeof(PyObject *));
         assert(SPOutFlowTuple);
@@ -145,12 +145,12 @@ PyObject* PackOut(int state) {
             SPOutFlowTuple[i] = PyTuple_New(2*gIData->iap.ntst);
             assert(SPOutFlowTuple[i]);
         }
-        
+
         SPOut_Flow1 = PyMem_Malloc(gIData->num_sp*sizeof(PyArrayObject **));
         SPOut_Flow2 = PyMem_Malloc(gIData->num_sp*sizeof(PyArrayObject **));
         assert(SPOut_Flow1);
         assert(SPOut_Flow2);
-        
+
         for (i=0; i<gIData->num_sp; i++) {
             SPOut_Flow1[i] = PyMem_Malloc(gIData->iap.ntst*sizeof(PyArrayObject *));
             SPOut_Flow2[i] = PyMem_Malloc(gIData->iap.ntst*sizeof(PyArrayObject *));
@@ -158,15 +158,15 @@ PyObject* PackOut(int state) {
             assert(SPOut_Flow2[i]);
         }
     }
-    
+
     for(i = 0; i < gIData->num_sp; i++) {
         ind = 0;    // Used so I can insert more info w/o worrying about indices, just ordering
         // Index
         PyTuple_SetItem(SPOutTuple[i], ind++, PyInt_FromLong(gIData->sp[i].mtot-1));
-        
+
         // Type of point
         PyTuple_SetItem(SPOutTuple[i], ind++, PyInt_FromLong(gIData->sp[i].itp));
-        
+
         // ups
         if (gIData->sp[i].ups != NULL) {
             SPOut_ups[i] = NA_NewArray(NULL, tFloat64, 2, gIData->sp[i].ntpl, gIData->sp[i].nar);
@@ -179,7 +179,7 @@ PyObject* PackOut(int state) {
             PyTuple_SetItem(SPOutTuple[i], ind++, Py_None);
             Py_INCREF(Py_None);
         }
-        
+
         // udotps
         if (gIData->sp[i].udotps != NULL) {
             SPOut_udotps[i] = NA_NewArray(NULL, tFloat64, 2, gIData->sp[i].ntpl, gIData->sp[i].nar-1);
@@ -192,7 +192,7 @@ PyObject* PackOut(int state) {
             PyTuple_SetItem(SPOutTuple[i], ind++, Py_None);
             Py_INCREF(Py_None);
         }
-        
+
         // rldot
         if (gIData->sp[i].rldot != NULL) {
             SPOut_rldot[i] = NA_NewArray(NULL, tFloat64, 1, gIData->sp[i].nfpr);
@@ -204,7 +204,7 @@ PyObject* PackOut(int state) {
             PyTuple_SetItem(SPOutTuple[i], ind++, Py_None);
             Py_INCREF(Py_None);
         }
-        
+
         // sflow (a1 and a2)
         if (gIData->sflow) {
             for (j = 0; j < gIData->iap.ntst; j++) {
@@ -227,32 +227,32 @@ PyObject* PackOut(int state) {
             Py_INCREF(Py_None);
         }
     }
-    
+
     // Wrap it up
     OutObj = PyTuple_New(1+vardim+extdim+gIData->num_sp);
     assert(OutObj);
-    
+
     for (i=0; i<vardim; i++)
         PyTuple_SetItem(OutObj, i, (PyObject *)VarOut[i]);
     PyTuple_SetItem(OutObj, vardim, (PyObject *)ParOut);
-    
+
     if (EvOut != NULL)
         PyTuple_SetItem(OutObj, 1+vardim, (PyObject *)EvOut);
-    
+
     if (gIData->sjac) {
         //PyTuple_SetItem(OutObj, 1+vardim+extdim-2, (PyObject *)JacOut0);
         //PyTuple_SetItem(OutObj, 1+vardim+extdim-1, (PyObject *)JacOut1);
         PyTuple_SetItem(OutObj, 1+vardim+extdim-3, (PyObject *)JacOut0);
         PyTuple_SetItem(OutObj, 1+vardim+extdim-2, (PyObject *)JacOut1);
     }
-    
+
     if (gIData->snit) {
         PyTuple_SetItem(OutObj, 1+vardim+extdim-1, (PyObject *)NitOut);
     }
-    
+
     for (i = 0; i < gIData->num_sp; i++)
         PyTuple_SetItem(OutObj, 1+vardim+extdim+i, SPOutTuple[i]);
-    
+
     // Free
     PyMem_Free(VarOut);
     PyMem_Free(SPOut_ups);
@@ -268,7 +268,7 @@ PyObject* PackOut(int state) {
         PyMem_Free(SPOut_Flow2);
     }
     PyMem_Free(SPOutTuple);
-    
+
     // Ship it out
     return OutObj;
 }
@@ -286,20 +286,20 @@ int func(integer ndim, const doublereal *u, const integer *icp,
          doublereal *f, doublereal *dfdu, doublereal *dfdp) {
 
   /* Jacobian and Parameter Jacobian loops clearly slow things down here. */
-  
+
   integer i;
   doublereal **jac;
   doublereal **jacp;
-  
+
   vfieldfunc(ndim, 0, 0, u, par, f, 0, NULL, 0, NULL);
-  
+
   // Jacobian
   jac = (doublereal **)MALLOC(ndim*sizeof(doublereal *));
   jac[0] = dfdu;
   for (i=1; i<ndim; i++) jac[i] = jac[i-1] + ndim;
   jacobian(ndim, 0, 0, u, par, jac, 0, NULL, 0, NULL);
   FREE(jac);
-  
+
   // Parameter Jacobian
   jacp = (doublereal **)MALLOC(gIData->npar*sizeof(doublereal *));
   jacp[0] = dfdp;
@@ -311,7 +311,7 @@ int func(integer ndim, const doublereal *u, const integer *icp,
   }
   jacobianParam(ndim, 0, 0, u, par, jacp, 0, NULL, 0, NULL);
   FREE(jacp);
-  
+
   return 0;
 }
 /* ---------------------------------------------------------------------- */

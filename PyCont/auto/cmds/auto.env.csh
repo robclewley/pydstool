@@ -1,4 +1,4 @@
-# 
+#
 #  This file has to be sourced before activating AUTO2000 is you are using
 #  a 'csh' compatible shell, such as csh, or tcsh.
 #

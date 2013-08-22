@@ -1,7 +1,7 @@
 * Test BEM method from Govaertz's (p. 63)
 
 * codim 2 bifurcation points
-    - Have more complicated option of getting p and q if not using Hopf_Bor or Fold_Bor for 
+    - Have more complicated option of getting p and q if not using Hopf_Bor or Fold_Bor for
         continuation?
     - Implement normal form information for codim 2 bifurcation points
 
@@ -34,13 +34,13 @@ put BP in EquilibriumCurve (read paper on detection and continuation of branch p
 
 * Check example PyCont_PredPrey.py.  When continue fold curve from ZH point, it detects the ZH point.  Should
 I just copy the ZH point info to initial point of fold curve, or let it detect it?  If I copy the info, how do
-I prevent it from detecting it?  Actually, I think I ought to just copy it in, e.g. what if I don't detect any 
+I prevent it from detecting it?  Actually, I think I ought to just copy it in, e.g. what if I don't detect any
 bifurcation points?  Shouldn't I have the ZH point label on the starting point??!?!?  Don't I want to know
 where the curve originated from?
 
 * Certain test functions can be used on a curve after it is computed (BP, LP, H)
 
-* Implement getArgs for curve (spits out args class with all parameters)  This will make it easy to 
+* Implement getArgs for curve (spits out args class with all parameters)  This will make it easy to
 create new curve from old ones.
 
 * Do I really need to send F and C to TestFunc?  The answer to this question is whether I will use Fold and
@@ -51,7 +51,7 @@ makes a lot more sense, but I'm not sure if it will work.  OOPS!!!  CHECK PreTes
 USE Fold_Det TO CHECK FOR BIF.  IN CONT (_compute), YOU ONLY ALL self.CorrFunc.PreTestFunc, NOT
 self.sysfunc.PreTestFunc (which is what Fold_Det uses).  !!!!!!!!!  This needs some focused thought....
 I'm back.  PreTestFunc can calculate CorrFunc.jac, which in all cases is augmented.  SO, you can just
-set sysfunc.jac to the upper left block of CorrFunc.jac.  Truth be told, do I only need to calculate 
+set sysfunc.jac to the upper left block of CorrFunc.jac.  Truth be told, do I only need to calculate
 sysfunc.jac??!?!  Maybe...  ONE LAST THOUGHT: Each testfunc can have it's own preTestFunc based on
 its function F.  Thus, when it locates a zero for the test function, it will call its preTestFunc.
 The curve classes preTestFunc will be similar (calculate Jacobians), but then it should go through
@@ -77,7 +77,7 @@ Then, you could select points using this slider and cut/paste curves.  Neat...
 * Replace all args with pargs (in inits and stuff.   You know what I mean...)
 
 * Change implementation of tangent vectors to AUTO method (i.e. pos and neg stepsize)
-This may get rid of complication with turning tangent vectors around when going 
+This may get rid of complication with turning tangent vectors around when going
 backward along curve.
 
 * Save objects
@@ -103,9 +103,9 @@ using H-C2 (both found going backwards from Hopf point H1)
 
 * H-C1 breaks in FitzHugh-Nagumo at H1 and H2 (and ABReaction, sometimes)
 
-* Raise warning if plot_stability=True and SaveEigen=False.  ACTUALLY, just check data to see if stability info is 
+* Raise warning if plot_stability=True and SaveEigen=False.  ACTUALLY, just check data to see if stability info is
 saved for all points.  If not, raise warning and print without stability.  NOTE:  Could just
-make all point have stability info.  Actually, could generalize idea to "behaviour" info.  
+make all point have stability info.  Actually, could generalize idea to "behaviour" info.
 E.g., hopf curve have hopf vs. neutral saddle in plot
 
 * Implement branch argument (like AUTO) to tell PyCont to automatically use the branch
@@ -127,7 +127,7 @@ field in data to following a new branch
 
 AUTO:
 ----
-* Send Floquet multipliers back to PyCont when checking for bifurcation points.  This way I can set up BifPoints 
+* Send Floquet multipliers back to PyCont when checking for bifurcation points.  This way I can set up BifPoints
 that can process to make sure they are valid bifurcation points.
 
 * Get rid of initpoint in LimitCycleCurve._compute.  I only need initpars (implement this)
@@ -180,7 +180,7 @@ exception occuring, plot structure is messed up
 
 * Nice to have cycles in plot structure have ordering that appear along curve
 
-* Could save KeyEvent in axes pargs, so that clean() can clean the KeyEvent if 
+* Could save KeyEvent in axes pargs, so that clean() can clean the KeyEvent if
 something is deleted
 
 * Be able to send function as x or y values (for example, frequency = 1/_T)

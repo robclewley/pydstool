@@ -13,7 +13,7 @@ pthread_mutex_t reduce_mutex_for_d = PTHREAD_MUTEX_INITIALIZER;
 void *reduce_process(void * arg)
 {
   integer icf_dim1, irf_dim1;
-  
+
   /* Local variables */
   integer ipiv, jpiv, itmp;
   doublereal tpiv;
@@ -89,10 +89,10 @@ void *reduce_process(void * arg)
   /* Note that the summation of the adjacent overlapped part of C */
   /* is delayed until REDUCE, in order to merge it with other communications.*/
   /* NA is the local NTST. */
-  
+
   irf_dim1 = *nra;
   icf_dim1 = *nca;
-  
+
   /* Condensation of parameters (Elimination of local variables). */
   m1 = *nov + 1;
   m2 = *nca - *nov;
@@ -167,7 +167,7 @@ void *reduce_process(void * arg)
 	      c_offset1[-1 + icf_l_i] -= rm * a_offset2[-1 + icf_l_i];
 	    }
 	    for (l = 0; l < *ncb; ++l) {
-	      /* 
+	      /*
 		 A little explanation of what is going on here
 		 is in order I believe.  This array is
 		 created by a summation across all workers,
@@ -230,14 +230,14 @@ void *reduce_process(void * arg)
 }
 
 #ifdef PTHREADS
-int reduce_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, integer *ncb, 
-			   doublereal ***b, integer *nbc, integer *nrc, doublereal ***c, doublereal **d, 
+int reduce_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, integer *ncb,
+			   doublereal ***b, integer *nbc, integer *nrc, doublereal ***c, doublereal **d,
 			   integer *irf, integer *icf)
 
 {
   /* Aliases for the dimensions of the arrays */
   integer icf_dim1, irf_dim1;
-  
+
   reduce_parallel_arglist *data;
   int i;
   pthread_t *th;
@@ -248,7 +248,7 @@ int reduce_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca
   struct timeval *pthreads_wait;
   time_start(&pthreads_wait);
 #endif
-  
+
   data = (reduce_parallel_arglist *)MALLOC(sizeof(reduce_parallel_arglist)*global_num_procs);
   th = (pthread_t *)MALLOC(sizeof(pthread_t)*global_num_procs);
 
@@ -256,21 +256,21 @@ int reduce_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca
   icf_dim1 = *nca;
 
   for(i=0;i<global_num_procs;i++) {
-    
+
     /*start and end of the computed loop*/
     data[i].loop_start = (i*(*na))/global_num_procs;
     data[i].loop_end = ((i+1)*(*na))/global_num_procs;
-    
-    /*3D Arrays*/ 
+
+    /*3D Arrays*/
     data[i].a = a + data[i].loop_start;
     data[i].b = b + data[i].loop_start;
     data[i].c = c + data[i].loop_start;
-    
+
     /*2D Arrays*/
     data[i].d = d;
     data[i].irf = irf + data[i].loop_start*irf_dim1;
     data[i].icf = icf + data[i].loop_start*icf_dim1;
-    
+
     /*Scalars*/
     data[i].nbc = nbc;
     data[i].nrc = nrc;
@@ -278,10 +278,10 @@ int reduce_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca
     data[i].nov = nov;
     data[i].nra = nra;
     data[i].nca = nca;
-    
+
     data[i].loop_end = data[i].loop_end - data[i].loop_start;
     data[i].loop_start = 0;
-    
+
   }
   pthread_attr_init(&attr);
   pthread_attr_setscope(&attr,PTHREAD_SCOPE_SYSTEM);
@@ -289,11 +289,11 @@ int reduce_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca
     retcode = pthread_create(&th[i], &attr, reduce_process, (void *) &data[i]);
     if (retcode != 0) fprintf(stderr, "create %d failed %d\n", i, retcode);
   }
-  
+
   for(i=0;i<global_num_procs;i++) {
     retcode = pthread_join(th[i], &retval);
     if (retcode != 0) fprintf(stderr, "join %d failed %d\n", i, retcode);
-  }  
+  }
   FREE(data);
   FREE(th);
 #ifdef USAGE
@@ -304,10 +304,10 @@ int reduce_threads_wrapper(integer *nov, integer *na, integer *nra, integer *nca
 #endif
 
 #ifdef MPI
-int 
-reduce_mpi_wrapper(integer *nov, integer *na, integer *nra, 
-		   integer *nca, doublereal *a, integer *ncb, 
-		   doublereal *b, integer *nbc, integer *nrc, 
+int
+reduce_mpi_wrapper(integer *nov, integer *na, integer *nra,
+		   integer *nca, doublereal *a, integer *ncb,
+		   doublereal *b, integer *nbc, integer *nrc,
 		   doublereal *c, doublereal *d, integer *irf, integer *icf)
 
 {
@@ -344,7 +344,7 @@ reduce_mpi_wrapper(integer *nov, integer *na, integer *nra,
     icf_displacements[0] = 0;
 
     for(i=1;i<comm_size;i++){
-      
+
       /*Send message to get worker into reduce mode*/
       {
 	int message=AUTO_MPI_REDUCE_MESSAGE;
@@ -376,7 +376,7 @@ reduce_mpi_wrapper(integer *nov, integer *na, integer *nra,
       params[4]=*nbc;
       params[5]=*nrc;
 
-      
+
       MPI_Bcast(params        ,6,MPI_LONG,0,MPI_COMM_WORLD);
     }
     MPI_Scatterv(irf,irf_counts,irf_displacements,MPI_LONG,
@@ -419,7 +419,7 @@ reduce_mpi_wrapper(integer *nov, integer *na, integer *nra,
 }
 #endif
 
-int 
+int
 reduce_default_wrapper(integer *nov, integer *na, integer *nra, integer *nca, doublereal ***a, integer *ncb, doublereal ***b, integer *nbc, integer *nrc, doublereal ***c, doublereal **d, integer *irf, integer *icf)
 
 {
@@ -444,11 +444,11 @@ reduce_default_wrapper(integer *nov, integer *na, integer *nra, integer *nca, do
 
 
 /*
-int 
+int
 reduce(integer *nov, integer *na, integer *nra, integer *nca, doublereal *a, integer *ncb, doublereal *b, integer *nbc, integer *nrc, doublereal *c, doublereal *d, integer *irf, integer *icf)
 {
   integer icf_dim1, irf_dim1;
-  
+
   integer i,j;
   integer nex;
 
@@ -459,7 +459,7 @@ reduce(integer *nov, integer *na, integer *nra, integer *nca, doublereal *a, int
   if (nex == 0) {
     return 0;
   }
-  
+
   for (i = 0; i <*na; ++i) {
     for (j = 0; j < *nra; ++j) {
       irf[j + i * irf_dim1] = j+1;
@@ -472,7 +472,7 @@ reduce(integer *nov, integer *na, integer *nra, integer *nca, doublereal *a, int
   switch(global_reduce_type) {
 #ifdef PTHREADS
   case REDUCE_PTHREADS:
-    reduce_threads_wrapper(nov, na, nra, nca, a, 
+    reduce_threads_wrapper(nov, na, nra, nca, a,
 			    ncb, b, nbc, nrc, c, d,irf, icf);
     break;
 #endif
@@ -480,22 +480,22 @@ reduce(integer *nov, integer *na, integer *nra, integer *nca, doublereal *a, int
   case REDUCE_MPI:
     if(global_verbose_flag)
       printf("MPI reduce start\n");
-    reduce_mpi_wrapper(nov, na, nra, nca, a, 
+    reduce_mpi_wrapper(nov, na, nra, nca, a,
 			ncb, b, nbc, nrc, c, d,irf, icf);
     if(global_verbose_flag)
       printf("MPI reduce end\n");
     break;
 #endif
   default:
-    reduce_default_wrapper(nov, na, nra, nca, a, 
+    reduce_default_wrapper(nov, na, nra, nca, a,
 			    ncb, b, nbc, nrc, c, d,irf, icf);
     break;
   }
   return 0;
-} 
+}
 */
 
-int 
+int
 reduce(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal ***a2, doublereal ***bb, doublereal ***cc, doublereal **dd, integer *na, integer *nov, integer *ncb, integer *nrc, doublereal ***s1, doublereal ***s2, doublereal ***ca1, integer *icf1, integer *icf2, integer *icf11, integer *ipr, integer *nbc)
 {
   /* System generated locals */
@@ -523,7 +523,7 @@ reduce(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal **
   icf11_dim1 = *nov;
   icf2_dim1 = *nov;
   icf1_dim1 = *nov;
-    
+
   zero = 0.;
   nbcp1 = *nbc + 1;
   xkwt = (real) (*kwt);
@@ -611,7 +611,7 @@ reduce(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal **
 	  s1[i1][ipiv1 - 1][l] = tmp;
 	  if (l >= ic) {
 	    tmp = a2[i1][ic][ARRAY2D(icf2, l, i1) - 1];
-	    a2[i1][ic][ARRAY2D(icf2, l, i1) - 1] = 
+	    a2[i1][ic][ARRAY2D(icf2, l, i1) - 1] =
 	      a2[i1][ipiv1 - 1][ARRAY2D(icf2, l, i1) - 1];
 	    a2[i1][ipiv1 - 1][ARRAY2D(icf2, l, i1) - 1] = tmp;
 	  }
@@ -637,7 +637,7 @@ reduce(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal **
 	for (l = 0; l < *nov; ++l) {
 	  if (l >= ic) {
 	    tmp = a2[i1][ic][ARRAY2D(icf2, l, i1) - 1];
-	    a2[i1][ic][ARRAY2D(icf2, l, i1) - 1] = 
+	    a2[i1][ic][ARRAY2D(icf2, l, i1) - 1] =
                 a1[i2][ipiv2 - 1][ARRAY2D(icf2, l, i1) - 1];
 	    a1[i2][ipiv2 - 1][ARRAY2D(icf2, l, i1) - 1] = tmp;
 	  }
@@ -658,13 +658,13 @@ reduce(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal **
 
       for (ir = icp1; ir < *nov; ++ir) {
 	/*for (ir = *nov - 1; ir >= icp1; ir--) {*/
-	rm = a2[i1][ir][ARRAY2D(icf2, ic, i1) - 1] / 
+	rm = a2[i1][ir][ARRAY2D(icf2, ic, i1) - 1] /
 	  a2[i1][ic][ARRAY2D(icf2, ic, i1) - 1];
 	a2[i1][ir][ARRAY2D(icf2, ic, i1) - 1] = rm;
 
 	if (rm != (double)0.) {
 	  for (l = icp1; l < *nov; ++l) {
-	    a2[i1][ir][ARRAY2D(icf2, l, i1) - 1] -= 
+	    a2[i1][ir][ARRAY2D(icf2, l, i1) - 1] -=
 	      rm * a2[i1][ic][ARRAY2D(icf2, l, i1) - 1];
 	  }
 
@@ -681,13 +681,13 @@ reduce(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal **
 
       for (ir = 0; ir < *nov; ++ir) {
 	/*for (ir = *nov - 1; ir >= 0; ir--) {*/
-	rm = a1[i2][ir][ARRAY2D(icf1, ic, i2) - 1] / 
+	rm = a1[i2][ir][ARRAY2D(icf1, ic, i2) - 1] /
 	  a2[i1][ic][ARRAY2D(icf2, ic, i1) - 1];
 	a1[i2][ir][ARRAY2D(icf1, ic, i2) - 1] = rm;
 
 	if (rm != (double)0.) {
 	  for (l = icp1; l < *nov; ++l) {
-	    a1[i2][ir][ARRAY2D(icf1, l, i2) - 1] -= 
+	    a1[i2][ir][ARRAY2D(icf1, l, i2) - 1] -=
 	      rm * a2[i1][ic][ARRAY2D(icf2, l, i1) - 1];
 	  }
 	  for (l = 0; l < *nov; ++l) {
@@ -702,13 +702,13 @@ reduce(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal **
 
       for (ir = nbcp1 - 1; ir < *nrc; ++ir) {
 	/*for (ir = *nrc - 1; ir >= nbcp1 - 1; ir--) {*/
-	rm = cc[i2][ir][ARRAY2D(icf2, ic, i1) - 1] / 
+	rm = cc[i2][ir][ARRAY2D(icf2, ic, i1) - 1] /
 	  a2[i1][ic][ARRAY2D(icf2, ic, i1) - 1];
 	cc[i2][ir][ARRAY2D(icf2, ic, i1) - 1] = rm;
 
 	if (rm != (double)0.) {
 	  for (l = icp1; l < *nov; ++l) {
-	    cc[i2][ir][ARRAY2D(icf2, l, i1) - 1] -= 
+	    cc[i2][ir][ARRAY2D(icf2, l, i1) - 1] -=
 	      rm * a2[i1][ic][ARRAY2D(icf2, l, i1) - 1];
 	  }
 	  for (l = 0; l < *nov; ++l) {
@@ -732,7 +732,7 @@ reduce(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal **
   }
 #ifdef USAGE
   usage_end(mainloop,"reduce mainloop");
-#endif    
+#endif
 
 #ifdef DEBUG
   {
@@ -810,7 +810,7 @@ reduce(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublereal **
   exit(0);
 #endif
   return 0;
-} 
+}
 
 
 

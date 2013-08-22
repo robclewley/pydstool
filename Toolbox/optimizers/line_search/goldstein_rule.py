@@ -56,4 +56,3 @@ class GoldsteinRule(object):
       else:
         bk = alpha
         alpha = (ak + bk)/2.
-        

@@ -1,5 +1,5 @@
 C ******************************************
-C     VERSION OF SEPTEMBER 18, 1995      
+C     VERSION OF SEPTEMBER 18, 1995
 C ******************************************
 C
       SUBROUTINE DECOMR(N,FJAC,LDJAC,FMAS,LDMAS,MLMAS,MUMAS,
@@ -1248,7 +1248,7 @@ C
 C
    1  CONTINUE
 C ------  B=IDENTITY, JACOBIAN A FULL MATRIX
-      DO  I=1,N 
+      DO  I=1,N
          F2(I)=HEE1*Z1(I)+HEE2*Z2(I)+HEE3*Z3(I)
          CONT(I)=F2(I)+Y0(I)
       END DO
@@ -1257,7 +1257,7 @@ C ------  B=IDENTITY, JACOBIAN A FULL MATRIX
 C
   11  CONTINUE
 C ------  B=IDENTITY, JACOBIAN A FULL MATRIX, SECOND ORDER
-      DO I=1,N 
+      DO I=1,N
          F2(I)=HEE1*Z1(I)+HEE2*Z2(I)+HEE3*Z3(I)
          CONT(I)=F2(I)+Y0(I)
       END DO
@@ -1280,7 +1280,7 @@ C ------  B=IDENTITY, JACOBIAN A FULL MATRIX, SECOND ORDER
 C
    2  CONTINUE
 C ------  B=IDENTITY, JACOBIAN A BANDED MATRIX
-      DO I=1,N 
+      DO I=1,N
          F2(I)=HEE1*Z1(I)+HEE2*Z2(I)+HEE3*Z3(I)
          CONT(I)=F2(I)+Y0(I)
       END DO
@@ -1289,7 +1289,7 @@ C ------  B=IDENTITY, JACOBIAN A BANDED MATRIX
 C
   12  CONTINUE
 C ------  B=IDENTITY, JACOBIAN A BANDED MATRIX, SECOND ORDER
-      DO I=1,N 
+      DO I=1,N
          F2(I)=HEE1*Z1(I)+HEE2*Z2(I)+HEE3*Z3(I)
          CONT(I)=F2(I)+Y0(I)
       END DO
@@ -1495,7 +1495,7 @@ C ------ BANDED MATRIX OPTION, SECOND ORDER
           GOTO 88
 C -----------------------------------
   88      CONTINUE
-          ERR=0.D0 
+          ERR=0.D0
           DO I=1,N
              ERR=ERR+(CONT(I)/SCAL(I))**2
           END DO
@@ -1829,7 +1829,7 @@ C ------  THIS OPTION IS NOT PROVIDED (USE DC_DECSOL.F)
  33      CONTINUE
 C -----------------------------------
   88      CONTINUE
-          ERR=0.D0 
+          ERR=0.D0
           DO I=1,N
              ERR=ERR+(CONT(I)/SCAL(I))**2
           END DO
