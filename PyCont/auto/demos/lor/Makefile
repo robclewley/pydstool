@@ -32,4 +32,4 @@ clean:
 	@cp $(SRC) $(EXE)
 	@$(RM) *.exe *.o b.* s.* d.* fort.* *~ core
 	@echo "Cleaning ... done"
- 
+

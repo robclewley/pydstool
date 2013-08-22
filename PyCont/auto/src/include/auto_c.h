@@ -25,7 +25,7 @@
 #define RSMALL (1.0e-30)
 #define RLARGE (1.0e+30)
 #define HMACH1 (HMACH+1.0e0)
-#define M1SB (NBIFX) 
+#define M1SB (NBIFX)
 #define LEFT (1)
 #define RIGHT (2)
 #define QZMATZ (.FALSE.)
@@ -95,7 +95,7 @@ typedef struct {
   /* 36 */ integer ipos;
   /* 37 */ integer lab;
   /* 41 */ integer nicp;
-  /* The following are not set in init_.  
+  /* The following are not set in init_.
      They have to do with the old parallel version. */
   /* 38 */ integer mynode;
   /* 39 */ integer numnodes;
@@ -138,7 +138,7 @@ typedef struct {
     integer ncol;   // The number of collocation points used.
     integer nparx;  // The dimension of the par array (and the number of values in the parameter block).
     integer *icp;   // Index of free parameters.
-    
+
     doublereal *u;          // State variables (including t in first position, dimension = nar)
     doublereal par[NPARX];  // Parameters.
     // NOTE: I store ups differently than auto.  In auto, all collocation
@@ -148,7 +148,7 @@ typedef struct {
     doublereal **ups;       // Cycle.
     doublereal **udotps;    // Cycle branch direction. (dimension ntpl)
     doublereal *rldot;      // ??? (dimension nfpr)
-    
+
     doublereal ***a1,
                ***a2;       // Decomposition of flow maps:  J[i] = a2[i]^(-1)a1[i]
 } AutoSPData;
@@ -199,13 +199,13 @@ typedef struct {
                         //      of cycles.  Value = 2 + floor(nmx/npr), 2 for start and end of curve.
     int sp_inc;         // Increment by which special points are reallocated.
     int sp_ind;         // Index of special point with correct label (set in findlb and used in
-                        //      readlb, rsptbv, stpnbv).    
+                        //      readlb, rsptbv, stpnbv).
     /********
     * DEBUG *
     *********/
     int print_input;   // If 1, will print all input to stdout
     int print_output;  // If 1, will print all output to stdout
-    
+
     int verbosity;     // If 0, no output to screen.
 } AutoData;
 
@@ -294,7 +294,7 @@ int PrintInput(AutoData *Data, doublereal *par, integer *icp);
 int PrintOutput(AutoData *Data);
 int BlankData(AutoData *Data);
 int DefaultData(AutoData *Data);
-int CreateSpecialPoint(AutoData *Data, integer itp, integer lab, doublereal *u, 
+int CreateSpecialPoint(AutoData *Data, integer itp, integer lab, doublereal *u,
                        integer npar, integer *ipar, doublereal *par, integer *icp,
                        doublereal *ups, doublereal *udotps, doublereal *rldot);
 int CleanupParams(AutoData *Data);
@@ -312,11 +312,11 @@ void usage_end(struct rusage *, char *);
 void allocate_global_memory(const iap_type);
 int init0(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *thl, doublereal **thu_pointer, integer **iuz_pointer, doublereal **vuz_pointer);
 int chdim(iap_type *iap);
-int autoae(iap_type *iap, rap_type *rap, doublereal *par, 
-integer *icp, 
-FUNI_TYPE((*funi)), 
-STPNT_TYPE_AE((*stpnt)), 
-PVLI_TYPE_AE((*pvli)), 
+int autoae(iap_type *iap, rap_type *rap, doublereal *par,
+integer *icp,
+FUNI_TYPE((*funi)),
+STPNT_TYPE_AE((*stpnt)),
+PVLI_TYPE_AE((*pvli)),
 doublereal *thl, doublereal *thu, integer *iuz, doublereal *vuz);
 
 int autobv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), STPNT_TYPE_BVP((*stpnt)), PVLI_TYPE_BVP((*pvli)), doublereal *thl, doublereal *thu, integer *iuz, doublereal *vuz);
@@ -555,20 +555,20 @@ int ortran(integer *nm, integer *n, integer *low, integer *igh, doublereal *a, d
 
 
 /* problem defined functions*/
-extern int func(integer ndim, const doublereal *u, const integer *icp, 
-	 const doublereal *par, integer ijac, 
+extern int func(integer ndim, const doublereal *u, const integer *icp,
+	 const doublereal *par, integer ijac,
 	 doublereal *f, doublereal *dfdu, doublereal *dfdp);
-extern int stpnt(integer ndim, doublereal t, 
+extern int stpnt(integer ndim, doublereal t,
 	  doublereal *u, doublereal *par);
-extern int bcnd(integer ndim, const doublereal *par, const integer *icp, integer nbc, 
+extern int bcnd(integer ndim, const doublereal *par, const integer *icp, integer nbc,
 	 const doublereal *u0, const doublereal *u1, integer ijac,
 	 doublereal *f, doublereal *dbc);
-extern int icnd(integer ndim, const doublereal *par, const integer *icp, integer nint, 
-	 const doublereal *u, const doublereal *uold, const doublereal *udot, 
+extern int icnd(integer ndim, const doublereal *par, const integer *icp, integer nint,
+	 const doublereal *u, const doublereal *uold, const doublereal *udot,
 	 const doublereal *upold, integer ijac,
 	 doublereal *fi, doublereal *dint);
-extern int fopt(integer ndim, const doublereal *u, const integer *icp, 
-	 const doublereal *par, integer ijac, 
+extern int fopt(integer ndim, const doublereal *u, const integer *icp,
+	 const doublereal *par, integer ijac,
 	 doublereal *fs, doublereal *dfdu, doublereal *dfdp);
 // This is a dirty trick with mismatching prototypes -
 // sometimes u has to be **double and sometimes *double
@@ -585,48 +585,48 @@ int reduce(integer *iam, integer *kwt, logical *par, doublereal ***a1, doublerea
 #include "auto_types.h"
 void *setubv_make_aa_bb_cc(void *);
 #ifndef MANIFOLD
-int setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer nint, integer ncb, integer nrc, integer nra, integer nca, 
-	   FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par, integer *icp, 
-	   doublereal rds, doublereal ***aa, doublereal ***bb, doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal *rlcur, 
-	   doublereal *rlold, doublereal *rldot, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **dups, 
+int setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer nint, integer ncb, integer nrc, integer nra, integer nca,
+	   FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par, integer *icp,
+	   doublereal rds, doublereal ***aa, doublereal ***bb, doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal *rlcur,
+	   doublereal *rlold, doublereal *rldot, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **dups,
 	   doublereal *dtm, doublereal *thl, doublereal *thu, doublereal **p0, doublereal **p1);
 #else
-int setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer nint, integer nalc, integer ncb, integer nrc, integer nra, integer nca, 
-	   FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par, integer *icp, 
-	   doublereal *rds, doublereal ***aa, doublereal ***bb, doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal *rlcur, 
-	   doublereal *rlold, doublereal *rldot, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **dups, 
+int setubv(integer ndim, integer ips, integer na, integer ncol, integer nbc, integer nint, integer nalc, integer ncb, integer nrc, integer nra, integer nca,
+	   FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par, integer *icp,
+	   doublereal *rds, doublereal ***aa, doublereal ***bb, doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal *rlcur,
+	   doublereal *rlold, doublereal *rldot, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **dups,
 	   doublereal *dtm, doublereal *thl, doublereal *thu, doublereal **p0, doublereal **p1);
 #endif
 void setubv_parallel_arglist_copy(setubv_parallel_arglist *output, const setubv_parallel_arglist input);
 #ifndef MANIFOLD
-void setubv_parallel_arglist_constructor(integer ndim, integer ips, integer na, integer ncol, 
-					 integer nbc, integer nint, integer ncb, integer nrc, integer nra, integer nca, 
-					 FUNI_TYPE((*funi)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par, 
-					 integer *icp, doublereal ***aa, doublereal ***bb, 
-					 doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal **ups, 
-					 doublereal **uoldps, doublereal **udotps, 
-					 doublereal **upoldp, doublereal *dtm, 
+void setubv_parallel_arglist_constructor(integer ndim, integer ips, integer na, integer ncol,
+					 integer nbc, integer nint, integer ncb, integer nrc, integer nra, integer nca,
+					 FUNI_TYPE((*funi)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par,
+					 integer *icp, doublereal ***aa, doublereal ***bb,
+					 doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal **ups,
+					 doublereal **uoldps, doublereal **udotps,
+					 doublereal **upoldp, doublereal *dtm,
 					 doublereal **wp, doublereal **wt, doublereal *wi,
 					 doublereal *thu, doublereal *thl, doublereal *rldot, BCNI_TYPE((*bcni)),
 					 setubv_parallel_arglist *data);
 #else
-void setubv_parallel_arglist_constructor(integer ndim, integer ips, integer na, integer ncol, 
-					 integer nbc, integer nint, integer nalc, integer ncb, integer nrc, integer nra, integer nca, 
-					 FUNI_TYPE((*funi)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par, 
-					 integer *icp, doublereal ***aa, doublereal ***bb, 
-					 doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal **ups, 
-					 doublereal **uoldps, doublereal **udotps, 
-					 doublereal **upoldp, doublereal *dtm, 
+void setubv_parallel_arglist_constructor(integer ndim, integer ips, integer na, integer ncol,
+					 integer nbc, integer nint, integer nalc, integer ncb, integer nrc, integer nra, integer nca,
+					 FUNI_TYPE((*funi)), ICNI_TYPE((*icni)), integer ndxloc, iap_type *iap, rap_type *rap, doublereal *par,
+					 integer *icp, doublereal ***aa, doublereal ***bb,
+					 doublereal ***cc, doublereal **dd, doublereal **fa, doublereal *fc, doublereal **ups,
+					 doublereal **uoldps, doublereal **udotps,
+					 doublereal **upoldp, doublereal *dtm,
 					 doublereal **wp, doublereal **wt, doublereal *wi,
 					 doublereal *thu, doublereal *thl, doublereal *rldot, BCNI_TYPE((*bcni)),
 					 setubv_parallel_arglist *data);
 #endif
 void setubv_make_fa(setubv_parallel_arglist larg);
 #ifndef MANIFOLD
-void setubv_make_fc_dd(setubv_parallel_arglist larg,doublereal **dups, doublereal *rlcur, 
+void setubv_make_fc_dd(setubv_parallel_arglist larg,doublereal **dups, doublereal *rlcur,
 		       doublereal *rlold, doublereal rds);
 #else
-void setubv_make_fc_dd(setubv_parallel_arglist larg,doublereal **dups, doublereal *rlcur, 
+void setubv_make_fc_dd(setubv_parallel_arglist larg,doublereal **dups, doublereal *rlcur,
 		       doublereal *rlold, doublereal *rds);
 #endif
 

@@ -91,7 +91,7 @@ assert len(evt) > 2
 ix_lo = HHpts.findIndex(evt[-2])
 ix_hi = HHpts.findIndex(evt[-1])
 try:
-    # ensure only 
+    # ensure only
     po = HHpts[ix_lo:ix_hi+1]  # include last point
 except ValueError:
     raise RuntimeError("Probably not enough max_pts for integrator, or not"

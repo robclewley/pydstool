@@ -27,7 +27,7 @@ struct {
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 fnho(const iap_type *iap, const rap_type *rap, integer ndim, const doublereal *u, const doublereal *uold, const integer *icp, doublereal *par, integer ijac, doublereal *f, doublereal *dfdu, doublereal *dfdp)
 {
   /* System generated locals */
@@ -70,7 +70,7 @@ fnho(const iap_type *iap, const rap_type *rap, integer ndim, const doublereal *u
   if (ijac == 0) {
 #ifndef STATIC_ALLOC
     FREE(dfu);
-#endif      
+#endif
     return 0;
   }
 
@@ -127,7 +127,7 @@ fnho(const iap_type *iap, const rap_type *rap, integer ndim, const doublereal *u
 
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 ffho(const iap_type *iap, const rap_type *rap, integer ndim, const doublereal *u, const doublereal *uold, const integer *icp, doublereal *par, doublereal *f, integer ndm, doublereal *dfdu)
 {
   /* System generated locals */
@@ -139,7 +139,7 @@ ffho(const iap_type *iap, const rap_type *rap, integer ndim, const doublereal *u
   doublereal dum1;
 
   dfdu_dim1 = ndm;
-    
+
   if (blhom_1.istart >= 0) {
     if (blhom_1.itwist == 0) {
       /*        *Evaluate the R.-H. sides */
@@ -164,7 +164,7 @@ ffho(const iap_type *iap, const rap_type *rap, integer ndim, const doublereal *u
     /*        Homoclinic branch switching */
     for (j = 0; j < ndim; j += ndm) {
       funi(iap, rap, ndm, &u[j], &uold[j], icp, par, 0, &f[j], NULL, NULL);
-    }      
+    }
   }
 
   /* Scale by truncation interval T=PAR(11) */
@@ -188,7 +188,7 @@ ffho(const iap_type *iap, const rap_type *rap, integer ndim, const doublereal *u
 
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 bcho(const iap_type *iap, const rap_type *rap, integer ndim, doublereal *par, const integer *icp, integer nbc, const doublereal *u0, const doublereal *u1, doublereal *f, integer ijac, doublereal *dbc)
 {
   /* System generated locals */
@@ -205,7 +205,7 @@ bcho(const iap_type *iap, const rap_type *rap, integer ndim, doublereal *par, co
 /* Generates the boundary conditions for homoclinic bifurcation analysis */
 
   dbc_dim1 = nbc;
-  
+
   nbc0 = iap->nbc0;
   nfpr = iap->nfpr;
 
@@ -220,7 +220,7 @@ bcho(const iap_type *iap, const rap_type *rap, integer ndim, doublereal *par, co
   ff1=(doublereal *)MALLOC(sizeof(doublereal)*(iap->nbc));
   ff2=(doublereal *)MALLOC(sizeof(doublereal)*(iap->nbc));
   uu=(doublereal *)MALLOC(sizeof(doublereal)*(iap->ndim));
-		     
+
   /* Derivatives with respect to U0. */
 
   umx = 0.;
@@ -332,7 +332,7 @@ static int fbho_regular(const iap_type *iap, integer ndim, doublereal *par,
 
   ndm = iap->ndm;
   bound   = DMATRIX(ndm, ndm);
-  
+
   /*        *Projection boundary conditions for the homoclinic orbit */
   /*        *NSTAB boundary conditions at t=0 */
   prjctn(bound, xequib1, icp, par, -1, 1, 1, ndm);
@@ -466,9 +466,9 @@ static int fbho_regular(const iap_type *iap, integer ndim, doublereal *par,
   FREE_DMATRIX(bound);
   FREE_DMATRIX(vr[0]);
   FREE_DMATRIX(vt[0]);
-  if (vr[1] != NULL) 
+  if (vr[1] != NULL)
     FREE_DMATRIX(vr[1]);
-  if (vt[1] != NULL) 
+  if (vt[1] != NULL)
     FREE_DMATRIX(vt[1]);
   return jb;
 }
@@ -487,7 +487,7 @@ static int fbho_homotopy(const iap_type *iap, integer ndm, doublereal *par,
   doublereal *ri = (doublereal *)MALLOC(sizeof(doublereal)*ndm);
   doublereal *rr = (doublereal *)MALLOC(sizeof(doublereal)*ndm);
   doublereal **vr, **vt;
-  
+
   ip = 11;
   if (blhom_1.iequib >= 0) {
     ip += ndm;
@@ -504,7 +504,7 @@ static int fbho_homotopy(const iap_type *iap, integer ndm, doublereal *par,
     kp = ip + blhom_1.nunstab;
     for (j = 0; j < blhom_1.nunstab; ++j) {
       for (i = 0; i < ndm; ++i) {
-        fb[i] += u0[i] - xequib1[i] - par[ip + j + 1] * 
+        fb[i] += u0[i] - xequib1[i] - par[ip + j + 1] *
 	  vr[ndm - blhom_1.nunstab + j][i];
       }
       /* Computing 2nd power */
@@ -514,7 +514,7 @@ static int fbho_homotopy(const iap_type *iap, integer ndm, doublereal *par,
   } else {
     kp = ip + 1;
     for (i = 0; i < ndm; ++i) {
-      fb[i] = u0[i] - xequib1[i] - par[ip] * par[ip + 1] * 
+      fb[i] = u0[i] - xequib1[i] - par[ip] * par[ip + 1] *
 	vr[ndm - blhom_1.nunstab][i];
     }
   }
@@ -543,13 +543,13 @@ static int fbho_homotopy(const iap_type *iap, integer ndm, doublereal *par,
 }
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 fbho(const iap_type *iap, integer ndim, doublereal *par, const integer *icp, integer nbc, integer nbc0, const doublereal *u0, const doublereal *u1, doublereal *fb)
 {
   integer i, jb, nbcn;
   integer ndm = iap->ndm;
   doublereal *xequib1, *xequib2;
-  
+
   /* Generates the boundary conditions for homoclinic orbits. */
 
   /*     *Initialization */
@@ -590,7 +590,7 @@ fbho(const iap_type *iap, integer ndim, doublereal *par, const integer *icp, int
 
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 icho(const iap_type *iap, const rap_type *rap, integer ndim, doublereal *par, const integer *icp, integer nint, const doublereal *u, const doublereal *uold, const doublereal *udot, const doublereal *upold, doublereal *f, integer ijac, doublereal *dint)
 {
   /* System generated locals */
@@ -607,7 +607,7 @@ icho(const iap_type *iap, const rap_type *rap, integer ndim, doublereal *par, co
 /* Generates integral conditions for homoclinic bifurcation analysis */
 
   dint_dim1 = nint;
-  
+
   nnt0 = iap->nnt0;
   nfpr = iap->nfpr;
 
@@ -666,7 +666,7 @@ icho(const iap_type *iap, const rap_type *rap, integer ndim, doublereal *par, co
 
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 fiho(const iap_type *iap, const rap_type *rap, integer ndim, doublereal *par, const integer *icp, integer nint, integer nnt0, const doublereal *u, const doublereal *uold, const doublereal *udot, const doublereal *upold, doublereal *fi)
 {
   /* Local variables */
@@ -706,7 +706,7 @@ fiho(const iap_type *iap, const rap_type *rap, integer ndim, doublereal *par, co
 
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 inho(iap_type *iap, integer *icp, doublereal *par)
 {
 
@@ -732,9 +732,9 @@ inho(iap_type *iap, integer *icp, doublereal *par)
     /* Parameter adjustments */
     /*--par;*/
     /*--icp;*/
-    
 
-    
+
+
   ndim = iap->ndim;
   irs = iap->irs;
   isw = iap->isw;
@@ -748,7 +748,7 @@ inho(iap_type *iap, integer *icp, doublereal *par)
 	 &blhom_1.iequib,&blhom_1.itwist,&blhom_1.istart);
   /*go to the end of the line*/
   while(fgetc(fp12)!='\n');
-    
+
   /* updated reading in of constants for reversible equations */
   /* replaces location in datafile of compzero */
 
@@ -762,7 +762,7 @@ inho(iap_type *iap, integer *icp, doublereal *par)
     /*go to the end of the line*/
     while(fgetc(fp12)!='\n');
   }
-    
+
   fscanf(fp12,"%ld",&blhom_1.nfixed);
   /*go to the end of the line*/
   while(fgetc(fp12)!='\n');
@@ -841,7 +841,7 @@ inho(iap_type *iap, integer *icp, doublereal *par)
       nbc = ndm * (blhom_1.iequib + 1) + blhom_1.nunstab + 1;
     }
     if (blhom_1.iequib == 2) {
-      fprintf(fp9,"WARNING: IEQUIB=2 NOT ALLOWED WITH ISTART=3\n");	
+      fprintf(fp9,"WARNING: IEQUIB=2 NOT ALLOWED WITH ISTART=3\n");
     }
     if (blhom_1.iequib < 0) {
       nbc -= ndm * (blhom_1.iequib * 3 + 2);
@@ -863,9 +863,9 @@ inho(iap_type *iap, integer *icp, doublereal *par)
 
 /*     ---------- ------ */
 /* Subroutine */ int intpho(iap_type *iap, rap_type *rap, integer ndm,
-        integer ncolrs, doublereal tm, 
-        doublereal dtm, integer ndx, doublereal **ups, doublereal **udotps, 
-        doublereal t, doublereal dt, integer n, integer ndim, integer j, 
+        integer ncolrs, doublereal tm,
+        doublereal dtm, integer ndx, doublereal **ups, doublereal **udotps,
+        doublereal t, doublereal dt, integer n, integer ndim, integer j,
         integer j1)
 {
   /* Local variables */
@@ -875,7 +875,7 @@ inho(iap_type *iap, integer *icp, doublereal *par)
   integer ncp1 = ncolrs + 1;
   doublereal *w = (doublereal *)MALLOC(sizeof(doublereal) * ncp1);
   doublereal *x = (doublereal *)MALLOC(sizeof(doublereal) * ncp1);
-      
+
 /*     Finds interpolant (TM(.) , UPS(.), UDOTPS(.) ) on the new mesh */
 /*     at times TM,TM+DTM using the old mesh at times T,T+DT. */
 
@@ -902,14 +902,14 @@ inho(iap_type *iap, integer *icp, doublereal *par)
 
   FREE(w);
   FREE(x);
-  
+
   return 0;
 } /* intpho_ */
 
 /*     ---------- ------ */
 /* Subroutine */ int tranho(iap_type *iap, rap_type *rap,
-        integer *ntsr, integer ncolrs, integer ndm, 
-        integer ndim, doublereal *tm, doublereal *dtm, integer ndx, 
+        integer *ntsr, integer ncolrs, integer ndm,
+        integer ndim, doublereal *tm, doublereal *dtm, integer ndx,
         doublereal **ups, doublereal **udotps, const integer *icp, doublereal *par)
 
 /*     Transform the data representation of the homoclinic orbit into */
@@ -953,7 +953,7 @@ inho(iap_type *iap, integer *icp, doublereal *par)
     }
   }
   tmmax = tm[jmax];
-  
+
   func(ndm, ups[jmax], icp, par, 0, &par[NPARX-ndm], &dum1, &dum2);
 
 /*     PAR(NPARX-NDM+1...NPARX) contains the point furthest from */
@@ -1045,7 +1045,7 @@ inho(iap_type *iap, integer *icp, doublereal *par)
     }
 
     dtm[j - 1] = tm[j] - tm[j - 1];
-    
+
 /*     copy first part to temp arrays upst */
 /*     Replace UPS and UDOTPS by its interpolant on the new mesh : */
 
@@ -1057,7 +1057,7 @@ inho(iap_type *iap, integer *icp, doublereal *par)
            dtm[j - 1], ndm, ndim, j2[1] - 1, j - 1);
 
 /*     Remesh last part : */
-    
+
     intpho(iap, rap, ndm, ncolrs, tt[2], t[2] - tt[2], ndx, ups, udotps, tm[j - 1],
            dtm[j - 1], ndim - ndm, ndim, j2[2] + jmax - 2, j - 1);
 
@@ -1087,15 +1087,15 @@ inho(iap_type *iap, integer *icp, doublereal *par)
     ups[*ntsr][i + ndim - ndm] = ups[0][i];
     udotps[*ntsr][i + ndim - ndm] = udotps[0][i];
   }
-  
+
   FREE(ttm);
   return 0;
 } /* tranho_ */
 
 
 /*     ---------- ------ */
-/* Subroutine */ int cpbkho(integer *ntsr, integer ncolrs, integer *nar, 
-        integer ndm, doublereal *tm, doublereal *dtm, integer ndx, 
+/* Subroutine */ int cpbkho(integer *ntsr, integer ncolrs, integer *nar,
+        integer ndm, doublereal *tm, doublereal *dtm, integer ndx,
         doublereal **ups, doublereal **udotps, doublereal *par)
 
 /*     Copy the homoclinic orbit back from the special representation */
@@ -1108,7 +1108,7 @@ inho(iap_type *iap, integer *icp, doublereal *par)
   integer i, j, k, l, m;
   doublereal tbase;
   integer ncopy;
-  
+
   ndim = ndm * (blhom_1.itwist + 1);
   ncopy = *nar / ndm;
   j = 0;
@@ -1157,7 +1157,7 @@ inho(iap_type *iap, integer *icp, doublereal *par)
 } /* cpbkho_ */
 
 /*     ---------- ----- */
-/* Subroutine */ int 
+/* Subroutine */ int
 preho(iap_type *iap, rap_type *rap, doublereal *par, const integer *icp,
       integer ndx, integer *ntsr, integer *nar, integer ncolrs, doublereal **ups,
       doublereal **udotps, doublereal *tm, doublereal *dtm)
@@ -1172,7 +1172,7 @@ preho(iap_type *iap, rap_type *rap, doublereal *par, const integer *icp,
   integer ist;
 
 
-  
+
 
 /* Preprocesses (perturbs) restart data to enable */
 /* initial computation of the adjoint variable */
@@ -1181,9 +1181,9 @@ preho(iap_type *iap, rap_type *rap, doublereal *par, const integer *icp,
     /* Parameter adjustments */
     /*--tm;*/
     /*--par;*/
-  
+
   ndim = iap->ndim;
-  ndm = iap->ndm;  
+  ndm = iap->ndm;
 
   /* Shift phase if necessary if continuing from */
   /* a periodic orbit into a homoclinic one */
@@ -1311,7 +1311,7 @@ preho(iap_type *iap, rap_type *rap, doublereal *par, const integer *icp,
 
   /* Preprocesses (perturbs) restart data to enable */
   /* initial computation of the adjoint variable */
-  
+
   if (*nar != ndim && blhom_1.itwist == 1 && blhom_1.istart >= 0) {
     for (j = 0; j < *ntsr; ++j) {
       for (i = 0; i < ncolrs; ++i) {
@@ -1332,7 +1332,7 @@ preho(iap_type *iap, rap_type *rap, doublereal *par, const integer *icp,
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 stpnho(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *ntsr, integer *ncolrs, doublereal *rlcur, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **udotps, doublereal **upoldp, doublereal *tm, doublereal *dtm, integer *nodir, doublereal *thl, doublereal *thu)
 {
   /* Local variables */
@@ -1402,7 +1402,7 @@ stpnho(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *nts
 
 
 /*     ---------- ----- */
-/* Subroutine */ int 
+/* Subroutine */ int
 stpho(iap_type *iap, integer *icp, doublereal *u, doublereal *par, doublereal t)
 {
     /* Local variables */
@@ -1480,9 +1480,9 @@ stpho(iap_type *iap, integer *icp, doublereal *u, doublereal *par, doublereal t)
       exp(rr[blhom_1.nstab] * t * par[10]);
   }
   for (i = 0; i < ndm; ++i) {
-    fprintf(fp9,"stpho %20.10f\n",u[i]);	
+    fprintf(fp9,"stpho %20.10f\n",u[i]);
   }
-  fprintf(fp9,"\n");	
+  fprintf(fp9,"\n");
 
 /* Artificial parameters at the right-hand end point of the orbit */
 /* omega_i=<x(1)-x_o,w_i^*> */
@@ -1507,7 +1507,7 @@ stpho(iap_type *iap, integer *icp, doublereal *u, doublereal *par, doublereal t)
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 pvlsho(iap_type *iap, rap_type *rap, integer *icp, doublereal *dtm, integer *ndxloc, doublereal **ups, integer *ndim, doublereal **p0, doublereal **p1, doublereal *par)
 {
   /* Local variables */
@@ -1532,11 +1532,11 @@ pvlsho(iap_type *iap, rap_type *rap, integer *icp, doublereal *dtm, integer *ndx
     bleig.v[i]      = DMATRIX(*ndim, *ndim);
     bleig.vt[i]     = DMATRIX(*ndim, *ndim);
   }
-  
+
   iid = iap->iid;
   ndm = iap->ndm;
 
-  pvlsbv(iap, rap, icp, dtm, ndxloc, ups, ndim, 
+  pvlsbv(iap, rap, icp, dtm, ndxloc, ups, ndim,
 	 p0, p1, par);
 
   /*      *Compute eigenvalues */
@@ -1554,12 +1554,12 @@ pvlsho(iap_type *iap, rap_type *rap, integer *icp, doublereal *dtm, integer *ndx
     {
       fprintf(fp9,"EIGENVALUES of RHS equilibrium\n");
       for (j = 0; j < ndm; ++j) {
-        fprintf(fp9," (%12.7f %12.7f)\n",bleig.rr[1][j],bleig.ri[1][j]);	
+        fprintf(fp9," (%12.7f %12.7f)\n",bleig.rr[1][j],bleig.ri[1][j]);
       }
     }
   }
   if (blhom_1.itwist == 1 && blhom_1.istart >= 0) {
-    eigho(1, 1, bleig.rr[0], bleig.ri[0], bleig.vt[0], 
+    eigho(1, 1, bleig.rr[0], bleig.ri[0], bleig.vt[0],
 	  &par[11], icp, par, ndm);
     if (blhom_1.iequib < 0) {
       eigho(1, 1, bleig.rr[1], bleig.ri[1], bleig.vt[1],
@@ -1570,9 +1570,9 @@ pvlsho(iap_type *iap, rap_type *rap, integer *icp, doublereal *dtm, integer *ndx
                    ups[0], ups[iap->ntst]);
     if (iid >= 3) {
       if (orient < 0.) {
-	fprintf(fp9," Non-orientable, (%20.10f)\n",orient);	
+	fprintf(fp9," Non-orientable, (%20.10f)\n",orient);
       } else {
-	fprintf(fp9," Orientable (%20.10f)\n",orient);	
+	fprintf(fp9," Orientable (%20.10f)\n",orient);
       }
     }
   }
@@ -1589,7 +1589,7 @@ pvlsho(iap_type *iap, rap_type *rap, integer *icp, doublereal *dtm, integer *ndx
       psiho(iap, blhmp_1.ipsi[i], bleig.rr, bleig.ri,
             bleig.v, bleig.vt, icp, par, ups[0], ups[iap->ntst]);
     if (iid >= 3) {
-      fprintf(fp9," PSI(%2ld)=%20.10f\n",blhmp_1.ipsi[i],par[blhmp_1.ipsi[i] + 19]);	
+      fprintf(fp9," PSI(%2ld)=%20.10f\n",blhmp_1.ipsi[i],par[blhmp_1.ipsi[i] + 19]);
 
     }
   }
@@ -1606,7 +1606,7 @@ pvlsho(iap_type *iap, rap_type *rap, integer *icp, doublereal *dtm, integer *ndx
 
 
 /*     -------- ------- -------- ----- */
-doublereal 
+doublereal
 psiho(const iap_type *iap, integer is, doublereal **rr, doublereal **ri, doublereal ***v, doublereal ***vt, const integer *icp, doublereal *par, const doublereal *pu0, const doublereal *pu1)
 {
   /* System generated locals */
@@ -1618,7 +1618,7 @@ psiho(const iap_type *iap, integer is, doublereal **rr, doublereal **ri, doubler
   doublereal *f0, *f1, droot, s1, s2, f0norm, f1norm, u0norm, u1norm;
   integer ndm;
 
-  f0 = (doublereal *)MALLOC(sizeof(doublereal)*(iap->ndm));    
+  f0 = (doublereal *)MALLOC(sizeof(doublereal)*(iap->ndm));
   f1 = (doublereal *)MALLOC(sizeof(doublereal)*(iap->ndm));
 
 /* The conditions for degenerate homoclinic orbits are given by PSI(IS)=0.*/
@@ -1638,7 +1638,7 @@ psiho(const iap_type *iap, integer is, doublereal **rr, doublereal **ri, doubler
     /*--icp;*/
     /*--ri;*/
     /*--rr;*/
-    
+
   ndm = iap->ndm;
 
   func(ndm, pu0, icp, par, 0, f0, NULL, NULL);
@@ -1799,7 +1799,7 @@ psiho(const iap_type *iap, integer is, doublereal **rr, doublereal **ri, doubler
   ret_val *= exp(par[10] * rr[0][blhom_1.nstab] / 2.);
   break;
 
-  /* Inclination flip (critically twisted) with respect to stable manifold 
+  /* Inclination flip (critically twisted) with respect to stable manifold
 */
 /*   e.g. 1D unstable manifold */
 
@@ -1846,7 +1846,7 @@ psiho(const iap_type *iap, integer is, doublereal **rr, doublereal **ri, doubler
 
 
 /*     ---------- ----- */
-/* Subroutine */ int 
+/* Subroutine */ int
 eigho(integer isign, integer itrans, doublereal *rr, doublereal *ri, doublereal **vret, const doublereal *xequib, const integer *icp, doublereal *par, integer ndm)
 {
   /* System generated locals */
@@ -1906,7 +1906,7 @@ eigho(integer isign, integer itrans, doublereal *rr, doublereal *ri, doublereal 
     /*--par;*/
   dfdp_dim1 = ndm;
   dfdu_dim1 = ndm;
-    
+
   ifail = 0;
 
   func(ndm, xequib, icp, par, 1, f, dfdu, dfdp);
@@ -1925,7 +1925,7 @@ eigho(integer isign, integer itrans, doublereal *rr, doublereal *ri, doublereal 
   rg(ndm, ndm, dfdu, rr, ri, 1, *zz, iv1, fv1, &ifail);
 
   if (ifail != 0) {
-    fprintf(fp9,"EISPACK EIGENVALUE ROUTINE FAILED !\n");	
+    fprintf(fp9,"EISPACK EIGENVALUE ROUTINE FAILED !\n");
   }
 
   for (j = 0; j < ndm; ++j) {
@@ -1976,7 +1976,7 @@ eigho(integer isign, integer itrans, doublereal *rr, doublereal *ri, doublereal 
   /* from the previous call with the same value of ISIGN */
 
   if (vrprev[itrans - 1] == NULL) {
-    vrprev[itrans - 1] = DMATRIX(ndm, ndm);      
+    vrprev[itrans - 1] = DMATRIX(ndm, ndm);
     for (j = 0; j < ndm; ++j) {
       for (i = 0; i < ndm; ++i) {
 	vrprev[itrans - 1][i][j] = vr[i][j];
@@ -2020,7 +2020,7 @@ eigho(integer isign, integer itrans, doublereal *rr, doublereal *ri, doublereal 
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 prjctn(doublereal **bound, const doublereal *xequib, const integer *icp, doublereal *par, integer imfd, integer is, integer itrans, integer ndm)
 {
   /* System generated locals */
@@ -2031,17 +2031,17 @@ prjctn(doublereal **bound, const doublereal *xequib, const integer *icp, doubler
   integer mcond, k1, k2, m0;
 
   doublereal *dfdu;
-  
+
   doublereal det, eps;
 
   doublereal *fdum;
   doublereal **cnow;
   doublereal *a;
   doublereal *v;
-    
+
   static doublereal **cprevs[2][2] = {{NULL, NULL}, {NULL, NULL}};
   doublereal **cprev = cprevs[is - 1][itrans - 1];
-  
+
   /* Compute NUNSTAB (or NSTAB) projection boundary condition functions */
   /*onto to the UNSTABLE (or STABLE) manifold of the appropriate equilibrium
    */
@@ -2116,7 +2116,7 @@ prjctn(doublereal **bound, const doublereal *xequib, const integer *icp, doubler
     FREE(er);
   }
   FREE(a);
-  
+
   /* Put the basis in the appropriate part of the matrix CNOW */
   if (imfd == 1) {
     k1 = ndm - blhom_1.nunstab + 1;
@@ -2139,7 +2139,7 @@ prjctn(doublereal **bound, const doublereal *xequib, const integer *icp, doubler
   /* the prjctn_ function uses this array to test if this is
        the first time the prjctn_ function has been called.
        Accordingly, it was initialized to NULLs above. */
-    
+
   /* Set previous matrix to be the present one if this is the first call */
 
     /* Note by Randy Paffenroth:  There is a slight problem here
@@ -2184,7 +2184,7 @@ prjctn(doublereal **bound, const doublereal *xequib, const integer *icp, doubler
     }
     FREE_DMATRIX(dum1);
     FREE_DMATRIX(dum2);
-    
+
     for (i = 0; i < mcond; ++i) {
       for (j = 0; j < ndm; ++j) {
         bound[i + m0][j] = 0.;
@@ -2194,7 +2194,7 @@ prjctn(doublereal **bound, const doublereal *xequib, const integer *icp, doubler
       }
     }
     FREE_DMATRIX(d);
-    
+
     for (i = k1 - 1; i < k2; ++i) {
       for (j = 0; j < ndm; ++j) {
         cprev[i][j] = bound[i][j];

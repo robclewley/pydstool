@@ -1,14 +1,14 @@
 /*
 The DsTool program is the property of:
- 
-                             Cornell University 
-                        Center of Applied Mathematics 
+
+                             Cornell University
+                        Center of Applied Mathematics
                               Ithaca, NY 14853
                       dstool_bugs@macomb.tn.cornell.edu
- 
+
 and may be used, modified and distributed freely, subject to the following
 restrictions:
- 
+
        Any product which incorporates source code from the DsTool
        program or utilities, in whole or in part, is distributed
        with a copy of that source code, including this notice. You
@@ -16,10 +16,10 @@ restrictions:
        respect to the use of this software. Modifications of the
        software must carry prominent notices stating who changed
        the files and the date of any change.
- 
-DsTool is distributed in the hope that it will be useful, but WITHOUT ANY 
+
+DsTool is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of FITNESS FOR A PARTICULAR PURPOSE.
-The software is provided as is without any obligation on the part of Cornell 
+The software is provided as is without any obligation on the part of Cornell
 faculty, staff or students to assist in its use, correction, modification or
 enhancement.
 
@@ -41,7 +41,7 @@ Floquet multipliers!
 */
 
 /*
- * dmatrix.c 
+ * dmatrix.c
  */
 
 #define DMATRIX_C
@@ -68,7 +68,7 @@ dmatrix(integer n_rows, integer n_cols)
 
   if (n_rows<=0 || n_cols<=0) return(NULL);
   total_pts = n_rows*n_cols;
-  
+
   if ( (m = (doublereal **) malloc( (unsigned) (n_rows * sizeof(doublereal *)))) == NULL)
     {
       printf("dmatrix: memory allocation failure!\n");
@@ -94,7 +94,7 @@ dmatrix_debug(integer n_rows, integer n_cols)
   doublereal **m;
 
   if (n_rows<=0 || n_cols<=0) return(NULL);
-  
+
   if ( (m = malloc( (unsigned) ((n_rows+1) * sizeof(doublereal *)))) == NULL)
     {
       printf("dmatrix: memory allocation failure!\n");
@@ -116,7 +116,7 @@ dmatrix_3d(integer n_levels, integer n_rows, integer n_cols)
 
   if (n_levels<=0 || n_rows<=0 || n_cols<=0) return(NULL);
   total_ptrs = n_levels*n_rows;
-  
+
   if ( (m = (doublereal ***) malloc( (unsigned) (n_levels * sizeof(doublereal **)))) == NULL)
     {
       printf("dmatrix_3d: memory allocation failure!\n");
@@ -142,7 +142,7 @@ dmatrix_3d_debug(integer n_levels, integer n_rows, integer n_cols)
   doublereal ***m;
 
   if (n_levels<=0 || n_rows<=0 || n_cols<=0) return(NULL);
-  
+
   if ( (m = malloc( (unsigned) ((n_levels+1) * sizeof(doublereal **)))) == NULL)
     {
       printf("dmatrix_3d: memory allocation failure!\n");
@@ -175,7 +175,7 @@ void
 free_dmatrix_debug(doublereal **m)
 {
   integer i;
-    
+
   if (m==NULL) return;
 
   for (i = 0; m[i] != NULL; i++)
@@ -195,7 +195,7 @@ void
 free_dmatrix_3d_debug(doublereal ***m)
 {
   integer i;
-    
+
   if (m==NULL) return;
 
   for (i = 0; m[i] != NULL; i++)
@@ -211,7 +211,7 @@ doublereal **DMATRIX(integer n_rows, integer n_cols)
 
   if (n_rows<=0 || n_cols<=0) return(NULL);
   total_pts = n_rows*n_cols;
-  
+
   if ( (m = (doublereal **) MALLOC( (unsigned) (n_rows * sizeof(doublereal *)))) == NULL)
     {
       printf("DMATRIX: memory allocation failure!\n");
@@ -237,7 +237,7 @@ doublecomplex **DCMATRIX(integer n_rows, integer n_cols)
 
   if (n_rows<=0 || n_cols<=0) return(NULL);
   total_pts = n_rows*n_cols;
-  
+
   if ( (m = (doublecomplex **) MALLOC( (unsigned) (n_rows * sizeof(doublecomplex *)))) == NULL)
     {
       printf("DCMATRIX: memory allocation failure!\n");
@@ -264,7 +264,7 @@ DMATRIX_3D(integer n_levels, integer n_rows, integer n_cols)
 
   if (n_levels<=0 || n_rows<=0 || n_cols<=0) return(NULL);
   total_ptrs = n_levels*n_rows;
-  
+
   if ( (m = (doublereal ***) MALLOC( (unsigned) (n_levels * sizeof(doublereal **)))) == NULL)
     {
       printf("dmatrix_3d: memory allocation failure!\n");

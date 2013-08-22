@@ -12,7 +12,7 @@ setup(name='auto',
       include_dirs=['src/include', 'module/include'],
       ext_modules=[Extension('_auto',
       	sources=['module/automod.c', 'module/interface.c', 'module/automod.i'],
-	extra_compile_args=['-w','-DPYTHON_MODULE'], 
+	extra_compile_args=['-w','-DPYTHON_MODULE'],
         library_dirs=['lib'],
         libraries=['auto2000']
 )])

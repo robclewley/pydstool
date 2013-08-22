@@ -24,7 +24,7 @@ printConstant	=commandRunnerPrintFort2
 append		=commandAppend
 diagramAndSolutionGet	=commandParseDiagramAndSolutionFile
 clean		=commandClean
-constantsGet	=commandParseConstantsFile	
+constantsGet	=commandParseConstantsFile
 copy		=commandCopyDataFiles
 delete		=commandDeleteDataFiles
 deleteFort	=commandDeleteFortFiles
@@ -76,7 +76,7 @@ sv		=commandCopyFortFiles
 sl		=commandParseSolutionFile
 tr		=commandTriple
 us		=commandUserData
-        
+
 man		=commandInteractiveHelp
 
 bp		=commandQueryBranchPoint

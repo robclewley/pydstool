@@ -132,4 +132,4 @@ class test_HZConjugateGradientStep(unittest.TestCase):
     assert(function(origin + 0.01*newDirection) < function(origin))
 
 if __name__ == "__main__":
-  unittest.main() 
+  unittest.main()

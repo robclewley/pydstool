@@ -41,13 +41,13 @@ int prepare_cycle(AutoData *Data, double *cycle, int len, double *ups_out, doubl
   }
 
   gData = Data;
-  
+
   fcon_init(iap);
   ndim = iap[0];
-  
+
   ntst = iap[4];
   ncol = iap[5];
-  
+
   // Sets j to the number of points on the orbit
   j = len;
   nold = j-1;
@@ -68,15 +68,15 @@ int prepare_cycle(AutoData *Data, double *cycle, int len, double *ups_out, doubl
       vps[j + i * (nold + 1)] = 0.;
     }
   }
-  
+
   for (i = 0; i < nold; ++i) {
     dtm[i] = tm[i + 1] - tm[i];
   }
-  
+
   fcon_adapt(iap, nold, 1, ntst, ncol, tm, dtm, ups, vps);
 
   fcon_wrtbv8(iap, par, 1., 1., ups, vps, tm, dtm, ups_out, udotps_out, rldot_out);
-  
+
   FREE(tm);
   FREE(dtm);
   FREE(ups);
@@ -98,7 +98,7 @@ int prepare_cycle(AutoData *Data, double *cycle, int len, double *ups_out, doubl
   iad = gData->iap.iad;
   isp = gData->iap.isp;
   isw = gData->iap.isw;
-  
+
   iap[0] = ndim;
   iap[1] = ips;
   iap[4] = ntst;
@@ -106,15 +106,15 @@ int prepare_cycle(AutoData *Data, double *cycle, int len, double *ups_out, doubl
   iap[6] = iad;
   iap[8] = isp;
   iap[9] = isw;
-  
+
   return 0;
 } /* fcon_init_ */
 
 
 /*     ---------- ----- */
 /* Subroutine */
-int fcon_adapt(integer *iap, integer nold, integer ncold, 
-                 integer nnew, integer ncnew, double *tm, double *dtm, 
+int fcon_adapt(integer *iap, integer nold, integer ncold,
+                 integer nnew, integer ncnew, double *tm, double *dtm,
                  double *ups, double *vps)
 {
   integer ndim = iap[0], iper;
@@ -187,9 +187,9 @@ int fcon_adapt(integer *iap, integer nold, integer ncold,
 
 /*     ---------- ------ */
 /* Subroutine */
-int fcon_interp(integer ndim, integer n, 
-                  integer nc, double *tm, double *ups, 
-                  integer n1, integer nc1, double *tm1, double *ups1, 
+int fcon_interp(integer ndim, integer n,
+                  integer nc, double *tm, double *ups,
+                  integer n1, integer nc1, double *tm1, double *ups1,
                   double *tm2, integer *itm1)
 {
   integer i, j, k, l, j1, k1, l1, n1m1, ncp1;
@@ -240,8 +240,8 @@ int fcon_interp(integer ndim, integer n,
 
 /*     ---------- ------ */
 /* Subroutine */
-int fcon_newmsh(integer ndim, double *ups, 
-                  integer nold, integer ncold, double *tmold, 
+int fcon_newmsh(integer ndim, double *ups,
+                  integer nold, integer ncold, double *tmold,
                   double *dtmold, integer nnew, double *tmnew, integer iper)
 {
 
@@ -285,7 +285,7 @@ int fcon_newmsh(integer ndim, double *ups,
 
 /*     ---------- ---- */
 /* Subroutine */
-int fcon_ordr(integer n, double * tm, 
+int fcon_ordr(integer n, double * tm,
                 integer n1, double *tm1, integer *itm1)
 {
   /* Local variables */
@@ -342,8 +342,8 @@ int fcon_intwts(integer n, double z, double *x, double *wts)
 
 /*     ---------- ---- */
 /* Subroutine */
-int fcon_eqdf(integer ntst, integer ndim, 
-                integer ncol, double *dtm, double *ups, 
+int fcon_eqdf(integer ntst, integer ndim,
+                integer ncol, double *dtm, double *ups,
                 double *eqf, integer iper)
 {
   /* System generated locals */
@@ -398,13 +398,13 @@ int fcon_eqdf(integer ntst, integer ndim,
     dtm[ntst] = dtm[-1 + ntst];
   } else {
   /* Extend by periodicity : */
-      
+
     for (i = 0; i < ndim; ++i) {
       hd[ntst + i * (ntst + 1)] = hd[i *  (ntst + 1)];
     }
     dtm[ntst] = dtm[0];
   }
-  
+
   /* Compute approximation to (NCOL+1)-st derivative : */
 
   for (j = 0; j < ntst; ++j) {
@@ -474,15 +474,15 @@ int fcon_eqdf(integer ntst, integer ndim,
 
 /*     ---------- ------ */
 /* Subroutine */
-int fcon_wrtbv8(integer *iap, double *par, integer icp, 
-                  double rldot, double *ups, 
+int fcon_wrtbv8(integer *iap, double *par, integer icp,
+                  double rldot, double *ups,
                   double *udotps, double *tm, double *dtm,
                   double *ups_out, double *udotps_out, double *rldot_out)
 {
   /* Local variables */
   integer ndim, ncol, ntst, i, j, k, nrowpr, nrd, isw, k1, k2;
   double t, rn;
-  
+
   /* Function Body */
   ndim = iap[0];
   ntst = iap[4];
@@ -509,9 +509,9 @@ int fcon_wrtbv8(integer *iap, double *par, integer icp,
   for (i = 0; i < ndim; ++i) {
     ups_out[ntst*ncol*(ndim+1)+1+i] = ups[ntst + i * (ntst + 1)];
   }
-    
+
   rldot_out[0] = rldot;
-  
+
   for (j = 0; j < ntst; ++j) {
     for (i = 0; i < ncol; ++i) {
       k1 = i * ndim;
@@ -524,6 +524,6 @@ int fcon_wrtbv8(integer *iap, double *par, integer icp,
   for (k = 0; k < ndim; ++k) {
     udotps_out[ntst*ncol*ndim + i] = udotps[ntst + k * (ntst + 1)];
   }
-  
+
   return 0;
 } /* fcon_wrtbv8_ */

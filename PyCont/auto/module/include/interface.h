@@ -8,11 +8,11 @@
 
 PyObject* Initialize(void);
 
-PyObject* SetData(int ips, int ilp, int isw, int isp, int sjac, int sflow, int nsm, int nmx, int ndim, 
+PyObject* SetData(int ips, int ilp, int isw, int isp, int sjac, int sflow, int nsm, int nmx, int ndim,
                   int ntst, int ncol, int iad, double epsl, double epsu, double epss, int itmx,
                   int itnw, double ds, double dsmin, double dsmax, int npr, int iid,
                   int nicp, int *icp, int nuzr, int *iuz, double *vuz);
-                      
+
 PyObject* SetInitPoint(double *u, int npar, int *ipar, double *par, int *icp, int nups,
                        double *ups, double *udotps, double *rldot, int adaptcycle);
 

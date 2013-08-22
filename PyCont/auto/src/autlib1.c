@@ -28,7 +28,7 @@ struct {
 /* ----------------------------------------------------------------------- */
 /* ----------------------------------------------------------------------- */
 
-int 
+int
 init0(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *thl, doublereal **thu_pointer, integer **iuz_pointer, doublereal **vuz_pointer)
 {
   /* Local variables */
@@ -45,10 +45,10 @@ init0(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *t
     par[jtmp + i] = 0.;
     thl[icp[i]] = 1.;
   }
-  
+
 
   /* we allocate thu_poniter (which is a pointer to thu in the
-       main program) here since this is the place where we 
+       main program) here since this is the place where we
        know the size.  It is 8 times bigger then ndim since
        init1 can modify thu based on the problem type,
        but only up to making it 8 times larger.*/
@@ -63,7 +63,7 @@ init0(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *t
   for (i = 0; i < iap->nicp; ++i) {
       icp[jtmp + i] = gData->icp[i];
   }
-    
+
 
   if (iap->nicp > 0) {
     for (i = 0; i < iap->nicp; ++i) {
@@ -75,7 +75,7 @@ init0(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *t
     jtmp = NPARX;
     icp[jtmp] = icp[0];
   }
-      
+
   /* Check to make sure these guys are positive... if not
      give a warning and proceed*/
 
@@ -107,17 +107,17 @@ init0(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *t
         thl[gData->ithl[i]] = gData->thl[i];
     }
   }
-    
+
   if (gData->nthu > 0) {
     for (i = 0; i < gData->nthu; ++i) {
         thu[gData->ithu[i]] = gData->thu[i];
     }
   }
 
-    
+
   /* we allocate iuz_pointer (which is a pointer to iuz in the
        main program) and vuz_pointer (which is a pointer to vuz in the
-       main program) here since this is the place where we 
+       main program) here since this is the place where we
        know the size.  */
   iuz = *iuz_pointer = (integer *)MALLOC(sizeof(integer)*iap->nuzr);
   vuz = *vuz_pointer = (doublereal *)MALLOC(sizeof(doublereal)*iap->nuzr);
@@ -175,7 +175,7 @@ init0(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *t
 
   iap->lab = 0;
 
-  
+
   rap->dsold = rap->ds;
 
   rap->amp = 0.;
@@ -194,11 +194,11 @@ init0(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *t
 
   return 0;
 
-} 
+}
 
 
 /*     ---------- ----- */
-/* Subroutine */ int 
+/* Subroutine */ int
 chdim(iap_type *iap)
 {
   /* Local variables */
@@ -208,7 +208,7 @@ chdim(iap_type *iap)
 /* Check dimensions. */
 
 
-    
+
   npar = iap->nfpr;
 
   if (npar > NPARX) {
@@ -228,8 +228,8 @@ chdim(iap_type *iap)
 /* ----------------------------------------------------------------------- */
 /* ----------------------------------------------------------------------- */
 
-int autoae(iap_type *iap, rap_type *rap, doublereal *par, 
-	   integer *icp, 
+int autoae(iap_type *iap, rap_type *rap, doublereal *par,
+	   integer *icp,
 	   FUNI_TYPE((*funi)),
 	   STPNT_TYPE_AE((*stpnt)),
 	   PVLI_TYPE_AE((*pvli)),
@@ -240,10 +240,10 @@ int autoae(iap_type *iap, rap_type *rap, doublereal *par,
 
   cnrlae(iap, rap, par, icp, funi, stpnt, pvli, thl, thu, iuz, vuz);
   return 0;
-} 
+}
 
 
-int 
+int
 autobv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), STPNT_TYPE_BVP((*stpnt)), PVLI_TYPE_BVP((*pvli)), doublereal *thl, doublereal *thu, integer *iuz, doublereal *vuz)
 {
 
@@ -252,10 +252,10 @@ autobv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
   cnrlbv(iap, rap, par, icp, funi, bcni, icni, stpnt, pvli, thl, thu, iuz, vuz);
   return 0;
-} 
+}
 
 /*     ---------- ----- */
-/* Subroutine */ int 
+/* Subroutine */ int
 init1(iap_type *iap, rap_type *rap, integer *icp, doublereal *par)
 {
 
@@ -272,7 +272,7 @@ init1(iap_type *iap, rap_type *rap, integer *icp, doublereal *par)
   /* General initialization. Redefinition of constants. */
 
 
-    
+
   ndim = iap->ndim;
   ips = iap->ips;
   irs = iap->irs;
@@ -641,7 +641,7 @@ rt */
   rap->ds = ds;
   rap->dsmin = dsmin;
   rap->dsmax = dsmax;
-  
+
   return 0;
 } /* init1 */
 
@@ -653,7 +653,7 @@ rt */
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), STPNT_TYPE_AE((*stpnt)), PVLI_TYPE_AE((*pvli)), doublereal *thl, doublereal *thu, integer *iuz, doublereal *vuz)
 {
 
@@ -668,7 +668,7 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   integer nins;
   doublereal *udot;
   integer ipos;
-  doublereal **stud;	
+  doublereal **stud;
   integer ntot, iuzr, nuzr;
   doublereal *f;
   integer i, k;
@@ -691,7 +691,7 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   doublereal rlp;
   integer nit, itp;
   doublereal **stu, *uzr;
-  
+
   integer aa_first_dimension = iap->ndim + 1;
 
   dfdp = (doublereal *)MALLOC(sizeof(doublereal)*(iap->ndim)*NPARX);
@@ -706,7 +706,7 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   rhs = (doublereal *)MALLOC(sizeof(doublereal)*(iap->ndim+1));
   stu =  DMATRIX(NBIFX+1, iap->ndim);
   uzr =  (doublereal *)MALLOC(sizeof(doublereal)*(iap->nuzr));
-    
+
   /* Controls the bifurcation analysis of algebraic problems */
 
 
@@ -791,8 +791,8 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
   /* Starting procedure  (to get second point on first branch) : */
 
-  stprae(iap, rap, par, icp, funi, &rds, &aa_first_dimension, aa, 
-	 rhs, rlcur, rlold, rldot, u, du, uold, udot, f, dfdu, dfdp, thl, 
+  stprae(iap, rap, par, icp, funi, &rds, &aa_first_dimension, aa,
+	 rhs, rlcur, rlold, rldot, u, du, uold, udot, f, dfdu, dfdp, thl,
 	 thu);
   istop = iap->istop;
   if (istop == 1) {
@@ -805,7 +805,7 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 /* Initialize computation of the next bifurcating branch. */
 
  L2:
-  swpnt(iap, rap, par, icp, &rds, NBIFX, stud, stu, 
+  swpnt(iap, rap, par, icp, &rds, NBIFX, stud, stu,
 	stla, stld, rlcur, rlold, rldot, u, udot);
 
   ipos = iap->ipos;
@@ -849,8 +849,8 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
   /* Determine the second point on the bifurcating branch */
 
-  swprc(iap, rap, par, icp, funi, &aa_first_dimension, aa, rhs, 
-	rlcur, rlold, rldot, u, du, uold, udot, f, dfdu, dfdp, &rds, thl, 
+  swprc(iap, rap, par, icp, funi, &aa_first_dimension, aa, rhs,
+	rlcur, rlold, rldot, u, du, uold, udot, f, dfdu, dfdp, &rds, thl,
 	thu);
   istop = iap->istop;
   if (istop == 1) {
@@ -875,8 +875,8 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
 /* Find the next solution point on the branch */
 
-  solvae(iap, rap, par, icp, funi, &rds, &aa_first_dimension, aa, 
-	 rhs, rlcur, rlold, rldot, u, du, uold, udot, f, dfdu, dfdp, thl, 
+  solvae(iap, rap, par, icp, funi, &rds, &aa_first_dimension, aa,
+	 rhs, rlcur, rlold, rldot, u, du, uold, udot, f, dfdu, dfdp, thl,
 	 thu);
   istop = iap->istop;
   if (istop == 1) {
@@ -888,7 +888,7 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   if (nuzr > 0) {
     for (iuzr = 0; iuzr < nuzr; ++iuzr) {
       iap->iuzr = iuzr;
-      lcspae(iap, rap, par, icp, 
+      lcspae(iap, rap, par, icp,
 	     fnuzae, funi, &aa_first_dimension, aa, rhs, rlcur, rlold, rldot, u, du, uold, udot,
 	     f, dfdu, dfdp, &uzr[iuzr], thl, thu, iuz, vuz);
       istop = iap->istop;
@@ -915,9 +915,9 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   /* Check for fold */
 
   if (iap->ilp == 1) {
-    lcspae(iap, rap, par, icp, fnlpae, 
-	   funi, &aa_first_dimension, 
-	   aa, rhs, rlcur, rlold, rldot, u, du, uold, udot, f, dfdu, 
+    lcspae(iap, rap, par, icp, fnlpae,
+	   funi, &aa_first_dimension,
+	   aa, rhs, rlcur, rlold, rldot, u, du, uold, udot, f, dfdu,
 	   dfdp, &rlp, thl, thu, iuz, vuz);
     itp = iap->itp;
     if (itp == -1) {
@@ -932,9 +932,9 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   /* Check for branch point, and if so store data : */
 
   if (isp != 0) {
-    lcspae(iap, rap, par, icp, 
-	   fnbpae, funi, &aa_first_dimension, 
-	   aa, rhs, rlcur, rlold, rldot, u, du, uold, udot, f, dfdu, 
+    lcspae(iap, rap, par, icp,
+	   fnbpae, funi, &aa_first_dimension,
+	   aa, rhs, rlcur, rlold, rldot, u, du, uold, udot, f, dfdu,
 	   dfdp, &rbp, thl, thu, iuz, vuz);
     istop = iap->istop;
     if (istop == 1) {
@@ -947,7 +947,7 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
       ++nbif;
       iap->nbif = nbif;
       stbif(iap, rap, par, icp, &aa_first_dimension, aa,
-	    NBIFX, stud, stu, stla, stld, rlcur, rlold, rldot, u, 
+	    NBIFX, stud, stu, stla, stld, rlcur, rlold, rldot, u,
 	    du, udot, dfdu, dfdp, thl, thu);
       rlp = 0.;
       rbp = 0.;
@@ -958,9 +958,9 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   /* Check for Hopf bifurcation */
 
   if (abs(ips) == 1) {
-    lcspae(iap, rap, par, icp, fnhbae, 
-	   funi, &aa_first_dimension, 
-	   aa, rhs, rlcur, rlold, rldot, u, du, uold, udot, f, dfdu, 
+    lcspae(iap, rap, par, icp, fnhbae,
+	   funi, &aa_first_dimension,
+	   aa, rhs, rlcur, rlold, rldot, u, du, uold, udot, f, dfdu,
 	   dfdp, &rev, thl, thu, iuz, vuz);
     istop = iap->istop;
     if (istop == 1) {
@@ -1000,7 +1000,7 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
     goto L2;
   }
 
-  FREE(dfdp);    
+  FREE(dfdp);
   FREE(dfdu);
   FREE(uold);
   FREE(udot);
@@ -1018,19 +1018,19 @@ cnrlae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 stpnus(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *u)
 {
   integer ndim;
 
 
 
-  
+
 
   /* Gets the starting data from user supplied STPNT */
 
 
-  
+
   ndim = iap->ndim;
 
   stpnt(ndim, 0.0, u, par);
@@ -1040,7 +1040,7 @@ stpnus(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 stpnae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *u)
 {
   logical found;
@@ -1048,14 +1048,14 @@ stpnae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
 
   integer irs;
 
-  
+
 
 
   /* Gets the starting data from unit 3 */
 
 
 
-  
+
   irs = iap->irs;
   findlb(iap, rap, irs, &nfprs, &found);
   readlb(iap, rap, u, par);
@@ -1064,7 +1064,7 @@ stpnae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 stprae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), doublereal *rds, integer *m1aaloc, doublereal **aa, doublereal *rhs, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal *u, doublereal *du, doublereal *uold, doublereal *udot, doublereal *f, doublereal *dfdu, doublereal *dfdp, doublereal *thl, doublereal *thu)
 {
   /* Local variables */
@@ -1085,7 +1085,7 @@ stprae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 /* Finds the second point on the initial solution branch. */
 
 
-  
+
   ndim = iap->ndim;
   iid = iap->iid;
 
@@ -1146,7 +1146,7 @@ stprae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   rlcur[0] = rlold[0] + *rds * rldot[0];
 
   solvae(iap, rap, par, icp, funi, rds, m1aaloc, aa,
-	 rhs, rlcur, rlold, rldot, u, du, uold, 
+	 rhs, rlcur, rlold, rldot, u, du, uold,
 	 udot, f, dfdu, dfdp, thl, thu);
 
   return 0;
@@ -1154,7 +1154,7 @@ stprae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 contae(iap_type *iap, rap_type *rap, doublereal *rds, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal *u, doublereal *uold, doublereal *udot)
 {
   /* Local variables */
@@ -1163,7 +1163,7 @@ contae(iap_type *iap, rap_type *rap, doublereal *rds, doublereal *rlcur, doubler
   integer ips;
 
 
-  
+
 
 /* This subroutine determines an initial approximation to the next */
 /* solution on a branch by extrapolating from the two preceding points. */
@@ -1171,7 +1171,7 @@ contae(iap_type *iap, rap_type *rap, doublereal *rds, doublereal *rlcur, doubler
 
 
 
-    
+
   ndim = iap->ndim;
   ips = iap->ips;
 
@@ -1198,7 +1198,7 @@ contae(iap_type *iap, rap_type *rap, doublereal *rds, doublereal *rlcur, doubler
 
 
 /*     ---------- ----- */
-/* Subroutine */ int 
+/* Subroutine */ int
 solvae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), doublereal *rds, integer *m1aaloc, doublereal **aa, doublereal *rhs, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal *u, doublereal *du, doublereal *uold, doublereal *udot, doublereal *f, doublereal *dfdu, doublereal *dfdp, doublereal *thl, doublereal *thu)
 {
   /* Local variables */
@@ -1226,7 +1226,7 @@ solvae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   static integer last_ntop=0;
 
 /* This is the subroutine for computing solution branches. It solves */
-/* the equations for finding the next point on the branch at distance DS 
+/* the equations for finding the next point on the branch at distance DS
 */
 /* from the current point. An initial approximation to the new point */
 /* ( i.e. to PAR(ICP(1)) and U ) has been supplied by CONT. */
@@ -1234,7 +1234,7 @@ solvae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
 /* Local */
 
-  
+
   ndim = iap->ndim;
   iads = iap->iads;
   iid = iap->iid;
@@ -1308,7 +1308,7 @@ solvae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
     /* Computing 2nd power */
     rhs[ndim] = *rds - dds * ss - thl[icp[0]] * dds * ((rlcur[0] - rlold[0]) * (rlcur[0] - rlold[0]));
 
-    /* Use Gauss elimination with pivoting to solve the linearized system 
+    /* Use Gauss elimination with pivoting to solve the linearized system
        : */
 
     if (iid >= 5) {
@@ -1361,7 +1361,7 @@ solvae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
       return 0;
     }
 
-    /* Check whether relative error has reached user-supplied tolerance : 
+    /* Check whether relative error has reached user-supplied tolerance :
      */
 
     if (nit == 1) {
@@ -1428,7 +1428,7 @@ solvae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 lcspae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_AE((*fncs)), FUNI_TYPE((*funi)), integer *m1aaloc, doublereal **aa, doublereal *rhs, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal *u, doublereal *du, doublereal *uold, doublereal *udot, doublereal *f, doublereal *dfdu, doublereal *dfdp, doublereal *q, doublereal *thl, doublereal *thu, integer *iuz, doublereal *vuz)
 {
 
@@ -1448,7 +1448,7 @@ lcspae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_AE
 
   /* This subroutine uses the secant method to accurately locate special */
   /* points (branch points, folds, Hopf bifurcations, user zeroes). */
-  /* These are characterized as zeroes of the function FNCS supplied in the 
+  /* These are characterized as zeroes of the function FNCS supplied in the
 */
 /* call. */
 /* This subroutine calls CONT and SOLVAE with varying stepsize RDS. */
@@ -1456,7 +1456,7 @@ lcspae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_AE
 /* accuracy if the ratio between RDS and the user supplied value of */
 /* DS is less than the user-supplied toler du. */
 
-    
+
   iid = iap->iid;
   itmx = iap->itmx;
   ibr = iap->ibr;
@@ -1469,8 +1469,8 @@ lcspae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_AE
   /* Check whether FNCS has changed sign (FNCS is EXTERNAL). */
 
   q0 = *q;
-  q1 = (*fncs)(iap, rap, par, icp, &chng, funi, m1aaloc, 
-	       aa, rlcur, rlold, rldot, u, uold, udot, 
+  q1 = (*fncs)(iap, rap, par, icp, &chng, funi, m1aaloc,
+	       aa, rlcur, rlold, rldot, u, uold, udot,
 	       rhs, dfdu, dfdp, iuz, vuz);
   pq = q0 * q1;
   ntot = iap->ntot;
@@ -1506,12 +1506,12 @@ lcspae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_AE
   /* If requested write additional output on unit 9 : */
 
   if (iid >= 2 && iap->mynode == 0) {
-    fprintf(fp9," ==> Location of special point :  Iteration %3li   Stepsize =%13.5E\n",itlcsp,rds);	
+    fprintf(fp9," ==> Location of special point :  Iteration %3li   Stepsize =%13.5E\n",itlcsp,rds);
   }
 
-  contae(iap, rap, &rds, rlcur, rlold, rldot, u, uold, 
+  contae(iap, rap, &rds, rlcur, rlold, rldot, u, uold,
 	 udot);
-  solvae(iap, rap, par, icp, funi, &rds, m1aaloc, aa, 
+  solvae(iap, rap, par, icp, funi, &rds, m1aaloc, aa,
 	 rhs, rlcur, rlold, rldot, u, du, uold, udot, f,
 	 dfdu, dfdp, thl, thu);
   istop = iap->istop;
@@ -1520,7 +1520,7 @@ lcspae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_AE
     return 0;
   }
 
-  *q = (*fncs)(iap, rap, par, icp, &chng, funi, m1aaloc, 
+  *q = (*fncs)(iap, rap, par, icp, &chng, funi, m1aaloc,
 	       aa, rlcur, rlold, rldot, u, uold, udot,
 	       rhs, dfdu, dfdp, iuz, vuz);
   ++itlcsp;
@@ -1530,7 +1530,7 @@ lcspae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_AE
     goto L1;
   } else {
     if (iap->mynode == 0) {
-      fprintf(fp9,"%4li%6li NOTE:Possible special point\n",ibr,(ntot + 1) % 10000);	
+      fprintf(fp9,"%4li%6li NOTE:Possible special point\n",ibr,(ntot + 1) % 10000);
     }
     *q = 0.;
     return 0;
@@ -1540,7 +1540,7 @@ lcspae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_AE
 
 
 /*     ---------- ------- */
-/* Subroutine */ int 
+/* Subroutine */ int
 mueller(doublereal *q0, doublereal *q1, doublereal *q, doublereal *s0, doublereal *s1, doublereal *s, doublereal *rds)
 {
     /* Local variables */
@@ -1585,7 +1585,7 @@ mueller(doublereal *q0, doublereal *q1, doublereal *q, doublereal *s0, doublerea
 
 
 /*     ------ --------- -------- ------ */
-doublereal 
+doublereal
 fnbpae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chng, FUNI_TYPE((*funi)), integer *m1aaloc, doublereal **aa, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal *u, doublereal *uold, doublereal *udot, doublereal *rhs, doublereal *dfdu, doublereal *dfdp, integer *iuz, doublereal *vuz)
 {
   /* System generated locals */
@@ -1596,7 +1596,7 @@ fnbpae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   doublereal det;
 
 
-    
+
   iid = iap->iid;
   ibr = iap->ibr;
   ntot = iap->ntot;
@@ -1617,13 +1617,13 @@ fnbpae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
 
 
 /*     ------ --------- -------- ------ */
-doublereal 
+doublereal
 fnlpae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chng, FUNI_TYPE((*funi)), integer *m1aaloc, doublereal **aa, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal *u, doublereal *uold, doublereal *udot, doublereal *rhs, doublereal *dfdu, doublereal *dfdp, integer *iuz, doublereal *vuz)
 {
   /* System generated locals */
   doublereal ret_val;
 
-    
+
 
     /* Local variables */
   integer ndim, ntop, ntot, i, k;
@@ -1652,7 +1652,7 @@ fnlpae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   /*--dfdu;*/
   /*--dfdp;*/
 
-  
+
   ndim = iap->ndim;
   iid = iap->iid;
   ibr = iap->ibr;
@@ -1696,7 +1696,7 @@ fnlpae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
 
 
 /*     ------ --------- -------- ------ */
-doublereal 
+doublereal
 fnhbae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chng, FUNI_TYPE((*funi)), integer *m1aaloc, doublereal **aa, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal *u, doublereal *uold, doublereal *udot, doublereal *rhs, doublereal *dfdu, doublereal *dfdp, integer *iuz, doublereal *vuz)
 {
   /* System generated locals */
@@ -1730,7 +1730,7 @@ fnhbae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   /*--uold;*/
   /*--udot;*/
   /*--rhs;*/
-  
+
   ndim = iap->ndim;
   ndm = iap->ndm;
   ips = iap->ips;
@@ -1831,19 +1831,19 @@ fnhbae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   ntot = iap->ntot;
   ntotp1 = ntot + 1;
   if (iid >= 2 && iap->mynode == 0) {
-    fprintf(fp9,"%4li%6li        Hopf Function %14.5E\n",abs(ibr),ntop,ret_val);	
+    fprintf(fp9,"%4li%6li        Hopf Function %14.5E\n",abs(ibr),ntop,ret_val);
   }
   if (nins1 == ndm) {
     ntotp1 = -ntotp1;
   }
 
   if (iap->mynode == 0) {
-    fprintf(fp9,"%4li%6li        Eigenvalues:     Stable:%4li\n",abs(ibr),ntop,nins);	
+    fprintf(fp9,"%4li%6li        Eigenvalues:     Stable:%4li\n",abs(ibr),ntop,nins);
     if (ips == -1) {
       for (i = 0; i < ndm; ++i) {
 	doublecomplex tmp;
 	z_exp(&tmp, &ev[i]);
-	fprintf(fp9,"%4li%6li        Eigenvalue%3li %14.6E%14.6E\n",abs(ibr),ntop,i+1,tmp.r,tmp.i);	
+	fprintf(fp9,"%4li%6li        Eigenvalue%3li %14.6E%14.6E\n",abs(ibr),ntop,i+1,tmp.r,tmp.i);
       }
     } else {
       for (i = 0; i < ndm; ++i) {
@@ -1858,18 +1858,18 @@ fnhbae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
 
 
 /*     ------ --------- -------- ------ */
-doublereal 
+doublereal
 fnuzae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chng, FUNI_TYPE((*funi)), integer *m1aaloc, doublereal **aa, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal *u, doublereal *uold, doublereal *udot, doublereal *rhs, doublereal *dfdu, doublereal *dfdp, integer *iuz, doublereal *vuz)
 {
   /* System generated locals */
   doublereal ret_val;
 
-    
+
 
   /* Local variables */
   integer ntop, ntot, iuzr, iid, ibr;
 
-  
+
 
 
 
@@ -1880,9 +1880,9 @@ fnuzae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   /*--vuz;*/
   /*--iuz;*/
   /*--par;*/
-    
 
-  
+
+
   iid = iap->iid;
   iuzr = iap->iuzr;
   ibr = iap->ibr;
@@ -1893,7 +1893,7 @@ fnuzae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   *chng = TRUE_;
 
   if (iid >= 3) {
-    fprintf(fp9,"%4li%6li        User Func. %3li %14.5E\n",abs(ibr),ntop,iuzr,ret_val);	
+    fprintf(fp9,"%4li%6li        User Func. %3li %14.5E\n",abs(ibr),ntop,iuzr,ret_val);
   }
 
   return ret_val;
@@ -1907,7 +1907,7 @@ fnuzae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- ----- */
-/* Subroutine */ int 
+/* Subroutine */ int
 stbif(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *m1aaloc, doublereal **aa, integer m1sbloc, doublereal **stud, doublereal **stu, doublereal *stla, doublereal *stld, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal *u, doublereal *du, doublereal *udot, doublereal *dfdu, doublereal *dfdp, doublereal *thl, doublereal *thu)
 {
   /* Local variables */
@@ -1924,7 +1924,7 @@ stbif(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *m1aa
   /*        STUD   ( U-dot ) */
   /*        STLA   ( PAR(ICP(1)) ) */
   /*        STLD  ( PAR(ICP(1))-dot ) */
-  /* Here the vector ( PAR(ICP(1))-dot , U-dot ) lies in the 2-d nullspace 
+  /* Here the vector ( PAR(ICP(1))-dot , U-dot ) lies in the 2-d nullspace
    */
   /* at branch point and is perpendicular to the direction vector of */
   /* known branch at this point. */
@@ -1947,7 +1947,7 @@ stbif(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *m1aa
   /*--thl;*/
   /*--thu;*/
 
-  
+
   ndim = iap->ndim;
   ibr = iap->ibr;
   ntot = iap->ntot;
@@ -1957,7 +1957,7 @@ stbif(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *m1aa
   /* Keep track of the number of branch points stored. */
 
   if (nbif == NBIFX && iap->mynode == 0) {
-    fprintf(fp9,"%4li%6li NOTE:No more branch points can be stored\n",ibr,ntop);	
+    fprintf(fp9,"%4li%6li NOTE:No more branch points can be stored\n",ibr,ntop);
   }
   if (nbif > NBIFX) {
     nbif = NBIFX;
@@ -2005,7 +2005,7 @@ stbif(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *m1aa
 
 
 /*     ---------- ----- */
-/* Subroutine */ int 
+/* Subroutine */ int
 swpnt(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *rds, integer m1sbloc, doublereal **stud, doublereal **stu, doublereal *stla, doublereal *stld, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal *u, doublereal *udot)
 {
     /* Local variables */
@@ -2014,7 +2014,7 @@ swpnt(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *r
   integer isw;
 
 
-  
+
 
   /* This subroutine retrieves the branching data U, U-dot, PAR(ICP(1)), */
   /* PAR(ICP(1))-dot. If this initialization corresponds to the computation */
@@ -2032,7 +2032,7 @@ swpnt(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *r
   /*--rldot;*/
   /*--u;*/
   /*--udot;*/
-  
+
   ndim = iap->ndim;
   isw = iap->isw;
   mxbf = iap->mxbf;
@@ -2078,7 +2078,7 @@ swpnt(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *r
 
 
 /*     ---------- ----- */
-/* Subroutine */ int 
+/* Subroutine */ int
 swprc(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), integer *m1aaloc, doublereal **aa, doublereal *rhs, doublereal *rlcur, doublereal *rlold, doublereal *rldot, doublereal *u, doublereal *du, doublereal *uold, doublereal *udot, doublereal *f, doublereal *dfdu, doublereal *dfdp, doublereal *rds, doublereal *thl, doublereal *thu)
 {
     /* Local variables */
@@ -2106,7 +2106,7 @@ swprc(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*f
 
   u1 = (double *)MALLOC(sizeof(doublereal)*(iap->ndim + 1));
 
-  
+
 
   /* Controls the computation of the second point on a bifurcating branch. */
 /* This point is required to lie in a hyper-plane at distance DS from the */
@@ -2132,7 +2132,7 @@ swprc(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*f
   /*--dfdp;*/
   /*--thl;*/
   /*--thu;*/
-  
+
   ndim = iap->ndim;
   iads = iap->iads;
   iid = iap->iid;
@@ -2169,11 +2169,11 @@ swprc(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*f
   }
   if (iid >= 2 && iap->mynode == 0) {
     fprintf(fp9," Branch %2ld N=%5ld IT=%2ld PAR(%2ld)=%11.3E U=",ibr,ntop,
-	    nit,icp[0],rlcur[0]);	
+	    nit,icp[0],rlcur[0]);
     for (i = 0; i < ndmr; ++i) {
-      fprintf(fp9,"%11.3E",u[i]);	
+      fprintf(fp9,"%11.3E",u[i]);
     }
-    fprintf(fp9,"\n");	
+    fprintf(fp9,"\n");
 
   }
 
@@ -2204,7 +2204,7 @@ swprc(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*f
     }
     rhs[ndim] = -ss - thl[icp[0]] * (rlcur[0] - rlm1) * rldot[0];
 
-    /* Use Gauss elimination with pivoting to solve the linearized system 
+    /* Use Gauss elimination with pivoting to solve the linearized system
        : */
 
     if (iid >= 5) {
@@ -2236,14 +2236,14 @@ swprc(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*f
 
     if (iid >= 2 && iap->mynode == 0) {
       fprintf(fp9," Branch %2ld N=%5ld IT=%2ld PAR(%2ld)=%11.3E U=",ibr,ntop,
-	      nit+1,icp[0],rlcur[0]);	
+	      nit+1,icp[0],rlcur[0]);
       for (i = 0; i < ndmr; ++i) {
-	fprintf(fp9,"%11.3E",u[i]);	
+	fprintf(fp9,"%11.3E",u[i]);
       }
-      fprintf(fp9,"\n");	
+      fprintf(fp9,"\n");
     }
 
-    /* Check whether relative error has reached user-supplied tolerance : 
+    /* Check whether relative error has reached user-supplied tolerance :
      */
 
     rdrlm = fabs(drlm) / (fabs(rlcur[0]) + 1.);
@@ -2257,7 +2257,7 @@ swprc(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*f
   /* Maximum number of iterations reached. Reduce stepsize and try again. */
 
   if (iads == 0 && iap->mynode == 0) {
-    fprintf(fp9,"%4li%6li NOTE:No convergence when switching branches with fixed step size\n",ibr,ntop);	
+    fprintf(fp9,"%4li%6li NOTE:No convergence when switching branches with fixed step size\n",ibr,ntop);
   }
   if (iads == 0) {
     goto L5;
@@ -2274,7 +2274,7 @@ swprc(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*f
     u[i] = uold[i] + *rds * udot[i];
   }
   if (iid >= 2 && iap->mynode == 0) {
-    fprintf(fp9,"%4li%6li NOTE:Retrying step\n",ibr,ntop);	
+    fprintf(fp9,"%4li%6li NOTE:Retrying step\n",ibr,ntop);
   }
   goto L2;
 
@@ -2282,7 +2282,7 @@ swprc(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*f
 
  L4:
   if (iap->mynode == 0) {
-    fprintf(fp9,"%4li%6li NOTE:No convergence when switching branches with minimum step size\n",ibr,ntop);	
+    fprintf(fp9,"%4li%6li NOTE:No convergence when switching branches with minimum step size\n",ibr,ntop);
   }
  L5:
   rlcur[0] = rlold[0];
@@ -2296,10 +2296,10 @@ swprc(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*f
   FREE(u1);
 
   return 0;
-	
+
 } /* swprc_ */
 
-	  
+
 /* ----------------------------------------------------------------------- */
 /* ----------------------------------------------------------------------- */
 /*                    Output (Algebraic Problems) */
@@ -2307,7 +2307,7 @@ swprc(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*f
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 sthd(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *thl, doublereal *thu)
 {
   /* Local variables */
@@ -2324,13 +2324,13 @@ sthd(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *th
   /* The first line in the file contains the (generally) user-supplied */
   /* limits of the bifurcation diagram, viz. RL0,RL1,A0 and A1. */
   /* These are often convenient for an initial plot of the diagram. */
-        
+
   /* Parameter adjustments */
   /*--thu;*/
   /*--thl;*/
   /*--icp;*/
   /*--par;*/
-  
+
   ndim = iap->ndim;
   ips = iap->ips;
   irs = iap->irs;
@@ -2354,7 +2354,7 @@ sthd(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *th
   jac = iap->jac;
   nfpr = iap->nfpr;
   nicp = iap->nicp;
-  
+
   ds = rap->ds;
   dsmin = rap->dsmin;
   dsmax = rap->dsmax;
@@ -2365,17 +2365,17 @@ sthd(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *th
   epsl = rap->epsl;
   epsu = rap->epsu;
   epss = rap->epss;
-  
+
   if (iap->mynode > 0) {
     return 0;
   }
-  
+
   return 0;
 } /* sthd_ */
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 headng(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer iunit, integer *n1, integer *n2)
 {
   /* Local variables */
@@ -2389,9 +2389,9 @@ headng(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer iuni
   /* Parameter adjustments */
   /*--icp;*/
   /*--par;*/
-    
 
-    
+
+
   ips = iap->ips;
   isw = iap->isw;
   iplt = iap->iplt;
@@ -2408,7 +2408,7 @@ headng(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer iuni
       printf(" \n");
     }
     if (iunit == 9) {
-      fprintf(fp9," \n");	
+      fprintf(fp9," \n");
     }
   }
 
@@ -2417,13 +2417,13 @@ headng(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer iuni
     ++j;
     if ((double) j == (double)2.) {
       j = j + 1 + *n2;
-    }   
+    }
     if (icp[i] > 9) {
       sprintf(col[j-1],"   PAR(%ld)    ",icp[i]);
     } else {
       sprintf(col[j-1],"   PAR(%ld)     ",icp[i]);
     }
-	
+
   }
 
   if (iplt > ndm && iplt <= ndm << 1) {
@@ -2479,11 +2479,11 @@ headng(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer iuni
       printf("\n");
       fflush(stdout);
     } else if (iunit == 9) {
-      fprintf(fp9,"  BR    PT  TY LAB ");	
+      fprintf(fp9,"  BR    PT  TY LAB ");
       for (i = 0; i < *n1 + *n2 + 1; ++i) {
 	fprintf(fp9,"%s",col[i]);
       }
-      fprintf(fp9,"\n");	
+      fprintf(fp9,"\n");
 
     }
   }
@@ -2492,7 +2492,7 @@ headng(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer iuni
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 stplae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *rlcur, doublereal *u)
 {
 
@@ -2514,7 +2514,7 @@ stplae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
 /*  IBR    : The label of the branch. */
 /*  NTOT   : The index of the point on the branch. */
 /*           (Points are numbered consecutively along a branch). */
-/*           If IPS=1 or -1, then the sign of NTOT indicates stability : 
+/*           If IPS=1 or -1, then the sign of NTOT indicates stability :
 */
 /*            - = stable , + = unstable, unknown, or not relevant. */
 /*  ITP    : An integer indicating the type of point : */
@@ -2522,7 +2522,7 @@ stplae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
 /*             1  (BP)  :   Branch point. */
 /*             2  (LP)  :   Fold. */
 /*             3  (HB)  :   Hopf bifurcation point. */
-/*             4  (  )  :   Output point (Every NPR steps along branch). 
+/*             4  (  )  :   Output point (Every NPR steps along branch).
 */
 /*            -4  (UZ)  :   Output point (Zero of user function). */
 /*             9  (EP)  :   End point of branch, normal termination. */
@@ -2530,7 +2530,7 @@ stplae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
 
 /*  LAB        : The label of a special point. */
 /*  PAR(ICP(1)): The principal parameter. */
-/*  A          : The L2-norm of the solution vector, or other measure of 
+/*  A          : The L2-norm of the solution vector, or other measure of
 */
 /*               the solution (see the user-supplied parameter IPLT). */
 /*  U          : The first few components of the solution vector. */
@@ -2541,7 +2541,7 @@ stplae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
   /*--u;*/
   /*--rlcur;*/
   /*--icp;*/
-    
+
   ndim = iap->ndim;
   ips = iap->ips;
   isw = iap->isw;
@@ -2603,7 +2603,7 @@ stplae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
     itp = itpst * 10 + 9;
     iap->itp = itp;
   } else {
-    if (rlcur[0] < rl0 || rlcur[0] > rl1 || amp < a0 || amp > a1 || ntot 
+    if (rlcur[0] < rl0 || rlcur[0] > rl1 || amp < a0 || amp > a1 || ntot
 	== nmx) {
       istop = 1;
       iap->istop = istop;
@@ -2639,9 +2639,9 @@ stplae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
   }
   gData->num_u++;
   // DREW WUZ GONE
-  
+
   if (gData->verbosity > 0)
-      wrline(iap, rap, par, icp, &icp[NPARX], &ibr, &ntots, 
+      wrline(iap, rap, par, icp, &icp[NPARX], &ibr, &ntots,
          &labw, &amp, u);
 
   /* Write restart information for multi-parameter analysis : */
@@ -2655,7 +2655,7 @@ stplae(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 wrline(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *icu, integer *ibr, integer *ntot, integer *lab, doublereal *vaxis, doublereal *u)
 {
 
@@ -2666,7 +2666,7 @@ wrline(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *icu
 
   integer nt, ndm, ips, itp, isw;
 
-    
+
 
 
 
@@ -2681,9 +2681,9 @@ wrline(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *icu
   /*--icu;*/
   /*--icp;*/
   /*--par;*/
-    
 
-    
+
+
   ips = iap->ips;
   isw = iap->isw;
   ndm = iap->ndm;
@@ -2754,7 +2754,7 @@ wrline(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *icu
       printf("\n");
       fflush(stdout);
     }
-    fprintf(fp9,"%4li%6li  %c%c%4li",(*ibr),mtot,atype[0],atype[1],*(lab));	
+    fprintf(fp9,"%4li%6li  %c%c%4li",(*ibr),mtot,atype[0],atype[1],*(lab));
     fprintf(fp9,"%14.6E",par[icu[0]]);
     fprintf(fp9,"%14.6E",(*vaxis));
     for (i = 1; i < n1; ++i) {
@@ -2779,7 +2779,7 @@ wrline(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *icu
       for (i = 0; i < n2; ++i) {
 	fprintf(fp9,"%14.6E",u[i]);
       }
-      fprintf(fp9,"\n");	
+      fprintf(fp9,"\n");
 
     } else {
       if (itp % 10 != 0) {
@@ -2793,7 +2793,7 @@ wrline(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *icu
 	  printf("%14.6E",par[icu[i]]);
 	}
 	printf("\n");
-	fflush(stdout);      
+	fflush(stdout);
       }
       fprintf(fp9,"%4li%6li  %c%c%4li",(*ibr),mtot,atype[0],atype[1],*(lab));
       fprintf(fp9,"%14.6E",par[icu[0]]);
@@ -2804,7 +2804,7 @@ wrline(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *icu
       for (i = 1; i < n1; ++i) {
 	fprintf(fp9,"%14.6E",par[icu[i]]);
       }
-      fprintf(fp9,"\n");	
+      fprintf(fp9,"\n");
     }
   }
 
@@ -2812,7 +2812,7 @@ wrline(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *icu
 } /* wrline_ */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 wrtsp8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *lab, doublereal *rlcur, doublereal *u)
 {
   /* Local variables */
@@ -2832,7 +2832,7 @@ wrtsp8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *lab
   /*--rlcur;*/
   /*--icp;*/
   /*--par;*/
-    
+
   ndim = iap->ndim;
   isw = iap->isw;
   itp = iap->itp;
@@ -2853,10 +2853,10 @@ wrtsp8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *lab
   }
 
   mtot = ntot % 10000;
-  
+
   // DREW WUZ HERE (MEMORY)
   nsp = gData->num_sp;
-  
+
   // Test size of sp and allocate more memory if necessary.  Also initializes data.
   if (nsp == gData->sp_len) {
       gData->sp_len += gData->sp_inc;
@@ -2871,10 +2871,10 @@ wrtsp8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *lab
           gData->sp[i].a2 = NULL;
       }
   }
-  
+
   // Allocate memory for nsp (AUTOAE)
   gData->sp[nsp].u = (doublereal *)MALLOC((iap->ndim+1)*sizeof(doublereal));
-  
+
   gData->sp[nsp].ibr = ibr;
   gData->sp[nsp].mtot = ntot;
   gData->sp[nsp].itp = itp;
@@ -2902,7 +2902,7 @@ wrtsp8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *lab
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 wrjac(iap_type *iap, integer *n, integer *m1aaloc, doublereal **aa, doublereal *rhs)
 {
   /* Local variables */
@@ -2910,22 +2910,22 @@ wrjac(iap_type *iap, integer *n, integer *m1aaloc, doublereal **aa, doublereal *
 
   /* Parameter adjustments */
   /*--rhs;*/
-    
+
   if (iap->mynode > 0) {
     return 0;
   }
-  fprintf(fp9," Residual vector :\n");	
+  fprintf(fp9," Residual vector :\n");
 
   for (i = 0; i < *n; ++i) {
-    fprintf(fp9," %10.3E",rhs[i]);	
+    fprintf(fp9," %10.3E",rhs[i]);
   }
-  fprintf(fp9,"\n");	
-  fprintf(fp9," Jacobian matrix :\n");	
+  fprintf(fp9,"\n");
+  fprintf(fp9," Jacobian matrix :\n");
   for (i = 0; i < *n; ++i) {
     for (j = 0; j < *n; ++j) {
-      fprintf(fp9," %10.3E",aa[i][j]);	
+      fprintf(fp9," %10.3E",aa[i][j]);
     }
-    fprintf(fp9,"\n");	
+    fprintf(fp9,"\n");
 
   }
 
@@ -2941,7 +2941,7 @@ wrjac(iap_type *iap, integer *n, integer *m1aaloc, doublereal **aa, doublereal *
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- --- */
-/* Subroutine */ int 
+/* Subroutine */ int
 msh(const iap_type *iap, const rap_type *rap, doublereal *tm)
 {
 
@@ -2957,9 +2957,9 @@ msh(const iap_type *iap, const rap_type *rap, doublereal *tm)
 
   /* Parameter adjustments */
   /*--tm;*/
-    
 
-  
+
+
   ntst = iap->ntst;
 
   tm[0] = 0.;
@@ -2973,7 +2973,7 @@ msh(const iap_type *iap, const rap_type *rap, doublereal *tm)
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 genwts(const integer ncol, const integer n1, doublereal **wt, doublereal **wp)
 {
     /* Local variables */
@@ -3000,7 +3000,7 @@ genwts(const integer ncol, const integer n1, doublereal **wt, doublereal **wp)
 /* Local */
 
 /* Generate the collocation points : */
-    
+
   cpnts(ncol, zm);
 
   ncp1 = ncol + 1;
@@ -3051,7 +3051,7 @@ genwts(const integer ncol, const integer n1, doublereal **wt, doublereal **wp)
 
 
 /*     ---------- ----- */
-/* Subroutine */ int 
+/* Subroutine */ int
 cpnts(const integer ncol, doublereal *zm)
 {
     /* Local variables */
@@ -3138,7 +3138,7 @@ cpnts(const integer ncol, doublereal *zm)
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 cntdif(integer *n, doublereal *d)
 {
 
@@ -3155,12 +3155,12 @@ cntdif(integer *n, doublereal *d)
   /* Parameter adjustments */
   /*--d;*/
 
-  
+
   d[0] = 1.;
   if (*n == 0) {
     return 0;
   }
- 
+
   for (i = 0; i < *n; ++i) {
     d[i + 1] = 0.;
     for (k = 0; k < i + 1; ++k) {
@@ -3182,14 +3182,14 @@ cntdif(integer *n, doublereal *d)
 
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 wint(const integer n, doublereal *wi)
 {
   doublereal c;
 
   /* Generates the weights for the integration formula based on polynomial */
   /* interpolation at N equally spaced points in [0,1]. */
-  
+
   switch ((int)(n - 2)) {
   case 1:  goto L3;
   case 2:  goto L4;
@@ -3263,7 +3263,7 @@ wint(const integer n, doublereal *wi)
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 adptds(iap_type *iap, rap_type *rap, doublereal *rds)
 {
   /* Local variables */
@@ -3272,14 +3272,14 @@ adptds(iap_type *iap, rap_type *rap, doublereal *rds)
   doublereal dsmax;
   integer n1, iid, ibr, nit;
 
-/* The stepsize along the branch of solutions is adapted depending on the 
+/* The stepsize along the branch of solutions is adapted depending on the
 */
-/* number of Newton iterations in the previous step (called if IADS > 0). 
+/* number of Newton iterations in the previous step (called if IADS > 0).
 */
 
 
 
-    
+
   dsmax = rap->dsmax;
   iid = iap->iid;
   itnw = iap->itnw;
@@ -3310,15 +3310,15 @@ adptds(iap_type *iap, rap_type *rap, doublereal *rds)
     *rds = *rds * dsmax / ards;
   }
 
-  fprintf(fp9,"%4li%6li        Iterations     %3li\n",abs(ibr),ntop - 1,nit);	
-  fprintf(fp9,"%4li%6li        Stepsize      %13.5E\n",abs(ibr),ntop - 1,(*rds));	
+  fprintf(fp9,"%4li%6li        Iterations     %3li\n",abs(ibr),ntop - 1,nit);
+  fprintf(fp9,"%4li%6li        Stepsize      %13.5E\n",abs(ibr),ntop - 1,(*rds));
 
   return 0;
 } /* adptds_ */
 
 
 /*     ---------- ----- */
-/* Subroutine */ int 
+/* Subroutine */ int
 adapt(iap_type *iap, rap_type *rap, integer *nold, integer *ncold, integer *nnew, integer *ncnew, doublereal *tm, doublereal *dtm, integer *ndxloc, doublereal **ups, doublereal **vps)
 {
     /* Local variables */
@@ -3327,7 +3327,7 @@ adapt(iap_type *iap, rap_type *rap, integer *nold, integer *ncold, integer *nnew
 
   integer nrwnew;
   integer ips, isw;
-    
+
   doublereal *tint, **uint;
   doublereal *tm2;
   integer *itm;
@@ -3372,7 +3372,7 @@ adapt(iap_type *iap, rap_type *rap, integer *nold, integer *ncold, integer *nnew
 
   /* Generate the new mesh : */
 
-  newmsh(iap, rap, ndxloc, ups, nold, 
+  newmsh(iap, rap, ndxloc, ups, nold,
 	 ncold, tm, dtm, nnew, tint, &iper);
 
   /* Replace UPS by its interpolant on the new mesh : */
@@ -3386,7 +3386,7 @@ adapt(iap_type *iap, rap_type *rap, integer *nold, integer *ncold, integer *nnew
 
   /* Replace VPS by its interpolant on the new mesh : */
 
-  interp(iap, rap, &ndim, &noldp1, ncold, tm, ndxloc, 
+  interp(iap, rap, &ndim, &noldp1, ncold, tm, ndxloc,
 	 vps, &nnewp1, ncnew, tint, uint, tm2, itm);
   for (j = 0; j < nnewp1; ++j) {
     for (i = 0; i < nrwnew; ++i) {
@@ -3412,7 +3412,7 @@ adapt(iap_type *iap, rap_type *rap, integer *nold, integer *ncold, integer *nnew
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 interp(iap_type *iap, rap_type *rap, integer *ndim, integer *n, integer *nc, doublereal *tm, integer *ndxloc, doublereal **ups, integer *n1, integer *nc1, doublereal *tm1, doublereal **ups1, doublereal *tm2, integer *itm1)
 {
   /* Local variables */
@@ -3438,7 +3438,7 @@ interp(iap_type *iap, rap_type *rap, integer *ndim, integer *n, integer *nc, dou
   /*--tm1;*/
   /*--tm2;*/
   /*--itm1;*/
-    
+
   ncp1 = *nc + 1;
   n1m1 = *n1 - 1;
 
@@ -3479,7 +3479,7 @@ interp(iap_type *iap, rap_type *rap, integer *ndim, integer *n, integer *nc, dou
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 newmsh(iap_type *iap, rap_type *rap, integer *ndxloc, doublereal **ups, integer *nold, integer *ncold, doublereal *tmold, doublereal *dtmold, integer *nnew, doublereal *tmnew, integer *iper)
 {
     /* Local variables */
@@ -3507,14 +3507,14 @@ newmsh(iap_type *iap, rap_type *rap, integer *ndxloc, doublereal **ups, integer 
   /*--tmnew;*/
   /*--dtmold;*/
   /*--tmold;*/
-    
 
-  
+
+
   ndim = iap->ndim;
 
   /* Put the values of the monotonely increasing function EQDF in EQF. */
 
-  eqdf(iap, rap, nold, &ndim, ncold, dtmold, ndxloc, ups, eqf, 
+  eqdf(iap, rap, nold, &ndim, ncold, dtmold, ndxloc, ups, eqf,
        iper);
 
   /* Uniformly divide the range of EQDF : */
@@ -3544,7 +3544,7 @@ newmsh(iap_type *iap, rap_type *rap, integer *ndxloc, doublereal **ups, integer 
 
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 ordr(iap_type *iap, rap_type *rap, integer *n, doublereal *tm, integer *n1, doublereal *tm1, integer *itm1)
 {
 
@@ -3552,9 +3552,9 @@ ordr(iap_type *iap, rap_type *rap, integer *n, doublereal *tm, integer *n1, doub
   integer j, k0, j1, k1=0;
 
 
-  
 
-  /* TM and TM1 are two ascending arrays with values in [0,1]. On exit the 
+
+  /* TM and TM1 are two ascending arrays with values in [0,1]. On exit the
 */
 /* value of ITM1( i ) specifies the index of the TM-interval in which */
 /* TM1(i) lies. */
@@ -3565,7 +3565,7 @@ ordr(iap_type *iap, rap_type *rap, integer *n, doublereal *tm, integer *n1, doub
   /*--itm1;*/
   /*--tm1;*/
 
-  
+
   k0 = 2;
   for (j1 = 0; j1 < *n1; ++j1) {
     k1 = k0;
@@ -3585,7 +3585,7 @@ ordr(iap_type *iap, rap_type *rap, integer *n, doublereal *tm, integer *n1, doub
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 intwts(iap_type *iap, rap_type *rap, integer *n, doublereal *z__, doublereal *x, doublereal *wts)
 {
 
@@ -3595,7 +3595,7 @@ intwts(iap_type *iap, rap_type *rap, integer *n, doublereal *z__, doublereal *x,
   integer ib;
 
 
-  
+
 
   /* Generates weights for Lagrange interpolation. */
 
@@ -3604,7 +3604,7 @@ intwts(iap_type *iap, rap_type *rap, integer *n, doublereal *z__, doublereal *x,
   /*--wts;*/
   /*--x;*/
 
-    
+
   for (ib = 0; ib < *n; ++ib) {
     p = 1.;
     denom = 1.;
@@ -3622,7 +3622,7 @@ intwts(iap_type *iap, rap_type *rap, integer *n, doublereal *z__, doublereal *x,
 
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 eqdf(iap_type *iap, rap_type *rap, integer *ntst, integer *ndim, integer *ncol, doublereal *dtm, integer *ndxloc, doublereal **ups, doublereal *eqf, integer *iper)
 {
   /* Local variables */
@@ -3723,7 +3723,7 @@ eqdf(iap_type *iap, rap_type *rap, integer *ntst, integer *ndim, integer *ncol, 
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- --- */
-/* Subroutine */ int 
+/* Subroutine */ int
 eig(iap_type *iap, integer *ndim, integer *m1a, doublereal *a, doublecomplex *ev, integer *ier)
 {
   /* System generated locals */
@@ -3754,7 +3754,7 @@ eig(iap_type *iap, integer *ndim, integer *m1a, doublereal *a, doublecomplex *ev
   /* Parameter adjustments */
   /*--ev;*/
   a_dim1 = *m1a;
-  
+
   ibr = iap->ibr;
   ntot = iap->ntot;
   ntop = (ntot + 1) % 10000;
@@ -3772,7 +3772,7 @@ eig(iap_type *iap, integer *ndim, integer *m1a, doublereal *a, doublecomplex *ev
     *ier = 1;
   }
   if (*ier == 1) {
-    fprintf(fp9,"%4li%6li NOTE:Error return from EISPACK routine RG\n",ibr,ntop);	
+    fprintf(fp9,"%4li%6li NOTE:Error return from EISPACK routine RG\n",ibr,ntop);
   }
 
   FREE(z__);
@@ -3785,7 +3785,7 @@ eig(iap_type *iap, integer *ndim, integer *m1a, doublereal *a, doublecomplex *ev
 
 
 /*     ---------- ---- */
-/* Subroutine */ int 
+/* Subroutine */ int
 nlvc(integer n, integer m, integer k, doublereal **a, doublereal *u)
 {
     /* Local variables */
@@ -3819,7 +3819,7 @@ nlvc(integer n, integer m, integer k, doublereal **a, doublereal *u)
   /*--u;*/
   /*--ir;*/
   /*--ic;*/
-  
+
   for (i = 0; i < n; ++i) {
     ic[i] = i;
     ir[i] = i;
@@ -3844,7 +3844,7 @@ nlvc(integer n, integer m, integer k, doublereal **a, doublereal *u)
       }
     }
     if (piv < RSMALL) {
-      fprintf(fp9,"        NOTE:Pivot %3li < %10.3E  in NLVC : A null space may be multi-dimensional\n",jj,RSMALL);	
+      fprintf(fp9,"        NOTE:Pivot %3li < %10.3E  in NLVC : A null space may be multi-dimensional\n",jj,RSMALL);
 
     }
 
@@ -3894,7 +3894,7 @@ nlvc(integer n, integer m, integer k, doublereal **a, doublereal *u)
 
 
 /*     ---------- ----- */
-/* Subroutine */ int 
+/* Subroutine */ int
 nrmlz(integer *ndim, doublereal *v)
 {
     /* Local variables */
@@ -3903,7 +3903,7 @@ nrmlz(integer *ndim, doublereal *v)
   doublereal ss;
 
 
-  
+
 
 
   /* Scale the vector V so that its discrete L2-norm becomes 1. */
@@ -3911,7 +3911,7 @@ nrmlz(integer *ndim, doublereal *v)
   /* Parameter adjustments */
   /*--v;*/
 
-  
+
   ss = 0.;
   for (i = 0; i < *ndim; ++i) {
     ss += v[i] * v[i];
@@ -3926,13 +3926,13 @@ nrmlz(integer *ndim, doublereal *v)
 
 
 /*     ------ --------- -------- */
-doublereal 
+doublereal
 api(doublereal r)
 {
   /* System generated locals */
   doublereal ret_val;
 
-    
+
 
 
 
@@ -3945,7 +3945,7 @@ api(doublereal r)
 
 
 /*     ---------- -- */
-/* Subroutine */ int 
+/* Subroutine */ int
 ge(integer n, integer m1a, doublereal *a, integer nrhs, integer ndxloc, doublereal *u, integer m1f, doublereal *f, doublereal *det)
 {
   /* Local variables */
@@ -3983,7 +3983,7 @@ ge(integer n, integer m1a, doublereal *a, integer nrhs, integer ndxloc, doublere
   /* Parameter adjustments */
   /*--ir;*/
   /*--ic;*/
-  
+
   for (i = 0; i < n; ++i) {
     ic[i] = i;
     ir[i] = i;
@@ -4022,7 +4022,7 @@ ge(integer n, integer m1a, doublereal *a, integer nrhs, integer ndxloc, doublere
     }
 
     if (piv < RSMALL) {
-      fprintf(fp9,"         NOTE:Pivot %3li < %10.3E, in GE\n",jj,RSMALL);	
+      fprintf(fp9,"         NOTE:Pivot %3li < %10.3E, in GE\n",jj,RSMALL);
     }
 
     k = ir[jj];
@@ -4035,7 +4035,7 @@ ge(integer n, integer m1a, doublereal *a, integer nrhs, integer ndxloc, doublere
 
     jjp1 = jj + 1;
     for (l = jjp1; l < n; ++l) {
-      
+
       rm = a[ir[l] * m1a + ic[jj]] / a[ir[jj] * m1a + ic[jj]];
       if (rm != 0.) {
 	for (i = jjp1; i < n; ++i) {
@@ -4100,17 +4100,17 @@ ge(integer n, integer m1a, doublereal *a, integer nrhs, integer ndxloc, doublere
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 newlab(iap_type *iap, rap_type *rap)
 {
   /* MODIFIED: Drew LaMar, April 2006 */
-    
+
 
   /* Local variables */
   integer mlab, ibrs, nars;
 
   integer labrs, lab, ibr, mbr, ips, itp, irs, isw;
-  
+
   integer i;
 
   /* Determine a suitable label when restarting. */
@@ -4127,7 +4127,7 @@ newlab(iap_type *iap, rap_type *rap)
  while (i < gData->num_sp) {
     ibrs = gData->sp[i].ibr;
     labrs = gData->sp[i].lab;
-    
+
     if (ibrs > mbr) {
     mbr = ibrs;
     }
@@ -4142,7 +4142,7 @@ newlab(iap_type *iap, rap_type *rap)
   if (isw < 0 || irs == 0) {
     ibr = mbr + 1;
     iap->ibr = ibr;
-  } else if ((abs(itp) < 10 && abs(isw) == 2) || (ips == 2 && itp == 3) || 
+  } else if ((abs(itp) < 10 && abs(isw) == 2) || (ips == 2 && itp == 3) ||
 	     (ips == 4 && isw == 2 && abs(itp) < 10) || (ips == 5 && itp % 10 == 2)) {
     ibr = irs;
     iap->ibr = ibr;
@@ -4151,25 +4151,25 @@ newlab(iap_type *iap, rap_type *rap)
   return 0;
 } /* newlab_ */
 
-int 
-findlb(iap_type *iap, const rap_type *rap, 
+int
+findlb(iap_type *iap, const rap_type *rap,
        integer irs, integer *nfpr, logical *found)
 {
   /* MODIFIED: Drew LaMar, April 2006 */
-  
+
   /* Local variables */
 
   integer ibr, itp, isw, labrs, itpst, nskip;
   logical eof3;
-  
+
   integer junk;
-  
+
   integer i;
   /* Locates restart point with label IRS and determines type. */
   /* If the label can not be located on unit 3 then FOUND will be .FALSE. */
-  
 
-  
+
+
   *found = FALSE_;
   isw = iap->isw;
 
@@ -4180,7 +4180,7 @@ findlb(iap_type *iap, const rap_type *rap,
     labrs = gData->sp[i].lab;
     *nfpr = gData->sp[i].nfpr;
     nskip = gData->sp[i].nrowpr;
-    
+
     iap->itp = itp;
     iap->ibr = ibr;
     if (labrs == irs) {
@@ -4204,14 +4204,14 @@ findlb(iap_type *iap, const rap_type *rap,
   }
   gData->sp_ind = 0;
   return 0;
-} 
+}
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 readlb(const iap_type *iap, const rap_type *rap, doublereal *u, doublereal *par)
 {
   /* MODIFIED: Drew LaMar, April 2006 */
-  
+
   /* Local variables */
   integer ndim, i;
   doublereal t;
@@ -4219,12 +4219,12 @@ readlb(const iap_type *iap, const rap_type *rap, doublereal *u, doublereal *par)
   integer ind;
 
   /* Reads the restart data for algebraic problems. */
-  
+
   ind = gData->sp_ind;
   nar = gData->sp[ind].nar;
   nparr = gData->sp[ind].nparx;
   ndim = nar - 1;
-  
+
   t = gData->sp[ind].u[0];
   for (i = 0; i < ndim; ++i) {
     if (i < iap->ndim)
@@ -4241,7 +4241,7 @@ readlb(const iap_type *iap, const rap_type *rap, doublereal *u, doublereal *par)
 } /* readlb_ */
 
 /*     ------ --------- -------- ----- */
-doublereal 
+doublereal
 rinpr(iap_type *iap, integer *ndim1, integer *ndxloc, doublereal **ups, doublereal **vps, doublereal *dtm, doublereal *thu)
 {
   /* System generated locals */
@@ -4266,7 +4266,7 @@ rinpr(iap_type *iap, integer *ndim1, integer *ndxloc, doublereal **ups, doublere
   /* Parameter adjustments */
   /*--dtm;*/
   /*--thu;*/
-    
+
   ndim = iap->ndim;
   ntst = iap->ntst;
   ncol = iap->ncol;
@@ -4296,7 +4296,7 @@ rinpr(iap_type *iap, integer *ndim1, integer *ndxloc, doublereal **ups, doublere
 
 
 /*     ------ --------- -------- ------ */
-doublereal 
+doublereal
 rnrmsq(iap_type *iap, integer *ndim1, integer *ndxloc, doublereal **ups, doublereal *dtm, doublereal *thu)
 {
   /* System generated locals */
@@ -4314,7 +4314,7 @@ rnrmsq(iap_type *iap, integer *ndim1, integer *ndxloc, doublereal **ups, doubler
   /* Parameter adjustments */
   /*--thu;*/
 
-  
+
   ret_val = rinpr(iap, ndim1, ndxloc, ups, ups, dtm, thu);
 
   return ret_val;
@@ -4322,7 +4322,7 @@ rnrmsq(iap_type *iap, integer *ndim1, integer *ndxloc, doublereal **ups, doubler
 
 
 /*     ------ --------- -------- ----- */
-doublereal 
+doublereal
 rintg(iap_type *iap, integer *ndxloc, integer ic, doublereal **ups, doublereal *dtm)
 {
   /* System generated locals */
@@ -4345,7 +4345,7 @@ rintg(iap_type *iap, integer *ndxloc, integer ic, doublereal **ups, doublereal *
 
   /* Parameter adjustments */
   /*--dtm;*/
-  
+
   ndim = iap->ndim;
   ntst = iap->ntst;
   ncol = iap->ncol;
@@ -4372,13 +4372,13 @@ rintg(iap_type *iap, integer *ndxloc, integer ic, doublereal **ups, doublereal *
 
 
 /*     ------ --------- -------- ----- */
-doublereal 
+doublereal
 rnrm2(iap_type *iap, integer *ndxloc, integer ic, doublereal **ups, doublereal *dtm)
 {
   /* System generated locals */
   doublereal ret_val;
 
-  
+
 
 
   /* Local variables */
@@ -4398,7 +4398,7 @@ rnrm2(iap_type *iap, integer *ndxloc, integer ic, doublereal **ups, doublereal *
 
   /* Parameter adjustments */
   /*--dtm;*/
-  
+
   ndim = iap->ndim;
   ntst = iap->ntst;
   ncol = iap->ncol;
@@ -4427,7 +4427,7 @@ rnrm2(iap_type *iap, integer *ndxloc, integer ic, doublereal **ups, doublereal *
 
 
 /*     ------ --------- -------- ------ */
-doublereal 
+doublereal
 rmxups(iap_type *iap, integer *ndxloc, integer i, doublereal **ups)
 {
   /* System generated locals */
@@ -4437,13 +4437,13 @@ rmxups(iap_type *iap, integer *ndxloc, integer i, doublereal **ups)
   integer ndim, ncol, ntst, j, k, k1;
 
 
-  
+
 
   /* Computes the maximum of the I'th component of UPS. */
 
 
   /* Parameter adjustments */
-  
+
   ndim = iap->ndim;
   ntst = iap->ntst;
   ncol = iap->ncol;
@@ -4467,7 +4467,7 @@ rmxups(iap_type *iap, integer *ndxloc, integer i, doublereal **ups)
 
 
 /*     ------ --------- -------- ------ */
-doublereal 
+doublereal
 rmnups(iap_type *iap, integer *ndxloc, integer i, doublereal **ups)
 {
   /* System generated locals */
@@ -4477,13 +4477,13 @@ rmnups(iap_type *iap, integer *ndxloc, integer i, doublereal **ups)
   integer ndim, ncol, ntst, j, k, k1;
 
 
-  
+
 
   /* Computes the minimum of the I'th component of UPS. */
 
 
   /* Parameter adjustments */
-  
+
   ndim = iap->ndim;
   ntst = iap->ntst;
   ncol = iap->ncol;
@@ -4507,7 +4507,7 @@ rmnups(iap_type *iap, integer *ndxloc, integer i, doublereal **ups)
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 scaleb(iap_type *iap, integer *icp, integer *ndxloc, doublereal **dvps, doublereal *rld, doublereal *dtm, doublereal *thl, doublereal *thu)
 {
   /* System generated locals */
@@ -4567,7 +4567,7 @@ scaleb(iap_type *iap, integer *icp, integer *ndxloc, doublereal **dvps, doublere
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 cnrlbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), STPNT_TYPE_BVP((*stpnt)), PVLI_TYPE_BVP((*pvli)), doublereal *thl, doublereal *thu, integer *iuz, doublereal *vuz)
 {
     /* Local variables */
@@ -4608,15 +4608,15 @@ cnrlbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   usage_start(&usage_all);
 #endif
 
-  ups=DMATRIX(iap->ntst + 1, iap->ndim * iap->ncol); 
-  upoldp=DMATRIX(iap->ntst + 1, iap->ndim * iap->ncol); 
+  ups=DMATRIX(iap->ntst + 1, iap->ndim * iap->ncol);
+  upoldp=DMATRIX(iap->ntst + 1, iap->ndim * iap->ncol);
   uoldps=DMATRIX(iap->ntst + 1, iap->ndim * iap->ncol);
   udotps=DMATRIX(iap->ntst + 1, iap->ndim * iap->ncol);
   dups=DMATRIX(iap->ntst + 1, iap->ndim * iap->ncol);
   fa=DMATRIX(iap->ntst + 1, iap->ndim * iap->ncol);
-  dtm=(doublereal *)MALLOC(sizeof(doublereal)*(iap->ntst + 1)); 
-  tm=(doublereal *)MALLOC(sizeof(doublereal)*(iap->ntst + 1)); 
-  fc=(doublereal *)MALLOC(sizeof(doublereal)*(iap->nbc+iap->nint+1)); 
+  dtm=(doublereal *)MALLOC(sizeof(doublereal)*(iap->ntst + 1));
+  tm=(doublereal *)MALLOC(sizeof(doublereal)*(iap->ntst + 1));
+  fc=(doublereal *)MALLOC(sizeof(doublereal)*(iap->nbc+iap->nint+1));
   p0=DMATRIX(iap->ndim, iap->ndim);
   p1=DMATRIX(iap->ndim, iap->ndim);
   ev=(doublecomplex *)MALLOC(sizeof(doublecomplex)*(iap->ndim));
@@ -4628,7 +4628,7 @@ cnrlbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   /*--iuz;*/
   /*--icp;*/
   /*--par;*/
-    
+
   ndim = iap->ndim;
   ips = iap->ips;
   irs = iap->irs;
@@ -4676,27 +4676,27 @@ cnrlbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
       fa[j][i] = 0.;
     }
   }
-  
+
   for(j = 0; j < NPARX; ++j) {
     rldot[j] = 0.0;
     rlcur[j] = 0.0;
     rlold[j] = 0.0;
   }
-  
-  rsptbv(iap, rap, par, icp, funi, stpnt, &rds, rlcur, 
-	 rlold, rldot, &ntst_plus_one, ups, uoldps, udotps, upoldp, dups, tm, 
+
+  rsptbv(iap, rap, par, icp, funi, stpnt, &rds, rlcur,
+	 rlold, rldot, &ntst_plus_one, ups, uoldps, udotps, upoldp, dups, tm,
 	 dtm, ev, &nodir, thl, thu);
   (*pvli)(iap, rap, icp, dtm, &ntst_plus_one, ups, &ndim, p0, p1, par);
 
   setrtn(iap, &ntst, &ntst_plus_one, ups, par);
 
   if (nodir == 1 && isw > 0) {
-    stdrbv(iap, rap, par, icp, funi, bcni, icni, rlcur, 
-	   rlold, rldot, iap->ntst+1, ups, dups, uoldps, udotps, upoldp, 
+    stdrbv(iap, rap, par, icp, funi, bcni, icni, rlcur,
+	   rlold, rldot, iap->ntst+1, ups, dups, uoldps, udotps, upoldp,
 	   fa, fc, dtm, 0, p0, p1, thl, thu);
   } else if (irs != 0 && isw < 0) {
-    stdrbv(iap, rap, par, icp, funi, bcni, icni, rlcur, 
-	   rlold, rldot, iap->ntst+1, ups, dups, uoldps, udotps, upoldp, 
+    stdrbv(iap, rap, par, icp, funi, bcni, icni, rlcur,
+	   rlold, rldot, iap->ntst+1, ups, dups, uoldps, udotps, upoldp,
 	   fa, fc, dtm, 1, p0, p1, thl, thu);
   }
 
@@ -4771,12 +4771,12 @@ cnrlbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
   /* Provide initial approximation and determine next point. */
 
-  contbv(iap, rap, par, icp, funi, &rds, rlcur, rlold, 
+  contbv(iap, rap, par, icp, funi, &rds, rlcur, rlold,
 	 rldot, &ntst_plus_one, ups, uoldps, udotps, upoldp, dtm, thl, thu);
-  
+
  L2:
 
-  stepbv(iap, rap, par, icp, funi, bcni, icni, pvli, &rds, 
+  stepbv(iap, rap, par, icp, funi, bcni, icni, pvli, &rds,
 	 rlcur, rlold, rldot, &ntst_plus_one, ups, dups, uoldps, udotps, upoldp,
 	 fa, fc, tm, dtm, p0, p1, thl, thu);
   //fprintf(stdout,"Number of iterations: %d\n", iap->nit);
@@ -4791,9 +4791,9 @@ cnrlbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   if (nuzr > 0) {
     for (iuzr = 0; iuzr < nuzr; ++iuzr) {
       iap->iuzr = iuzr;
-      lcspbv(iap, rap, par, icp, fnuzbv, funi, bcni, 
+      lcspbv(iap, rap, par, icp, fnuzbv, funi, bcni,
 	     icni, pvli, &uzr[iuzr], rlcur, rlold, rldot, &
-	     ntst_plus_one, ups, dups, uoldps, udotps, upoldp, fa, fc, tm, 
+	     ntst_plus_one, ups, dups, uoldps, udotps, upoldp, fa, fc, tm,
 	     dtm, p0, p1, ev, thl, thu, iuz, vuz);
       istop = iap->istop;
       if (istop == 1) {
@@ -4819,7 +4819,7 @@ cnrlbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
   if (ilp == 1) {
     lcspbv(iap, rap, par, icp, fnlpbv, funi, bcni, icni,
-	   pvli, &rlp, rlcur, rlold, rldot, &ntst_plus_one, ups, dups, 
+	   pvli, &rlp, rlcur, rlold, rldot, &ntst_plus_one, ups, dups,
 	   uoldps, udotps, upoldp, fa, fc, tm, dtm, p0, p1, ev, thl, thu,
 	   iuz, vuz);
     istop = iap->istop;
@@ -4840,7 +4840,7 @@ cnrlbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
   if (isp >= 2) {
     lcspbv(iap, rap, par, icp, fnbpbv, funi, bcni, icni,
-	   pvli, &bp1, rlcur, rlold, rldot, &ntst_plus_one, ups, dups, 
+	   pvli, &bp1, rlcur, rlold, rldot, &ntst_plus_one, ups, dups,
 	   uoldps, udotps, upoldp, fa, fc, tm, dtm, p0, p1, ev, thl, thu,
 	   iuz, vuz);
     istop = iap->istop;
@@ -4861,7 +4861,7 @@ cnrlbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
   if ((isp > 0) && (ips == 2 || ips == 7 || ips == 12)) {
     lcspbv(iap, rap, par, icp, fnspbv, funi, bcni, icni,
-	   pvli, &sp1, rlcur, rlold, rldot, &ntst_plus_one, ups, dups, 
+	   pvli, &sp1, rlcur, rlold, rldot, &ntst_plus_one, ups, dups,
 	   uoldps, udotps, upoldp, fa, fc, tm, dtm, p0, p1, ev, thl, thu,
 	   iuz, vuz);
     istop = iap->istop;
@@ -4913,13 +4913,13 @@ cnrlbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 #endif
     return 0;
   }
-    
+
 
 } /* cnrlbv_ */
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 contbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), doublereal *rds, doublereal *rlcur, doublereal *rlold, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal *dtm, doublereal *thl, doublereal *thu)
 {
   /* Local variables */
@@ -4929,7 +4929,7 @@ contbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   doublereal dds;
 
 
-  
+
 
   /* Determines an initial approximation to the next solution point, */
   /* by a computation of the null space of the Jacobian. */
@@ -4941,7 +4941,7 @@ contbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   /*--rlcur;*/
   /*--rlold;*/
   /*--rldot;*/
-  
+
   ndim = iap->ndim;
   ntst = iap->ntst;
   ncol = iap->ncol;
@@ -4962,13 +4962,13 @@ contbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
     rldot[i] = (rlcur[i] - rlold[i]) * dds;
   }
   /*        Rescale, to set the norm of (UDOTPS,RLDOT) equal to 1. */
-  scaleb(iap, icp, ndxloc, udotps, rldot, dtm, 
+  scaleb(iap, icp, ndxloc, udotps, rldot, dtm,
 	 thl, thu);
 
   /* Extrapolate to get initial approximation to next solution point. */
 
-  extrbv(iap, rap, funi, rds, rlcur, rlold, rldot, 
-	 ndxloc, ups, uoldps, 
+  extrbv(iap, rap, funi, rds, rlcur, rlold, rldot,
+	 ndxloc, ups, uoldps,
 	 udotps);
 
   /* Store time-derivative. */
@@ -4981,14 +4981,14 @@ contbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 extrbv(iap_type *iap, rap_type *rap, FUNI_TYPE((*funi)), doublereal *rds, doublereal *rlcur, doublereal *rlold, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **uoldps, doublereal **udotps)
 {
   /* Local variables */
   integer ndim, ncol, nfpr, nrow, ntst, i, j;
 
 
-  
+
 
   /* Determines an initial approximation to the next solution by */
   /* a computation of the null space of the Jacobian. */
@@ -5000,7 +5000,7 @@ extrbv(iap_type *iap, rap_type *rap, FUNI_TYPE((*funi)), doublereal *rds, double
   /*--rlcur;*/
   /*--rlold;*/
   /*--rldot;*/
-  
+
   ndim = iap->ndim;
   ntst = iap->ntst;
   ncol = iap->ncol;
@@ -5023,7 +5023,7 @@ extrbv(iap_type *iap, rap_type *rap, FUNI_TYPE((*funi)), doublereal *rds, double
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 stupbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), doublereal *rlcur, doublereal *rlold, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **uoldps, doublereal **upoldp)
 {
   /* Local variables */
@@ -5071,7 +5071,7 @@ stupbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 	uold[i] = uoldps[j][i];
       }
     }
-    (*funi)(iap, rap, ndim, u, uold, icp, par, 0, f, 
+    (*funi)(iap, rap, ndim, u, uold, icp, par, 0, f,
 	    dfdu, dfdp);
     for (i = 0; i < ndim; ++i) {
       upoldp[j][i] = f[i];
@@ -5111,7 +5111,7 @@ stupbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), PVLI_TYPE_BVP((*pvli)), doublereal *rds, doublereal *rlcur, doublereal *rlold, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **dups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **fa, doublereal *fc, doublereal *tm, doublereal *dtm, doublereal **p0, doublereal **p1, doublereal *thl, doublereal *thu)
 {
   /* Local variables */
@@ -5138,18 +5138,18 @@ stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   integer ibr, mxt;
   doublereal umx;
   integer nit1;
-  
+
   // DREW WUZ HERE
   doublereal **ups0, rlcur0[iap->nfpr];
   doublereal **d1, rd1[iap->nfpr];
   doublereal nrmd0 = 0.0;
   doublereal nrmd1 = 0.0;
-  
-  ups0=DMATRIX(iap->ntst + 1, iap->ndim * iap->ncol); 
+
+  ups0=DMATRIX(iap->ntst + 1, iap->ndim * iap->ncol);
   d1 = DMATRIX(iap->ntst + 1, iap->ndim * iap->ncol);
   // DREW WUZ GONE
 
-  /* Controls the solution of the nonlinear equations (by Newton's method) 
+  /* Controls the solution of the nonlinear equations (by Newton's method)
 */
 /* for the next solution (PAR(ICP(*)) , U) on a branch of solutions. */
 
@@ -5164,7 +5164,7 @@ stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   /*--fc;*/
   /*--tm;*/
   /*--dtm;*/
-    
+
   ndim = iap->ndim;
   ntst = iap->ntst;
   ncol = iap->ncol;
@@ -5189,7 +5189,7 @@ stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
   /* Write additional output on unit 9 if requested. */
 
-  wrtbv9(iap, rap, par, icp, rlcur, ndxloc, 
+  wrtbv9(iap, rap, par, icp, rlcur, ndxloc,
 	 ups, tm, dtm, thl, thu);
 
   /* // DREW WUZ HERE (Set up rate of convergence)
@@ -5217,10 +5217,10 @@ stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
       ifst = 1;
     }
 
-    solvbv(&ifst, iap, rap, par, icp, funi, bcni, icni, 
-	   rds, &nllv, rlcur, rlold, rldot, ndxloc, 
-	   ups, dups, uoldps, 
-	   udotps, upoldp, dtm, fa, fc, p0, 
+    solvbv(&ifst, iap, rap, par, icp, funi, bcni, icni,
+	   rds, &nllv, rlcur, rlold, rldot, ndxloc,
+	   ups, dups, uoldps,
+	   udotps, upoldp, dtm, fa, fc, p0,
 	   p1, thl, thu);
     /* Add Newton increments. */
 
@@ -5254,9 +5254,9 @@ stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
        of it at some time.
     */
     wrtbv9(iap, rap, par, icp, rlcur, ndxloc, ups, tm, dtm, thl, thu);
-    
+
     /* // DREW WUZ HERE (print out rate of convergence)
-    
+
     // Save and update difference
     for (i=0; i<ntst+1; i++) {
         for (j=0; j<ndim*ncol; j++) {
@@ -5266,7 +5266,7 @@ stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
     for (i=0; i<nfpr; i++) {
         rd1[i] = rlcur[i]-rlcur0[i];
     }
-    
+
     nrmd0 = nrmd1;
     nrmd1 = rnrmsq(iap, &ndim, ndxloc, d1, dtm, thu);
     for (i=0; i<nfpr; i++) {
@@ -5276,7 +5276,7 @@ stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
     if (nit1 > 1) {
         fprintf(fp9, "Rate of convergence = %lf\n", (nrmd0*nrmd0*nrmd0/nrmd1));
     }
-    
+
     // Update last solution point
     for (i=0; i<ntst+1; i++) {
         for (j=0; j<ndim*ncol; j++) {
@@ -5305,7 +5305,7 @@ stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
     if (done && rdumx < epsu) {
       (*pvli)(iap, rap, icp, dtm, ndxloc, ups, &ndim, p0, p1, par);
       if (iid >= 2) {
-	fprintf(fp9," \n");	
+	fprintf(fp9," \n");
       }
       // DREW WUZ HERE
       /* fprintf(stdout,"Iteration: %d\n", iap->nit);
@@ -5332,7 +5332,7 @@ stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
  L3:
   if (iads == 0 && iap->mynode == 0) {
-    fprintf(fp9,"%4li%6li NOTE:No convergence with fixed step size\n",ibr,ntop);	
+    fprintf(fp9,"%4li%6li NOTE:No convergence with fixed step size\n",ibr,ntop);
   }
   if (iads == 0) {
     goto L13;
@@ -5355,7 +5355,7 @@ stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
     }
   }
   if (iid >= 2 && iap->mynode == 0) {
-    fprintf(fp9,"%4li%6li NOTE:Retrying step\n",ibr,ntop);	
+    fprintf(fp9,"%4li%6li NOTE:Retrying step\n",ibr,ntop);
 
   }
   goto L1;
@@ -5364,7 +5364,7 @@ stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 
  L12:
   if (iap->mynode == 0) {
-    fprintf(fp9,"%4li%6li, NOTE:No convergence using minimum step size\n",ibr,ntop);	
+    fprintf(fp9,"%4li%6li, NOTE:No convergence using minimum step size\n",ibr,ntop);
 
   }
  L13:
@@ -5397,7 +5397,7 @@ stepbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 rsptbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), STPNT_TYPE_BVP((*stpnt)), doublereal *rds, doublereal *rlcur, doublereal *rlold, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **dups, doublereal *tm, doublereal *dtm, doublecomplex *ev, integer *nodir, doublereal *thl, doublereal *thu)
 {
     /* Local variables */
@@ -5410,15 +5410,15 @@ rsptbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   integer irs, isw;
 
   integer ntst_fort8,ncol_fort8,junk;
-  
+
   integer ind;
-  
+
 
   /* Restarts computation of a branch of solutions at point labelled IRS. */
   /* The output written on unit 8 by a previous run is now expected as */
   /* input on unit 3. The label IRS, where computation is to resume, must */
   /* be specified in the user-supplied subroutine INIT. */
-  /* If IRS=0 then the starting point must be provided analytically in the 
+  /* If IRS=0 then the starting point must be provided analytically in the
 */
 /* user-supplied subroutine STPNT. */
 
@@ -5434,7 +5434,7 @@ rsptbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   /*--tm;*/
   /*--dtm;*/
   /*--ev;*/
-    
+
   ndim = iap->ndim;
   irs = iap->irs;
   ntst = iap->ntst;
@@ -5477,7 +5477,7 @@ rsptbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
       ncol_used=ncol_fort8;
     else
       ncol_used=ncol;
-      
+
     *ndxloc=(ntst_used + 1)*4;
     ups_new    = DMATRIX(*ndxloc, iap->ndim * ncol_used);
     upoldp_new    = DMATRIX(*ndxloc, iap->ndim * ncol_used);
@@ -5495,22 +5495,22 @@ rsptbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 	udotps_new[i][j] = 0.0;
       }
     }
-    
-    (*stpnt)(iap, rap, par, icp, &ntsrs, &ncolrs, rlcur, 
-	     rldot, ndxloc, ups_new, udotps_new, upoldp_new, tm_new, 
+
+    (*stpnt)(iap, rap, par, icp, &ntsrs, &ncolrs, rlcur,
+	     rldot, ndxloc, ups_new, udotps_new, upoldp_new, tm_new,
 	     dtm_new, nodir, thl, thu);
     /* Determine a suitable starting label and branch number. */
-      
+
     newlab(iap, rap);
-      
+
     for (j = 0; j < ntsrs; ++j) {
       dtm_new[j] = tm_new[j + 1] - tm_new[j];
     }
-      
+
     /* Adapt mesh if necessary : */
-      
+
     if (ntst != ntsrs || ncol != ncolrs) {
-      adapt(iap, rap, &ntsrs, &ncolrs, &ntst, &ncol, tm_new, dtm_new, 
+      adapt(iap, rap, &ntsrs, &ncolrs, &ntst, &ncol, tm_new, dtm_new,
 	    ndxloc, ups_new, udotps_new);
     }
     /* Copy from the temporary large arrays into the normal arrays. */
@@ -5552,7 +5552,7 @@ rsptbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
     isw = 1;
   } else {
     /*        ** Restart from orbit. */
-    stupbv(iap, rap, par, icp, funi, rlcur, rlold, rldot, ndxloc, ups, uoldps, 
+    stupbv(iap, rap, par, icp, funi, rlcur, rlold, rldot, ndxloc, ups, uoldps,
 	   upoldp);
   }
 
@@ -5560,7 +5560,7 @@ rsptbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 } /* rsptbv_ */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 stpnbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *ntsrs, integer *ncolrs, doublereal *rlcur, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **udotps, doublereal **upoldp, doublereal *tm, doublereal *dtm, integer *nodir, doublereal *thl, doublereal *thu)
 {
   /* Local variables */
@@ -5569,7 +5569,7 @@ stpnbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *nts
   integer nfpr;
 
   integer i, j, k;
-  
+
   integer ind;
 
   logical found;
@@ -5597,7 +5597,7 @@ stpnbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *nts
   /*--icp;*/
   /*--rlcur;*/
   /*--rldot;*/
-    
+
   ndim = iap->ndim;
   ips = iap->ips;
   irs = iap->irs;
@@ -5607,7 +5607,7 @@ stpnbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *nts
   findlb(iap, rap, irs, &nfprs, &found);
   // DREW WUZ HERE
   ind = gData->sp_ind;
-  
+
   ibr = gData->sp[ind].ibr;
   ntotrs = gData->sp[ind].mtot;
   itprs = gData->sp[ind].itp;
@@ -5621,7 +5621,7 @@ stpnbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *nts
   *ncolrs = gData->sp[ind].ncol;
   nparr = gData->sp[ind].nparx;
   // DREW WUZ GONE
-  
+
   iap->ibr = ibr;
   iap->lab = lab;
 
@@ -5652,11 +5652,11 @@ stpnbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *nts
       k2 = k1 + ndimrd - 1;
       for (k = k1; k <= k2; ++k) {
         ups[j][k] = gData->sp[ind].ups[j*(*ncolrs)+i][1+k-k1];
-      }	    
+      }
     }
     tm[j] = gData->sp[ind].ups[j*(*ncolrs)][0];
   }
-  
+
   tm[*ntsrs] = gData->sp[ind].ups[(*ntsrs)*(*ncolrs)][0];
   for (k = 0; k < ndimrd; ++k) {
       ups[*ntsrs][k] = gData->sp[ind].ups[(*ntsrs)*(*ncolrs)][1+k];
@@ -5703,7 +5703,7 @@ stpnbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *nts
 
   if (ips == 9) {
     preho(iap, rap, par, icp, *ndxloc, ntsrs, &ndimrd, *ncolrs, ups, udotps, tm, dtm);
- 
+
     /* Restore data to original ups when homoclinic branch switching is
        completed */
     if (orig_ups != ups && orig_udotps != udotps) {
@@ -5717,7 +5717,7 @@ stpnbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *nts
       udotps = orig_udotps;
     }
 
-    /* Special case : Preprocess restart data in case of branch switching 
+    /* Special case : Preprocess restart data in case of branch switching
      */
     /* at a period doubling bifurcation. */
 
@@ -5745,7 +5745,7 @@ stpnbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *nts
 } /* stpnbv_ */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 stpnub(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *ntsrs, integer *ncolrs, doublereal *rlcur, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **udotps, doublereal **upoldp, doublereal *tm, doublereal *dtm, integer *nodir, doublereal *thl, doublereal *thu)
 {
   /* Local variables */
@@ -5771,7 +5771,7 @@ stpnub(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *nts
   /*--rldot;*/
   /*--tm;*/
   /*--dtm;*/
-    
+
   ndim = iap->ndim;
   ntst = iap->ntst;
   ncol = iap->ncol;
@@ -5818,25 +5818,25 @@ stpnub(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, integer *nts
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 setrtn(iap_type *iap, integer *ntst, integer *ndxloc, doublereal **ups, doublereal *par)
 {
   /* Local variables */
   integer i;
 
   integer nbc;
-  
+
   doublereal rtn;
 
   /* Initialization for rotations */
-  
-  
+
+
   /* Parameter adjustments */
   /*--par;*/
-  
+
   rtn = 1.0;
   // rot = api(2.0);
-  
+
   nbc = iap->nbc;
   global_rotations.irtn = 0;
   for (i = 0; i < nbc; ++i) {
@@ -5852,7 +5852,7 @@ setrtn(iap_type *iap, integer *ntst, integer *ndxloc, doublereal **ups, doublere
 } /* setrtn_ */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 stdrbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), doublereal *rlcur, doublereal *rlold, doublereal *rldot, integer ndxloc, doublereal **ups, doublereal **dups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **fa, doublereal *fc, doublereal *dtm, integer iperp, doublereal **p0, doublereal **p1, doublereal *thl, doublereal *thu)
 {
   /* Builtin Local */
@@ -5906,9 +5906,9 @@ stdrbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   rdsz = 0.;
   nllv = 1;
   ifst = 1;
-  solvbv(&ifst, iap, rap, par, icp, funi, bcni, icni, &rdsz, 
-	 &nllv, rlcur, rlold, rldot, &ndxloc, ups, dups, uoldps, 
-	 udotps, upoldp, dtm, fa, fc, 
+  solvbv(&ifst, iap, rap, par, icp, funi, bcni, icni, &rdsz,
+	 &nllv, rlcur, rlold, rldot, &ndxloc, ups, dups, uoldps,
+	 udotps, upoldp, dtm, fa, fc,
 	 p0, p1, thl, thu);
 
   /* Compute the starting direction. */
@@ -5945,7 +5945,7 @@ stdrbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 #define BUG_FIX
 #ifdef BUG_FIX
     for (i = 0; i < ndim; ++i) {
-      udotps[ntst][i] = -udotps[ntst][i]; 
+      udotps[ntst][i] = -udotps[ntst][i];
     }
 #endif
   }
@@ -5955,10 +5955,10 @@ stdrbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
   }
 
   if (iid >= 2) {
-    fprintf(fp9,"Starting direction of the free parameter(s) :\n");	
+    fprintf(fp9,"Starting direction of the free parameter(s) :\n");
 
     for (i = 0; i < nfpr; ++i) {
-      fprintf(fp9," PAR(%3ld) :%11.3E\n",icp[i],rldot[i]);	
+      fprintf(fp9," PAR(%3ld) :%11.3E\n",icp[i],rldot[i]);
     }
   }
 
@@ -5974,7 +5974,7 @@ stdrbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FUNI_TYPE((*
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 lcspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_BVP((*fncs)), FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), PVLI_TYPE_BVP((*pvli)), doublereal *q, doublereal *rlcur, doublereal *rlold, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **dups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **fa, doublereal *fc, doublereal *tm, doublereal *dtm, doublereal **p0, doublereal **p1, doublecomplex *ev, doublereal *thl, doublereal *thu, integer *iuz, doublereal *vuz)
 {
   /* Local variables */
@@ -6013,7 +6013,7 @@ lcspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_BV
   /*--rlold;*/
   /*--rlcur;*/
 
-    
+
   iid = iap->iid;
   itmx = iap->itmx;
   ibr = iap->ibr;
@@ -6028,8 +6028,8 @@ lcspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_BV
   /* Check for zero. */
 
   q0 = *q;
-  q1 = (*fncs)(iap, rap, par, icp, &chng, funi, bcni, icni, p0, p1, 
-	       ev, rlcur, rlold, rldot, ndxloc, ups, uoldps, 
+  q1 = (*fncs)(iap, rap, par, icp, &chng, funi, bcni, icni, p0, p1,
+	       ev, rlcur, rlold, rldot, ndxloc, ups, uoldps,
 	       udotps, upoldp, fa, fc, dups, tm, dtm, thl, thu, iuz, vuz)
     ;
 
@@ -6058,7 +6058,7 @@ lcspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_BV
     itp = -1;
     iap->itp = itp;
     /* xx???   Q=0.d0 */
-    fprintf(fp9,"==> Location of special point : Convergence.    Stepsize =%13.5E\n",rds);	
+    fprintf(fp9,"==> Location of special point : Convergence.    Stepsize =%13.5E\n",rds);
 
     return 0;
   }
@@ -6066,13 +6066,13 @@ lcspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_BV
   /* If requested write additional output on unit 9 : */
 
   if (iid >= 2 && iap->mynode == 0) {
-    fprintf(fp9," ==> Location of special point :  Iteration %3ld   Stepsize =%13.5E\n",nitsp1,rds);	
+    fprintf(fp9," ==> Location of special point :  Iteration %3ld   Stepsize =%13.5E\n",nitsp1,rds);
   }
 
   contbv(iap, rap, par, icp, funi, &rds, rlcur, rlold, rldot, ndxloc, ups, uoldps,
          udotps, upoldp, dtm, thl, thu);
   stepbv(iap, rap, par, icp, funi, bcni, icni, pvli, &rds, rlcur, rlold, rldot,
-         ndxloc, ups, dups, uoldps, udotps, 
+         ndxloc, ups, dups, uoldps, udotps,
 	 upoldp, fa, fc, tm, dtm, p0, p1, thl, thu);
   istop = iap->istop;
   if (istop != 0) {
@@ -6082,8 +6082,8 @@ lcspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_BV
 
   /* Check for zero. */
 
-  *q = (*fncs)(iap, rap, par, icp, &chng, funi, bcni, icni, p0, p1, 
-	       ev, rlcur, rlold, rldot, ndxloc, ups, uoldps, 
+  *q = (*fncs)(iap, rap, par, icp, &chng, funi, bcni, icni, p0, p1,
+	       ev, rlcur, rlold, rldot, ndxloc, ups, uoldps,
 	       udotps, upoldp, fa, fc, dups, tm, dtm, thl, thu, iuz, vuz)
     ;
 
@@ -6098,7 +6098,7 @@ lcspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_BV
     return 0;
   }
 
-  fprintf(fp9,"%4li%6li NOTE:Possible special point\n",ibr,ntop);	
+  fprintf(fp9,"%4li%6li NOTE:Possible special point\n",ibr,ntop);
   *q = 0.;
 
   return 0;
@@ -6106,13 +6106,13 @@ lcspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, FNCS_TYPE_BV
 
 
 /*     ------ --------- -------- ------ */
-doublereal 
+doublereal
 fnlpbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chng, FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), doublereal **p0, doublereal **p1, doublecomplex *ev, doublereal *rlcur, doublereal *rlold, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **fa, doublereal *fc, doublereal **dups, doublereal *tm, doublereal *dtm, doublereal *thl, doublereal *thu, integer *iuz, doublereal *vuz)
 {
   /* System generated locals */
   doublereal ret_val;
 
-    
+
 
     /* Local variables */
   integer ndim, ncol, nfpr, ifst, nllv, ntop;
@@ -6141,8 +6141,8 @@ fnlpbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   rdsz = 0.;
 
   solvbv(&ifst, iap, rap, par, icp, funi, bcni, icni, &rdsz, &nllv,
-	 rlcur, rlold, rldot, ndxloc, ups, dups, uoldps, udotps, 
-	 upoldp, dtm, fa, fc, 
+	 rlcur, rlold, rldot, ndxloc, ups, dups, uoldps, udotps,
+	 upoldp, dtm, fa, fc,
 	 p0, p1, thl, thu);
 
   for (i = 0; i < ndim; ++i) {
@@ -6161,10 +6161,10 @@ fnlpbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
 
   /* Scale the direction vector. */
 
-  scaleb(iap, icp, ndxloc, udotps, rldot, dtm, 
+  scaleb(iap, icp, ndxloc, udotps, rldot, dtm,
 	 thl, thu);
   if (iid >= 2 && iap->mynode == 0) {
-    fprintf(fp9,"%4li%6li        Fold Function %14.5E\n",abs(ibr),ntop,rldot[0]);	
+    fprintf(fp9,"%4li%6li        Fold Function %14.5E\n",abs(ibr),ntop,rldot[0]);
   }
 
   /* Set the quantity to be returned. */
@@ -6179,7 +6179,7 @@ fnlpbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
 
 
 /*     ------ --------- -------- ------ */
-doublereal 
+doublereal
 fnbpbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chng, FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), doublereal **p0, doublereal **p1, doublecomplex *ev, doublereal *rlcur, doublereal *rlold, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **fa, doublereal *fc, doublereal **dups, doublereal *tm, doublereal *dtm, doublereal *thl, doublereal *thu, integer *iuz, doublereal *vuz)
 {
   /* System generated locals */
@@ -6198,7 +6198,7 @@ fnbpbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   pp = DMATRIX(iap->ndim, iap->ndim);
 
 
-    
+
   ndim = iap->ndim;
   iid = iap->iid;
 
@@ -6238,7 +6238,7 @@ fnbpbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   }
 
   if (iid >= 2) {
-    fprintf(fp9,"%4li%6li        BP   Function %14.5E\n",abs(ibr),ntop,ret_val);	
+    fprintf(fp9,"%4li%6li        BP   Function %14.5E\n",abs(ibr),ntop,ret_val);
 
   }
   FREE_DMATRIX(pp);
@@ -6247,7 +6247,7 @@ fnbpbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
 
 
 /*     ------ --------- -------- ------ */
-doublereal 
+doublereal
 fnspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chng, FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), doublereal **p0, doublereal **p1, doublecomplex *ev, doublereal *rlcur, doublereal *rlold, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **fa, doublereal *fc, doublereal **dups, doublereal *tm, doublereal *dtm, doublereal *thl, doublereal *thu, integer *iuz, doublereal *vuz)
 {
   /* System generated locals */
@@ -6275,8 +6275,8 @@ fnspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   /*--ev;*/
   /*--p1;*/
   /*--p0;*/
-    
-    
+
+
 
   ndim = iap->ndim;
   isp = iap->isp;
@@ -6285,19 +6285,19 @@ fnspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   ibr = iap->ibr;
   ntot = iap->ntot;
   ntop = (ntot + 1) % 10000;
-  
+
   /* Initialize. */
-  
+
   ret_val = 0.;
   rap->spbf = ret_val;
   d = 0.;
   *chng = FALSE_;
-  
+
   /*  Compute the Floquet multipliers */
-  
+
   flowkm(ndim, p0, p1, iid, ev);
   /* Find the multiplier closest to z=1. */
-  
+
   amin = RLARGE;
   for (j = 0; j < ndim; ++j) {
       doublecomplex tmp;
@@ -6313,9 +6313,9 @@ fnspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
       ev[loc].r = ev[0].r, ev[loc].i = ev[0].i;
       ev[0].r = ztmp.r, ev[0].i = ztmp.i;
   }
-  
+
   /* Order the remaining Floquet multipliers by distance from |z|=1. */
-  
+
   if (ndim >= 3) {
       for (i = 1; i < ndim - 1; ++i) {
           amin = RLARGE;
@@ -6334,11 +6334,11 @@ fnspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
           }
       }
   }
-  
+
   /* Print error message if the Floquet multiplier at z=1 is inaccurate. */
-  /* (ISP is set to negative and detection of bifurations is discontinued) 
+  /* (ISP is set to negative and detection of bifurations is discontinued)
   */
-  
+
   {
       doublecomplex tmp;
       tmp.r = ev[0].r - 1., tmp.i = ev[0].i;
@@ -6347,45 +6347,45 @@ fnspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   if (amin > (double).05 && isp == 2) {
       if (iap->mynode == 0) {
           if (iid >= 2) {
-              fprintf(fp9,"%4li%6li NOTE:Multiplier inaccurate\n",abs(ibr),ntop);	
-              
+              fprintf(fp9,"%4li%6li NOTE:Multiplier inaccurate\n",abs(ibr),ntop);
+
           }
           for (i = 0; i < ndim; ++i) {
-              fprintf(fp9,"%4li%6li        Multiplier %3li %14.6E %14.6E\n",abs(ibr),ntop,i,ev[i].r,ev[i].i);	
+              fprintf(fp9,"%4li%6li        Multiplier %3li %14.6E %14.6E\n",abs(ibr),ntop,i,ev[i].r,ev[i].i);
           }
       }
       nins = 0;
       iap->nins = nins;
       if (iap->mynode == 0) {
-          fprintf(fp9,"%4li%6li        Multipliers:   Stable: %3li\n",abs(ibr),ntop,nins);	
+          fprintf(fp9,"%4li%6li        Multipliers:   Stable: %3li\n",abs(ibr),ntop,nins);
       }
       isp = -isp;
       iap->isp = isp;
       return ret_val;
   }
-  
+
   /* Restart automatic detection if the Floquet multiplier at z=1 is */
   /* sufficiently accurate again. */
-  
+
   if (isp < 0) {
       if (amin < (double).01) {
           if (iap->mynode == 0) {
-              fprintf(fp9,"%4li%6li NOTE:Multiplier accurate again\n",abs(ibr),ntop);	
+              fprintf(fp9,"%4li%6li NOTE:Multiplier accurate again\n",abs(ibr),ntop);
           }
           isp = -isp;
           iap->isp = isp;
       } else {
           if (iap->mynode == 0) {
               for (i = 0; i < ndim; ++i) {
-                  fprintf(fp9,"%4li%6li        Multiplier %3li %14.6E %14.6E\n",abs(ibr),ntop,i,ev[i].r,ev[i].i);	
+                  fprintf(fp9,"%4li%6li        Multiplier %3li %14.6E %14.6E\n",abs(ibr),ntop,i,ev[i].r,ev[i].i);
               }
           }
           return ret_val;
       }
   }
-  
+
   /* Count the number of Floquet multipliers inside the unit circle. */
-  
+
   if (ndim == 1) {
       d = 0.;
       ret_val = d;
@@ -6416,50 +6416,50 @@ fnspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
           }
       }
   }
-  
+
   nins = nins1;
   iap->nins = nins;
   if (iid >= 2 && (isp == 1 || isp == 2)) {
       if (iap->mynode == 0) {
-          fprintf(fp9,"%4li%6li        SPB  Function %14.5E\n",abs(ibr),ntop,d);	
-          
+          fprintf(fp9,"%4li%6li        SPB  Function %14.5E\n",abs(ibr),ntop,d);
+
       }
   }
-  
+
   /* Print the Floquet multipliers. */
-  
+
   nins = iap->nins;
   if (iap->mynode == 0) {
-      fprintf(fp9,"%4li%6li        Multipliers:     Stable %4li\n",abs(ibr),ntop,nins);	
-      
+      fprintf(fp9,"%4li%6li        Multipliers:     Stable %4li\n",abs(ibr),ntop,nins);
+
       for (i = 0; i < ndim; ++i) {
-          fprintf(fp9,"%4li%6li        Multiplier %3li %14.6E %14.5E\n",abs(ibr),ntop,i,ev[i].r,ev[i].i);	
-          
+          fprintf(fp9,"%4li%6li        Multiplier %3li %14.6E %14.5E\n",abs(ibr),ntop,i,ev[i].r,ev[i].i);
+
       }
   }
-  
+
   // DREW WUZ HERE
   for (i=0; i<iap->ndim; i++)
       gData->ev[gData->num_u][i] = ev[i];
   // DREW WUZ GONE
-  
+
   return ret_val;
 } /* fnspbv_ */
 
 
 /*     ------ --------- -------- ------ */
-doublereal 
+doublereal
 fnuzbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chng, FUNI_TYPE((*funi)), BCNI_TYPE((*bcni)), ICNI_TYPE((*icni)), doublereal **p0, doublereal **p1, doublecomplex *ev, doublereal *rlcur, doublereal *rlold, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **uoldps, doublereal **udotps, doublereal **upoldp, doublereal **fa, doublereal *fc, doublereal **dups, doublereal *tm, doublereal *dtm, doublereal *thl, doublereal *thu, integer *iuz, doublereal *vuz)
 {
   /* System generated locals */
   doublereal ret_val;
 
-    
+
 
     /* Local variables */
   integer ntop, ntot, iuzr, iid, ibr;
 
-  
+
   iid = iap->iid;
   iuzr = iap->iuzr;
   ibr = iap->ibr;
@@ -6470,7 +6470,7 @@ fnuzbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
   *chng = TRUE_;
 
   if (iid >= 3) {
-    fprintf(fp9,"%4li%6li        User Func. %3li %14.5E\n",abs(ibr),ntop,iuzr,ret_val);	
+    fprintf(fp9,"%4li%6li        User Func. %3li %14.5E\n",abs(ibr),ntop,iuzr,ret_val);
   }
 
   return ret_val;
@@ -6478,7 +6478,7 @@ fnuzbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, logical *chn
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 tpspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublecomplex *ev)
 {
 
@@ -6494,7 +6494,7 @@ tpspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublecomple
 
   /* Determines type of secondary periodic bifurcation. */
 
-  
+
   ndim = iap->ndim;
 
   epss = rap->epss;
@@ -6558,7 +6558,7 @@ tpspbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublecomple
 /* ----------------------------------------------------------------------- */
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 stplbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **udotps, doublereal *tm, doublereal *dtm, doublereal *thl, doublereal *thu, doublereal **c0, doublereal **c1)
 {
     /* Local variables */
@@ -6576,7 +6576,7 @@ stplbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
   doublereal amp;
   integer ips, itp, irs, npr, isw, nmx;
   doublereal umx[7];
-  
+
   integer nsm, sm_num;
 
   /* Writes the bifurcation diagram on unit 7 (Differential Equations) */
@@ -6590,7 +6590,7 @@ stplbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
 /*            - = stable , + = unstable, or unknown. */
 /*  ITP    : An integer indicating the type of point : */
 
-/*             4  (  )  :   Output point (Every NPR steps along branch). 
+/*             4  (  )  :   Output point (Every NPR steps along branch).
 */
 /*            -4  (UZ)  :   Output point (Zero of user function). */
 /*             5  (LP)  :   Fold (fold). */
@@ -6602,14 +6602,14 @@ stplbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
 
 /*  LAB        : The label of a special point. */
 /*  PAR(ICP(1)): The principal parameter. */
-/*  A          : The L2-norm of the solution vector, or other measure of 
+/*  A          : The L2-norm of the solution vector, or other measure of
 */
 /*               the solution (see the user-supplied parameter IPLT). */
 /*  MAX U(*)   : The maxima of the first few solution components. */
 /*  PAR(ICP(*)): Further free parameters (if any). */
 
 /* Local */
-  
+
   ndim = iap->ndim;
   ips = iap->ips;
   irs = iap->irs;
@@ -6631,7 +6631,7 @@ stplbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
   ++ntot;
   iap->ntot = ntot;
 
-/* ITP is set to 4 every NPR steps along a branch of solns and the entire 
+/* ITP is set to 4 every NPR steps along a branch of solns and the entire
 */
 /* solution is written on unit 8. */
 
@@ -6673,7 +6673,7 @@ stplbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
     itp = itpst * 10 + 9;
     iap->itp = itp;
   } else {
-    if (par[icp[0]] < rl0 || par[icp[0]] > rl1 || amp < a0 || amp > a1 || 
+    if (par[icp[0]] < rl0 || par[icp[0]] > rl1 || amp < a0 || amp > a1 ||
 	ntot >= nmx) {
       istop = 1;
       iap->istop = istop;
@@ -6719,15 +6719,15 @@ stplbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
     }
   }
   jtmp = NPARX;
-  
+
   // DREW WUZ HERE
-  
+
   // Store solution measures
   for (i=0; i<iap->ndim; i++) {
       gData->usm[0][gData->num_u][i] = rmxups(iap, ndxloc, i+1, ups);
       gData->usm[1][gData->num_u][i] = rmnups(iap, ndxloc, i+1, ups);
   }
-  
+
   nsm = gData->nsm;
   sm_num = (int)(log2(nsm));
   if (nsm > 2) {    // nm2
@@ -6745,7 +6745,7 @@ stplbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
   for (i=0; i<iap->nicp; i++) {
       gData->par[gData->num_u][i] = par[icp[i]];
   }
-  
+
   // Store Jacobian
   if (gData->sjac) {
       for (i=0; i<iap->ndim; i++) {
@@ -6755,14 +6755,14 @@ stplbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
           }
       }
   }
-          
+
   // Store number of iterations
   if (gData->snit) {
       gData->nit[gData->num_u] = iap->nit;
   }
-  
+
   gData->num_u++;
-  
+
   // DREW WUZ GONE
 
   if (gData->verbosity > 0)
@@ -6772,7 +6772,7 @@ stplbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
   /* Write plotting and restart data on unit 8. */
 
   if (itp % 10 != 0) {
-      wrtbv8(iap, rap, par, icp, rldot, ndxloc, ups, 
+      wrtbv8(iap, rap, par, icp, rldot, ndxloc, ups,
          udotps, tm, dtm);
       // DREW WUZ HERE: Store max of solution
       gData->sp[gData->num_sp-1].u[0] = 0.;
@@ -6787,7 +6787,7 @@ stplbv(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 wrtbv8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *rldot, integer *ndxloc, doublereal **ups, doublereal **udotps, doublereal *tm, doublereal *dtm)
 {
   /* Local variables */
@@ -6841,7 +6841,7 @@ wrtbv8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
 /*  Above, RL-dot(.) and U-dot(.) specify the direction of the branch. */
 
 
-  
+
   ndim = iap->ndim;
   ntst = iap->ntst;
   ncol = iap->ncol;
@@ -6858,7 +6858,7 @@ wrtbv8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
   nar = ndim + 1;
   nrd = ndim / 7 + 2 + (ndim - 1) / 7;
   jtmp = NPARX;
-  nrowpr = nrd * (ncol * ntst + 1) + (nfpr - 1) / 7 + 1 + (jtmp - 1) / 7 + 
+  nrowpr = nrd * (ncol * ntst + 1) + (nfpr - 1) / 7 + 1 + (jtmp - 1) / 7 +
     1 + (nfpr - 1) / 20 + 1;
 
   if (iap->mynode > 0) {
@@ -6869,7 +6869,7 @@ wrtbv8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
 
   // DREW WUZ HERE (MEMORY)
   nsp = gData->num_sp;
- 
+
   // Test size of sp and allocate more memory if necessary.  Also initializes data.
   if (nsp == gData->sp_len) {
       gData->sp_len += gData->sp_inc;
@@ -6884,19 +6884,19 @@ wrtbv8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
           gData->sp[i].a2 = NULL;
       }
   }
-  
+
   // Allocate memory for nsp
   gData->sp[nsp].u = (doublereal *)MALLOC((iap->ndim+1)*sizeof(doublereal));
   gData->sp[nsp].ups = DMATRIX(iap->ncol*iap->ntst+1, iap->ndim+1);
   gData->sp[nsp].udotps = DMATRIX(iap->ncol*iap->ntst+1, iap->ndim);
   gData->sp[nsp].rldot = (doublereal *)MALLOC(iap->nfpr*sizeof(doublereal));
   gData->sp[nsp].icp = (integer *)MALLOC(iap->nfpr*sizeof(integer));
-  
+
   if (gData->sflow) {
       gData->sp[nsp].a1 = DMATRIX_3D(iap->ntst, iap->ndim, iap->ndim);
       gData->sp[nsp].a2 = DMATRIX_3D(iap->ntst, iap->ndim, iap->ndim);
   }
-  
+
   gData->sp[nsp].ibr = ibr;
   gData->sp[nsp].mtot = ntot;
   gData->sp[nsp].itp = itp;
@@ -6909,12 +6909,12 @@ wrtbv8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
   gData->sp[nsp].ntst = ntst;
   gData->sp[nsp].ncol = ncol;
   gData->sp[nsp].nparx = NPARX;
-  
+
   for (i=0; i<iap->ntst; i++) {
       for (j=0; j<iap->ncol; j++) {
           for (k=j*iap->ndim; k<(j+1)*iap->ndim; k++) {
               t = tm[i] + j * (1./iap->ncol) * dtm[i];
-              gData->sp[nsp].ups[i*iap->ncol+j][0] = t; 
+              gData->sp[nsp].ups[i*iap->ncol+j][0] = t;
               gData->sp[nsp].ups[i*iap->ncol+j][1+k-j*iap->ndim] = ups[i][k];
               gData->sp[nsp].udotps[i*iap->ncol+j][k-j*iap->ndim] = udotps[i][k];
           }
@@ -6931,7 +6931,7 @@ wrtbv8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
   }
   for (i=0; i<NPARX; i++)
       gData->sp[nsp].par[i] = par[i];
-  
+
   if (gData->sflow) {
       for (i=0; i<iap->ntst; i++) {
           for (j=0; j<iap->ndim; j++) {
@@ -6942,16 +6942,16 @@ wrtbv8(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
           }
       }
   }
-  
+
   gData->num_sp++;
   // DREW WUZ GONE
- 
+
   return 0;
 } /* wrtbv8_ */
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 wrtbv9(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *rlcur, integer *ndxloc, doublereal **ups, doublereal *tm, doublereal *dtm, doublereal *thl, doublereal *thu)
 {
   /* Local variables */
@@ -6959,13 +6959,13 @@ wrtbv9(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
   doublereal t;
   integer nfprp, k1, nitps, k2;
   doublereal ds, rn;
-  
+
   integer iab, iid, ibr, ndm;
   doublereal amp=0.0;
-  
+
   /* Writes additional output on unit 9. */
 
-  
+
   ndim = iap->ndim;
   ntst = iap->ntst;
   ncol = iap->ncol;
@@ -6977,7 +6977,7 @@ wrtbv9(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
   nitps = iap->nit;
   ntot = iap->ntot;
   ds = rap->ds;
-  
+
   iab = abs(iplt);
   if (iab == 0 || iab > ndim) {
     amp = sqrt(rnrmsq(iap, &ndm, ndxloc, ups, dtm, thu));
@@ -6999,53 +6999,53 @@ wrtbv9(iap_type *iap, rap_type *rap, doublereal *par, integer *icp, doublereal *
       if (nitps == 0 || iid >= 3) {
 	fprintf(fp9,"----------------------------------------------");
 	fprintf(fp9,"----------------------------------------------\n");
-	fprintf(fp9,"  BR    PT  IT\n");	
-	
+	fprintf(fp9,"  BR    PT  IT\n");
+
       }
       mtot = (ntot + 1) % 10000;
-      fprintf(fp9,"%4li%6li%4li    %14.5E%14.5E\n",ibr,mtot,nitps,rlcur[0],amp);	
-      
+      fprintf(fp9,"%4li%6li%4li    %14.5E%14.5E\n",ibr,mtot,nitps,rlcur[0],amp);
+
     }
   }
-  
+
   if (iid >= 5 && iap->mynode == 0) {
-    fprintf(fp9," UPS :\n");	
+    fprintf(fp9," UPS :\n");
     for (j = 0; j < ntst; ++j) {
       rn = 1. / ncol;
       for (i = 0; i < ncol; ++i) {
 	t = tm[j] + i * rn * dtm[j];
 	k1 = i * ndim;
 	k2 = (i + 1) * ndim;
-	fprintf(fp9," %14.6E",t);	
+	fprintf(fp9," %14.6E",t);
 	for (k = k1; k < k2; ++k) {
 	  if((k+1-k1)%7==0)
 	    fprintf(fp9,"\n ");
-	  fprintf(fp9," %14.6E",ups[j][k]);	
+	  fprintf(fp9," %14.6E",ups[j][k]);
 	}
-	fprintf(fp9,"\n");	
-	
+	fprintf(fp9,"\n");
+
       }
     }
-    fprintf(fp9," %14.6E",tm[ntst]);	
+    fprintf(fp9," %14.6E",tm[ntst]);
     for (i = 0; i < ndim; ++i) {
       if((i+1)%7==0)
 	fprintf(fp9,"\n ");
-      fprintf(fp9," %14.6E",ups[ntst][i]);	
+      fprintf(fp9," %14.6E",ups[ntst][i]);
     }
-    fprintf(fp9,"\n");	
+    fprintf(fp9,"\n");
   }
   return 0;
 } /* wrtbv9_ */
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 pvlsae(iap_type *iap, rap_type *rap, doublereal *u, doublereal *par)
 {
 
   integer ndm;
 
-  
+
   setpae(iap, rap);
   ndm = iap->ndm;
   pvls(ndm, u, par);
@@ -7055,7 +7055,7 @@ pvlsae(iap_type *iap, rap_type *rap, doublereal *u, doublereal *par)
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 pvlsbv(iap_type *iap, rap_type *rap, integer *icp, doublereal *dtm, integer *ndxloc, doublereal **ups, integer *ndim, doublereal **p0, doublereal **p1, doublereal *par)
 {
   integer ndm;
@@ -7069,7 +7069,7 @@ pvlsbv(iap_type *iap, rap_type *rap, integer *icp, doublereal *dtm, integer *ndx
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 setpae(iap_type *iap, rap_type *rap)
 {
   global_parameters.iav = iap;
@@ -7080,7 +7080,7 @@ setpae(iap_type *iap, rap_type *rap)
 
 
 /*     ---------- ------ */
-/* Subroutine */ int 
+/* Subroutine */ int
 setpbv(iap_type *iap, rap_type *rap, doublereal *dtm)
 {
   global_parameters.iav = iap;
@@ -7103,7 +7103,7 @@ setpbv(iap_type *iap, rap_type *rap, doublereal *dtm)
 /* void time_start(struct timeval **time) {
   *time = MALLOC(sizeof(struct timeval));
   gettimeofday(*time,NULL);
-  return; 
+  return;
 }
 void time_end(struct timeval *start_time,char *message,FILE *fp) {
   struct timeval end_time;
@@ -7130,7 +7130,7 @@ void time_end(struct timeval *start_time,char *message,FILE *fp) {
 void usage_start (struct rusage **time) {
   *time = MALLOC(sizeof(struct rusage));
   getrusage(RUSAGE_SELF,*time);
-  return; 
+  return;
 }
 
 
@@ -7158,7 +7158,7 @@ void usage_end(struct rusage *start_time, char *message) {
 }
 #endif
 
-doublereal 
+doublereal
 getp(char *code, integer ic, void *u_or_ups)
 {
   /* System generated locals */
@@ -7228,7 +7228,7 @@ getp(char *code, integer ic, void *u_or_ups)
   } else {
 
     doublereal **ups = u_or_ups;
-  
+
     if (strcmp(code, "NRM") == 0 || strcmp(code, "nrm") == 0) {
 
       ret_val = rnrm2(global_parameters.iav, &nxloc, ic, ups, global_parameters.dtv);
@@ -7555,7 +7555,7 @@ int set_function_pointers(const iap_type iap,function_list *data) {
   /*	Two-Parameter Continuation. */
   /* ---------------------------------------------------*/
   /* ---------------------------------------------------*/
-      
+
   else if (iap.ips <= 1 && abs(iap.isw) == 2 && (iap.itp == 1 || iap.itp == 2)) {
     /*	** Fold continuation (algebraic problems). */
     data->type	   = AUTOAE;
@@ -7660,7 +7660,7 @@ int set_function_pointers(const iap_type iap,function_list *data) {
     data->bvlist.icni  = icbl;
     data->bvlist.stpnt = stpnbl;
     data->bvlist.pvli  = pvlsbv;
-  } else if (iap.ips == 4 && abs(iap.isw) == 2 && (abs(iap.itp) / 10 == 5 || abs(iap.itp) / 
+  } else if (iap.ips == 4 && abs(iap.isw) == 2 && (abs(iap.itp) / 10 == 5 || abs(iap.itp) /
 						     10 == 6)) {
     /*        ** Continuation of folds (BVP, restart). */
     data->type         = AUTOBV;
