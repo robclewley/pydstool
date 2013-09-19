@@ -1059,7 +1059,8 @@ class FuncSpec(object):
         self.varspecs.update(specupdated)
         tempaux = self._specStrParse(specname_auxvars, self.varspecs, 'auxvals')
         auxspecstr_py = self._genSpecFnPy('_auxspecfn', reusestraux+tempaux,
-                                          'auxvals', specname_auxvars)
+                                          'auxvals', specname_auxvars,
+                                          docodeinserts=True)
         try:
             spec_info = makeUniqueFn(specstr_py)
         except SyntaxError:

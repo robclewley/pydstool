@@ -4,7 +4,7 @@ from __future__ import division
 from allimports import *
 from PyDSTool.utils import *
 from PyDSTool.common import *
-from PyDSTool.Symbolic import ensureStrArgDict, Quantity, QuantSpec
+from PyDSTool.Symbolic import ensureStrArgDict, Quantity, QuantSpec, mathNameMap
 from PyDSTool.Trajectory import Trajectory
 from PyDSTool.parseUtils import symbolMapClass, readArgs
 from PyDSTool.Variable import Variable, iscontinuous
@@ -29,6 +29,8 @@ __all__ = ['ctsGen', 'discGen', 'theGenSpecHelper', 'Generator',
            'genDB', 'auxfn_container', '_pollInputs']
 
 # -----------------------------------------------------------------------------
+
+smap_mathnames = symbolMapClass(mathNameMap)
 
 class genDBClass(object):
     """This class keeps a record of which non-Python Generators have been
@@ -264,14 +266,15 @@ class Generator(object):
             self.foundKeys += 1
         else:
             self._modeltag = None
+        # the default map allows title-cased quantity objects like
+        # Pow, Exp, etc. to be used in FuncSpec defs, but no need
+        # to keep an inverse map of these below
+        self._FScompatibleNames = smap_mathnames
         if 'FScompatibleNames' in kw:
             sm = kw['FScompatibleNames']
-            if sm is None:
-                sm = symbolMapClass()
-            self._FScompatibleNames = sm
+            if sm is not None:
+                self._FScompatibleNames.update(sm)
             self.foundKeys += 1
-        else:
-            self._FScompatibleNames = symbolMapClass()
         if 'FScompatibleNamesInv' in kw:
             sm = kw['FScompatibleNamesInv']
             if sm is None:
@@ -476,8 +479,12 @@ class Generator(object):
     def _kw_process_varspecs(self, kw, fs_args):
         if 'varspecs' in kw:
             for varname, varspec in kw['varspecs'].items():
-                assert isinstance(varname, (str, QuantSpec, Quantity)), "Invalid type for Variable name: %s"%str(varname)
-                assert isinstance(varspec, (str, QuantSpec, Quantity)), "Invalid type for Variable %s's specification"%varname
+                if not isinstance(varname, (str, QuantSpec, Quantity)):
+                    print "Expected string, QuantSpec, or Quantity to name variable, got type %s" %(type(varname))
+                    raise PyDSTool_TypeError("Invalid type for Variable name: %s"%str(varname))
+                if not isinstance(varspec, (str, QuantSpec, Quantity)):
+                    print "Expected string, QuantSpec, or Quantity definition for %s, got type %s" %(varname, type(varspec))
+                    raise PyDSTool_TypeError("Invalid type for Variable %s's specification."%varname)
             self.foundKeys += 1
             fs_args['varspecs'] = \
                     self._FScompatibleNames(ensureStrArgDict(kw['varspecs']))

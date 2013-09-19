@@ -1,0 +1,14 @@
+*.py[cod]
+*.pkl
+_auto*
+_dop853*
+_radau5*
+auto*vf.py
+auto_temp*
+dop853*
+dopri853*
+fort.9
+radau5*
+tags
+matplotlibrc
+.coverage
