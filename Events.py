@@ -1104,7 +1104,7 @@ class MatlabEvent(LowLevelEvent):
 ## Public exported functions
 def makeZeroCrossEvent(expr, dircode, argDict, varnames=[], parnames=[],
                         inputnames=[], fnspecs={}, targetlang='python',
-                        reuseterms={}, flatspec=None):
+                        reuseterms={}, flatspec=None, extra_funcspec_args=None):
     """Target language-independent user-defined event involving coordinates,
     parameters, and time. Returns a non variable-linked event only.
 
@@ -1254,19 +1254,35 @@ def makeZeroCrossEvent(expr, dircode, argDict, varnames=[], parnames=[],
                'pars': parnames, 'inputs': inputnames,
                'targetlang': dummytlang
                }
+    if extra_funcspec_args is not None:
+        dummyfs.update(extra_funcspec_args)
     dummyfuncspec = FuncSpec.RHSfuncSpec(dummyfs)
+    lstart = len(dummyfuncspec.codeinserts['start'])
+    lend = len(dummyfuncspec.codeinserts['end'])
+    if lstart > 0:
+        # .strip() loses the indent (to replace with \t)
+        start_code = dummyfuncspec._specStrParse(['inserts'],
+                               {'inserts': dummyfuncspec.codeinserts['start']}, '',
+                                noreturndefs=True, ignoreothers=True,
+                                forexternal=True,
+                                doing_inserts=True).strip() + '\n\t'
+    else:
+        start_code = ''
+    if lend > 0:
+        raise ValueError("End code inserts are not valid for Events")
     parsedstr = dummyfuncspec._specStrParse([exprname],
                                             dummyfuncspec.varspecs,
                                             noreturndefs=True,
                                             forexternal=True)
     # alter par and var name dictionaries used by Events.py
     parsedstr = parsedstr.replace("parsinps[","p[").replace("x[","v[")
+    start_code = start_code.replace("parsinps[","p[").replace("x[","v[")
     if 'parsinps' in parsedstr:
         # then there are aux fns that use it
-        funcstr = "parsinps=sortedDictValues(p,%s)+sortedDictValues(p,%s)"%(str(parnames),str(inputnames)) +\
-                    "\n\treturn "+parsedstr+"\n"
+        funcstr = "parsinps=sortedDictValues(p,%s)+sortedDictValues(p,%s)"%(str(parnames),str(inputnames)) + \
+                    "\n\t" + start_code + "return "+parsedstr+"\n"
     else:
-        funcstr = "return "+parsedstr+"\n"
+        funcstr = start_code + "return "+parsedstr+"\n"
     if reuseterms != {}:
         illegalterms = ['globalindepvar', 'initcond', 'getindex', 'Jacobian',
                         'Jacobian_pars']
