@@ -1,171 +1,157 @@
-"""
-Tests and demonstration of Interval and IntervalMembership classes
-"""
 from PyDSTool import *
+import pytest
 
-print '---------- Test for Interval.py ----------'
-a=Interval('a', float, [-1,1], abseps=1e-5)
-b=Interval('b', float, [-1.,1.])
-c=Interval('c', float, [-3.,-2.])
-assert b.contains(a) == uncertain
 
-assert -2 < a
-assert a > -2
-assert a < 1 + 2*a._abseps
-assert not (a < 1 + 0.5*a._abseps)
-assert 1 + 2*a._abseps > a
-assert not (1 + 0.5*a._abseps > a)
-assert c < b
-assert c < a
-assert a > c
-assert ([-5, 0, -1] < a) == [True, False, False]
-assert (a> array([-5, -4, -1])) == [True, True, False]
+def setup_module(PyDSTool):
+    PyDSTool.TestInterval.a = Interval('a', float, [-1, 1], abseps=1e-5)
+    PyDSTool.TestInterval.b = Interval('b', float, [-1., 1.])
+    PyDSTool.TestInterval.c = Interval('c', float, [-3., -2.])
+    PyDSTool.TestInterval.m = Interval('test1', float, (0, 1))
+    PyDSTool.TestInterval.n = Interval('test2', float, (0, 0.4))
+    PyDSTool.TestInterval.s = Interval('a_singleton', float, 0.4)
+    PyDSTool.TestInterval.r = Interval('another_singleton', float, 0.0)
+    PyDSTool.TestInterval.b = Interval('b', int, 0)
+    PyDSTool.TestInterval.i = Interval('i', int, (0, 1))
+    PyDSTool.TestInterval.ii = PyDSTool.TestInterval.i + 3
+    PyDSTool.TestInterval.iii = 4 * PyDSTool.TestInterval.i
+    PyDSTool.TestInterval.iiii = 2 - PyDSTool.TestInterval.i
+    PyDSTool.TestInterval.iiiii_1 = 1 / PyDSTool.TestInterval.i
+    PyDSTool.TestInterval.iiiii_2 = -1 / PyDSTool.TestInterval.i
+    PyDSTool.TestInterval.i_neg = Interval('i_neg', float, (-1, 1))
+    PyDSTool.TestInterval.ii_neg = 1 / PyDSTool.TestInterval.i_neg
+    PyDSTool.TestInterval.j = Interval('test3', float, (0, 0.999999999))
+    PyDSTool.TestInterval.q = PyDSTool.TestInterval.m.contains(0.9)
+    PyDSTool.TestInterval.i2 = Interval('i2', int, (0, 10))
+    PyDSTool.TestInterval.i3 = Interval('i3', float, (0., 0.4))
+    PyDSTool.TestInterval.inf1 = Interval('inf1', float, [0, Inf], abseps=0)
+    PyDSTool.TestInterval.inf2 = Interval('inf2', float, [-Inf, Inf])
+    PyDSTool.TestInterval.inf3 = Interval('inf3', float, [-Inf, 0])
+    PyDSTool.TestInterval.inf_int = Interval('inf3', int, [-Inf, 0])
+    PyDSTool.TestInterval.i4 = Interval('i4', int, [-5, 5])
+    PyDSTool.TestInterval.i5 = Interval('i5', int, [4, 4])
+    PyDSTool.TestInterval.i5._abseps = 0
 
-print "m=Interval('test1', float, (0,1))"
-m=Interval('test1', float, (0,1))
-print 'm =>   ', m
-print 'm() =>   ', m()
-print 'm.info() =>  ',
-m.info()
-print '0.1 in m =>   ', 0.1 in m
-print
-print "n=Interval('test2', float, (0,0.4))"
-n=Interval('test2', float, (0,0.4))
-try:
-    print 'n in m =>  ', n in m, '\n'
-    raise RuntimeError("Failed test")
-except PyDSTool_UncertainValueError, e:
-    print 'UncertainValueError: ', e
-print "s=Interval('a_singleton', float, 0.4)"
-s=Interval('a_singleton', float, 0.4)
-print 's.get() =>  ', s.get()
-print "s in m =>  ", s in m, '  (works for singleton interval s)\n'
-r=Interval('another_singleton', float, 0.0)
-print "r=Interval('another_singleton', float, 0.0)"
-b=Interval('b', int, 0)
-print "b=Interval('b', int, 0)"
-try:
-    print "b in m =>  ", b in m
-    raise RuntimeError("Failed test")
-except PyDSTool_UncertainValueError, e:
-    print 'UncertainValueError: ', e
-i=Interval('i', int, (0,1))
-print "i=Interval('i', int, (0,1))"
-print "b in i =>  ", b in i, " (true because we're comparing integer intervals)"
-ii=i+3
-assert ii[0] == i[0]+3
-assert ii[1] == i[1]+3
-iii=4*i
-assert iii[0] == 4*i[0]
-assert iii[1] == 4*i[1]
-iiii=2-i
-assert iiii[0] == 2-i[1]
-assert iiii[1] == 2-i[0]
-iiiii_1=1/i
-assert iiiii_1[0] == 1
-assert iiiii_1[1] == Inf
-iiiii_2=-1/i
-assert iiiii_2[0] == -Inf
-assert iiiii_2[1] == -1
-assert i.contains(1) is contained   # because discrete-valued interval
 
-i_neg = Interval('i_neg', float, (-1, 1))
-ii_neg = 1/i_neg
-assert ii_neg.get() == [-1, 1]
+class TestInterval:
 
-print "\nUse the explicit `contains` method to avoid exceptions, and instead"
-print "   get an IntervalMembership type returned..."
-print "m.contains(i) =>  ", m.contains(i)
-print "m.contains(0.4) => ", m.contains(0.4)
+    def test_one(self):
+        pytest.raises(PyDSTool_TypeError, "self.b.contains(self.a)")
 
-j = Interval('test3', float, (0,0.999999999))
-print "j = Interval('test3', float, (0,0.999999999))"
-print "p = m.contains(j)"
-p = m.contains(j)
-print "p is uncertain => ", p is uncertain
+    def test_two(self):
+        assert -2 < self.a
 
-print "\nBut don't try to compare IntervalMembership objects to booleans..."
-print "q = m.contains(0.9)"
-q = m.contains(0.9)
-assert q is contained
-assert not(q is True)
-print "q is True => ", q is True, " (false because q is not a boolean type)"
-print "... but can use in a statement such as 'if m.contains(0.9): ...etc.'"
+    def test_three(self):
+        assert self.a > -2
 
-print "\nElementary `interval logic` can be performed when checking endpoints"
-print "   for interval containment."
-print "contained and notcontained => ", contained and notcontained
-print "contained and uncertain => ", contained and uncertain
-print "notcontained and notcontained => ", notcontained and notcontained
+    def test_four(self):
+        assert self.a < 1 + 2 * self.a._abseps
 
-print "\nm.sample(0.09, strict=False, avoidendpoints=True) => ", \
-      m.sample(0.09, strict=False, avoidendpoints=True)
+    def test_five(self):
+        assert not (self.a < 1 + 0.5 * self.a._abseps)
 
-print "\nm.sample(0.09, strict=False) => ", \
-      m.sample(0.09, strict=False)
+    def test_six(self):
+        assert 1 + 2 * self.a._abseps > self.a
 
-print "i2=Interval('i2', int, (0,10))"
-i2=Interval('i2', int, (0,10))
-print "\ni2.sample(2, strict=False, avoidendpoints=True) => ", \
-      i2.sample(2, strict=False, avoidendpoints=True)
+    def test_seven(self):
+        assert not (1 + 0.5 * self.a._abseps > self.a)
 
-print "i3=Interval('i3', float, (0.,0.4))"
-i3=Interval('i3', float, (0.,0.4))
-print "\ni3.sample(0.36, strict=False) => ", \
-      i3.sample(0.36, strict=False)
+    def test_eight(self):
+        assert self.c < self.b
 
-print "\ni3.sample(0.36, strict=False, avoidendpoints=True) => ", \
-      i3.sample(0.36, strict=False, avoidendpoints=True)
+    def test_nine(self):
+        assert self.c < self.a
 
-print "\ni3.sample(0.36, strict=True) => ", \
-      i3.sample(0.36, strict=True)
+    def test_ten(self):
+        assert self.a > self.c
 
-assert len(i3.sample(0.36, strict=True)) == 3
+    def test_eleven(self):
+        assert ([-5, 0, -1] < self.a) == [True, False, False]
 
-print "\nInfinite intervals"
-print "inf1 = Interval('inf1', float, [0,Inf])"
-inf1 = Interval('inf1', float, [0,Inf], abseps=0)
-print "0 in inf1 => ", 0 in inf1
-print "inf1.contains(inf1) => ", inf1.contains(inf1)
-print "inf2 = Interval('inf2', float, [-Inf,Inf])"
-inf2 = Interval('inf2', float, [-Inf,Inf])
-print "inf2.contains(inf2) => ", inf2.contains(inf2)
-print "inf2.contains(inf1) => ", inf2.contains(inf1)
-print "inf3 = Interval('inf3', float, [-Inf,0])"
-inf3 = Interval('inf3', float, [-Inf,0])
-print "inf3.contains(inf2) => ", inf3.contains(inf2)
-inf_int = Interval('inf3', int, [-Inf,0])
-print "inf_int = Interval('inf3', int, [-Inf,0])"
-print "inf_int.contains(inf3) => "
-try:
-    inf_int.contains(inf3)
-except PyDSTool_TypeError, e:
-    print " ",e
-print "inf_int.contains(-Inf) => ", inf_int.contains(-Inf)
-assert inf_int.contains(-Inf)
-i4 = Interval('i4', int, [-5,5])
-print "i4 = Interval('i4', int, [-5,5])"
-print "inf_int.intersect(i4) => ", inf_int.intersect(i4).get()
-print "Intersection should fail on mixed-type intervals ..."
-try:
-    result1 = inf3.intersect(i4).get()
-except:
-    result1 = " >> FAILURE"
-try:
-    result2 = j.intersect(i2).get()
-except:
-    result2 = " >> FAILURE"
-print "inf3.intersect(i4) => ", result1
-assert result1 == " >> FAILURE"
-print "j.intersect(i2) => ", result2
-assert result2 == " >> FAILURE"
-i5 = Interval('i5', int, [4,4])
-assert i5.issingleton
-i5._abseps = 0
-assert 4 in i5
-assert 4.0 in i5
-i5._abseps = 1e-5
-assert 4 in i5
-assert 4.0 in i5
+    def test_twelve(self):
+        assert (self.a > array([-5, -4, -1])) == [True, True, False]
 
-print "Tests passed"
+    def test_thirteen(self):
+        pytest.raises(PyDSTool_UncertainValueError, "self.n in self.m")
+
+    def test_fourteen(self):
+        assert self.s in self.m
+
+    def test_fifteen(self):
+        pytest.raises(PyDSTool_UncertainValueError, "self.b in self.m")
+
+    def test_sixteen(self):
+        assert self.b in self.i
+
+    def test_seventeen(self):
+        assert self.ii[0] == self.i[0] + 3
+
+    def test_eighteen(self):
+        assert self.ii[1] == self.i[1] + 3
+
+    def test_ninteen(self):
+        assert self.iii[0] == 4 * self.i[0]
+
+    def test_twenty(self):
+        assert self.iii[1] == 4 * self.i[1]
+
+    def test_twentyone(self):
+        assert self.iiii[0] == 2 - self.i[1]
+
+    def test_twentytwo(self):
+        assert self.iiii[1] == 2 - self.i[0]
+
+    def test_twentythree(self):
+        assert self.iiiii_1[0] == 1
+
+    def test_twentyfour(self):
+        assert self.iiiii_1[1] == Inf
+
+    def test_twentyfive(self):
+        assert self.iiiii_2[0] == -Inf
+
+    def test_twentysix(self):
+        assert self.iiiii_2[1] == -1
+
+    def test_twentyseven(self):
+        assert self.i.contains(1) is contained
+
+    def test_twentyeight(self):
+        assert self.ii_neg.get() == [-1, 1]
+
+    def test_twentynine(self):
+        assert self.q is contained
+
+    def test_thirty(self):
+        assert not(self.q is True)
+
+    def test_thirtyone(self):
+        assert len(self.i3.sample(0.36, strict=True)) == 3
+
+    def test_thirtytwo(self):
+        pytest.raises(PyDSTool_TypeError, "self.inf_int.contains(self.inf3)")
+
+    def test_thirtythree(self):
+        assert self.inf_int.contains(-Inf)
+
+    def test_thirtyfour(self):
+        pytest.raises(PyDSTool_TypeError, "self.inf3.intersect(self.i4).get()")
+
+    def test_thirtyfive(self):
+        pytest.raises(PyDSTool_TypeError, "self.j.intersect(self.i2).get()")
+
+    def test_thirtyfive(self):
+        pytest.raises(PyDSTool_TypeError, "self.j.intersect(self.i2).get()")
+
+    def test_thirtysix(self):
+        assert self.i5.issingleton
+
+    def test_thirtyseven(self):
+        self.i5._abseps = 0
+        assert 4 in self.i5
+
+    def test_thirtyeight(self):
+        self.i5._abseps = 0
+        assert 4.0 in self.i5
+
+    def test_thirtynine(self):
+        assert 4.0 in self.i5
