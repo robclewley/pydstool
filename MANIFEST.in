@@ -1,0 +1,13 @@
+include *.txt
+recursive-include PyDSTool/integrator *.f *.c *.h *.i
+recursive-include PyDSTool/PyCont *.txt Makefile
+recursive-include PyDSTool/PyCont/auto/cmds *.csh *.sh
+recursive-include PyDSTool/PyCont/auto/demos/ab *.c Makefile
+recursive-include PyDSTool/PyCont/auto/demos/lor *.c *.dev *.dat Makefile
+recursive-include PyDSTool/PyCont/auto/dev *.out *.py *.lib *.works
+recursive-include PyDSTool/PyCont/auto/module/include *.h Makefile
+recursive-include PyDSTool/PyCont/auto/module *.c *.i Makefile
+recursive-include PyDSTool/PyCont/auto/src *.c Makefile README
+recursive-include PyDSTool/PyCont/auto/src/include *.h Makefile
+recursive-include PyDSTool/PyCont/auto/src/libf2c *.c Makefile
+recursive-include PyDSTool/html *.txt *.html *.png *.css *.js
