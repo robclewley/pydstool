@@ -1145,7 +1145,7 @@ class context(object):
         # typically, test_mi is an external interface (e.g., for data)
         # and ref_mi is an internal interface (e.g., for a model)
         self.ref_interface_instances = []
-        for test_mi, ref_mi_class in common.sortedDictItems(self.interfaces):
+        for test_mi, ref_mi_class in common.sortedDictItems(self.interfaces, byvalue=False):
             # evaluate test_mi on model, via the associated ref_mi
             ref_mi = ref_mi_class(model)
             self.ref_interface_instances.append(ref_mi)
