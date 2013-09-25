@@ -1145,7 +1145,7 @@ class context(object):
         # typically, test_mi is an external interface (e.g., for data)
         # and ref_mi is an internal interface (e.g., for a model)
         self.ref_interface_instances = []
-        for test_mi, ref_mi_class in common.sortedDictItems(self.interfaces):
+        for test_mi, ref_mi_class in common.sortedDictItems(self.interfaces, byvalue=False):
             # evaluate test_mi on model, via the associated ref_mi
             ref_mi = ref_mi_class(model)
             self.ref_interface_instances.append(ref_mi)
@@ -1262,16 +1262,31 @@ class dsInterface(object):
     def query(self, querykey=''):
         return self.model.query(querykey)
 
+    @property
+    def name(self):
+        try:
+            return self.__name__
+        except AttributeError:
+            return self.__class__.__name__
+
     def __lt__(self, other):
-        try:
-            myname = self.__name__
-        except AttributeError:
-            myname = self.__class__.__name__
-        try:
-            othname = other.__name__
-        except AttributeError:
-            othname = other.__class__.__name__
-        return myname < othname
+        return self.name < other.name
+
+    def __gt__(self, other):
+        return self.name > other.name
+
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __ne__(self, other):
+        return self.name != other.name
+
+    def __le__(self, other):
+        return self.name <= other.name
+
+    def __ge__(self, other):
+        return self.name >= other.name
+
 
 class GeneratorInterface(dsInterface):
     """Wrapper for Generator (for non-hybrid models) that shares similar API

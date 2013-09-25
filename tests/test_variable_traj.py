@@ -74,7 +74,7 @@ print "sin_var([0., 0.5*math.pi, math.pi]) => ", sin_var([0., 0.5*math.pi,
 
 # ------------------------------
 
-from utils import makeImplicitFunc
+from PyDSTool.utils import makeImplicitFunc
 print "\nTest implicit function routine on half-circle of radius 2"
 cf = """def circ_formula(x,y):
     return x*x+y*y-4"""
