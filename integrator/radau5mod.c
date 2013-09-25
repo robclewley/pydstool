@@ -81,9 +81,6 @@ PyObject* Integrate(double *ic, double t, double hinit, double hmax,
     gIData->gIC[i] = ic[i];
   }
 
-  /* for NumArray compatibility */
-  import_libnumarray();
-
   /* Call RADAU5 */
 
   if( verbose == 1 )
