@@ -217,7 +217,7 @@ print "geom feat residual: ", norm(geom_feat.metric.results)
 # solution trajectory involving voltage happens to be the second of the
 # two trajectories stored in each log (one for each model interface, and
 # stored in order of the names of the interfaces).
-sol_traj = pest2.log[log_ix].trajectories
+sol_traj = pest2.log[log_ix].trajectories[-1]
 
 ## Finish preparing plots
 print '\nPreparing plots'
@@ -227,14 +227,7 @@ plotData_orig = HH_test_model.sample('orig', ['v'], disp_dt, precise=True)
 origleg = "v initial"
 plotData_goal = goaltraj.sample(['v'], disp_dt, precise=True)
 goalleg = "v goal"
-
-# FIXME: workaround for possible failing due to object identity ordering of
-# interfaces
-# See: https://sourceforge.net/projects/pydstool/forums/forum/472291/topic/6621549
-try:
-    plotData_par = sol_traj[-1].sample(['v'])
-except ValueError:
-    plotData_par = sol_traj[0].sample(['v'])
+plotData_par = sol_traj.sample(['v'])
 
 plt.ylabel('v')
 plt.xlabel('t')
