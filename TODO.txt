@@ -1,0 +1,24 @@
+Package PyDSTool using distribute and setuptools
+
+1. DONE. Install using setup.py. Created MANIFEST.in so that additional files for PyCont, external integrators, and HTML documentation will get copied over. Generated missing __init__.py files. To install:
+
+sudo python setup.py install --record files.txt
+
+On Ubuntu 12.04, this installs to /usr/local/lib/python2.7/dist-packages and creates files.txt document for changes made.
+
+2. DONE. Check for scipy, numpy, matplotlib dependencies. 
+TO DO. Should determine minimum compatible versions. This can be possibly be done by checking NeuroDebian repository for other Python packages and their minimum requirements when using SciPy, etc. Can also check minimum versions that ship with basic Ubuntu 12.04. We are now on 12.04.2 and can check for updated package versions.
+
+4. DONE. Define --clean to remove build files.
+
+5. Detect Mac environment to correctly install.
+
+6. DONE. Set up directory structure to match conventions of other Python packages.
+- Embedded PyDSTool within new root directory: /PyDSTool/PyDSTool
+- /PyDSTool/setup.py   and other descriptive files moved up to the root directory
+
+7. IN PROGRESS. Migrate test files to /PyDSTool/tests for use with py.test. 
+To call and ignore original test files: py.test -v tests 
+To run original test files from PyDSTool/PyDSTool/tests: python run_all_tests.py
+
+8. DONE. Edit setup.py with correct metadata for PyPi, etc.
