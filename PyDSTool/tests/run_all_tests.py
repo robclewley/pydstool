@@ -115,7 +115,6 @@ radau_list = [
     'test_hybrid_extinputs_Cintegrator',
     'SLIP_2D_pdc',
     'DAE_example',
-    'radau_event_test',
     'freefinger_noforce_radau',
     'sloppycell_example'
     ]
