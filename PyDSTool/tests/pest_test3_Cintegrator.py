@@ -213,10 +213,10 @@ print "Feature evaluation on solution set-up: ", \
       pest_context.evaluate(HH_test_model)
 print "geom feat residual: ", norm(geom_feat.metric.results)
 
-# solution trajectory involving voltage happens to be the second of the
+# solution trajectory involving voltage happens to be the first of the
 # two trajectories stored in each log (one for each model interface, and
 # stored in order of the names of the interfaces).
-sol_traj = pest2.log[log_ix].trajectories[-1]
+sol_traj = pest2.log[log_ix].trajectories[0]
 
 ## Finish preparing plots
 print '\nPreparing plots'
