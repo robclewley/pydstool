@@ -49,7 +49,6 @@ general_list = [
     'imp_load_test',
     'expfn_test',
     'objectdelete_test',
-    'PointInfo_test',
     'test_context_spikes'
     ]
 
