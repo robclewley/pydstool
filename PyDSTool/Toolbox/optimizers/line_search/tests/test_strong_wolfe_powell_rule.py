@@ -6,12 +6,8 @@
 import unittest
 import numpy
 
-from numpy.testing import *
-set_package_path()
-
 from line_search import StrongWolfePowellRule
 
-restore_path()
 
 class Function(object):
   def __call__(self, x):

@@ -6,12 +6,10 @@
 import unittest
 import numpy
 
-from numpy.testing import *
-set_package_path()
+from numpy.testing import assert_array_equal
 
-from line_search import SimpleLineSearch, AdaptiveLastStepModifier
+from PyDSTool.Toolbox.optimizers.line_search import SimpleLineSearch, AdaptiveLastStepModifier
 
-restore_path()
 
 class Function(object):
   def __call__(self, x):

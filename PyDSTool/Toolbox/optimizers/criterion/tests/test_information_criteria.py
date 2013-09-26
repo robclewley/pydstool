@@ -6,12 +6,8 @@
 import unittest
 import numpy
 
-from numpy.testing import *
-set_package_path()
-
 from criterion import AICCriterion, ModifiedAICCriterion
 
-restore_path()
 
 class test_AICCriterion(unittest.TestCase):
   def test_call(self):

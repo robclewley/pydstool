@@ -18,9 +18,11 @@ Finite Difference functions :
 from quadratic import *
 
 from finite_difference import *
+from levenberg_marquardt import *
 
 helpers__all__ = ['Quadratic', 'FiniteDifferencesFunction',
                   'ForwardFiniteDifferences',
-                  'CenteredFiniteDifferences', 'ForwardFiniteDifferencesCache']
+                  'CenteredFiniteDifferences', 'ForwardFiniteDifferencesCache',
+                  'LMQuadratic']
 
 __all__ = helpers__all__

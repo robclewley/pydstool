@@ -6,12 +6,9 @@
 import unittest
 import numpy
 
-from numpy.testing import *
-set_package_path()
-
+from numpy.testing import assert_equal
 from step import NewtonStep
 
-restore_path()
 
 class Function(object):
   def __call__(self, x):

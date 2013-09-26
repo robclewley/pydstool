@@ -6,12 +6,8 @@
 import unittest
 import numpy
 
-from numpy.testing import *
-set_package_path()
-
 from criterion import criterion
 
-restore_path()
 
 class Function(object):
   def __init__(self, value):

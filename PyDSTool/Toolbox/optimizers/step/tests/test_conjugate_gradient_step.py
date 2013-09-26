@@ -6,11 +6,8 @@
 import unittest
 import numpy
 
-from numpy.testing import *
-set_package_path()
-
+from numpy.testing import assert_equal
 from step import CWConjugateGradientStep, DYConjugateGradientStep, DConjugateGradientStep, FRConjugateGradientStep, PRPConjugateGradientStep, FRPRPConjugateGradientStep, HZConjugateGradientStep
-restore_path()
 
 class Function(object):
   def __call__(self, x):
@@ -132,4 +129,4 @@ class test_HZConjugateGradientStep(unittest.TestCase):
     assert(function(origin + 0.01*newDirection) < function(origin))
 
 if __name__ == "__main__":
-  unittest.main() 
+  unittest.main()

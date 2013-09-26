@@ -9,16 +9,13 @@ import numpy.random
 
 import os.path
 
-from numpy.testing import *
-set_package_path()
-
+from numpy.testing import assert_array_almost_equal
 from criterion import *
 from helpers import Quadratic
 from line_search import *
 from optimizer import *
 from step import *
 
-restore_path()
 
 class F1(object):
   def __call__(self, x, params):

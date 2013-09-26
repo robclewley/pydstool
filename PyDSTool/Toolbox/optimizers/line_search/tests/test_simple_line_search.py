@@ -6,12 +6,9 @@
 import unittest
 import numpy
 
-from numpy.testing import *
-set_package_path()
-
+from numpy.testing import assert_equal
 from line_search import SimpleLineSearch
 
-restore_path()
 
 class test_SimpleLineSearch(unittest.TestCase):
   def test_create(self):
