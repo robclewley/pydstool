@@ -102,7 +102,6 @@ dopri_list = [
     'basic_gen_tests_C',
     'imprecise_event_test',
     'interp_dopri_test',
-    'dopri_event_test',
     'HH_model_Cintegrator',
     'HH_loaded_Cintegrator',
     'IF_delaynet_syn',
