@@ -1,11 +1,9 @@
-"""
-    Test Radau_ODEsystem with events involving external inputs.
-
-    Robert Clewley, September 2006.
-"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import os
-import shutil
+import pytest
+
 from numpy import linspace, sin
 from PyDSTool import (
     args,
@@ -13,12 +11,14 @@ from PyDSTool import (
     makeDataDict,
 )
 from PyDSTool.Generator import (
+    Dopri_ODEsystem,
+    InterpolateTable,
     Radau_ODEsystem,
-    InterpolateTable
 )
 
 
-def test_radau_event():
+@pytest.fixture
+def dsargs():
     timeData = linspace(0, 10, 20)
     sindata = sin(20 * timeData)
     xData = makeDataDict(['in'], [sindata])
@@ -76,6 +76,7 @@ def test_radau_event():
         'term': True,
         'precise': True
     }
+
     thresh_ev_term = Events.makeZeroCrossEvent(
         'w-20',
         1,
@@ -84,35 +85,62 @@ def test_radau_event():
         targetlang='c'
     )
     DSargs.events = [thresh_ev_nonterm, thresh_ev_term]
-    testODE = Radau_ODEsystem(DSargs)
 
-    print "Computing trajectory:"
-    print "traj = testODE.compute('traj')"
-    traj = testODE.compute('traj')
+    return DSargs
 
-    print "\ntestODE.diagnostics.showWarnings() => "
-    testODE.diagnostics.showWarnings()
-    print "\ntraj.indepdomain.get() => ", traj.indepdomain.get()
-    indep1 = traj.indepdomain[1]
-    assert indep1 < 1.15 and indep1 > 1.13
-    mon_evs_found = testODE.getEvents()['monitor']
-    assert len(mon_evs_found) == 1
 
-    pts = traj.sample()
-    for t in timeData:
-        if t <= pts['t'][-1] and t >= pts['t'][0]:
-            assert t in pts['t'], "t=%f not present in output!" % t
+def test_dopri_event(dsargs):
+    """
+        Test Dopri_ODEsystem with events involving external inputs.
 
-    # cleaning up
-    files = [
+        Robert Clewley, September 2006.
+    """
+
+    _run_checks(Dopri_ODEsystem(dsargs))
+
+    _clean_files([
+        'dop853_event_test_vf.py',
+        'dop853_event_test_vf.pyc',
+        '_dop853_event_test_vf.so',
+    ])
+
+
+def test_radau_event(dsargs):
+    """
+        Test Radau_ODEsystem with events involving external inputs.
+
+        Robert Clewley, September 2006.
+    """
+
+    _run_checks(Radau_ODEsystem(dsargs))
+
+    _clean_files([
         'radau5_event_test_vf.py',
         'radau5_event_test_vf.pyc',
         '_radau5_event_test_vf.so',
-    ]
+    ])
 
+
+def _run_checks(ode):
+
+    print "Computing trajectory:"
+    print "traj = testODE.compute('traj')"
+    traj = ode.compute('traj')
+
+    print "\ntestODE.diagnostics.showWarnings() => "
+    ode.diagnostics.showWarnings()
+    print "\ntraj.indepdomain.get() => ", traj.indepdomain.get()
+    indep1 = traj.indepdomain[1]
+    assert indep1 < 1.15 and indep1 > 1.13
+    mon_evs_found = ode.getEvents()['monitor']
+    assert len(mon_evs_found) == 1
+
+    pts = traj.sample()
+    for t in linspace(0, 10, 20):
+        if t <= pts['t'][-1] and t >= pts['t'][0]:
+            assert t in pts['t'], "t=%f not present in output!" % t
+
+
+def _clean_files(files):
     for f in files:
         os.remove(f)
-
-    dirs = ['radau5_temp']
-    for d in dirs:
-        shutil.rmtree(d)
