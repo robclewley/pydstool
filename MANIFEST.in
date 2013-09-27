@@ -10,4 +10,4 @@ recursive-include PyDSTool/PyCont/auto/module *.c *.i Makefile
 recursive-include PyDSTool/PyCont/auto/src *.c Makefile README
 recursive-include PyDSTool/PyCont/auto/src/include *.h Makefile
 recursive-include PyDSTool/PyCont/auto/src/libf2c *.c Makefile
-recursive-include PyDSTool/html *.txt *.html *.png *.css *.js
+recursive-include html *.txt *.html *.png *.css *.js
