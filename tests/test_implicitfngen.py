@@ -5,9 +5,13 @@
     Robert Clewley, June 2005.
 """
 
+import os
 from PyDSTool import (
     args,
     isparameterized,
+    saveObjects,
+    loadObjects,
+    PyDSTool_BoundsError,
 )
 from PyDSTool.Generator import ImplicitFnGen
 from numpy import allclose
@@ -83,3 +87,22 @@ def test_2D_example():
     # Test bounds checking
     with pytest.raises(ValueError):
         traj2(3.)
+
+    # Test saving and loading
+    fname = 'temp_implicit2D.pkl'
+    saveObjects([testimp2d, traj2], fname, force=True)
+    impgen, imptraj = loadObjects(fname)
+    assert impgen.xdomain['y'] == [-2, 2]
+    assert allclose(imptraj(-0.4)['y'], 1.85903)
+
+    impgen.set(pars={'r': 10.}, xdomain={'y': [-10, 10]})
+    imptraj2 = impgen.compute('test2')
+
+    with pytest.raises(PyDSTool_BoundsError):
+        imptraj2(-0.4)
+
+    impgen.set(xdomain={'z': [-5, 5]})
+    imptraj2 = impgen.compute('test2')
+    assert allclose(imptraj2(-0.4)['y'], 9.47924)
+
+    os.remove(fname)

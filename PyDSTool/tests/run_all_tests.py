@@ -45,7 +45,6 @@ general_list = [
     'ModelSpec_test',
     'numeric_diff_test',
     'interp_piecewise_test',
-    'imp_load_test',
     'expfn_test',
     'objectdelete_test',
     'test_context_spikes'
