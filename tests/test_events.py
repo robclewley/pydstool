@@ -13,8 +13,10 @@ from PyDSTool import (
 )
 from PyDSTool.Generator import (
     Dopri_ODEsystem,
+    Euler_ODEsystem,
     InterpolateTable,
     Radau_ODEsystem,
+    Vode_ODEsystem,
 )
 
 
@@ -122,6 +124,14 @@ def test_radau_event(dsargs):
     ])
 
 
+def test_vode_event(dsargs):
+    """
+        Test Vode_ODEsystem with events involving external inputs.
+    """
+
+    _run_checks(Vode_ODEsystem(dsargs))
+
+
 def _run_checks(ode):
 
     traj = ode.compute('traj')
@@ -130,15 +140,8 @@ def _run_checks(ode):
     assert ode.diagnostics.findWarnings(10) != []
     assert ode.diagnostics.findWarnings(20) != []
 
-    assert_almost_equal(traj.indepdomain[1], ode.diagnostics.findWarnings(10)[0][0])
-
-    mon_evs_found = ode.getEvents()['monitor']
-    assert len(mon_evs_found) == 1
-
-    pts = traj.sample()
-    for t in linspace(0, 10, 20):
-        if t <= pts['t'][-1] and t >= pts['t'][0]:
-            assert t in pts['t'], "t=%f not present in output!" % t
+    assert_almost_equal(traj.indepdomain[1], 1.14417, 4)
+    assert_almost_equal(traj.getEventTimes()['monitor'][0], 0.80267, 4)
 
 
 def _clean_files(files):
