@@ -5,6 +5,7 @@ import os
 import pytest
 
 from numpy import linspace, sin
+from numpy.testing import assert_almost_equal
 from PyDSTool import (
     args,
     Events,
@@ -123,15 +124,14 @@ def test_radau_event(dsargs):
 
 def _run_checks(ode):
 
-    print "Computing trajectory:"
-    print "traj = testODE.compute('traj')"
     traj = ode.compute('traj')
 
-    print "\ntestODE.diagnostics.showWarnings() => "
-    ode.diagnostics.showWarnings()
-    print "\ntraj.indepdomain.get() => ", traj.indepdomain.get()
-    indep1 = traj.indepdomain[1]
-    assert indep1 < 1.15 and indep1 > 1.13
+    assert ode.diagnostics.hasWarnings()
+    assert ode.diagnostics.findWarnings(10) != []
+    assert ode.diagnostics.findWarnings(20) != []
+
+    assert_almost_equal(traj.indepdomain[1], ode.diagnostics.findWarnings(10)[0][0])
+
     mon_evs_found = ode.getEvents()['monitor']
     assert len(mon_evs_found) == 1
 
