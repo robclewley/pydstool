@@ -41,7 +41,6 @@ general_list = [
     'test_variable_traj',
     'traj_gt0_test',
     'test_bd_containment',
-    'basic_gen_tests',
     'ModelSpec_test',
     'interp_piecewise_test',
     'expfn_test',
@@ -97,7 +96,6 @@ symbolic_list = [
 
 # Dopri integration; requires external C compiler
 dopri_list = [
-    'basic_gen_tests_C',
     'imprecise_event_test',
     'interp_dopri_test',
     'HH_model_Cintegrator',
