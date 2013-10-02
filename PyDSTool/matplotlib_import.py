@@ -5,9 +5,9 @@
 """
 
 from numpy import Inf, NaN, isfinite, int, int8, int16, int32, int64, float, float32, float64
-import matplotlib
-ver = matplotlib.__version__.split(".")
 try:
+    import matplotlib
+    ver = matplotlib.__version__.split(".")
     if int(ver[0]) == 0 and int(ver[1]) < 65:
         import matplotlib.matlab as plt
         from matplotlib.matlab import *
@@ -19,6 +19,8 @@ except RuntimeError, err:
         failed=True
     else:
         raise
+except ImportError:
+    failed=True
 else:
     failed=False
 
