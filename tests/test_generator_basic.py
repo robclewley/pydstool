@@ -23,6 +23,7 @@ from PyDSTool.Generator import (
     Vode_ODEsystem,
     ExplicitFnGen,
     Dopri_ODEsystem,
+    Radau_ODEsystem,
 )
 
 
@@ -186,7 +187,25 @@ def test_macros_dopri(fnspecs):
             'dop853_test2_vf.pyc',
             '_dop853_test2_vf.so',
         ]
+        _clean_files(files)
 
+
+def test_macros_radau(fnspecs):
+
+    try:
+        _run_check_macros_1(Radau_ODEsystem, fnspecs)
+        _run_check_macros_2(Radau_ODEsystem, fnspecs)
+    except:
+        raise
+    finally:
+        files = [
+            'radau5_test_vf.py',
+            'radau5_test_vf.pyc',
+            '_radau5_test_vf.so',
+            'radau5_test2_vf.py',
+            'radau5_test2_vf.pyc',
+            '_radau5_test2_vf.so',
+        ]
         _clean_files(files)
 
 
