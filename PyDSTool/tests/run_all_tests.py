@@ -57,8 +57,6 @@ map_list = [
 # ODE integration with vode, no external compiler needed
 vode_list = [
     'poly_interp_test',
-    'vode_event_test1',
-    'vode_event_test2',
     'vode_withJac_test',
     'interp_vode_test',
     'fingermodel_vode',
