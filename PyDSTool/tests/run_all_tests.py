@@ -43,7 +43,6 @@ general_list = [
     'test_bd_containment',
     'ModelSpec_test',
     'interp_piecewise_test',
-    'expfn_test',
     'objectdelete_test',
     'test_context_spikes'
     ]
