@@ -14,7 +14,7 @@ from PyDSTool.common import _num_types, _int_types, _seq_types, args, \
 import numpy as npy
 from numpy import array, dot, zeros, transpose, shape, extract, mean, std, \
      vstack, hstack, eye, ones, zeros, linalg, concatenate, \
-     newaxis, r_, flipud, convolve, matrix, asarray
+     newaxis, r_, flipud, convolve, matrix, asarray, size
 from numpy.linalg import norm
 from scipy.signal import lfilter, butter
 from scipy.optimize import minpack, optimize
