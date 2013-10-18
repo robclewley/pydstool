@@ -40,7 +40,6 @@ test_pycont_auto = True
 general_list = [
     'test_variable_traj',
     'traj_gt0_test',
-    'test_bd_containment',
     'ModelSpec_test',
     'interp_piecewise_test',
     'objectdelete_test',
