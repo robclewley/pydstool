@@ -41,13 +41,6 @@ def tb_args():
     return itableArgs
 
 
-def test_interpolatetable(tb_args):
-    interptable = InterpolateTable(tb_args)
-    itabletraj = interptable.compute('itable')
-    assert_almost_equal(itabletraj(0.4, 'x1'), 6.72)
-    assert_array_almost_equal(itabletraj(1.1), [-1.4, 0.01])
-
-
 def test_lookuptable(tb_args):
     tb_args['name'] = 'lookup'
     lookuptable = LookupTable(tb_args)
