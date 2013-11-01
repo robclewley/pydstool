@@ -19,7 +19,6 @@ from PyDSTool import (
 )
 from PyDSTool.Generator import (
     InterpolateTable,
-    LookupTable,
     Vode_ODEsystem,
     ExplicitFnGen,
     Dopri_ODEsystem,
@@ -39,15 +38,6 @@ def tb_args():
     itableArgs['ics'] = xData
     itableArgs['name'] = 'interp'
     return itableArgs
-
-
-def test_lookuptable(tb_args):
-    tb_args['name'] = 'lookup'
-    lookuptable = LookupTable(tb_args)
-    ltabletraj = lookuptable.compute('ltable')
-    assert_array_almost_equal(ltabletraj(1.1), [-1.4, 0.01])
-    with pytest.raises(ValueError):
-        ltabletraj(0.4)
 
 
 def test_ode_system(tb_args):
