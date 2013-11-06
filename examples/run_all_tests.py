@@ -43,7 +43,6 @@ general_list = [
     'ModelSpec_test',
     'interp_piecewise_test',
     'objectdelete_test',
-    'test_context_spikes'
     ]
 
 # Map generators
