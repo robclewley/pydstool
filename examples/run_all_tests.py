@@ -40,18 +40,9 @@ test_pycont_auto = True
 general_list = [
     'test_variable_traj',
     'traj_gt0_test',
-    'test_bd_containment',
-    'basic_gen_tests',
     'ModelSpec_test',
-    'numeric_diff_test',
     'interp_piecewise_test',
-    'impfn_test',
-    'imp_load_test',
-    'expfn_test',
     'objectdelete_test',
-    'PointInfo_test',
-    'saveload_test',
-    'test_context_spikes'
     ]
 
 # Map generators
@@ -63,8 +54,6 @@ map_list = [
 # ODE integration with vode, no external compiler needed
 vode_list = [
     'poly_interp_test',
-    'vode_event_test1',
-    'vode_event_test2',
     'vode_withJac_test',
     'interp_vode_test',
     'fingermodel_vode',
@@ -95,17 +84,14 @@ param_est_C_list = [
 
 # Symbolic differentiation module
 symbolic_list = [
-    'Symbolic_test',
     'Symbolic_Diff_test',
     'Tutorial_SymbolicJac'
     ]
 
 # Dopri integration; requires external C compiler
 dopri_list = [
-    'basic_gen_tests_C',
     'imprecise_event_test',
     'interp_dopri_test',
-    'dopri_event_test',
     'HH_model_Cintegrator',
     'HH_loaded_Cintegrator',
     'IF_delaynet_syn',
@@ -119,7 +105,6 @@ radau_list = [
     'test_hybrid_extinputs_Cintegrator',
     'SLIP_2D_pdc',
     'DAE_example',
-    'radau_event_test',
     'freefinger_noforce_radau',
     'sloppycell_example'
     ]

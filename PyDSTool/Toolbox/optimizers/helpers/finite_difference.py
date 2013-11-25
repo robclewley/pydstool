@@ -29,11 +29,10 @@ class ForwardFiniteDifferences(FiniteDifferencesFunction):
         grad = np.empty(params.shape)
         curValue = self(params)
         for i in range(0, len(params)):
-            eps = self.eps[i]
             #inveps = self.inveps[i]
             paramsb = params.copy()
-            paramsb[i] += eps
-            grad[i] = (self(paramsb) - curValue) / eps
+            paramsb[i] += self.eps
+            grad[i] = (self(paramsb) - curValue) / self.eps
         return grad
 
     def hessian(self, params):
@@ -43,11 +42,10 @@ class ForwardFiniteDifferences(FiniteDifferencesFunction):
         hess = np.empty((len(params), len(params)))
         curGrad = self.gradient(params)
         for i in range(0, len(params)):
-            eps = self.eps[i]
             #inveps = self.inveps[i]
             paramsb = params.copy()
-            paramsb[i] -= eps
-            hess[i] = - (self.gradient(paramsb) - curGrad) / eps
+            paramsb[i] -= self.eps
+            hess[i] = - (self.gradient(paramsb) - curGrad) / self.eps
         return hess
 
     def hessianvect(self, params):

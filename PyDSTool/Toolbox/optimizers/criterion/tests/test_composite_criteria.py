@@ -6,12 +6,8 @@
 import unittest
 import numpy
 
-from numpy.testing import *
-set_package_path()
-
 from criterion import OrComposition, AndComposition
 
-restore_path()
 
 class TrueCriterion(object):
   def __call__(self, state, **kwargs):

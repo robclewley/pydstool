@@ -6,12 +6,9 @@
 import unittest
 import numpy
 
-from numpy.testing import *
-set_package_path()
-
+from numpy.testing import assert_equal, assert_almost_equal
 from line_search import GoldenSectionSearch
 
-restore_path()
 
 class Function(object):
   def __call__(self, x):

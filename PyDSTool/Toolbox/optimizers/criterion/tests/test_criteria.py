@@ -6,12 +6,8 @@
 import unittest
 import numpy
 
-from numpy.testing import *
-set_package_path()
-
 from criterion import IterationCriterion, MonotonyCriterion, RelativeValueCriterion, AbsoluteValueCriterion, RelativeParametersCriterion, AbsoluteParametersCriterion
 
-restore_path()
 
 class test_IterationCriterion(unittest.TestCase):
   def test_call(self):

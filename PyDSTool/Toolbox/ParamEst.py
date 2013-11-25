@@ -15,7 +15,6 @@ from PyDSTool.errors import *
 from PyDSTool import common
 from PyDSTool.MProject import qt_feature_leaf, process_raw_residual
 import PyDSTool.Redirector as redirc
-from PyDSTool.matplotlib_import import plt
 from PyDSTool.Toolbox.optimizers import *
 
 try:
@@ -189,6 +188,7 @@ def ctn_residual_info(recs, do_plot=False):
     """Temporary helper function for use with continuation functions."""
     ixlims = [min(recs.keys()), max(recs.keys())]
     if do_plot:
+        from PyDSTool.matplotlib_import import plt
         plt.figure()
     r = []
     dr = []

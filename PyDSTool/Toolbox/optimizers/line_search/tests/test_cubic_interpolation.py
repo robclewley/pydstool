@@ -6,12 +6,9 @@
 import unittest
 import numpy
 
-from numpy.testing import *
-set_package_path()
+from numpy.testing import assert_equal, assert_array_less, assert_almost_equal
 
 from line_search import CubicInterpolationSearch
-
-restore_path()
 
 class Function(object):
   def __call__(self, x):
@@ -38,6 +35,3 @@ class test_CubicInterpolationSearch(unittest.TestCase):
     function = Function()
     assert_almost_equal(lineSearch(origin = numpy.zeros((2)), state = state, function = function), numpy.array((1.0588, -2.1176)), decimal = 4)
     assert_almost_equal(state['alpha_step'], 1.0588/4, decimal = 4)
-
-if __name__ == "__main__":
-  unittest.main()

@@ -1,1 +1,0 @@
-PyDSTool readme

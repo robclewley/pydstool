@@ -9,16 +9,13 @@ import numpy.random
 
 import os.path
 
-from numpy.testing import *
-set_package_path()
-
+from numpy.testing import assert_almost_equal
 from criterion import *
 from helpers import ForwardFiniteDifferences, CenteredFiniteDifferences
 from line_search import *
 from optimizer import *
 from step import *
 
-restore_path()
 
 class Function(ForwardFiniteDifferences):
   def __call__(self, x):

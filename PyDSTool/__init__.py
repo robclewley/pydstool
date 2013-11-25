@@ -113,8 +113,11 @@ import numpy as npy  # alternate
 # import scipy already done at top
 import scipy as spy  # alternate
 from math import *
-from matplotlib import pyplot as plt
-from matplotlib.pyplot import figure, plot, show, draw, hold
+try:
+    from matplotlib import pyplot as plt
+    from matplotlib.pyplot import figure, plot, show, draw, hold
+except ImportError:
+    pass
 from numpy import *    # overwrites __version__ for PyDSTool, so fix now
 # Restore PyDSTool version
 __version__ = vernum

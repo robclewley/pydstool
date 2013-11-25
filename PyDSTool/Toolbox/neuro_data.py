@@ -1,5 +1,5 @@
 import numpy as npy
-from PyDSTool import Events, plot, show, figure, Variable, Pointset, Trajectory
+from PyDSTool import Events, Variable, Pointset, Trajectory
 from PyDSTool.common import args, metric, metric_L2, metric_weighted_L2, \
      metric_float, remain, fit_quadratic, fit_exponential, fit_diff_of_exp, \
      smooth_pts, nearest_2n_indices, make_poly_interpolated_curve, simple_bisection
@@ -183,6 +183,7 @@ class get_spike_data(ql_feature_leaf):
         loc_extrema = find_internal_extrema(pts, self.pars.noise_tol)
         if self.pars.verbose_level > 0:
             print loc_extrema
+            # from PyDSTool import plot, show
             ## plot spike and quadratic fit
             #plot(pts.indepvararray, pts[self.super_pars.burst_coord], 'go-')
             #show()
@@ -271,6 +272,7 @@ class get_spike_data(ql_feature_leaf):
         self.results.spike_val = xval
         self.results.pars_fit = res.pars_fit
         if self.pars.verbose_level > 0:
+            from PyDSTool import plot, show
             # plot spike and quadratic fit
             dec = 10
             plot(pts.indepvararray, pts[coord], 'go-')
