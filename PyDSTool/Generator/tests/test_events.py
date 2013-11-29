@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import platform
 import pytest
 
 from numpy import linspace, sin
@@ -92,6 +93,7 @@ def dsargs():
     return DSargs
 
 
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
 def test_dopri_event(dsargs):
     """
         Test Dopri_ODEsystem with events involving external inputs.
@@ -108,6 +110,7 @@ def test_dopri_event(dsargs):
     ])
 
 
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
 def test_radau_event(dsargs):
     """
         Test Radau_ODEsystem with events involving external inputs.

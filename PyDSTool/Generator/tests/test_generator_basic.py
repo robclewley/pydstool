@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import platform
 import pytest
 from numpy import array, float64, pi, allclose
 from numpy.testing import (
@@ -154,6 +155,7 @@ def test_macros_vode(fnspecs):
     _run_check_macros_3(Vode_ODEsystem, fnspecs)
 
 
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
 def test_macros_dopri(fnspecs):
 
     try:
@@ -173,6 +175,7 @@ def test_macros_dopri(fnspecs):
         _clean_files(files)
 
 
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
 def test_macros_radau(fnspecs):
 
     try:
