@@ -22,7 +22,7 @@ local:
 examples:
 	@cd examples && python run_all_tests.py
 
-test:
+test: pyclean clean
 	@python setup.py test
 
 
