@@ -41,16 +41,6 @@ def test_macros_dopri(fnspecs):
         _run_check_macros_2(Dopri_ODEsystem, fnspecs)
     except:
         raise
-    finally:
-        files = [
-            'dop853_test_vf.py',
-            'dop853_test_vf.pyc',
-            '_dop853_test_vf.so',
-            'dop853_test2_vf.py',
-            'dop853_test2_vf.pyc',
-            '_dop853_test2_vf.so',
-        ]
-        clean_files(files)
 
 
 @pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
@@ -61,16 +51,6 @@ def test_macros_radau(fnspecs):
         _run_check_macros_2(Radau_ODEsystem, fnspecs)
     except:
         raise
-    finally:
-        files = [
-            'radau5_test_vf.py',
-            'radau5_test_vf.pyc',
-            '_radau5_test_vf.so',
-            'radau5_test2_vf.py',
-            'radau5_test2_vf.pyc',
-            '_radau5_test2_vf.so',
-        ]
-        clean_files(files)
 
 
 def _run_check_macros_1(ode, fnspecs):
@@ -127,3 +107,7 @@ def _run_check_macros_3(ode, fnspecs):
     tm3.set(tdata=[0, 10], ics={'x': 1})
     tm3.compute('test')
     assert allclose(tm3.Rhs(0, {'x': 0}), 8 * pi)
+
+
+def teardown_module():
+    clean_files(['test', 'test2'])

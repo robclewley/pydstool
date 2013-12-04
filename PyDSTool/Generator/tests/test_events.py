@@ -104,12 +104,6 @@ def test_dopri_event(dsargs):
 
     _run_checks(Dopri_ODEsystem(dsargs))
 
-    clean_files([
-        'dop853_event_test_vf.py',
-        'dop853_event_test_vf.pyc',
-        '_dop853_event_test_vf.so',
-    ])
-
 
 @pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
 def test_radau_event(dsargs):
@@ -120,12 +114,6 @@ def test_radau_event(dsargs):
     """
 
     _run_checks(Radau_ODEsystem(dsargs))
-
-    clean_files([
-        'radau5_event_test_vf.py',
-        'radau5_event_test_vf.pyc',
-        '_radau5_event_test_vf.so',
-    ])
 
 
 def test_vode_event(dsargs):
@@ -146,3 +134,7 @@ def _run_checks(ode):
 
     assert_almost_equal(traj.indepdomain[1], 1.14417, 4)
     assert_almost_equal(traj.getEventTimes()['monitor'][0], 0.80267, 4)
+
+
+def teardown_module():
+    clean_files(['event_test'])

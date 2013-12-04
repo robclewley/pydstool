@@ -10,6 +10,7 @@ from PyDSTool.Generator import (
 )
 
 import samples
+from PyDSTool.Generator.tests.helpers import clean_files
 
 
 def test_vode():
@@ -38,3 +39,7 @@ def _check_generator(generator):
 
         assert ode.defined
         assert allclose(expected, traj(t)['x'], atol=1e-4, rtol=1e-5)
+
+
+def teardown_module():
+    clean_files(['Oscillator'])
