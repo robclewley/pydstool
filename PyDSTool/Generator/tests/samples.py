@@ -5,6 +5,8 @@
     Sample systems of ODEs for testing purposes
 """
 
+from __future__ import absolute_import, print_function
+
 from numpy import array, cos, sin, sqrt
 
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import, print_function
+
 from numpy import linspace, allclose
 
 from PyDSTool.Generator import (
@@ -9,7 +11,7 @@ from PyDSTool.Generator import (
     Dopri_ODEsystem,
 )
 
-import samples
+from PyDSTool.Generator.tests import samples
 from PyDSTool.Generator.tests.helpers import clean_files
 
 

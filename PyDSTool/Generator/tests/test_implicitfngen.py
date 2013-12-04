@@ -5,6 +5,8 @@
     Robert Clewley, June 2005.
 """
 
+from __future__ import absolute_import, print_function
+
 import os
 from PyDSTool import (
     args,

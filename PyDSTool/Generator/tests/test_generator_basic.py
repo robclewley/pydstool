@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import, print_function
+
 import pytest
 from numpy import array, float64
 from numpy.testing import (
@@ -90,7 +92,7 @@ def test_ode_system(tb_args):
     traj2 = testODE.compute('test2')
     assert testODE.diagnostics.hasWarnings()
     assert testODE.diagnostics.findWarnings(10) != []
-    print testODE.diagnostics.showWarnings()
+    print(testODE.diagnostics.showWarnings())
     assert_almost_equal(traj2.getEventTimes()['threshold'][0], 1.51449456, 4)
     assert testODE.indepvariable.depdomain == Interval(
         't', float64, [0.11, 2.1])

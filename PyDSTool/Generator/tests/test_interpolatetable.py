@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import, print_function
+
 from numpy import array
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 import pytest
