@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import pytest
 from numpy import array, pi, allclose
 
@@ -11,6 +10,8 @@ from PyDSTool.Generator import (
     Dopri_ODEsystem,
     Radau_ODEsystem,
 )
+
+from PyDSTool.Generator.tests.helpers import clean_files
 
 
 @pytest.fixture
@@ -49,7 +50,7 @@ def test_macros_dopri(fnspecs):
             'dop853_test2_vf.pyc',
             '_dop853_test2_vf.so',
         ]
-        _clean_files(files)
+        clean_files(files)
 
 
 @pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
@@ -69,7 +70,7 @@ def test_macros_radau(fnspecs):
             'radau5_test2_vf.pyc',
             '_radau5_test2_vf.so',
         ]
-        _clean_files(files)
+        clean_files(files)
 
 
 def _run_check_macros_1(ode, fnspecs):
@@ -126,8 +127,3 @@ def _run_check_macros_3(ode, fnspecs):
     tm3.set(tdata=[0, 10], ics={'x': 1})
     tm3.compute('test')
     assert allclose(tm3.Rhs(0, {'x': 0}), 8 * pi)
-
-
-def _clean_files(files):
-    for f in files:
-        os.remove(f) if os.path.exists(f) else None

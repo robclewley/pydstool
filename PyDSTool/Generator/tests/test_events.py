@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import platform
 import pytest
 
@@ -19,6 +18,8 @@ from PyDSTool.Generator import (
     Radau_ODEsystem,
     Vode_ODEsystem,
 )
+
+from PyDSTool.Generator.tests.helpers import clean_files
 
 
 @pytest.fixture
@@ -103,7 +104,7 @@ def test_dopri_event(dsargs):
 
     _run_checks(Dopri_ODEsystem(dsargs))
 
-    _clean_files([
+    clean_files([
         'dop853_event_test_vf.py',
         'dop853_event_test_vf.pyc',
         '_dop853_event_test_vf.so',
@@ -120,7 +121,7 @@ def test_radau_event(dsargs):
 
     _run_checks(Radau_ODEsystem(dsargs))
 
-    _clean_files([
+    clean_files([
         'radau5_event_test_vf.py',
         'radau5_event_test_vf.pyc',
         '_radau5_event_test_vf.so',
@@ -145,8 +146,3 @@ def _run_checks(ode):
 
     assert_almost_equal(traj.indepdomain[1], 1.14417, 4)
     assert_almost_equal(traj.getEventTimes()['monitor'][0], 0.80267, 4)
-
-
-def _clean_files(files):
-    for f in files:
-        os.remove(f)
