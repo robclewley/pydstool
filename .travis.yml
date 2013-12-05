@@ -17,7 +17,7 @@ env:
 
 install:
     - pip install -q -U numpy==$NUMPY_VERSION
-    - pip install -q -U scipy==$SCIPY_VERSION
+    - pip install -U scipy==$SCIPY_VERSION
 
 script:
     - python setup.py test
