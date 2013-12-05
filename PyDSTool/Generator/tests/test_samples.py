@@ -4,6 +4,8 @@
 from __future__ import absolute_import, print_function
 
 from numpy import linspace, allclose
+import platform
+import pytest
 
 from PyDSTool.Generator import (
     Vode_ODEsystem,
@@ -19,10 +21,12 @@ def test_vode():
     _check_generator(Vode_ODEsystem)
 
 
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
 def test_radau():
     _check_generator(Radau_ODEsystem)
 
 
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
 def test_dopri():
     _check_generator(Dopri_ODEsystem)
 
