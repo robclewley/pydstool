@@ -39,21 +39,15 @@ def test_macros_vode(fnspecs):
 @pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
 def test_macros_dopri(fnspecs):
 
-    try:
-        _run_check_macros_1(Dopri_ODEsystem, fnspecs)
-        _run_check_macros_2(Dopri_ODEsystem, fnspecs)
-    except:
-        raise
+    _run_check_macros_1(Dopri_ODEsystem, fnspecs)
+    _run_check_macros_2(Dopri_ODEsystem, fnspecs)
 
 
 @pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
 def test_macros_radau(fnspecs):
 
-    try:
-        _run_check_macros_1(Radau_ODEsystem, fnspecs)
-        _run_check_macros_2(Radau_ODEsystem, fnspecs)
-    except:
-        raise
+    _run_check_macros_1(Radau_ODEsystem, fnspecs)
+    _run_check_macros_2(Radau_ODEsystem, fnspecs)
 
 
 def _run_check_macros_1(ode, fnspecs):
