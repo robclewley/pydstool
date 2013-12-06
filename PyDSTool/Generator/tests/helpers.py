@@ -19,7 +19,6 @@ def _generate_filenames(vf_name):
         ('%s_', '_vf.pyc'),
         ('_%s_', '_vf.so'),
     )
-    generators = ['radau5', 'dop853']
-    for g in generators:
+    for g in ['radau5', 'dop853']:
         for prefix, suffix in parts:
             yield ''.join([prefix % g, vf_name, suffix])
