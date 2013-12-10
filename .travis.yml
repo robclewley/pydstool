@@ -18,10 +18,14 @@ env:
 install:
     - pip install -q -U numpy==$NUMPY_VERSION
     - pip install -U scipy==$SCIPY_VERSION
+    - pip install coveralls
 
 script:
-    - python setup.py test
+    - coverage run setup.py test
 
 before_install:
     - sudo apt-get update
     - sudo apt-get install -qq gfortran libblas-dev liblapack-dev libatlas-dev swig
+
+after_success:
+    coveralls
