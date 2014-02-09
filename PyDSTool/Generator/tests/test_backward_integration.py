@@ -42,12 +42,12 @@ def test_vode():
         _check_backward_integration(Vode_ODEsystem)
 
 
-@pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_dopri():
     _check_backward_integration(Dopri_ODEsystem)
 
 
-@pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_radau():
     _check_backward_integration(Radau_ODEsystem)
 

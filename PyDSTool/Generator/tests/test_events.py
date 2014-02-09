@@ -96,7 +96,7 @@ def dsargs():
     return DSargs
 
 
-@pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_dopri_event(dsargs):
     """
         Test Dopri_ODEsystem with events involving external inputs.
@@ -107,7 +107,7 @@ def test_dopri_event(dsargs):
     _run_checks(Dopri_ODEsystem(dsargs))
 
 
-@pytest.mark.skipif("platform.system() == 'FreeBSD' and '10.' in platform.release()")
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_radau_event(dsargs):
     """
         Test Radau_ODEsystem with events involving external inputs.
