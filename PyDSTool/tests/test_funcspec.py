@@ -3,6 +3,7 @@
 
 import pytest
 from PyDSTool import (
+    FuncSpec,
     RHSfuncSpec,
     wrapArgInCall,
     addArgToCalls,
@@ -101,3 +102,129 @@ def test_funcspecs_c(fsargs):
     s = '1 +abc13 + abc'
     assert proper_match(s, 'abc')
     assert not proper_match(s[:10], 'abc')
+
+
+def test_python_funcspec_for_ds_with_single_var():
+    args = {
+        'name': 'single_var',
+        'vars': ['x'],
+        'varspecs': {'x': 'x + 1'},
+    }
+    fs = FuncSpec(args)
+    assert fs.spec == (
+        '\n'.join([
+            'def _specfn(ds, t, x, parsinps):',
+            '    xnew0 = x[0] + 1 ',
+            '    return array([xnew0])\n'
+        ]),
+        '_specfn'
+    )
+
+
+def test_python_funcspec_for_ds_with_two_vars():
+    args = {
+        'name': 'two_vars',
+        'vars': ['x', 'y'],
+        'varspecs': {
+            'x': 'y + 1',
+            'y': 'x - 1',
+        },
+    }
+
+    fs = FuncSpec(args)
+    assert fs.spec == (
+        '\n'.join([
+            'def _specfn(ds, t, x, parsinps):',
+            '    xnew0 = x[1] + 1 ',
+            '    xnew1 = x[0] - 1 ',
+            '    return array([xnew0, xnew1])\n'
+        ]),
+        '_specfn'
+    )
+
+
+def test_python_funcspec_for_ds_with_single_var_and_single_param():
+    args = {
+        'name': 'fun_with_var_and_par',
+        'vars': ['x'],
+        'pars': ['p'],
+        'varspecs': {'x': 'p * x - 1'},
+    }
+    fs = FuncSpec(args)
+    assert fs.spec == (
+        '\n'.join([
+            'def _specfn(ds, t, x, parsinps):',
+            '    xnew0 = parsinps[0] * x[0] - 1 ',
+            '    return array([xnew0])\n'
+        ]),
+        '_specfn'
+    )
+
+
+def test_c_funcspec_for_ds_with_single_var():
+    args = {
+        'name': 'single_var',
+        'targetlang': 'c',
+        'vars': ['x'],
+        'varspecs': {'x': 'x + 1'},
+    }
+    fs = FuncSpec(args)
+    assert fs.spec == (
+        '\n'.join([
+            'void vfieldfunc(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_){',
+            '',
+            'f_[0] = x+1;',
+            '',
+            '}',
+            '\n',
+        ]),
+        'vfieldfunc'
+    )
+
+
+def test_c_funcspec_for_ds_with_two_vars():
+    args = {
+        'name': 'two_vars',
+        'targetlang': 'c',
+        'vars': ['x', 'y'],
+        'varspecs': {
+            'x': 'y + 1',
+            'y': 'x - 1',
+        },
+    }
+
+    fs = FuncSpec(args)
+    assert fs.spec == (
+        '\n'.join([
+            'void vfieldfunc(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_){',
+            '',
+            'f_[0] = y+1;',
+            'f_[1] = x-1;',
+            '',
+            '}',
+            '\n',
+        ]),
+        'vfieldfunc'
+    )
+
+
+def test_c_funcspec_for_ds_with_single_var_and_single_param():
+    args = {
+        'name': 'fun_with_var_and_par',
+        'targetlang': 'c',
+        'vars': ['x'],
+        'pars': ['p'],
+        'varspecs': {'x': 'p * x - 1'},
+    }
+    fs = FuncSpec(args)
+    assert fs.spec == (
+        '\n'.join([
+            'void vfieldfunc(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_){',
+            '',
+            'f_[0] = p*x-1;',
+            '',
+            '}',
+            '\n',
+        ]),
+        'vfieldfunc'
+    )
