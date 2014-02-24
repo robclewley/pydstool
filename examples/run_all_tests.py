@@ -47,7 +47,6 @@ general_list = [
 
 # Map generators
 map_list = [
-    'mapsystem_test',
     'SLIP_2D_maps'
     ]
 
