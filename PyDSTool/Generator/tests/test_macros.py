@@ -9,6 +9,7 @@ from numpy import array, pi, allclose
 
 from PyDSTool import args
 from PyDSTool.Generator import (
+    Euler_ODEsystem,
     Vode_ODEsystem,
     Dopri_ODEsystem,
     Radau_ODEsystem,
@@ -26,6 +27,14 @@ def fnspecs():
         'testmin2': (['x', 'y'], '1/(2+min(1+(x*3),y))+y'),
         'indexfunc': (['x'], 'pi*x')
     }
+
+
+def test_macros_euler(fnspecs):
+    """Test if, min, max, & for macro"""
+
+    _run_check_macros_1(Euler_ODEsystem, fnspecs)
+    _run_check_macros_2(Euler_ODEsystem, fnspecs)
+    _run_check_macros_3(Euler_ODEsystem, fnspecs)
 
 
 def test_macros_vode(fnspecs):
@@ -77,7 +86,7 @@ def _run_check_macros_2(ode, fnspecs):
     DSargs2 = args(name='test2',
                    pars={'p0': 0, 'p1': 1, 'p2': 2},
                    varspecs={
-                       'y[i]': 'for(i, 0, 1, y[i]+if(y[i+1]<2, 2+p[i]+getbound(%s,0), indexfunc([i])+y[i+1]) - 3)' % ('y2' if ode is Vode_ODEsystem else '"y2"'),
+                       'y[i]': 'for(i, 0, 1, y[i]+if(y[i+1]<2, 2+p[i]+getbound(%s,0), indexfunc([i])+y[i+1]) - 3)' % ('y2' if ode in [Vode_ODEsystem, Euler_ODEsystem] else '"y2"'),
                        'y2': '0'
                    },
                    xdomain={'y2': [-10, 10]},

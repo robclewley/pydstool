@@ -126,6 +126,16 @@ def test_vode_event(dsargs):
     _run_checks(Vode_ODEsystem(dsargs))
 
 
+def test_euler_event(dsargs):
+    """
+        Test Euler_ODEsystem with events involving external inputs.
+    """
+
+    dsargs.algparams['init_step'] = 0.0001
+    _run_checks(Euler_ODEsystem(dsargs))
+
+
+
 def _run_checks(ode):
 
     traj = ode.compute('traj')
@@ -134,7 +144,7 @@ def _run_checks(ode):
     assert ode.diagnostics.findWarnings(10) != []
     assert ode.diagnostics.findWarnings(20) != []
 
-    assert_almost_equal(traj.indepdomain[1], 1.14417, 4)
+    assert_almost_equal(traj.indepdomain[1], 1.14417, 3)
     assert_almost_equal(traj.getEventTimes()['monitor'][0], 0.80267, 4)
 
 
