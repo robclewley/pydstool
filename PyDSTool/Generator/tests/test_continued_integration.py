@@ -15,26 +15,7 @@ from PyDSTool.Generator import (
 )
 
 from PyDSTool.Generator.tests.helpers import clean_files
-
-
-def dsargs():
-    """van der Pol equation"""
-    pars = {'eps': 1.0, 'a': 0.5, 'y1': -0.708}
-
-    return {
-        'name': 'vanDerPol',
-        'tdomain': [0, 200],
-        'pars': pars,
-        'varspecs': {
-            'x': '(y - (x * x * x / 3 - x)) / eps',
-            'y': 'a - x',
-        },
-        'ics': {
-            'x': pars['a'],
-            'y': pars['a'] - pow(pars['a'], 3) / 3,
-        },
-        'algparams': {'max_step': 1e-2, 'max_pts': 30000}
-    }
+from PyDSTool.Generator.tests.samples import vanDerPol
 
 
 def test_vode():
@@ -53,9 +34,12 @@ def test_radau():
 
 def _check_continued_integration(generator):
 
-    ode = generator(dsargs())
+    dsargs, _ = vanDerPol()
+    dsargs['name'] += '_continued'
+    ode = generator(dsargs)
 
     # two step integration
+    ode.set(tdomain=[0, 200])
     ode.set(tdata=[0, 100])
     left = ode.compute('first_half_traj')
     ode.set(tdata=[100, 200])
@@ -77,4 +61,4 @@ def _check_continued_integration(generator):
 
 
 def teardown_module():
-    clean_files(['vanDerPol'])
+    clean_files(['vanDerPol_continued'])

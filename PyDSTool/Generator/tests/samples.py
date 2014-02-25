@@ -41,3 +41,26 @@ def oscillator(t):
     u = z0[0] * cos(omega * t) + z0[1] * sin(omega * t) / omega
 
     return dsargs, u
+
+
+def vanDerPol():
+    """van der Pol equation"""
+    pars = {'eps': 1.0, 'a': 0.5}
+
+    dsargs = {
+        'name': 'vanDerPol',
+        'pars': pars,
+        'varspecs': {
+            'x': '(y - (x * x * x / 3 - x)) / eps',
+            'y': 'a - x',
+        },
+        'ics': {
+            'x': pars['a'],
+            'y': pars['a'] - pow(pars['a'], 3) / 3,
+        },
+        'algparams': {'max_step': 1e-2, 'max_pts': 30000}
+    }
+
+    # TODO: add expected result
+
+    return dsargs, None
