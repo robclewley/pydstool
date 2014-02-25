@@ -543,12 +543,11 @@ def test_c_funcspec_with_massmatrix():
     ]
 
 
-def test_c_funcspec_with_loop_and_sum():
+def test_c_funcspec_with_loop():
     args = {
         'name': 'fs_with_loop',
         'varspecs': {
             'z[i]': 'for(i, 1, 6, t + [i]/2)', # FIXME: using 't**[i]' or 't^[i]' here results in RuntimeError
-            'z0': 'sum(i, 1, 6, z[i])',
         },
     }
 
@@ -557,18 +556,20 @@ def test_c_funcspec_with_loop_and_sum():
     assert fs.spec[0].split('\n') == [
         'void vfieldfunc(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_){',
         '',
-        'f_[0] = sum(i,1,6,z[i]);',
-        'f_[1] = t+1/2;',
-        'f_[2] = t+2/2;',
-        'f_[3] = t+3/2;',
-        'f_[4] = t+4/2;',
-        'f_[5] = t+5/2;',
-        'f_[6] = t+6/2;',
+        'f_[0] = t+1/2;',
+        'f_[1] = t+2/2;',
+        'f_[2] = t+3/2;',
+        'f_[3] = t+4/2;',
+        'f_[4] = t+5/2;',
+        'f_[5] = t+6/2;',
         '',
         '}',
         '',
         '',
     ]
+
+    from PyDSTool.Generator.tests.helpers import clean_files
+    clean_files(['fs_with_loop'])
 
 
 def test_matlab_funcspec_for_ds_with_single_var_and_single_param():
