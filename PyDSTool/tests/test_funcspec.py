@@ -1,6 +1,8 @@
 """Test FuncSpec for python and C right-hand sides.
 """
 
+import platform
+
 import pytest
 from PyDSTool import (
     FuncSpec,
@@ -543,6 +545,7 @@ def test_c_funcspec_with_massmatrix():
     ]
 
 
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_c_funcspec_with_loop():
     args = {
         'name': 'fs_with_loop',

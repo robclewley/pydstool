@@ -93,7 +93,7 @@ def test_ode_system(tb_args):
     assert testODE.diagnostics.hasWarnings()
     assert testODE.diagnostics.findWarnings(10) != []
     print(testODE.diagnostics.showWarnings())
-    assert_almost_equal(traj2.getEventTimes()['threshold'][0], 1.51449456, 4)
+    assert_almost_equal(traj2.getEventTimes()['threshold'][0], 1.51449456, 3)
     assert testODE.indepvariable.depdomain == Interval(
         't', float64, [0.11, 2.1])
 
