@@ -86,10 +86,10 @@ class FuncSpec(object):
                 self.name = 'untitled'
             # declare variables (name list)
             if isinstance(kw['vars'], list):
-                vars = kw['vars'][:]  # take copy
+                vars_ = kw['vars'][:]  # take copy
             else:
                 assert isinstance(kw['vars'], str), 'Invalid variable name'
-                vars = [kw['vars']]
+                vars_ = [kw['vars']]
         except KeyError:
             raise PyDSTool_KeyError('Necessary keys missing from argument dict')
         foundKeys = len(needKeys)
@@ -169,15 +169,15 @@ class FuncSpec(object):
             numaux = len(self.auxvars)
             if '_for_macro_info' in kw:
                 if kw['_for_macro_info'].numfors > 0:
-                    num_varspecs = numaux + len(vars) - kw['_for_macro_info'].totforvars + \
+                    num_varspecs = numaux + len(vars_) - kw['_for_macro_info'].totforvars + \
                                    kw['_for_macro_info'].numfors
                 else:
-                    num_varspecs = numaux + len(vars)
+                    num_varspecs = numaux + len(vars_)
             else:
-                num_varspecs = numaux + len(vars)
+                num_varspecs = numaux + len(vars_)
             if len(kw['varspecs']) != len(self._varsbyforspec) and \
                len(kw['varspecs']) != num_varspecs:
-                print "# state variables: ", len(vars)
+                print "# state variables: ", len(vars_)
                 print "# auxiliary variables: ", numaux
                 print "# of variable specs: ", len(kw['varspecs'])
                 raise ValueError('Incorrect size of varspecs')
@@ -245,14 +245,14 @@ class FuncSpec(object):
         if len(kw) > foundKeys:
             raise PyDSTool_KeyError('Invalid keys passed in argument dict')
         self.defined = False  # initial value
-        self.validateDef(vars, pars, inputs, self.auxvars, self._auxfnspecs.keys())
+        self.validateDef(vars_, pars, inputs, self.auxvars, self._auxfnspecs.keys())
         # ... exception if not valid
         # Fine to do the following if we get this far:
         # sort for final order that will be used for determining array indices
-        vars.sort()
+        vars_.sort()
         pars.sort()
         inputs.sort()
-        self.vars = vars
+        self.vars = vars_
         self.pars = pars
         self.inputs = inputs
         # pre-process specification string for built-in macros (like `for`,
