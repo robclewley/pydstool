@@ -166,10 +166,7 @@ class FuncSpec(object):
         else:
             self._varsbyforspec = {}
         if 'varspecs' in kw:
-            if self.auxvars == []:
-                numaux = 0
-            else:
-                numaux = len(self.auxvars)
+            numaux = len(self.auxvars)
             if '_for_macro_info' in kw:
                 if kw['_for_macro_info'].numfors > 0:
                     num_varspecs = numaux + len(vars) - kw['_for_macro_info'].totforvars + \
