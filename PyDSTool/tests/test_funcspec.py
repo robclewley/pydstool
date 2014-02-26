@@ -9,7 +9,6 @@ from PyDSTool import (
     RHSfuncSpec,
     wrapArgInCall,
     addArgToCalls,
-    args as Args,
 )
 from PyDSTool.Generator import Vode_ODEsystem, Dopri_ODEsystem
 from PyDSTool.parseUtils import proper_match
@@ -181,10 +180,12 @@ def test_python_funcspec_with_jacobian_and_auxfunc():
             "y1": "-ydot0(y0,y1,y2)-ydot2(y0,y1,y2)"
         },
         'fnspecs': {
-            'Jacobian': (['t','y0','y1','y2'],
-                         """[[-0.04,  1e4*y2       ,  1e4*y1 ],
-                         [ 0.04, -1e4*y2-6e7*y1, -1e4*y1 ],
-                         [ 0.0 ,  6e7*y1       ,  0.0    ]]"""),
+            'Jacobian': (
+                ['t', 'y0', 'y1', 'y2'],
+                """[[-0.04,  1e4*y2       ,  1e4*y1 ],
+                [ 0.04, -1e4*y2-6e7*y1, -1e4*y1 ],
+                [ 0.0 ,  6e7*y1       ,  0.0    ]]"""
+            ),
             'ydot0': (['y0', 'y1', 'y2'], "-0.04*y0 + 1e4*y1*y2"),
             'ydot2': (['y0', 'y1', 'y2'], "3e7*y1*y1")
         },
@@ -193,13 +194,13 @@ def test_python_funcspec_with_jacobian_and_auxfunc():
     fs = FuncSpec(args)
 
     assert fs.spec[0].split('\n') == [
-            'def _specfn(ds, t, x, parsinps):',
-            '    xnew0 = ds._auxfn_ydot0(parsinps, x[0],x[1],x[2])',
-            '    xnew1 = -ds._auxfn_ydot0(parsinps, x[0],x[1],x[2])-ds._auxfn_ydot2(parsinps, x[0],x[1],x[2])',
-            '    xnew2 = ds._auxfn_ydot2(parsinps, x[0],x[1],x[2])',
-            '    return array([xnew0, xnew1, xnew2])',
-            '',
-        ]
+        'def _specfn(ds, t, x, parsinps):',
+        '    xnew0 = ds._auxfn_ydot0(parsinps, x[0],x[1],x[2])',
+        '    xnew1 = -ds._auxfn_ydot0(parsinps, x[0],x[1],x[2])-ds._auxfn_ydot2(parsinps, x[0],x[1],x[2])',
+        '    xnew2 = ds._auxfn_ydot2(parsinps, x[0],x[1],x[2])',
+        '    return array([xnew0, xnew1, xnew2])',
+        '',
+    ]
 
     assert fs.auxfns['Jacobian'][0].split('\n') == [
         'def _auxfn_Jac(ds, t, x, parsinps):',
@@ -217,21 +218,6 @@ def test_python_funcspec_with_jacobian_and_auxfunc():
     assert fs.auxfns['ydot2'][0].split('\n') == [
         'def _auxfn_ydot2(ds, parsinps, y0, y1, y2):',
         '    return 3e7*y1*y1'
-    ]
-
-
-def test_python_funcspec_for_ds_with_if_builtin():
-    args = {
-        'name': 'single_var',
-        'vars': ['x'],
-        'varspecs': {'x': 'if(x < 0, x, x**3)'},
-    }
-    fs = FuncSpec(args)
-    assert fs.spec[0].split('\n') == [
-        'def _specfn(ds, t, x, parsinps):',
-        '    xnew0 = ds._auxfn_if(parsinps, x[0]<0,x[0],math.pow(x[0],3))',
-        '    return array([xnew0])',
-        ''
     ]
 
 
@@ -275,7 +261,7 @@ def test_python_funcspec_with_massmatrix():
         'name': 'fs_with_massmatrix',
         'vars': ['x', 'y'],
         'varspecs': {'y': '-1', 'x': 'y - x * x'},
-        'fnspecs': {'massMatrix': (['t','x','y'], '[[0,0],[0,1]]')},
+        'fnspecs': {'massMatrix': (['t', 'x', 'y'], '[[0,0],[0,1]]')},
     }
     fs = FuncSpec(args)
     assert fs.spec[0].split('\n') == [
@@ -298,7 +284,7 @@ def test_python_funcspec_with_massmatrix():
 def test_python_funcspec_with_for_loop():
     args = {
         'name': 'fs_with_loop',
-        'varspecs': { 'z[i]': 'for(i, 1, 6, t**[i]/2)'},
+        'varspecs': {'z[i]': 'for(i, 1, 6, t**[i]/2)'},
     }
 
     # XXX: FuncSpec doesn't support 'for' loop directly
@@ -406,10 +392,12 @@ def test_c_funcspec_with_jacobian_and_auxfunc():
             "y1": "-ydot0(y0,y1,y2)-ydot2(y0,y1,y2)"
         },
         'fnspecs': {
-            'Jacobian': (['t','y0','y1','y2'],
-                         """[[-0.04,  1e4*y2       ,  1e4*y1 ],
-                         [ 0.04, -1e4*y2-6e7*y1, -1e4*y1 ],
-                         [ 0.0 ,  6e7*y1       ,  0.0    ]]"""),
+            'Jacobian': (
+                ['t', 'y0', 'y1', 'y2'],
+                """[[-0.04,  1e4*y2       ,  1e4*y1 ],
+                [ 0.04, -1e4*y2-6e7*y1, -1e4*y1 ],
+                [ 0.0 ,  6e7*y1       ,  0.0    ]]"""
+            ),
             'ydot0': (['y0', 'y1', 'y2'], "-0.04*y0 + 1e4*y1*y2"),
             'ydot2': (['y0', 'y1', 'y2'], "3e7*y1*y1")
         },
@@ -516,7 +504,7 @@ def test_c_funcspec_with_massmatrix():
         'targetlang': 'c',
         'vars': ['x', 'y'],
         'varspecs': {'y': '-1', 'x': 'y - x * x'},
-        'fnspecs': {'massMatrix': (['t','x','y'], '[[0,0],[0,1]]')},
+        'fnspecs': {'massMatrix': (['t', 'x', 'y'], '[[0,0],[0,1]]')},
     }
     fs = FuncSpec(args)
     assert fs.spec[0].split('\n') == [
@@ -550,7 +538,7 @@ def test_c_funcspec_with_loop():
     args = {
         'name': 'fs_with_loop',
         'varspecs': {
-            'z[i]': 'for(i, 1, 6, t + [i]/2)', # FIXME: using 't**[i]' or 't^[i]' here results in RuntimeError
+            'z[i]': 'for(i, 1, 6, t + [i]/2)',  # FIXME: using 't**[i]' or 't^[i]' here results in RuntimeError
         },
     }
 
