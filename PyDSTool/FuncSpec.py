@@ -18,7 +18,6 @@ from Symbolic import QuantSpec
 
 # Other imports
 from copy import copy, deepcopy
-import math, random, numpy, scipy, scipy.special
 from numpy import any
 
 __all__ = ['RHSfuncSpec', 'ImpFuncSpec', 'ExpFuncSpec', 'FuncSpec',
