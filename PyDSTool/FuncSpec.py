@@ -140,57 +140,9 @@ class FuncSpec(object):
         # ------------------------------------------
         # reusable terms in function specs
         if 'reuseterms' in kw:
-            if isinstance(kw['reuseterms'], dict):
-                self.reuseterms = deepcopy(kw['reuseterms'])
-            else:
-                raise ValueError('reuseterms must be a dictionary of strings ->'
-                                   ' replacement strings')
-            ignore_list = []
-            for term, repterm in self.reuseterms.iteritems():
-                assert isinstance(term, str), \
-                       "terms in 'reuseterms' dictionary must be strings"
-                # if term[0] in num_chars+['.']:
-                #     raise ValueError('terms must not be numerical values')
-                if isNumericToken(term):
-                    # don't replace numeric terms (sometimes these are
-                    # generated automatically by Constructors when resolving
-                    # explicit variable inter-dependencies)
-                    ignore_list.append(term)
-                # not sure about the next check any more...
-                # what is the point of not allowing subs terms to begin with op?
-                if term[0] in '+/*':
-                    print "Error in term:", term
-                    raise ValueError('terms to be substituted must not begin '
-                                     'with arithmetic operators')
-                if term[0] == '-':
-                    term = '(' + term + ')'
-                if term[-1] in '+-/*':
-                    print "Error in term:", term
-                    raise ValueError('terms to be substituted must not end with '
-                                     'arithmetic operators')
-                for s in term:
-                    if self.targetlang == 'python':
-                        if s in '[]{}~@#$%&\|?^': # <>! now OK, e.g. for "if" statements
-                            print "Error in term:", term
-                            raise ValueError('terms to be substituted must be '
-                                'alphanumeric or contain arithmetic operators '
-                                '+ - / *')
-                    else:
-                        if s in '[]{}~!@#$%&\|?><': # removed ^ from this list
-                            print "Error in term:", term
-                            raise ValueError('terms to be substituted must be alphanumeric or contain arithmetic operators + - / *')
-                if repterm[0] in num_chars:
-                    print "Error in replacement term:", repterm
-                    raise ValueError('replacement terms must not begin with numbers')
-                for s in repterm:
-                    if s in '+-/*.()[]{}~!@#$%^&\|?><,':
-                        print "Error in replacement term:", repterm
-                        raise ValueError('replacement terms must be alphanumeric')
-            for t in ignore_list:
-                del self.reuseterms[t]
             foundKeys += 1
-        else:
-            self.reuseterms = {}
+        self.reuseterms = kw.pop('reuseterms', {})
+
         # auxiliary variables declaration
         if 'auxvars' in kw:
             if isinstance(kw['auxvars'], list):
@@ -333,6 +285,63 @@ class FuncSpec(object):
         # algparams is only used by ImplicitFnGen to pass extra info to Variable
         self.algparams = {}
         self.defined = True
+
+
+    @property
+    def reuseterms(self):
+        return self._reuseterms
+
+    @reuseterms.setter
+    def reuseterms(self, terms):
+        if not isinstance(terms, dict):
+            raise ValueError('reuseterms must be a dictionary of strings ->'
+                               ' replacement strings')
+        self._reuseterms = dict(
+            (t, rt) for t, rt in terms.iteritems()
+            if self.__term_valid(t) and self.__repterm_valid(rt)
+        )
+
+    def __term_valid(self, term):
+        if isNumericToken(term):
+            # don't replace numeric terms (sometimes these are
+            # generated automatically by Constructors when resolving
+            # explicit variable inter-dependencies)
+            return False
+
+        if term[0] in '+/*':
+            print "Error in term:", term
+            raise ValueError('terms to be substituted must not begin '
+                                'with arithmetic operators')
+        if term[0] == '-':
+            term = '(' + term + ')'
+        if term[-1] in '+-/*':
+            print "Error in term:", term
+            raise ValueError('terms to be substituted must not end with '
+                                'arithmetic operators')
+        for s in term:
+            if self.targetlang == 'python':
+                if s in '[]{}~@#$%&\|?^': # <>! now OK, e.g. for "if" statements
+                    print "Error in term:", term
+                    raise ValueError('terms to be substituted must be '
+                        'alphanumeric or contain arithmetic operators '
+                        '+ - / *')
+            else:
+                if s in '[]{}~!@#$%&\|?><': # removed ^ from this list
+                    print "Error in term:", term
+                    raise ValueError('terms to be substituted must be alphanumeric or contain arithmetic operators + - / *')
+        return True
+
+    def __repterm_valid(self, repterm):
+        if repterm[0] in num_chars:
+            print "Error in replacement term:", repterm
+            raise ValueError('replacement terms must not begin with numbers')
+        for s in repterm:
+            if s in '+-/*.()[]{}~!@#$%^&\|?><,':
+                print "Error in replacement term:", repterm
+                raise ValueError('replacement terms must be alphanumeric')
+
+        return True
+
 
     def __hash__(self):
         """Unique identifier for this specification."""
