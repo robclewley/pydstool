@@ -145,14 +145,8 @@ class FuncSpec(object):
 
         # auxiliary variables declaration
         if 'auxvars' in kw:
-            if isinstance(kw['auxvars'], list):
-                auxvars = kw['auxvars'][:]   # take copy
-            else:
-                assert isinstance(kw['auxvars'], str), 'Invalid variable name'
-                auxvars = [kw['auxvars']]
             foundKeys += 1
-        else:
-            auxvars = []
+        self.auxvars = kw.pop('auxvars', [])
         # auxfns dict of functionality for auxiliary functions (in
         # either python or C). for instance, these are used for global
         # time reference, access of regular variables to initial
@@ -173,10 +167,10 @@ class FuncSpec(object):
         else:
             self._varsbyforspec = {}
         if 'varspecs' in kw:
-            if auxvars == []:
+            if self.auxvars == []:
                 numaux = 0
             else:
-                numaux = len(auxvars)
+                numaux = len(self.auxvars)
             if '_for_macro_info' in kw:
                 if kw['_for_macro_info'].numfors > 0:
                     num_varspecs = numaux + len(vars) - kw['_for_macro_info'].totforvars + \
@@ -255,18 +249,16 @@ class FuncSpec(object):
         if len(kw) > foundKeys:
             raise PyDSTool_KeyError('Invalid keys passed in argument dict')
         self.defined = False  # initial value
-        self.validateDef(vars, pars, inputs, auxvars, self._auxfnspecs.keys())
+        self.validateDef(vars, pars, inputs, self.auxvars, self._auxfnspecs.keys())
         # ... exception if not valid
         # Fine to do the following if we get this far:
         # sort for final order that will be used for determining array indices
         vars.sort()
         pars.sort()
         inputs.sort()
-        auxvars.sort()
         self.vars = vars
         self.pars = pars
         self.inputs = inputs
-        self.auxvars = auxvars
         # pre-process specification string for built-in macros (like `for`,
         # i.e. that are not also auxiliary functions, like the in-line `if`)
         self.doPreMacros()
@@ -286,6 +278,18 @@ class FuncSpec(object):
         self.algparams = {}
         self.defined = True
 
+    @property
+    def auxvars(self):
+        return self._auxvars
+
+    @auxvars.setter
+    def auxvars(self, value):
+        if isinstance(value, list):
+            auxvars = deepcopy(value)
+        else:
+            assert isinstance(value, str), 'Invalid aux variables names: %r' % value
+            auxvars = list(value)
+        self._auxvars = sorted(auxvars)
 
     @property
     def reuseterms(self):
