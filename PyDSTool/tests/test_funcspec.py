@@ -1,4 +1,4 @@
-"""Test FuncSpec for python and C right-hand sides.
+"""Test FuncSpec for python, Matlab and C right-hand sides.
 """
 
 import platform
@@ -9,9 +9,41 @@ from PyDSTool import (
     RHSfuncSpec,
     wrapArgInCall,
     addArgToCalls,
+    PyDSTool_KeyError,
 )
 from PyDSTool.Generator import Vode_ODEsystem, Dopri_ODEsystem
 from PyDSTool.parseUtils import proper_match
+
+
+def test_funcspec_raises_exception_if_there_are_invalid_keys():
+    args = {
+        'name': 'fs_with_invalid_key',
+        'invalid_key': 'dummy',
+        'myvars': ['a', 'b'],
+    }
+
+    with pytest.raises(PyDSTool_KeyError):
+        FuncSpec(args)
+
+
+def test_funcspec_uses_default_name_if_not_set():
+    args = {
+        'vars': ['x'],
+        'varspecs': {'x': 'x + 1'},
+    }
+
+    fs = FuncSpec(args)
+    assert 'untitled' == fs.name
+
+
+def test_funcspec_raises_exception_if_vars_key_missed():
+    with pytest.raises(PyDSTool_KeyError):
+        FuncSpec({})
+
+
+def test_funcspec_raises_exception_if_both_varspecs_and_spec_key_missed():
+    with pytest.raises(PyDSTool_KeyError):
+        FuncSpec({'vars': ['x']})
 
 
 @pytest.fixture

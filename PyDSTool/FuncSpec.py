@@ -83,22 +83,22 @@ class FuncSpec(object):
         if invalid_keys:
             raise PyDSTool_KeyError('Invalid keys %r passed in argument dict' % list(invalid_keys))
 
-        # PROCESS NECESSARY KEYS -------------------
-        try:
-            # spec name
-            if 'name' in kw:
-                self.name = kw['name']
-            else:
-                self.name = 'untitled'
-            # declare variables (name list)
-            if isinstance(kw['vars'], list):
-                vars_ = kw['vars'][:]  # take copy
-            else:
-                assert isinstance(kw['vars'], str), 'Invalid variable name'
-                vars_ = [kw['vars']]
-        except KeyError:
-            raise PyDSTool_KeyError('Necessary keys missing from argument dict')
-        # PROCESS OPTIONAL KEYS --------------------
+        if 'vars' not in kw:
+            raise PyDSTool_KeyError(
+                "Require a variables specification key -- 'vars'")
+
+        if all(k not in kw for k in ['varspecs', 'spec']):
+            raise PyDSTool_KeyError(
+                "Require a functional specification key -- 'spec' or 'varspecs'")
+
+        # spec name
+        self.name = kw.pop('name', 'untitled')
+        # declare variables (name list)
+        if isinstance(kw['vars'], list):
+            vars_ = kw['vars'][:]  # take copy
+        else:
+            assert isinstance(kw['vars'], str), 'Invalid variable name'
+            vars_ = [kw['vars']]
         # declare pars (name list)
         if 'pars' in kw:
             if isinstance(kw['pars'], list):
@@ -154,8 +154,6 @@ class FuncSpec(object):
             self._auxfnspecs = {}
         # spec dict of functionality, as a string for each var
         # (in either python or C, or just for python?)
-        assert 'varspecs' in kw or 'spec' in kw, ("Require a functional "
-                                "specification key -- 'spec' or 'varspecs'")
         if '_for_macro_info' in kw:
             self._varsbyforspec = kw['_for_macro_info'].varsbyforspec
         else:
