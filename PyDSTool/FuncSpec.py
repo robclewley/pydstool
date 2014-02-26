@@ -117,16 +117,8 @@ class FuncSpec(object):
                 inputs = [kw['inputs']]
         else:
             inputs = []
-        if 'targetlang' in kw:
-            try:
-                tlang = kw['targetlang'].lower()
-            except AttributeError:
-                raise TypeError("Expected string type for target language")
-            if tlang not in targetLangs:
-                raise ValueError('Invalid specification for targetlang')
-            self.targetlang = tlang
-        else:
-            self.targetlang = 'python'  # default
+
+        self.targetlang = kw.pop('targetlang', 'python')
         if self.targetlang == 'c':
             self._defstr = "#define"
             self._undefstr = "#undef"
@@ -260,6 +252,21 @@ class FuncSpec(object):
         # algparams is only used by ImplicitFnGen to pass extra info to Variable
         self.algparams = {}
         self.defined = True
+
+    @property
+    def targetlang(self):
+        return self._targetlang
+
+    @targetlang.setter
+    def targetlang(self, value):
+        try:
+            value = value.lower()
+            if value not in targetLangs:
+                raise ValueError('Invalid specification for targetlang')
+        except AttributeError:
+            raise TypeError("Expected string type for target language")
+
+        self._targetlang = value
 
     @property
     def auxvars(self):

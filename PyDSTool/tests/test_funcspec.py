@@ -46,6 +46,21 @@ def test_funcspec_raises_exception_if_both_varspecs_and_spec_key_missed():
         FuncSpec({'vars': ['x']})
 
 
+def test_funspec_raises_exception_for_non_string_targetlang():
+    with pytest.raises(TypeError):
+        FuncSpec({'vars': [], 'varspecs': {}, 'targetlang': 1})
+
+
+def test_funcspec_raises_exception_for_not_supported_langs():
+    with pytest.raises(ValueError):
+        FuncSpec({'vars': [], 'varspecs': {}, 'targetlang': 'ruby'})
+
+
+def test_funcspec_uses_python_as_default_target():
+    fs = FuncSpec({'vars': ['x'], 'varspecs': {'x': 'x + 1'}})
+    assert 'python' == fs.targetlang
+
+
 @pytest.fixture
 def fsargs():
     fvarspecs = {
