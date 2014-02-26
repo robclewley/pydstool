@@ -632,7 +632,6 @@ class FuncSpec(object):
         retdict = {}
         q = QuantSpec('__temp__', expr_in_i)
         eval_pieces = {}
-        avoid_toks = []
         for ix, tok in enumerate(q):
             if tok[0] == '[':
                 eval_str = tok[1:-1]
@@ -1039,12 +1038,10 @@ class FuncSpec(object):
             specname_auxvars = []
             for varname in self.vars:
                 # check if varname belongs to a for macro grouping in self.varspecs
-                specname = _vbfs_inv[varname]
                 if varname not in specname_vars:
                     specname_vars.append(varname)
             for varname in self.auxvars:
                 # check if varname belongs to a for macro grouping in self.varspecs
-                specname = _vbfs_inv[varname]
                 if varname not in specname_auxvars:
                     specname_auxvars.append(varname)
         else:
@@ -1848,12 +1845,10 @@ class FuncSpec(object):
             specname_auxvars = []
             for varname in self.vars:
                 # check if varname belongs to a for macro grouping in self.varspecs
-                specname = _vbfs_inv[varname]
                 if varname not in specname_vars:
                     specname_vars.append(varname)
             for varname in self.auxvars:
                 # check if varname belongs to a for macro grouping in self.varspecs
-                specname = _vbfs_inv[varname]
                 if varname not in specname_auxvars:
                     specname_auxvars.append(varname)
         else:
@@ -1861,7 +1856,6 @@ class FuncSpec(object):
             specname_auxvars = intersect(self.auxvars, specnames_unsorted)
         specname_vars.sort()
         # sorted version of var and par names
-        vnames = specname_vars
         pnames = self.pars
         inames = self.inputs
         pnames.sort()
@@ -2404,7 +2398,6 @@ def _processReused(specnames, specdict, reuseterms, indentstr='',
         specdict[specname] = specstr
         # add any dependencies for repeated terms to those that will get
         # defined when functions are instantiated
-        add_reps = []
         for r in seenrepterms:
             if r in are_dependent:
                 for repterm in deps[r]:
