@@ -12,6 +12,7 @@ from PyDSTool import (
     PyDSTool_KeyError,
 )
 from PyDSTool.Generator import Vode_ODEsystem, Dopri_ODEsystem
+from PyDSTool.FuncSpec import _names_to_list
 from PyDSTool.parseUtils import proper_match
 
 
@@ -59,6 +60,58 @@ def test_funcspec_raises_exception_for_not_supported_langs():
 def test_funcspec_uses_python_as_default_target():
     fs = FuncSpec({'vars': ['x'], 'varspecs': {'x': 'x + 1'}})
     assert 'python' == fs.targetlang
+
+
+def test_funcspec_wraps_vars_string_to_list():
+    fs = FuncSpec({'vars': 'x', 'varspecs': {'x': 'x + 1'}})
+    assert ['x'] == fs.vars
+
+
+def test_funcspec_raises_exception_if_vars_is_not_string_or_list():
+    with pytest.raises(AssertionError):
+        FuncSpec({'vars': ('x', 'y'), 'varspecs': {}})
+
+
+def test_funcspec_names_list_are_sorted():
+    fs = FuncSpec({
+        'vars': ['y', 'z', 'x'],
+        'varspecs': {'x': 'y', 'y': 'z', 'z': 'x', 'aux2': 'x + y', 'aux11': 'z * x'},
+
+        'auxvars': ['aux2', 'aux11'],
+        'inputs': ['input_y', 'input_x'],
+        'pars': ['k', 'o', 'v', 'j'],
+    })
+    assert sorted(fs.vars) == fs.vars
+    assert sorted(fs.auxvars) == fs.auxvars
+    assert sorted(fs.inputs) == fs.inputs
+    assert sorted(fs.pars) == fs.pars
+
+
+
+def test_names_to_list_returns_list():
+    assert isinstance(_names_to_list([]), list)
+
+
+def test_names_to_list_returns_list_with_copy_of_input():
+    names = ['x', 'y', 'z']
+    actual = _names_to_list(names)
+    assert id(names) != id(actual)
+    assert names == actual
+
+
+def test_names_to_list_returns_list_for_string():
+    actual = _names_to_list('str')
+    assert isinstance(actual, list)
+    assert ['str'] == actual
+
+
+def test_names_to_list_raises_exception_if_vars_is_not_string_or_list():
+    with pytest.raises(AssertionError):
+        _ =_names_to_list(('x', 'y'))
+
+
+def test_names_to_list_returns_sorted_list():
+    assert ['x', 'y', 'z'] == _names_to_list(['z', 'y', 'x'])
 
 
 @pytest.fixture

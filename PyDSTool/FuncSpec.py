@@ -93,30 +93,11 @@ class FuncSpec(object):
 
         # spec name
         self.name = kw.pop('name', 'untitled')
-        # declare variables (name list)
-        if isinstance(kw['vars'], list):
-            vars_ = kw['vars'][:]  # take copy
-        else:
-            assert isinstance(kw['vars'], str), 'Invalid variable name'
-            vars_ = [kw['vars']]
-        # declare pars (name list)
-        if 'pars' in kw:
-            if isinstance(kw['pars'], list):
-                pars = kw['pars'][:]  # take copy
-            else:
-                assert isinstance(kw['pars'], str), 'Invalid parameter name'
-                pars = [kw['pars']]
-        else:
-            pars = []
-        # declare external inputs (name list)
-        if 'inputs' in kw:
-            if isinstance(kw['inputs'], list):
-                inputs = kw['inputs'][:]   # take copy
-            else:
-                assert isinstance(kw['inputs'], str), 'Invalid input name'
-                inputs = [kw['inputs']]
-        else:
-            inputs = []
+        # declare name lists: variables, aux variables, parameters, inputs
+        self.vars = _names_to_list(kw['vars'])
+        self.pars = _names_to_list(kw.get('pars', []))
+        self.inputs = _names_to_list(kw.get('inputs', []))
+        self.auxvars = _names_to_list(kw.pop('auxvars', []))
 
         self.targetlang = kw.pop('targetlang', 'python')
         if self.targetlang == 'c':
@@ -133,8 +114,6 @@ class FuncSpec(object):
         # reusable terms in function specs
         self.reuseterms = kw.pop('reuseterms', {})
 
-        # auxiliary variables declaration
-        self.auxvars = kw.pop('auxvars', [])
         # auxfns dict of functionality for auxiliary functions (in
         # either python or C). for instance, these are used for global
         # time reference, access of regular variables to initial
@@ -154,15 +133,15 @@ class FuncSpec(object):
             numaux = len(self.auxvars)
             if '_for_macro_info' in kw:
                 if kw['_for_macro_info'].numfors > 0:
-                    num_varspecs = numaux + len(vars_) - kw['_for_macro_info'].totforvars + \
+                    num_varspecs = numaux + len(self.vars) - kw['_for_macro_info'].totforvars + \
                                    kw['_for_macro_info'].numfors
                 else:
-                    num_varspecs = numaux + len(vars_)
+                    num_varspecs = numaux + len(self.vars)
             else:
-                num_varspecs = numaux + len(vars_)
+                num_varspecs = numaux + len(self.vars)
             if len(kw['varspecs']) != len(self._varsbyforspec) and \
                len(kw['varspecs']) != num_varspecs:
-                print "# state variables: ", len(vars_)
+                print "# state variables: ", len(self.vars)
                 print "# auxiliary variables: ", numaux
                 print "# of variable specs: ", len(kw['varspecs'])
                 raise ValueError('Incorrect size of varspecs')
@@ -224,16 +203,8 @@ class FuncSpec(object):
             self.auxspec = {}
             self.dependencies = []
         self.defined = False  # initial value
-        self.validateDef(vars_, pars, inputs, self.auxvars, self._auxfnspecs.keys())
+        self.validateDef(self.vars, self.pars, self.inputs, self.auxvars, self._auxfnspecs.keys())
         # ... exception if not valid
-        # Fine to do the following if we get this far:
-        # sort for final order that will be used for determining array indices
-        vars_.sort()
-        pars.sort()
-        inputs.sort()
-        self.vars = vars_
-        self.pars = pars
-        self.inputs = inputs
         # pre-process specification string for built-in macros (like `for`,
         # i.e. that are not also auxiliary functions, like the in-line `if`)
         self.doPreMacros()
@@ -267,19 +238,6 @@ class FuncSpec(object):
             raise TypeError("Expected string type for target language")
 
         self._targetlang = value
-
-    @property
-    def auxvars(self):
-        return self._auxvars
-
-    @auxvars.setter
-    def auxvars(self, value):
-        if isinstance(value, list):
-            auxvars = deepcopy(value)
-        else:
-            assert isinstance(value, str), 'Invalid aux variables names: %r' % value
-            auxvars = list(value)
-        self._auxvars = sorted(auxvars)
 
     @property
     def reuseterms(self):
@@ -2529,4 +2487,7 @@ def getSpecFromFile(specfilename):
     return s
 
 
-
+def _names_to_list(ns):
+    if not isinstance(ns, (str, list)):
+        raise AssertionError('Invalid name')
+    return [ns] if isinstance(ns, str) else sorted(ns)
