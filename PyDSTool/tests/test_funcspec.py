@@ -90,6 +90,8 @@ def test_funcspec_names_list_are_sorted():
 
 def test_names_to_list_returns_list():
     assert isinstance(_names_to_list([]), list)
+    assert isinstance(_names_to_list(tuple()), list)
+    assert isinstance(_names_to_list(set()), list)
 
 
 def test_names_to_list_returns_list_with_copy_of_input():
@@ -105,9 +107,9 @@ def test_names_to_list_returns_list_for_string():
     assert ['str'] == actual
 
 
-def test_names_to_list_raises_exception_if_vars_is_not_string_or_list():
-    with pytest.raises(AssertionError):
-        _ =_names_to_list(('x', 'y'))
+def test_names_to_list_raises_exception_for_non_iterable():
+    with pytest.raises(TypeError):
+        _ =_names_to_list(1)
 
 
 def test_names_to_list_returns_sorted_list():

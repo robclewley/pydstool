@@ -2488,6 +2488,4 @@ def getSpecFromFile(specfilename):
 
 
 def _names_to_list(ns):
-    if not isinstance(ns, (str, list)):
-        raise AssertionError('Invalid name')
     return [ns] if isinstance(ns, str) else sorted(ns)
