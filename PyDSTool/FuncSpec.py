@@ -77,6 +77,12 @@ class FuncSpec(object):
                    'targetlang', 'fnspecs', 'auxvars', 'reuseterms',
                    'codeinsert_start', 'codeinsert_end', 'ignorespecial']
         self._initargs = deepcopy(kw)
+
+        # global input argument validation
+        invalid_keys = set(kw.keys()) - set(needKeys + optionalKeys)
+        if invalid_keys:
+            raise PyDSTool_KeyError('Invalid keys %r passed in argument dict' % list(invalid_keys))
+
         # PROCESS NECESSARY KEYS -------------------
         try:
             # spec name
@@ -92,7 +98,6 @@ class FuncSpec(object):
                 vars_ = [kw['vars']]
         except KeyError:
             raise PyDSTool_KeyError('Necessary keys missing from argument dict')
-        foundKeys = len(needKeys)
         # PROCESS OPTIONAL KEYS --------------------
         # declare pars (name list)
         if 'pars' in kw:
@@ -101,7 +106,6 @@ class FuncSpec(object):
             else:
                 assert isinstance(kw['pars'], str), 'Invalid parameter name'
                 pars = [kw['pars']]
-            foundKeys += 1
         else:
             pars = []
         # declare external inputs (name list)
@@ -111,7 +115,6 @@ class FuncSpec(object):
             else:
                 assert isinstance(kw['inputs'], str), 'Invalid input name'
                 inputs = [kw['inputs']]
-            foundKeys += 1
         else:
             inputs = []
         if 'targetlang' in kw:
@@ -122,7 +125,6 @@ class FuncSpec(object):
             if tlang not in targetLangs:
                 raise ValueError('Invalid specification for targetlang')
             self.targetlang = tlang
-            foundKeys += 1
         else:
             self.targetlang = 'python'  # default
         if self.targetlang == 'c':
@@ -133,18 +135,13 @@ class FuncSpec(object):
             self._undefstr = ""
         if 'ignorespecial' in kw:
             self._ignorespecial = kw['ignorespecial']
-            foundKeys += 1
         else:
             self._ignorespecial = []
         # ------------------------------------------
         # reusable terms in function specs
-        if 'reuseterms' in kw:
-            foundKeys += 1
         self.reuseterms = kw.pop('reuseterms', {})
 
         # auxiliary variables declaration
-        if 'auxvars' in kw:
-            foundKeys += 1
         self.auxvars = kw.pop('auxvars', [])
         # auxfns dict of functionality for auxiliary functions (in
         # either python or C). for instance, these are used for global
@@ -153,7 +150,6 @@ class FuncSpec(object):
         self.auxfns = {}
         if 'fnspecs' in kw:
             self._auxfnspecs = deepcopy(kw['fnspecs'])
-            foundKeys += 1
         else:
             self._auxfnspecs = {}
         # spec dict of functionality, as a string for each var
@@ -161,7 +157,6 @@ class FuncSpec(object):
         assert 'varspecs' in kw or 'spec' in kw, ("Require a functional "
                                 "specification key -- 'spec' or 'varspecs'")
         if '_for_macro_info' in kw:
-            foundKeys += 1
             self._varsbyforspec = kw['_for_macro_info'].varsbyforspec
         else:
             self._varsbyforspec = {}
@@ -182,7 +177,6 @@ class FuncSpec(object):
                 print "# of variable specs: ", len(kw['varspecs'])
                 raise ValueError('Incorrect size of varspecs')
             self.varspecs = deepcopy(kw['varspecs'])
-            foundKeys += 1  # for varspecs
         else:
             self.varspecs = {}
         self.codeinserts = {'start': '', 'end': ''}
@@ -200,7 +194,6 @@ class FuncSpec(object):
             else:
                 addnl = ''
             self.codeinserts['start'] = codestr+addnl
-            foundKeys += 1
         if 'codeinsert_end' in kw:
             codestr = kw['codeinsert_end']
             assert isinstance(codestr, str), 'code insert must be a string'
@@ -216,7 +209,6 @@ class FuncSpec(object):
             else:
                 addnl = ''
             self.codeinserts['end'] = codestr+addnl
-            foundKeys += 1
         # spec dict of functionality, as python functions,
         # or the paths/names of C dynamic linked library files
         # can be user-defined or generated from generateSpec
@@ -237,13 +229,10 @@ class FuncSpec(object):
             else:
                 raise PyDSTool_KeyError("Dependencies must be provided "
                          "explicitly when using 'spec' form of initialization")
-            foundKeys += 2
         else:
             self.spec = {}
             self.auxspec = {}
             self.dependencies = []
-        if len(kw) > foundKeys:
-            raise PyDSTool_KeyError('Invalid keys passed in argument dict')
         self.defined = False  # initial value
         self.validateDef(vars_, pars, inputs, self.auxvars, self._auxfnspecs.keys())
         # ... exception if not valid
