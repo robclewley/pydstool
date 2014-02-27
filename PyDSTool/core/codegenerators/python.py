@@ -8,15 +8,12 @@ from PyDSTool.parseUtils import _indentstr, convertPowers, makeParList, parseMat
 from PyDSTool.Symbolic import QuantSpec
 from PyDSTool.utils import compareList, info
 
-from .base import _processReused
+from .base import _processReused, CodeGenerator
 
 
-class PythonCodeGenerator(object):
+class PythonCodeGenerator(CodeGenerator):
 
-    def generate_aux(self, fspec, pytarget=False):
-        if pytarget:
-            assert fspec.targetlang == 'python', \
-                'Wrong target language for this call'
+    def generate_aux(self, fspec):
         auxnames = fspec._auxfnspecs.keys()
         # User aux fn interface
         uafi = {}
@@ -324,14 +321,12 @@ class PythonCodeGenerator(object):
                                treatMultiRefs=False)
             dummyQ.mapNames(auxfn_namemap)
             auxfns[auxname] = (dummyQ(), auxspec[1])
-        if pytarget:
-            fspec.auxfns = auxfns
+        fspec.auxfns = auxfns
         # keep _pyauxfns handy for users to access python versions of functions
         # from python, even using non-python target languages
         #
         # Changes to auxfns was already changing fspec._pyauxfns so the following line
         # is not needed
-        # fspec._pyauxfns.update(auxfns)  # same thing if pytarget==True
         fspec._user_auxfn_interface = uafi
         fspec._protected_auxnames.extend(auxnames)
 

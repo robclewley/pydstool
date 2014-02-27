@@ -7,6 +7,15 @@ from PyDSTool.common import idfn, invertMap, remain
 from PyDSTool.parseUtils import proper_match
 
 
+class CodeGenerator(object):
+
+    def generate_aux(self, fspec):
+        raise NotImplementedError
+
+    def generate_spec(self, fspec):
+        raise NotImplementedError
+
+
 def _processReused(specnames, specdict, reuseterms, indentstr='',
                    typestr='', endstatementchar='', parseFunc=idfn):
     """Process substitutions of reused terms."""

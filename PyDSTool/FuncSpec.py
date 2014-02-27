@@ -20,16 +20,13 @@ from Symbolic import QuantSpec
 from copy import copy, deepcopy
 from numpy import any
 
-from PyDSTool.core.codegenerators.python import PythonCodeGenerator
-from PyDSTool.core.codegenerators.matlab import MatlabCodeGenerator
-from PyDSTool.core.codegenerators.c import CCodeGenerator
-import PyDSTool.core.codegenerators.base as CGbase
+import PyDSTool.core.codegenerators as CG
 
 __all__ = ['RHSfuncSpec', 'ImpFuncSpec', 'ExpFuncSpec', 'FuncSpec',
            'getSpecFromFile', 'resolveClashingAuxFnPars', 'makePartialJac']
 
 # XXX: this method is used elsewhere (Events.py)
-_processReused = CGbase._processReused
+_processReused = CG._processReused
 
 # ---------------------------------------------------------------
 class FuncSpec(object):
@@ -104,6 +101,8 @@ class FuncSpec(object):
             self._ignorespecial = kw['ignorespecial']
         else:
             self._ignorespecial = []
+
+        self.codegen = CG.getCodeGenerator(self.targetlang)
         # ------------------------------------------
         # reusable terms in function specs
         self.reuseterms = kw.pop('reuseterms', {})
@@ -434,38 +433,18 @@ class FuncSpec(object):
         # if spec was generated automatically
 
     def generateAuxFns(self):
-        # Always makes a set of python versions of the functions for future
-        # use by user at python level
-        if self.targetlang == 'python':
-            PythonCodeGenerator().generate_aux(self, pytarget=True)
-        elif self.targetlang == 'c':
-            CCodeGenerator().generate_aux(self)
-            PythonCodeGenerator().generate_aux(self)
-        elif self.targetlang == 'matlab':
-            MatlabCodeGenerator().generate_aux(self)
-            PythonCodeGenerator().generate_aux(self)
-        elif self.targetlang == 'dstool':
-            raise NotImplementedError
-        elif self.targetlang == 'xpp':
-            raise NotImplementedError
-        else:
-            raise ValueError('targetlang attribute must be in '+str(targetLangs))
+        if self.targetlang != 'python':
+            # Always makes a set of python versions of the functions for future
+            # use by user at python level
+            # FIXME: hack to generate _pyauxfns
+            CG.getCodeGenerator('python').generate_aux(self)
+            self.auxfns = {}
+        self.codegen.generate_aux(self)
 
     def generateSpec(self):
         """Automatically generate callable target-language functions from
         the user-defined specification strings."""
-        if self.targetlang == 'python':
-            PythonCodeGenerator().generate_spec(self)
-        elif self.targetlang == 'c':
-            CCodeGenerator().generate_spec(self)
-        elif self.targetlang == 'matlab':
-            MatlabCodeGenerator().generate_spec(self)
-        elif self.targetlang == 'odetools':
-            raise NotImplementedError
-        elif self.targetlang == 'xpp':
-            raise NotImplementedError
-        else:
-            raise ValueError('targetlang attribute must be in '+str(targetLangs))
+        self.codegen.generate_spec(self)
 
     def doPreMacros(self):
         """Pre-process any macro spec definitions (e.g. `for` loops)."""
@@ -962,18 +941,18 @@ class FuncSpec(object):
                       dovars=True, dopars=True, doinps=True,
                       noreturndefs=False, forexternal=False, illegal=[],
                       ignoreothers=False, doing_inserts=False):
-        return PythonCodeGenerator()._specStrParse(self, specnames, specdict, resname, specials,
+        return CG.getCodeGenerator('python')._specStrParse(self, specnames, specdict, resname, specials,
                         dovars, dopars, doinps,
                         noreturndefs, forexternal, illegal,
                         ignoreothers, doing_inserts)
 
     def _parseReusedTermsPy(self, d, symbol_ixs, specials=[],
                         dovars=True, dopars=True, doinps=True, illegal=[]):
-        return PythonCodeGenerator()._parseReusedTermsPy(self, d, symbol_ixs, specials,
+        return CG.getCodeGenerator('python')._parseReusedTermsPy(self, d, symbol_ixs, specials,
                         dovars, dopars, doinps, illegal)
 
     def _processSpecialC(self, specStr):
-        return CCodeGenerator()._processSpecialC(specStr)
+        return CG.getCodeGenerator('c')._processSpecialC(specStr)
 
 # Sub-classes of FuncSpec
 class RHSfuncSpec(FuncSpec):
