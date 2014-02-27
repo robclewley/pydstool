@@ -40,6 +40,9 @@ def test_funcspec_raises_exception_if_vars_key_missed():
     with pytest.raises(PyDSTool_KeyError):
         FuncSpec({})
 
+    with pytest.raises(PyDSTool_KeyError):
+        FuncSpec({'name': 'test'})
+
 
 def test_funcspec_raises_exception_if_both_varspecs_and_spec_key_missed():
     with pytest.raises(PyDSTool_KeyError):
@@ -693,3 +696,51 @@ def test_matlab_funcspec_for_ds_with_single_var_and_single_param():
         '',
         ''
     ]
+
+
+def test_python_funspec_ignoring_for_macro():
+    fs = FuncSpec({
+        'vars': 'z[i]',
+        'varspecs': {
+            'z[i]': 'for(i, 1, 3, z[i]**2)',
+        },
+    })
+
+    assert fs.vars == ['z[i]']
+    assert fs.spec[0].split('\n') == [
+        'def _specfn(ds, t, x, parsinps):',
+        '    return array([])',
+        '',
+    ]
+
+
+def test_c_funspec_for_macro_raises_exception():
+    with pytest.raises(ValueError):
+        _ = FuncSpec({
+            'vars': ['z1', 'z2', 'z3'],
+            'targetlang': 'c',
+            'varspecs': {
+                'z[i]': 'for(i, 1, 3, z[i]**2)',
+            },
+        })
+
+
+def test_matlab_funspec_for_macro_raises_exception():
+    with pytest.raises(ValueError):
+        _ = FuncSpec({
+            'vars': ['z1', 'z2', 'z3'],
+            'targetlang': 'matlab',
+            'varspecs': {
+                'z[i]': 'for(i, 1, 3, z[i]**2)',
+            },
+        })
+
+
+def test_sum_macro_raises_value_error():
+    with pytest.raises(ValueError):
+        _ = FuncSpec({
+            'vars': 'z',
+            'varspecs': {
+                'z': 'sum(i, 1, 3, [i] / [i+1]**2)',
+            },
+        })
