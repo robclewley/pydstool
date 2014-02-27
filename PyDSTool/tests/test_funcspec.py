@@ -46,6 +46,11 @@ def test_funcspec_raises_exception_if_both_varspecs_and_spec_key_missed():
         FuncSpec({'vars': ['x']})
 
 
+def test_funcspec_raises_exception_if_both_varspecs_and_spec_keys_in_input():
+    with pytest.raises(PyDSTool_KeyError):
+        _ = FuncSpec({'vars': [], 'spec': {}, 'varspecs': {}})
+
+
 def test_funspec_raises_exception_for_non_string_targetlang():
     with pytest.raises(TypeError):
         FuncSpec({'vars': [], 'varspecs': {}, 'targetlang': 1})

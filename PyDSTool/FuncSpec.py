@@ -78,18 +78,7 @@ class FuncSpec(object):
                    'codeinsert_start', 'codeinsert_end', 'ignorespecial']
         self._initargs = deepcopy(kw)
 
-        # global input argument validation
-        invalid_keys = set(kw.keys()) - set(needKeys + optionalKeys)
-        if invalid_keys:
-            raise PyDSTool_KeyError('Invalid keys %r passed in argument dict' % list(invalid_keys))
-
-        if 'vars' not in kw:
-            raise PyDSTool_KeyError(
-                "Require a variables specification key -- 'vars'")
-
-        if all(k not in kw for k in ['varspecs', 'spec']):
-            raise PyDSTool_KeyError(
-                "Require a functional specification key -- 'spec' or 'varspecs'")
+        self.__validate_input(kw, needKeys + optionalKeys)
 
         # spec name
         self.name = kw.pop('name', 'untitled')
@@ -181,9 +170,6 @@ class FuncSpec(object):
         # or the paths/names of C dynamic linked library files
         # can be user-defined or generated from generateSpec
         if 'spec' in kw:
-            if 'varspecs' in kw:
-                raise PyDSTool_KeyError, \
-                      "Cannot provide both 'spec' and 'varspecs' keys"
             assert isinstance(kw['spec'], tuple), ("'spec' must be a pair:"
                                     " (spec body, spec name)")
             assert len(kw['spec'])==2, ("'spec' must be a pair:"
@@ -222,6 +208,26 @@ class FuncSpec(object):
         # algparams is only used by ImplicitFnGen to pass extra info to Variable
         self.algparams = {}
         self.defined = True
+
+    def __validate_input(self, kw, valid_keys):
+        """Global input dictionary validation"""
+        invalid = set(kw.keys()) - set(valid_keys)
+        if invalid:
+            raise PyDSTool_KeyError(
+                'Invalid keys %r passed in argument dict' % list(invalid))
+
+        if 'vars' not in kw:
+            raise PyDSTool_KeyError(
+                "Require a variables specification key -- 'vars'")
+
+        spec_keys = ['varspecs', 'spec']
+        if all(k not in kw for k in spec_keys):
+            raise PyDSTool_KeyError(
+                "Require a functional specification key -- 'spec' or 'varspecs'")
+
+        if all(k in kw for k in spec_keys):
+            raise PyDSTool_KeyError(
+                "Cannot provide both 'spec' and 'varspecs' keys")
 
     @property
     def targetlang(self):
