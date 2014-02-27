@@ -94,10 +94,9 @@ class FuncSpec(object):
         # spec name
         self.name = kw.pop('name', 'untitled')
         # declare name lists: variables, aux variables, parameters, inputs
-        self.vars = _names_to_list(kw['vars'])
-        self.pars = _names_to_list(kw.get('pars', []))
-        self.inputs = _names_to_list(kw.get('inputs', []))
-        self.auxvars = _names_to_list(kw.pop('auxvars', []))
+        for name in ['vars', 'pars', 'inputs', 'auxvars']:
+            ns = kw.pop(name, [])
+            setattr(self, name, [ns] if isinstance(ns, str) else sorted(ns))
 
         self.targetlang = kw.pop('targetlang', 'python')
         if self.targetlang == 'c':
@@ -2485,7 +2484,3 @@ def getSpecFromFile(specfilename):
         raise
     f.close()
     return s
-
-
-def _names_to_list(ns):
-    return [ns] if isinstance(ns, str) else sorted(ns)

@@ -12,7 +12,6 @@ from PyDSTool import (
     PyDSTool_KeyError,
 )
 from PyDSTool.Generator import Vode_ODEsystem, Dopri_ODEsystem
-from PyDSTool.FuncSpec import _names_to_list
 from PyDSTool.parseUtils import proper_match
 
 
@@ -67,9 +66,15 @@ def test_funcspec_wraps_vars_string_to_list():
     assert ['x'] == fs.vars
 
 
-def test_funcspec_raises_exception_if_vars_is_not_string_or_list():
-    with pytest.raises(AssertionError):
-        FuncSpec({'vars': ('x', 'y'), 'varspecs': {}})
+def test_funcspec_makes_copy_of_input_vars_list():
+    vars_ = ['x']
+    fs = FuncSpec({'vars': vars_, 'varspecs': {'x': 'x + 1'}})
+    assert id(fs.vars) != id(vars_)
+
+
+def test_funcspec_raises_exception_if_vars_is_neither_str_nor_iterable():
+    with pytest.raises(TypeError):
+        _ = FuncSpec({'vars': 1, 'varspecs': {}})
 
 
 def test_funcspec_names_list_are_sorted():
@@ -85,35 +90,6 @@ def test_funcspec_names_list_are_sorted():
     assert sorted(fs.auxvars) == fs.auxvars
     assert sorted(fs.inputs) == fs.inputs
     assert sorted(fs.pars) == fs.pars
-
-
-
-def test_names_to_list_returns_list():
-    assert isinstance(_names_to_list([]), list)
-    assert isinstance(_names_to_list(tuple()), list)
-    assert isinstance(_names_to_list(set()), list)
-
-
-def test_names_to_list_returns_list_with_copy_of_input():
-    names = ['x', 'y', 'z']
-    actual = _names_to_list(names)
-    assert id(names) != id(actual)
-    assert names == actual
-
-
-def test_names_to_list_returns_list_for_string():
-    actual = _names_to_list('str')
-    assert isinstance(actual, list)
-    assert ['str'] == actual
-
-
-def test_names_to_list_raises_exception_for_non_iterable():
-    with pytest.raises(TypeError):
-        _ =_names_to_list(1)
-
-
-def test_names_to_list_returns_sorted_list():
-    assert ['x', 'y', 'z'] == _names_to_list(['z', 'y', 'x'])
 
 
 @pytest.fixture
