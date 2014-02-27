@@ -59,7 +59,6 @@ class FuncSpec(object):
       over the expression replacing any occurrence of `[i]` with
       the appropriate integer.
     """
-
     def __init__(self, kw):
         # All math package names are reserved
         self._protected_mathnames = protected_mathnames
@@ -299,7 +298,6 @@ class FuncSpec(object):
 
         return True
 
-
     def __hash__(self):
         """Unique identifier for this specification."""
         deflist = [self.name, self.targetlang]
@@ -328,7 +326,6 @@ class FuncSpec(object):
         fs.__init__(new_args)
         return fs
 
-
     def __call__(self):
         # info is defined in utils.py
         utils_info(self.__dict__, "FuncSpec " + self.name)
@@ -353,7 +350,6 @@ class FuncSpec(object):
     #     lenparsinps = len(self.pars)+len(self.inputs)
     #     pi_vals = zeros(lenparsinps, float64)
     #     _specfn(1, self.initialconditions.values(), pi_vals)
-
 
     def validateDef(self, vars, pars, inputs, auxvars, auxfns):
         """Validate definition of the functional specification."""
@@ -406,7 +402,6 @@ class FuncSpec(object):
         # verify that targetlang is consistent with spec contents?
         # verify that spec is consistent with specstring (if not empty)?
 
-
     def validateDependencies(self, dependencies):
         """Validate the stored dependency pairs for self-consistency."""
         # dependencies is a list of unique ordered pairs (i,o)
@@ -431,18 +426,17 @@ class FuncSpec(object):
         # No need to verify that dependencies are consistent with spec,
         # if spec was generated automatically
 
-
     def generateAuxFns(self):
         # Always makes a set of python versions of the functions for future
         # use by user at python level
         if self.targetlang == 'python':
-            self._genAuxFnPy(pytarget=True)
+            PythonCodeGenerator().generate_aux(self, pytarget=True)
         elif self.targetlang == 'c':
-            self._genAuxFnC()
-            self._genAuxFnPy()
+            CCodeGenerator().generate_aux(self)
+            PythonCodeGenerator().generate_aux(self)
         elif self.targetlang == 'matlab':
-            self._genAuxFnMatlab()
-            self._genAuxFnPy()
+            MatlabCodeGenerator().generate_aux(self)
+            PythonCodeGenerator().generate_aux(self)
         elif self.targetlang == 'dstool':
             raise NotImplementedError
         elif self.targetlang == 'xpp':
@@ -450,23 +444,21 @@ class FuncSpec(object):
         else:
             raise ValueError('targetlang attribute must be in '+str(targetLangs))
 
-
     def generateSpec(self):
         """Automatically generate callable target-language functions from
         the user-defined specification strings."""
         if self.targetlang == 'python':
-            self._genSpecPy()
+            PythonCodeGenerator().generate_spec(self)
         elif self.targetlang == 'c':
-            self._genSpecC()
+            CCodeGenerator().generate_spec(self)
         elif self.targetlang == 'matlab':
-            self._genSpecMatlab()
+            MatlabCodeGenerator().generate_spec(self)
         elif self.targetlang == 'odetools':
             raise NotImplementedError
         elif self.targetlang == 'xpp':
             raise NotImplementedError
         else:
             raise ValueError('targetlang attribute must be in '+str(targetLangs))
-
 
     def doPreMacros(self):
         """Pre-process any macro spec definitions (e.g. `for` loops)."""
@@ -576,7 +568,6 @@ class FuncSpec(object):
                                        'definition. Expected single'
                                  ' character between left and right brackets.')
 
-
     def _macroFor(self, rootstr, istr, ilo, ihi, expr_in_i):
         """Internal utility function to build multiple instances of expression
         'expr_in_i' where integer i has been substituted for values from ilo to ihi.
@@ -631,570 +622,7 @@ class FuncSpec(object):
         retstr = '(' + "+".join([term.strip() for term in def_dict.values()]) + ')'
         return retstr
 
-    # ----------------- Python specifications ----------------
-
-    def _genAuxFnPy(self, pytarget=False):
-        if pytarget:
-            assert self.targetlang == 'python', \
-               'Wrong target language for this call'
-        auxnames = self._auxfnspecs.keys()
-        # User aux fn interface
-        uafi = {}
-        # protectednames = auxnames + self._protected_mathnames + \
-        #                  self._protected_randomnames + \
-        #                  self._protected_scipynames + \
-        #                  self._protected_specialfns + \
-        #                  ['abs', 'and', 'or', 'not', 'True', 'False']
-        # Deal with built-in auxiliary functions (don't make their names unique)
-        # In this version, the textual code here doesn't get executed. Only
-        # the function names in the second position of the tuple are needed.
-        # Later, the text will probably be removed.
-        auxfns = {}
-        auxfns['globalindepvar'] = \
-                   ("def _auxfn_globalindepvar(ds, parsinps, t):\n" \
-                    + _indentstr \
-                    + "return ds.globalt0 + t", '_auxfn_globalindepvar')
-        auxfns['initcond'] = \
-                   ("def _auxfn_initcond(ds, parsinps, varname):\n" \
-                    + _indentstr \
-                    + "return ds.initialconditions[varname]",'_auxfn_initcond')
-        auxfns['heav'] = \
-                   ("def _auxfn_heav(ds, parsinps, x):\n" + _indentstr \
-                      + "if x>0:\n" + 2*_indentstr \
-                      + "return 1\n" + _indentstr + "else:\n" \
-                      + 2*_indentstr + "return 0", '_auxfn_heav')
-        auxfns['if'] = \
-                   ("def _auxfn_if(ds, parsinps, c, e1, e2):\n" \
-                    + _indentstr + "if c:\n" + 2*_indentstr \
-                    + "return e1\n" + _indentstr \
-                    + "else:\n" + 2*_indentstr + "return e2", '_auxfn_if')
-        auxfns['getindex'] = \
-                   ("def _auxfn_getindex(ds, parsinps, varname):\n" \
-                    + _indentstr \
-                    + "return ds._var_namemap[varname]", '_auxfn_getindex')
-        auxfns['getbound'] = \
-                   ("def _auxfn_getbound(ds, parsinps, name, bd):\n" \
-                    + _indentstr + "try:\n" \
-                    + 2*_indentstr + "return ds.xdomain[name][bd]\n" \
-                    + _indentstr + "except KeyError:\n" + 2*_indentstr \
-                    + "try:\n" + 3*_indentstr \
-                    + "return ds.pdomain[name][bd]\n" + 2*_indentstr \
-                    + "except KeyError, e:\n" + 3*_indentstr \
-                    + "print 'Invalid var / par name %s'%name,\n" \
-                    + 3*_indentstr + "print 'or bounds not well defined:'\n" \
-                    + 3*_indentstr + "print ds.xdomain, ds.pdomain\n" \
-                    + 3*_indentstr + "raise (RuntimeError, e)",
-                    '_auxfn_getbound')
-        # the internal functions may be used by user-defined functions,
-        # so need them to be accessible to __processTokens when parsing
-        self._pyauxfns = auxfns
-        # add the user-defined function names for cross-referencing checks
-        # (without their definitions)
-        for auxname in auxnames:
-            self._pyauxfns[auxname] = None
-        # don't process the built-in functions -> unique fns because
-        # they are global definitions existing throughout the
-        # namespace
-        self._protected_auxnames.extend(['Jacobian','Jacobian_pars'])
-        # protected names are the names that must not be used for
-        # user-specified auxiliary fn arguments
-        protectednames = self.pars + self.inputs \
-                   + ['abs', 'pow', 'and', 'or', 'not', 'True', 'False'] \
-                   + self._protected_auxnames + auxnames \
-                   + self._protected_scipynames + self._protected_specialfns \
-                   + self._protected_macronames + self._protected_mathnames \
-                   + self._protected_randomnames + self._protected_reusenames
-        ### checks for user-defined auxiliary fns
-        # name map for fixing inter-auxfn references
-        auxfn_namemap = {}
-        specials_base = self.pars + self._protected_auxnames \
-                   + ['abs', 'pow', 'and', 'or', 'not', 'True', 'False'] \
-                   + auxnames + self._protected_scipynames \
-                   + self._protected_specialfns \
-                   + self._protected_macronames + self._protected_mathnames \
-                   + self._protected_randomnames + self._protected_reusenames
-        for auxname in auxnames:
-            auxinfo = self._auxfnspecs[auxname]
-            try:
-                if len(auxinfo) != 2:
-                    raise ValueError('auxinfo tuple must be of length 2')
-            except TypeError:
-                raise TypeError('fnspecs argument must contain pairs')
-            # auxinfo[0] = tuple or list of parameter names
-            # auxinfo[1] = string containing body of function definition
-            assert isinstance(auxinfo[0], list), ('aux function arguments '
-                                                  'must be given as a list')
-            assert isinstance(auxinfo[1], str), ('aux function specification '
-                                                 'must be a string '
-                                                 'of the function code')
-            # Process Jacobian functions, etc., specially, if present
-            if auxname == 'Jacobian':
-                if not compareList(auxinfo[0],['t']+self.vars):
-                    print ['t']+self.vars
-                    print "Auxinfo =", auxinfo[0]
-                    raise ValueError("Invalid argument list given in Jacobian.")
-                auxparlist = ["t","x","parsinps"]
-                # special symbols to allow in parsing function body
-                specials = ["t","x"]
-                auxstr = auxinfo[1]
-                if any([pt in auxstr for pt in ('^', '**')]):
-                    auxstr = convertPowers(auxstr, 'pow')
-                specvars = self.vars
-                specvars.sort()
-                specdict = {}.fromkeys(specvars)
-                if len(specvars) == 1:
-                    assert '[' not in auxstr, \
-                           "'[' character invalid in Jacobian for 1D system"
-                    assert ']' not in auxstr, \
-                           "']' character invalid in Jacobian for 1D system"
-                    specdict[specvars[0]] = auxstr
-                else:
-                    specdict = parseMatrixStrToDictStr(auxstr, specvars)
-                reusestr, body_processed_dict = self._processReusedPy(specvars,
-                                               specdict,
-                                               specials=specials+specials_base)
-                body_processed = self._specStrParse(specvars,
-                                          body_processed_dict, 'xjac',
-                                          specials=specials+specials_base)
-                auxstr_py = self._genSpecFnPy('_auxfn_Jac',
-                                               reusestr+body_processed,
-                                               'xjac', specvars)
-                # check Jacobian
-                m = n = len(specvars)
-                specdict_check = {}.fromkeys(specvars)
-                for specname in specvars:
-                    temp = body_processed_dict[specname]
-                    specdict_check[specname] = \
-                            count_sep(temp.replace("[","").replace("]",""))+1
-                body_processed = ""
-                for row in range(m):
-                    if specdict_check[specvars[row]] != n:
-                        print "Row %i: "%m, specdict[specvars[row]]
-                        print "Found length %i"%specdict_check[specvars[row]]
-                        raise ValueError("Jacobian should be %sx%s"%(m,n))
-            elif auxname == 'Jacobian_pars':
-                if not compareList(auxinfo[0],['t']+self.vars):
-                    print ['t']+self.vars
-                    print "Auxinfo =", auxinfo[0]
-                    raise ValueError("Invalid argument list given in Jacobian.")
-                auxparlist = ["t","x","parsinps"]
-                # special symbols to allow in parsing function body
-                specials = ["t","x"]
-                auxstr = auxinfo[1]
-                if any([pt in auxstr for pt in ('^', '**')]):
-                    auxstr = convertPowers(auxstr, 'pow')
-                specvars = self.vars
-                specvars.sort()
-                specdict = {}.fromkeys(self.vars)
-                if len(specvars) == len(self.vars) == 1:
-                    assert '[' not in auxstr, \
-                           "'[' character invalid in Jacobian for 1D system"
-                    assert ']' not in auxstr, \
-                           "']' character invalid in Jacobian for 1D system"
-                    specdict[specvars[0]] = auxstr
-                else:
-                    specdict = parseMatrixStrToDictStr(auxstr, self.vars)
-                reusestr, body_processed_dict = self._processReusedPy(self.vars,
-                                               specdict,
-                                               specials=specials+specials_base)
-                body_processed = self._specStrParse(self.vars,
-                                          body_processed_dict, 'pjac',
-                                          specials=specials+specials_base)
-                auxstr_py = self._genSpecFnPy('_auxfn_Jac_p',
-                                               reusestr+body_processed,
-                                               'pjac', self.vars)
-                # check Jacobian
-                n = len(specvars)
-                m = len(self.vars)
-                specdict_check = {}.fromkeys(self.vars)
-                for specname in self.vars:
-                    temp = body_processed_dict[specname]
-                    specdict_check[specname] = \
-                            count_sep(temp.replace("[","").replace("]",""))+1
-                body_processed = ""
-                for row in range(m):
-                    try:
-                        if specdict_check[self.vars[row]] != n:
-                            print "Row %i: "%m, specdict[self.vars[row]]
-                            print "Found length %i"%specdict_check[self.vars[row]]
-                            raise ValueError("Jacobian w.r.t. pars should be %sx%s"%(m,n))
-                    except IndexError:
-                        print "\nFound:\n"
-                        info(specdict)
-                        raise ValueError("Jacobian w.r.t. pars should be %sx%s"%(m,n))
-            elif auxname == 'massMatrix':
-                if not compareList(auxinfo[0],['t']+self.vars):
-                    print ['t']+self.vars
-                    print "Auxinfo =", auxinfo[0]
-                    raise ValueError("Invalid argument list given in Mass Matrix.")
-                auxparlist = ["t","x","parsinps"]
-                # special symbols to allow in parsing function body
-                specials = ["t","x"]
-                auxstr = auxinfo[1]
-                if any([pt in auxstr for pt in ('^', '**')]):
-                    auxstr = convertPowers(auxstr, 'pow')
-                specvars = self.vars
-                specvars.sort()
-                specdict = {}.fromkeys(specvars)
-                if len(specvars) == 1:
-                    assert '[' not in auxstr, \
-                           "'[' character invalid in mass matrix for 1D system"
-                    assert ']' not in auxstr, \
-                           "']' character invalid in mass matrix for 1D system"
-                    specdict[specvars.values()[0]] = auxstr
-                else:
-                    specdict = parseMatrixStrToDictStr(auxstr, specvars)
-                reusestr, body_processed_dict = self._processReusedPy(specvars,
-                                               specdict,
-                                               specials=specials+specials_base)
-                body_processed = self._specStrParse(specvars,
-                                          body_processed_dict, 'xmat',
-                                          specials=specials+specials_base)
-                auxstr_py = self._genSpecFnPy('_auxfn_massMatrix',
-                                               reusestr+body_processed,
-                                               'xmat', specvars)
-                # check matrix
-                m = n = len(specvars)
-                specdict_check = {}.fromkeys(specvars)
-                for specname in specvars:
-                    specdict_check[specname] = 1 + \
-                        count_sep(body_processed_dict[specname].replace("[","").replace("]",""))
-                body_processed = ""
-                for row in range(m):
-                    if specdict_check[specvars[row]] != n:
-                        print "Row %i: "%m, specdict[specvars[row]]
-                        print "Found length %i"%specdict_check[specvars[row]]
-                        raise ValueError("Mass matrix should be %sx%s"%(m,n))
-            else:
-                user_parstr = makeParList(auxinfo[0])
-                # `parsinps` is always added to allow reference to own
-                # parameters
-                if user_parstr == '':
-                    # no arguments, user calls as fn()
-                    auxparstr = 'parsinps'
-                else:
-                    auxparstr = 'parsinps, ' + user_parstr
-                auxstr_py = 'def _auxfn_' + auxname + '(ds, ' + auxparstr \
-                            +'):\n'
-                auxparlist = auxparstr.replace(" ","").split(",")
-                badparnames = intersect(auxparlist,
-                                        remain(protectednames,auxnames))
-                if badparnames != []:
-                    print "Bad parameter names in auxiliary function", \
-                            auxname, ":", badparnames
-                    #print auxinfo[0]
-                    #print auxparlist
-                    raise ValueError("Cannot use protected names (including" \
-                        " globally visible system parameters for auxiliary " \
-                                  "function arguments")
-                # special symbols to allow in parsing function body
-                specials = auxparlist
-                specials.remove('parsinps')
-                illegalterms = remain(self.vars + self.auxvars, specials)
-                auxstr = auxinfo[1]
-                if any([pt in auxstr for pt in ('^', '**')]):
-                    auxstr = convertPowers(auxstr, 'pow')
-                reusestr, body_processed_dict = self._processReusedPy([auxname],
-                                               {auxname:auxstr},
-                                               specials=specials+specials_base,
-                                               dovars=False,
-                                               illegal=illegalterms)
-                body_processed = self._specStrParse([auxname],
-                                          body_processed_dict,
-                                          specials=specials+specials_base,
-                                          dovars=False,
-                                          noreturndefs=True,
-                                          illegal=illegalterms)
-                auxstr_py += reusestr + _indentstr + 'return ' \
-                          + body_processed
-            # syntax validation done in makeUniqueFn
-            try:
-                auxfns[auxname] = makeUniqueFn(auxstr_py)
-                # Note: this automatically updates self._pyauxfns too
-            except:
-                print 'Error in supplied auxiliary spec dictionary code'
-                raise
-            auxfn_namemap['ds.'+auxname] = 'ds.'+auxfns[auxname][1]
-            # prepare user-interface wrapper function (not method)
-            if specials == [''] or specials == []:
-                fn_args = ''
-            else:
-                fn_args = ','+','.join(specials)
-            fn_elts = ['def ', auxname, '(self', fn_args,
-                       ',__parsinps__=None):\n\t', 'if __parsinps__ is None:\n\t\t',
-                       '__parsinps__=self.map_ixs(self.genref)\n\t',
-                       'return self.genref.', auxfns[auxname][1],
-                       '(__parsinps__', fn_args, ')\n']
-            uafi[auxname] =  ''.join(fn_elts)
-        # resolve inter-auxiliary function references
-        for auxname, auxspec in auxfns.iteritems():
-            dummyQ = QuantSpec('dummy', auxspec[0], preserveSpace=True,
-                               treatMultiRefs=False)
-            dummyQ.mapNames(auxfn_namemap)
-            auxfns[auxname] = (dummyQ(), auxspec[1])
-        if pytarget:
-            self.auxfns = auxfns
-        # keep _pyauxfns handy for users to access python versions of functions
-        # from python, even using non-python target languages
-        #
-        # Changes to auxfns was already changing self._pyauxfns so the following line
-        # is not needed
-        #self._pyauxfns.update(auxfns)  # same thing if pytarget==True
-        self._user_auxfn_interface = uafi
-        self._protected_auxnames.extend(auxnames)
-
-
-
-    def _genSpecFnPy(self, name, specstr, resname, specnames,
-                     docodeinserts=False):
-        # Set up function header
-        retstr = 'def '+name+'(ds, t, x, parsinps):\n' #    print t, x, parsinps\n'
-        # add arbitrary code inserts, if present and option is switched on
-        # (only used for vector field definitions)
-        lstart = len(self.codeinserts['start'])
-        lend = len(self.codeinserts['end'])
-        if docodeinserts:
-            if lstart>0:
-                start_code = self._specStrParse(['inserts'],
-                               {'inserts':self.codeinserts['start']}, '',
-                                noreturndefs=True, ignoreothers=True,
-                                doing_inserts=True)
-            else:
-                start_code = ''
-            if lend > 0:
-                end_code = self._specStrParse(['inserts'],
-                               {'inserts':self.codeinserts['end']}, '',
-                                noreturndefs=True, ignoreothers=True,
-                                doing_inserts=True)
-            else:
-                end_code = ''
-        else:
-            start_code = end_code = ''
-        retstr += start_code + specstr + end_code
-        # Add the return line to the function
-        if len(specnames) == 1:
-            retstr += _indentstr + 'return array([' + resname + '0])\n'
-        else:
-            retstr += _indentstr + 'return array([' \
-                      + makeParList(range(len(specnames)), resname) + '])\n'
-        return retstr
-
-
-    def _genSpecPy(self):
-        assert self.targetlang == 'python', ('Wrong target language for this'
-                                             ' call')
-        assert self.varspecs != {}, 'varspecs attribute must be defined'
-        specnames_unsorted = self.varspecs.keys()
-        _vbfs_inv = invertMap(self._varsbyforspec)
-        # Process state variable specifications
-        if len(_vbfs_inv) > 0:
-            specname_vars = []
-            specname_auxvars = []
-            for varname in self.vars:
-                # check if varname belongs to a for macro grouping in self.varspecs
-                if varname not in specname_vars:
-                    specname_vars.append(varname)
-            for varname in self.auxvars:
-                # check if varname belongs to a for macro grouping in self.varspecs
-                if varname not in specname_auxvars:
-                    specname_auxvars.append(varname)
-        else:
-            specname_vars = intersect(self.vars, specnames_unsorted)
-            specname_auxvars = intersect(self.auxvars, specnames_unsorted)
-        specname_vars.sort()
-        for vn, vs in self.varspecs.items():
-            if any([pt in vs for pt in ('^', '**')]):
-                self.varspecs[vn] = convertPowers(vs, 'pow')
-        self.vars.sort()
-        reusestr, specupdated = self._processReusedPy(specname_vars,
-                                                      self.varspecs)
-        self.varspecs.update(specupdated)
-        temp = self._specStrParse(specname_vars, self.varspecs, 'xnew')
-        specstr_py = self._genSpecFnPy('_specfn', reusestr+temp, 'xnew',
-                                       specname_vars, docodeinserts=True)
-        # Process auxiliary variable specifications
-        specname_auxvars.sort()
-        assert self.auxvars == specname_auxvars, \
-                   ('Mismatch between declared auxiliary'
-                    ' variable names and varspecs keys')
-        reusestraux, specupdated = self._processReusedPy(specname_auxvars,
-                                                         self.varspecs)
-        self.varspecs.update(specupdated)
-        tempaux = self._specStrParse(specname_auxvars, self.varspecs, 'auxvals')
-        auxspecstr_py = self._genSpecFnPy('_auxspecfn', reusestraux+tempaux,
-                                          'auxvals', specname_auxvars,
-                                          docodeinserts=True)
-        try:
-            spec_info = makeUniqueFn(specstr_py)
-        except SyntaxError:
-            print "Syntax error in specification:\n", specstr_py
-            raise
-        try:
-            auxspec_info = makeUniqueFn(auxspecstr_py)
-        except SyntaxError:
-            print "Syntax error in auxiliary spec:\n", auxspecstr_py
-            raise
-        self.spec = spec_info
-        self.auxspec = auxspec_info
-
-
-    def _processReusedPy(self, specnames, specdict, specials=[],
-                        dovars=True, dopars=True, doinps=True, illegal=[]):
-        """Process reused subexpression terms for Python code."""
-
-        reused, specupdated, new_protected, order = _processReused(specnames,
-                                                        specdict,
-                                                        self.reuseterms,
-                                                        _indentstr)
-        self._protected_reusenames = new_protected
-        # symbols to parse are at indices 2 and 4 of 'reused' dictionary
-        reusedParsed = self._parseReusedTermsPy(reused, [2,4],
-                                        specials=specials, dovars=dovars,
-                                        dopars=dopars, doinps=doinps,
-                                                  illegal=illegal)
-        reusedefs = {}.fromkeys(new_protected)
-        for vname, deflist in reusedParsed.iteritems():
-            for d in deflist:
-                reusedefs[d[2]] = d
-        return (concatStrDict(reusedefs, intersect(order,reusedefs.keys())),
-                       specupdated)
-
-
-    def _parseReusedTermsPy(self, d, symbol_ixs, specials=[],
-                        dovars=True, dopars=True, doinps=True, illegal=[]):
-        """Process dictionary of reused term definitions (in spec syntax)."""
-        # ... to parse special symbols to actual Python.
-        # expect symbols to be processed at d list's entries given in
-        # symbol_ixs.
-        allnames = self.vars + self.pars + self.inputs + self.auxvars \
-                   + ['abs'] + self._protected_auxnames \
-                   + self._protected_scipynames + self._protected_specialfns \
-                   + self._protected_macronames + self._protected_mathnames \
-                   + self._protected_randomnames + self._protected_reusenames
-        allnames = remain(allnames, illegal)
-        if dovars:
-            var_arrayixstr = dict(zip(self.vars, map(lambda i: str(i), \
-                                     range(len(self.vars))) ))
-            aux_arrayixstr = dict(zip(self.auxvars, map(lambda i: str(i), \
-                                     range(len(self.auxvars))) ))
-        else:
-            var_arrayixstr = {}
-            aux_arrayixstr = {}
-        if dopars:
-            if doinps:
-                # parsinps_names is pars and inputs, each sorted
-                # *individually*
-                parsinps_names = self.pars+self.inputs
-            else:
-                parsinps_names = self.pars
-            parsinps_arrayixstr = dict(zip(parsinps_names,
-                                        map(lambda i: str(i), \
-                                        range(len(parsinps_names))) ))
-        else:
-            parsinps_names = []
-            parsinps_arrayixstr = {}
-        specialtokens = remain(allnames,specials) + ['(', 't'] + specials
-        for specname, itemlist in d.iteritems():
-            listix = -1
-            for strlist in itemlist:
-                listix += 1
-                if strlist == []:
-                    continue
-                if len(strlist) < max(symbol_ixs):
-                    raise ValueError("Symbol indices out of range in "
-                                       "call to _parseReusedTermsPy")
-                for ix in symbol_ixs:
-                    symbol = strlist[ix]
-                    parsedsymbol = self.__processTokens(allnames,
-                                    specialtokens, symbol,
-                                    var_arrayixstr, aux_arrayixstr,
-                                    parsinps_names, parsinps_arrayixstr,
-                                    specname)
-                    # must strip possible trailing whitespace!
-                    d[specname][listix][ix] = parsedsymbol.strip()
-        return d
-
-
-    def _specStrParse(self, specnames, specdict, resname='', specials=[],
-                        dovars=True, dopars=True, doinps=True,
-                        noreturndefs=False, forexternal=False, illegal=[],
-                        ignoreothers=False, doing_inserts=False):
-        # use 'noreturndefs' switch if calling this function just to "parse"
-        # a spec string for other purposes, e.g. for using in an event setup
-        # or an individual auxiliary function spec
-        assert isinstance(specnames, list), "specnames must be a list"
-        if noreturndefs or forexternal:
-            assert len(specnames) == 1, ("can only pass a single specname for "
-                                     "'forexternal' or 'noreturndefs' options")
-        allnames = self.vars + self.pars + self.inputs + self.auxvars \
-                   + ['abs', 'and', 'or', 'not', 'True', 'False'] \
-                   + self._protected_auxnames \
-                   + self._protected_scipynames + self._protected_specialfns \
-                   + self._protected_macronames + self._protected_mathnames \
-                   + self._protected_randomnames + self._protected_reusenames
-        allnames = remain(allnames, illegal)
-        if dovars:
-            if forexternal:
-                var_arrayixstr = dict(zip(self.vars,
-                                          ["'"+v+"'" for v in self.vars]))
-                aux_arrayixstr = dict(zip(self.auxvars,
-                                          ["'"+v+"'" for v in self.auxvars]))
-            else:
-                var_arrayixstr = dict(zip(self.vars, map(lambda i: str(i), \
-                                         range(len(self.vars))) ))
-                aux_arrayixstr = dict(zip(self.auxvars, map(lambda i: str(i),\
-                                         range(len(self.auxvars))) ))
-        else:
-            var_arrayixstr = {}
-            aux_arrayixstr = {}
-        # ODE solvers typically don't recognize external inputs
-        # so they have to be lumped in with the parameters
-        # argument `parsinps` holds the combined pars and inputs
-        if dopars:
-            if forexternal:
-                if doinps:
-                    # parsinps_names is pars and inputs, each sorted
-                    # *individually*
-                    parsinps_names = self.pars+self.inputs
-                else:
-                    parsinps_names = self.pars
-                # for external calls we want parname -> 'parname'
-                parsinps_arrayixstr = dict(zip(parsinps_names,
-                                       ["'"+pn+"'" for pn in parsinps_names]))
-            else:
-                if doinps:
-                    # parsinps_names is pars and inputs, each sorted
-                    # *individually*
-                    parsinps_names = self.pars+self.inputs
-                else:
-                    parsinps_names = self.pars
-                parsinps_arrayixstr = dict(zip(parsinps_names,
-                                            map(lambda i: str(i), \
-                                            range(len(parsinps_names))) ))
-        else:
-            parsinps_names = []
-            parsinps_arrayixstr = {}
-        specialtokens = remain(allnames,specials) + ['(', 't'] \
-                        + remain(specials,['t'])
-        specstr_lang = ''
-        specname_count = 0
-        for specname in specnames:
-            specstr = specdict[specname]
-            assert type(specstr)==str, "Specification for %s was not a string"%specname
-            if not noreturndefs:
-                specstr_lang += _indentstr + resname+str(specname_count)+' = '
-            specname_count += 1
-            specstr_lang += self.__processTokens(allnames, specialtokens,
-                                    specstr, var_arrayixstr,
-                                    aux_arrayixstr, parsinps_names,
-                                    parsinps_arrayixstr, specname, ignoreothers,
-                                    doing_inserts)
-            if not noreturndefs or not forexternal:
-                specstr_lang += '\n'  # prepare for next line
-        return specstr_lang
-
-
-    def __processTokens(self, allnames, specialtokens, specstr,
+    def processTokens(self, allnames, specialtokens, specstr,
                         var_arrayixstr, aux_arrayixstr, parsinps_names,
                         parsinps_arrayixstr, specname, ignoreothers=False,
                         doing_inserts=False):
@@ -1380,7 +808,7 @@ class FuncSpec(object):
                                 endargbrace = findEndBrace(specstr[scount:]) \
                                                  + scount + 1
                                 argstr = specstr[scount:endargbrace]
-                                procstr = self.__processTokens(allnames,
+                                procstr = self.processTokens(allnames,
                                                 specialtokens_temp, argstr,
                                                 var_arrayixstr,
                                                 aux_arrayixstr, parsinps_names,
@@ -1421,7 +849,7 @@ class FuncSpec(object):
                                 # the argument list
                                 scount += len(argstr)
                                 # recursively process main argument
-                                returnstr += self.__processTokens(allnames,
+                                returnstr += self.processTokens(allnames,
                                                 specialtokens_temp,
                                                 self._macroSum(*arglist), var_arrayixstr,
                                                 aux_arrayixstr, parsinps_names,
@@ -1466,40 +894,645 @@ class FuncSpec(object):
         # end of scount while loop
         return returnstr
 
-
-    # --------------------- C code specifications -----------------------
-
-    def _processReusedC(self, specnames, specdict):
-        """Process reused subexpression terms for C code."""
-
-        if self.auxfns:
-            def addParToCall(s):
-                return addArgToCalls(self._processSpecialC(s),
-                                      self.auxfns.keys(), "p_, wk_, xv_")
-            parseFunc = addParToCall
+    def _infostr(self, verbose=1):
+        if verbose == 0:
+            outputStr = "FuncSpec " + self.name
         else:
-            parseFunc = self._processSpecialC
+            outputStr = '*********** FuncSpec:  '+self.name + ' ***********'
+            outputStr += '\nTarget lang:  '+ self.targetlang
+            outputStr += '\nVariables:  '
+            for v in self.vars:
+                outputStr += v+'  '
+            outputStr += '\nParameters:  '
+            if len(self.pars):
+                for p in self.pars:
+                    outputStr += p+'  '
+            else:
+                outputStr += '[]'
+            outputStr += '\nExternal inputs:  '
+            if len(self.inputs):
+                for i in self.inputs:
+                    outputStr += i+'  '
+            else:
+                outputStr += '[]'
+        if verbose == 2:
+            outputStr += "\nSpecification functions (in target language):"
+            outputStr += "\n  (ignore any arguments `ds` and `parsinps`," \
+                       + "\n   which are for internal use only)\n"
+            if self.spec == {}:
+                outputStr += "\n None\n"
+            else:
+                outputStr += "\n  "+self.spec[0]+"\n"
+            if len(self.auxvars) and self.auxspec != {}:
+                outputStr += " "+self.auxspec[0]
+            if self._protected_auxnames != []:
+                outputStr += '\n\nUser-defined auxiliary variables:  '
+                for v in self.auxvars:
+                    outputStr += v+'  '
+                outputStr += '\n\nUser-defined auxiliary functions (in target ' + \
+                             'language):'
+                for auxname in self.auxfns:
+                    # verbose option shows up builtin auxiliary func definitions
+                    if auxname not in self._builtin_auxnames or verbose>0:
+                        outputStr += '\n  '+self.auxfns[auxname][0]+'\n'
+            outputStr += "\n\nDependencies in specification functions - pair (i, o)"\
+                    " means i depends on o:\n  " + str(self.dependencies)
+        return outputStr
+
+    def info(self, verbose=0):
+        print self._infostr(verbose)
+
+    def __repr__(self):
+        return self._infostr(verbose=0)
+
+    __str__ = __repr__
+
+
+    # XXX: methods are to be removed
+    # These methods don't belongs to this class, but are used by clients
+    # elsewhere (Events.py)
+    def _specStrParse(self, specnames, specdict, resname='', specials=[],
+                      dovars=True, dopars=True, doinps=True,
+                      noreturndefs=False, forexternal=False, illegal=[],
+                      ignoreothers=False, doing_inserts=False):
+        return PythonCodeGenerator()._specStrParse(self, specnames, specdict, resname, specials,
+                        dovars, dopars, doinps,
+                        noreturndefs, forexternal, illegal,
+                        ignoreothers, doing_inserts)
+
+    def _parseReusedTermsPy(self, d, symbol_ixs, specials=[],
+                        dovars=True, dopars=True, doinps=True, illegal=[]):
+        return PythonCodeGenerator()._parseReusedTermsPy(self, d, symbol_ixs, specials,
+                        dovars, dopars, doinps, illegal)
+
+    def _processSpecialC(self, specStr):
+        return CCodeGenerator()._processSpecialC(specStr)
+
+
+class PythonCodeGenerator(object):
+    def generate_aux(self, fspec, pytarget=False):
+        if pytarget:
+            assert fspec.targetlang == 'python', \
+               'Wrong target language for this call'
+        auxnames = fspec._auxfnspecs.keys()
+        # User aux fn interface
+        uafi = {}
+        # protectednames = auxnames + fspec._protected_mathnames + \
+        #                  fspec._protected_randomnames + \
+        #                  fspec._protected_scipynames + \
+        #                  fspec._protected_specialfns + \
+        #                  ['abs', 'and', 'or', 'not', 'True', 'False']
+        # Deal with built-in auxiliary functions (don't make their names unique)
+        # In this version, the textual code here doesn't get executed. Only
+        # the function names in the second position of the tuple are needed.
+        # Later, the text will probably be removed.
+        auxfns = {}
+        auxfns['globalindepvar'] = \
+                   ("def _auxfn_globalindepvar(ds, parsinps, t):\n" \
+                    + _indentstr \
+                    + "return ds.globalt0 + t", '_auxfn_globalindepvar')
+        auxfns['initcond'] = \
+                   ("def _auxfn_initcond(ds, parsinps, varname):\n" \
+                    + _indentstr \
+                    + "return ds.initialconditions[varname]",'_auxfn_initcond')
+        auxfns['heav'] = \
+                   ("def _auxfn_heav(ds, parsinps, x):\n" + _indentstr \
+                      + "if x>0:\n" + 2*_indentstr \
+                      + "return 1\n" + _indentstr + "else:\n" \
+                      + 2*_indentstr + "return 0", '_auxfn_heav')
+        auxfns['if'] = \
+                   ("def _auxfn_if(ds, parsinps, c, e1, e2):\n" \
+                    + _indentstr + "if c:\n" + 2*_indentstr \
+                    + "return e1\n" + _indentstr \
+                    + "else:\n" + 2*_indentstr + "return e2", '_auxfn_if')
+        auxfns['getindex'] = \
+                   ("def _auxfn_getindex(ds, parsinps, varname):\n" \
+                    + _indentstr \
+                    + "return ds._var_namemap[varname]", '_auxfn_getindex')
+        auxfns['getbound'] = \
+                   ("def _auxfn_getbound(ds, parsinps, name, bd):\n" \
+                    + _indentstr + "try:\n" \
+                    + 2*_indentstr + "return ds.xdomain[name][bd]\n" \
+                    + _indentstr + "except KeyError:\n" + 2*_indentstr \
+                    + "try:\n" + 3*_indentstr \
+                    + "return ds.pdomain[name][bd]\n" + 2*_indentstr \
+                    + "except KeyError, e:\n" + 3*_indentstr \
+                    + "print 'Invalid var / par name %s'%name,\n" \
+                    + 3*_indentstr + "print 'or bounds not well defined:'\n" \
+                    + 3*_indentstr + "print ds.xdomain, ds.pdomain\n" \
+                    + 3*_indentstr + "raise (RuntimeError, e)",
+                    '_auxfn_getbound')
+        # the internal functions may be used by user-defined functions,
+        # so need them to be accessible to processTokens when parsing
+        fspec._pyauxfns = auxfns
+        # add the user-defined function names for cross-referencing checks
+        # (without their definitions)
+        for auxname in auxnames:
+            fspec._pyauxfns[auxname] = None
+        # don't process the built-in functions -> unique fns because
+        # they are global definitions existing throughout the
+        # namespace
+        fspec._protected_auxnames.extend(['Jacobian','Jacobian_pars'])
+        # protected names are the names that must not be used for
+        # user-specified auxiliary fn arguments
+        protectednames = fspec.pars + fspec.inputs \
+                   + ['abs', 'pow', 'and', 'or', 'not', 'True', 'False'] \
+                   + fspec._protected_auxnames + auxnames \
+                   + fspec._protected_scipynames + fspec._protected_specialfns \
+                   + fspec._protected_macronames + fspec._protected_mathnames \
+                   + fspec._protected_randomnames + fspec._protected_reusenames
+        ### checks for user-defined auxiliary fns
+        # name map for fixing inter-auxfn references
+        auxfn_namemap = {}
+        specials_base = fspec.pars + fspec._protected_auxnames \
+                   + ['abs', 'pow', 'and', 'or', 'not', 'True', 'False'] \
+                   + auxnames + fspec._protected_scipynames \
+                   + fspec._protected_specialfns \
+                   + fspec._protected_macronames + fspec._protected_mathnames \
+                   + fspec._protected_randomnames + fspec._protected_reusenames
+        for auxname in auxnames:
+            auxinfo = fspec._auxfnspecs[auxname]
+            try:
+                if len(auxinfo) != 2:
+                    raise ValueError('auxinfo tuple must be of length 2')
+            except TypeError:
+                raise TypeError('fnspecs argument must contain pairs')
+            # auxinfo[0] = tuple or list of parameter names
+            # auxinfo[1] = string containing body of function definition
+            assert isinstance(auxinfo[0], list), ('aux function arguments '
+                                                  'must be given as a list')
+            assert isinstance(auxinfo[1], str), ('aux function specification '
+                                                 'must be a string '
+                                                 'of the function code')
+            # Process Jacobian functions, etc., specially, if present
+            if auxname == 'Jacobian':
+                if not compareList(auxinfo[0],['t']+fspec.vars):
+                    print ['t']+fspec.vars
+                    print "Auxinfo =", auxinfo[0]
+                    raise ValueError("Invalid argument list given in Jacobian.")
+                auxparlist = ["t","x","parsinps"]
+                # special symbols to allow in parsing function body
+                specials = ["t","x"]
+                auxstr = auxinfo[1]
+                if any([pt in auxstr for pt in ('^', '**')]):
+                    auxstr = convertPowers(auxstr, 'pow')
+                specvars = fspec.vars
+                specvars.sort()
+                specdict = {}.fromkeys(specvars)
+                if len(specvars) == 1:
+                    assert '[' not in auxstr, \
+                           "'[' character invalid in Jacobian for 1D system"
+                    assert ']' not in auxstr, \
+                           "']' character invalid in Jacobian for 1D system"
+                    specdict[specvars[0]] = auxstr
+                else:
+                    specdict = parseMatrixStrToDictStr(auxstr, specvars)
+                reusestr, body_processed_dict = self._processReusedPy(fspec, specvars,
+                                               specdict,
+                                               specials=specials+specials_base)
+                body_processed = self._specStrParse(fspec, specvars,
+                                          body_processed_dict, 'xjac',
+                                          specials=specials+specials_base)
+                auxstr_py = self._generate_fun(fspec, '_auxfn_Jac',
+                                               reusestr+body_processed,
+                                               'xjac', specvars)
+                # check Jacobian
+                m = n = len(specvars)
+                specdict_check = {}.fromkeys(specvars)
+                for specname in specvars:
+                    temp = body_processed_dict[specname]
+                    specdict_check[specname] = \
+                            count_sep(temp.replace("[","").replace("]",""))+1
+                body_processed = ""
+                for row in range(m):
+                    if specdict_check[specvars[row]] != n:
+                        print "Row %i: "%m, specdict[specvars[row]]
+                        print "Found length %i"%specdict_check[specvars[row]]
+                        raise ValueError("Jacobian should be %sx%s"%(m,n))
+            elif auxname == 'Jacobian_pars':
+                if not compareList(auxinfo[0],['t']+fspec.vars):
+                    print ['t']+fspec.vars
+                    print "Auxinfo =", auxinfo[0]
+                    raise ValueError("Invalid argument list given in Jacobian.")
+                auxparlist = ["t","x","parsinps"]
+                # special symbols to allow in parsing function body
+                specials = ["t","x"]
+                auxstr = auxinfo[1]
+                if any([pt in auxstr for pt in ('^', '**')]):
+                    auxstr = convertPowers(auxstr, 'pow')
+                specvars = fspec.vars
+                specvars.sort()
+                specdict = {}.fromkeys(fspec.vars)
+                if len(specvars) == len(fspec.vars) == 1:
+                    assert '[' not in auxstr, \
+                           "'[' character invalid in Jacobian for 1D system"
+                    assert ']' not in auxstr, \
+                           "']' character invalid in Jacobian for 1D system"
+                    specdict[specvars[0]] = auxstr
+                else:
+                    specdict = parseMatrixStrToDictStr(auxstr, fspec.vars)
+                reusestr, body_processed_dict = self._processReusedPy(fspec, fspec.vars,
+                                               specdict,
+                                               specials=specials+specials_base)
+                body_processed = self._specStrParse(fspec, fspec.vars,
+                                          body_processed_dict, 'pjac',
+                                          specials=specials+specials_base)
+                auxstr_py = self._generate_fun(fspec, '_auxfn_Jac_p',
+                                               reusestr+body_processed,
+                                               'pjac', fspec.vars)
+                # check Jacobian
+                n = len(specvars)
+                m = len(fspec.vars)
+                specdict_check = {}.fromkeys(fspec.vars)
+                for specname in fspec.vars:
+                    temp = body_processed_dict[specname]
+                    specdict_check[specname] = \
+                            count_sep(temp.replace("[","").replace("]",""))+1
+                body_processed = ""
+                for row in range(m):
+                    try:
+                        if specdict_check[fspec.vars[row]] != n:
+                            print "Row %i: "%m, specdict[fspec.vars[row]]
+                            print "Found length %i"%specdict_check[fspec.vars[row]]
+                            raise ValueError("Jacobian w.r.t. pars should be %sx%s"%(m,n))
+                    except IndexError:
+                        print "\nFound:\n"
+                        info(specdict)
+                        raise ValueError("Jacobian w.r.t. pars should be %sx%s"%(m,n))
+            elif auxname == 'massMatrix':
+                if not compareList(auxinfo[0],['t']+fspec.vars):
+                    print ['t']+fspec.vars
+                    print "Auxinfo =", auxinfo[0]
+                    raise ValueError("Invalid argument list given in Mass Matrix.")
+                auxparlist = ["t","x","parsinps"]
+                # special symbols to allow in parsing function body
+                specials = ["t","x"]
+                auxstr = auxinfo[1]
+                if any([pt in auxstr for pt in ('^', '**')]):
+                    auxstr = convertPowers(auxstr, 'pow')
+                specvars = fspec.vars
+                specvars.sort()
+                specdict = {}.fromkeys(specvars)
+                if len(specvars) == 1:
+                    assert '[' not in auxstr, \
+                           "'[' character invalid in mass matrix for 1D system"
+                    assert ']' not in auxstr, \
+                           "']' character invalid in mass matrix for 1D system"
+                    specdict[specvars.values()[0]] = auxstr
+                else:
+                    specdict = parseMatrixStrToDictStr(auxstr, specvars)
+                reusestr, body_processed_dict = self._processReusedPy(fspec, specvars,
+                                               specdict,
+                                               specials=specials+specials_base)
+                body_processed = self._specStrParse(fspec, specvars,
+                                          body_processed_dict, 'xmat',
+                                          specials=specials+specials_base)
+                auxstr_py = self._generate_fun(fspec, '_auxfn_massMatrix',
+                                               reusestr+body_processed,
+                                               'xmat', specvars)
+                # check matrix
+                m = n = len(specvars)
+                specdict_check = {}.fromkeys(specvars)
+                for specname in specvars:
+                    specdict_check[specname] = 1 + \
+                        count_sep(body_processed_dict[specname].replace("[","").replace("]",""))
+                body_processed = ""
+                for row in range(m):
+                    if specdict_check[specvars[row]] != n:
+                        print "Row %i: "%m, specdict[specvars[row]]
+                        print "Found length %i"%specdict_check[specvars[row]]
+                        raise ValueError("Mass matrix should be %sx%s"%(m,n))
+            else:
+                user_parstr = makeParList(auxinfo[0])
+                # `parsinps` is always added to allow reference to own
+                # parameters
+                if user_parstr == '':
+                    # no arguments, user calls as fn()
+                    auxparstr = 'parsinps'
+                else:
+                    auxparstr = 'parsinps, ' + user_parstr
+                auxstr_py = 'def _auxfn_' + auxname + '(ds, ' + auxparstr \
+                            +'):\n'
+                auxparlist = auxparstr.replace(" ","").split(",")
+                badparnames = intersect(auxparlist,
+                                        remain(protectednames,auxnames))
+                if badparnames != []:
+                    print "Bad parameter names in auxiliary function", \
+                            auxname, ":", badparnames
+                    #print auxinfo[0]
+                    #print auxparlist
+                    raise ValueError("Cannot use protected names (including" \
+                        " globally visible system parameters for auxiliary " \
+                                  "function arguments")
+                # special symbols to allow in parsing function body
+                specials = auxparlist
+                specials.remove('parsinps')
+                illegalterms = remain(fspec.vars + fspec.auxvars, specials)
+                auxstr = auxinfo[1]
+                if any([pt in auxstr for pt in ('^', '**')]):
+                    auxstr = convertPowers(auxstr, 'pow')
+                reusestr, body_processed_dict = self._processReusedPy(fspec, [auxname],
+                                               {auxname:auxstr},
+                                               specials=specials+specials_base,
+                                               dovars=False,
+                                               illegal=illegalterms)
+                body_processed = self._specStrParse(fspec, [auxname],
+                                          body_processed_dict,
+                                          specials=specials+specials_base,
+                                          dovars=False,
+                                          noreturndefs=True,
+                                          illegal=illegalterms)
+                auxstr_py += reusestr + _indentstr + 'return ' \
+                          + body_processed
+            # syntax validation done in makeUniqueFn
+            try:
+                auxfns[auxname] = makeUniqueFn(auxstr_py)
+                # Note: this automatically updates fspec._pyauxfns too
+            except:
+                print 'Error in supplied auxiliary spec dictionary code'
+                raise
+            auxfn_namemap['ds.'+auxname] = 'ds.'+auxfns[auxname][1]
+            # prepare user-interface wrapper function (not method)
+            if specials == [''] or specials == []:
+                fn_args = ''
+            else:
+                fn_args = ','+','.join(specials)
+            fn_elts = ['def ', auxname, '(self', fn_args,
+                       ',__parsinps__=None):\n\t', 'if __parsinps__ is None:\n\t\t',
+                       '__parsinps__=self.map_ixs(self.genref)\n\t',
+                       'return self.genref.', auxfns[auxname][1],
+                       '(__parsinps__', fn_args, ')\n']
+            uafi[auxname] =  ''.join(fn_elts)
+        # resolve inter-auxiliary function references
+        for auxname, auxspec in auxfns.iteritems():
+            dummyQ = QuantSpec('dummy', auxspec[0], preserveSpace=True,
+                               treatMultiRefs=False)
+            dummyQ.mapNames(auxfn_namemap)
+            auxfns[auxname] = (dummyQ(), auxspec[1])
+        if pytarget:
+            fspec.auxfns = auxfns
+        # keep _pyauxfns handy for users to access python versions of functions
+        # from python, even using non-python target languages
+        #
+        # Changes to auxfns was already changing fspec._pyauxfns so the following line
+        # is not needed
+        #fspec._pyauxfns.update(auxfns)  # same thing if pytarget==True
+        fspec._user_auxfn_interface = uafi
+        fspec._protected_auxnames.extend(auxnames)
+
+    def generate_spec(self, fspec):
+        assert fspec.targetlang == 'python', ('Wrong target language for this'
+                                             ' call')
+        assert fspec.varspecs != {}, 'varspecs attribute must be defined'
+        specnames_unsorted = fspec.varspecs.keys()
+        _vbfs_inv = invertMap(fspec._varsbyforspec)
+        # Process state variable specifications
+        if len(_vbfs_inv) > 0:
+            specname_vars = []
+            specname_auxvars = []
+            for varname in fspec.vars:
+                # check if varname belongs to a for macro grouping in fspec.varspecs
+                if varname not in specname_vars:
+                    specname_vars.append(varname)
+            for varname in fspec.auxvars:
+                # check if varname belongs to a for macro grouping in fspec.varspecs
+                if varname not in specname_auxvars:
+                    specname_auxvars.append(varname)
+        else:
+            specname_vars = intersect(fspec.vars, specnames_unsorted)
+            specname_auxvars = intersect(fspec.auxvars, specnames_unsorted)
+        specname_vars.sort()
+        for vn, vs in fspec.varspecs.items():
+            if any([pt in vs for pt in ('^', '**')]):
+                fspec.varspecs[vn] = convertPowers(vs, 'pow')
+        fspec.vars.sort()
+        reusestr, specupdated = self._processReusedPy(fspec, specname_vars,
+                                                      fspec.varspecs)
+        fspec.varspecs.update(specupdated)
+        temp = self._specStrParse(fspec, specname_vars, fspec.varspecs, 'xnew')
+        specstr_py = self._generate_fun(fspec, '_specfn', reusestr+temp, 'xnew',
+                                       specname_vars, docodeinserts=True)
+        # Process auxiliary variable specifications
+        specname_auxvars.sort()
+        assert fspec.auxvars == specname_auxvars, \
+                   ('Mismatch between declared auxiliary'
+                    ' variable names and varspecs keys')
+        reusestraux, specupdated = self._processReusedPy(fspec, specname_auxvars,
+                                                         fspec.varspecs)
+        fspec.varspecs.update(specupdated)
+        tempaux = self._specStrParse(fspec, specname_auxvars, fspec.varspecs, 'auxvals')
+        auxspecstr_py = self._generate_fun(fspec, '_auxspecfn', reusestraux+tempaux,
+                                          'auxvals', specname_auxvars,
+                                          docodeinserts=True)
+        try:
+            spec_info = makeUniqueFn(specstr_py)
+        except SyntaxError:
+            print "Syntax error in specification:\n", specstr_py
+            raise
+        try:
+            auxspec_info = makeUniqueFn(auxspecstr_py)
+        except SyntaxError:
+            print "Syntax error in auxiliary spec:\n", auxspecstr_py
+            raise
+        fspec.spec = spec_info
+        fspec.auxspec = auxspec_info
+
+    def _generate_fun(self, fspec, name, specstr, resname, specnames,
+                     docodeinserts=False):
+        # Set up function header
+        retstr = 'def '+name+'(ds, t, x, parsinps):\n' #    print t, x, parsinps\n'
+        # add arbitrary code inserts, if present and option is switched on
+        # (only used for vector field definitions)
+        lstart = len(fspec.codeinserts['start'])
+        lend = len(fspec.codeinserts['end'])
+        if docodeinserts:
+            if lstart>0:
+                start_code = self._specStrParse(fspec, ['inserts'],
+                               {'inserts':fspec.codeinserts['start']}, '',
+                                noreturndefs=True, ignoreothers=True,
+                                doing_inserts=True)
+            else:
+                start_code = ''
+            if lend > 0:
+                end_code = self._specStrParse(fspec, ['inserts'],
+                               {'inserts':fspec.codeinserts['end']}, '',
+                                noreturndefs=True, ignoreothers=True,
+                                doing_inserts=True)
+            else:
+                end_code = ''
+        else:
+            start_code = end_code = ''
+        retstr += start_code + specstr + end_code
+        # Add the return line to the function
+        if len(specnames) == 1:
+            retstr += _indentstr + 'return array([' + resname + '0])\n'
+        else:
+            retstr += _indentstr + 'return array([' \
+                      + makeParList(range(len(specnames)), resname) + '])\n'
+        return retstr
+
+    def _specStrParse(self, fspec, specnames, specdict, resname='', specials=[],
+                        dovars=True, dopars=True, doinps=True,
+                        noreturndefs=False, forexternal=False, illegal=[],
+                        ignoreothers=False, doing_inserts=False):
+        # use 'noreturndefs' switch if calling this function just to "parse"
+        # a spec string for other purposes, e.g. for using in an event setup
+        # or an individual auxiliary function spec
+        assert isinstance(specnames, list), "specnames must be a list"
+        if noreturndefs or forexternal:
+            assert len(specnames) == 1, ("can only pass a single specname for "
+                                     "'forexternal' or 'noreturndefs' options")
+        allnames = fspec.vars + fspec.pars + fspec.inputs + fspec.auxvars \
+                   + ['abs', 'and', 'or', 'not', 'True', 'False'] \
+                   + fspec._protected_auxnames \
+                   + fspec._protected_scipynames + fspec._protected_specialfns \
+                   + fspec._protected_macronames + fspec._protected_mathnames \
+                   + fspec._protected_randomnames + fspec._protected_reusenames
+        allnames = remain(allnames, illegal)
+        if dovars:
+            if forexternal:
+                var_arrayixstr = dict(zip(fspec.vars,
+                                          ["'"+v+"'" for v in fspec.vars]))
+                aux_arrayixstr = dict(zip(fspec.auxvars,
+                                          ["'"+v+"'" for v in fspec.auxvars]))
+            else:
+                var_arrayixstr = dict(zip(fspec.vars, map(lambda i: str(i), \
+                                         range(len(fspec.vars))) ))
+                aux_arrayixstr = dict(zip(fspec.auxvars, map(lambda i: str(i),\
+                                         range(len(fspec.auxvars))) ))
+        else:
+            var_arrayixstr = {}
+            aux_arrayixstr = {}
+        # ODE solvers typically don't recognize external inputs
+        # so they have to be lumped in with the parameters
+        # argument `parsinps` holds the combined pars and inputs
+        if dopars:
+            if forexternal:
+                if doinps:
+                    # parsinps_names is pars and inputs, each sorted
+                    # *individually*
+                    parsinps_names = fspec.pars+fspec.inputs
+                else:
+                    parsinps_names = fspec.pars
+                # for external calls we want parname -> 'parname'
+                parsinps_arrayixstr = dict(zip(parsinps_names,
+                                       ["'"+pn+"'" for pn in parsinps_names]))
+            else:
+                if doinps:
+                    # parsinps_names is pars and inputs, each sorted
+                    # *individually*
+                    parsinps_names = fspec.pars+fspec.inputs
+                else:
+                    parsinps_names = fspec.pars
+                parsinps_arrayixstr = dict(zip(parsinps_names,
+                                            map(lambda i: str(i), \
+                                            range(len(parsinps_names))) ))
+        else:
+            parsinps_names = []
+            parsinps_arrayixstr = {}
+        specialtokens = remain(allnames,specials) + ['(', 't'] \
+                        + remain(specials,['t'])
+        specstr_lang = ''
+        specname_count = 0
+        for specname in specnames:
+            specstr = specdict[specname]
+            assert type(specstr)==str, "Specification for %s was not a string"%specname
+            if not noreturndefs:
+                specstr_lang += _indentstr + resname+str(specname_count)+' = '
+            specname_count += 1
+            specstr_lang += fspec.processTokens(allnames, specialtokens,
+                                    specstr, var_arrayixstr,
+                                    aux_arrayixstr, parsinps_names,
+                                    parsinps_arrayixstr, specname, ignoreothers,
+                                    doing_inserts)
+            if not noreturndefs or not forexternal:
+                specstr_lang += '\n'  # prepare for next line
+        return specstr_lang
+
+    def _processReusedPy(self, fspec, specnames, specdict, specials=[],
+                        dovars=True, dopars=True, doinps=True, illegal=[]):
+        """Process reused subexpression terms for Python code."""
+
         reused, specupdated, new_protected, order = _processReused(specnames,
-                                                          specdict,
-                                                          self.reuseterms,
-                                                          '', 'double', ';',
-                                                          parseFunc)
-        self._protected_reusenames = new_protected
+                                                        specdict,
+                                                        fspec.reuseterms,
+                                                        _indentstr)
+        fspec._protected_reusenames = new_protected
+        # symbols to parse are at indices 2 and 4 of 'reused' dictionary
+        reusedParsed = self._parseReusedTermsPy(fspec, reused, [2,4],
+                                        specials=specials, dovars=dovars,
+                                        dopars=dopars, doinps=doinps,
+                                                  illegal=illegal)
         reusedefs = {}.fromkeys(new_protected)
-        for vname, deflist in reused.iteritems():
+        for vname, deflist in reusedParsed.iteritems():
             for d in deflist:
                 reusedefs[d[2]] = d
-        return (concatStrDict(reusedefs, intersect(order, reusedefs.keys())),
+        return (concatStrDict(reusedefs, intersect(order,reusedefs.keys())),
                        specupdated)
 
+    def _parseReusedTermsPy(self, fspec, d, symbol_ixs, specials=[],
+                        dovars=True, dopars=True, doinps=True, illegal=[]):
+        """Process dictionary of reused term definitions (in spec syntax)."""
+        # ... to parse special symbols to actual Python.
+        # expect symbols to be processed at d list's entries given in
+        # symbol_ixs.
+        allnames = fspec.vars + fspec.pars + fspec.inputs + fspec.auxvars \
+                   + ['abs'] + fspec._protected_auxnames \
+                   + fspec._protected_scipynames + fspec._protected_specialfns \
+                   + fspec._protected_macronames + fspec._protected_mathnames \
+                   + fspec._protected_randomnames + fspec._protected_reusenames
+        allnames = remain(allnames, illegal)
+        if dovars:
+            var_arrayixstr = dict(zip(fspec.vars, map(lambda i: str(i), \
+                                     range(len(fspec.vars))) ))
+            aux_arrayixstr = dict(zip(fspec.auxvars, map(lambda i: str(i), \
+                                     range(len(fspec.auxvars))) ))
+        else:
+            var_arrayixstr = {}
+            aux_arrayixstr = {}
+        if dopars:
+            if doinps:
+                # parsinps_names is pars and inputs, each sorted
+                # *individually*
+                parsinps_names = fspec.pars+fspec.inputs
+            else:
+                parsinps_names = fspec.pars
+            parsinps_arrayixstr = dict(zip(parsinps_names,
+                                        map(lambda i: str(i), \
+                                        range(len(parsinps_names))) ))
+        else:
+            parsinps_names = []
+            parsinps_arrayixstr = {}
+        specialtokens = remain(allnames,specials) + ['(', 't'] + specials
+        for specname, itemlist in d.iteritems():
+            listix = -1
+            for strlist in itemlist:
+                listix += 1
+                if strlist == []:
+                    continue
+                if len(strlist) < max(symbol_ixs):
+                    raise ValueError("Symbol indices out of range in "
+                                       "call to _parseReusedTermsPy")
+                for ix in symbol_ixs:
+                    symbol = strlist[ix]
+                    parsedsymbol = fspec.processTokens(allnames,
+                                    specialtokens, symbol,
+                                    var_arrayixstr, aux_arrayixstr,
+                                    parsinps_names, parsinps_arrayixstr,
+                                    specname)
+                    # must strip possible trailing whitespace!
+                    d[specname][listix][ix] = parsedsymbol.strip()
+        return d
 
-    def _genAuxFnC(self):
-        auxnames = self._auxfnspecs.keys()
+
+class CCodeGenerator(object):
+    def generate_aux(self, fspec):
+        auxnames = fspec._auxfnspecs.keys()
         # parameter and variable definitions
         # sorted version of var and par names sorted version of par
         # names (vars not #define'd in aux functions unless Jacobian)
-        vnames = self.vars
-        pnames = self.pars
+        vnames = fspec.vars
+        pnames = fspec.pars
         vnames.sort()
         pnames.sort()
         for auxname in auxnames:
@@ -1513,7 +1546,7 @@ class FuncSpec(object):
         # every call found in the .c code (as is done currently.
         # this is still an untidy solution, but there you go...)
         for auxname in auxnames:
-            auxspec = self._auxfnspecs[auxname]
+            auxspec = fspec._auxfnspecs[auxname]
             assert len(auxspec) == 2, 'auxspec tuple must be of length 2'
             if not isinstance(auxspec[0], list):
                 print "Found type ", type(auxspec[0])
@@ -1528,8 +1561,8 @@ class FuncSpec(object):
             # Process Jacobian functions specially, if present
             if auxname == 'Jacobian':
                 sig = "void jacobian("
-                if not compareList(auxspec[0],['t']+self.vars):
-                    print ['t']+self.vars
+                if not compareList(auxspec[0],['t']+fspec.vars):
+                    print ['t']+fspec.vars
                     print "Auxspec =", auxspec[0]
                     raise ValueError("Invalid argument list given in Jacobian.")
                 if any([pt in auxspec[1] for pt in ('^', '**')]):
@@ -1539,7 +1572,7 @@ class FuncSpec(object):
                 parlist = "unsigned n_, unsigned np_, double t, double *Y_,"
                 ismat = True
                 sig += parlist + " double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_)"
-                specvars = self.vars
+                specvars = fspec.vars
                 specvars.sort()
                 n = len(specvars)
                 m = n
@@ -1552,7 +1585,7 @@ class FuncSpec(object):
                     specdict_temp[specvars[0]] = auxstr
                 else:
                     specdict_temp = parseMatrixStrToDictStr(auxstr, specvars)
-                reusestr, body_processed_dict = self._processReusedC(specvars,
+                reusestr, body_processed_dict = self._processReusedC(fspec, specvars,
                                                    specdict_temp)
                 specdict = {}.fromkeys(specvars)
                 for specname in specvars:
@@ -1571,8 +1604,8 @@ class FuncSpec(object):
                 auxspec_processedDict = {auxname: body_processed}
             elif auxname == 'Jacobian_pars':
                 sig = "void jacobianParam("
-                if not compareList(auxspec[0],['t']+self.vars):
-                    print ['t']+self.vars
+                if not compareList(auxspec[0],['t']+fspec.vars):
+                    print ['t']+fspec.vars
                     print "Auxspec =", auxspec[0]
                     raise ValueError("Invalid argument list given in Jacobian.")
                 parlist = "unsigned n_, unsigned np_, double t, double *Y_,"
@@ -1583,26 +1616,26 @@ class FuncSpec(object):
                 ismat = True
                 # specials = ["t","Y_","n_","np_","wkn_","wk_"]
                 sig += parlist + " double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_)"
-                specvars = self.vars
+                specvars = fspec.vars
                 specvars.sort()
                 n = len(specvars)
                 if n == 0:
                     raise ValueError("Cannot have a Jacobian w.r.t. pars"
                                      " because no pars are defined")
-                m = len(self.vars)
-                specdict_temp = {}.fromkeys(self.vars)
+                m = len(fspec.vars)
+                specdict_temp = {}.fromkeys(fspec.vars)
                 if m == n == 1:
                     assert '[' not in auxstr, \
                            "'[' character invalid in Jacobian for 1D system"
                     assert ']' not in auxstr, \
                            "']' character invalid in Jacobian for 1D system"
-                    specdict_temp[self.vars.values()[0]] = auxstr
+                    specdict_temp[fspec.vars.values()[0]] = auxstr
                 else:
-                    specdict_temp = parseMatrixStrToDictStr(auxstr, self.vars, m)
-                reusestr, body_processed_dict = self._processReusedC(self.vars,
+                    specdict_temp = parseMatrixStrToDictStr(auxstr, fspec.vars, m)
+                reusestr, body_processed_dict = self._processReusedC(fspec, fspec.vars,
                                                    specdict_temp)
-                specdict = {}.fromkeys(self.vars)
-                for specname in self.vars:
+                specdict = {}.fromkeys(fspec.vars)
+                for specname in fspec.vars:
                     temp = body_processed_dict[specname]
                     specdict[specname] = splitargs(temp.replace("[","").replace("]",""))
                 body_processed = ""
@@ -1611,7 +1644,7 @@ class FuncSpec(object):
                     for row in range(m):
                         try:
                             body_processed += "f_[" + str(col) + "][" + str(row) \
-                            + "] = " + specdict[self.vars[row]][col] + ";\n"
+                            + "] = " + specdict[fspec.vars[row]][col] + ";\n"
                         except (IndexError, KeyError):
                             print "\nFound matrix:\n"
                             info(specdict)
@@ -1620,7 +1653,7 @@ class FuncSpec(object):
                 auxspec_processedDict = {auxname: body_processed}
             elif auxname == 'massMatrix':
                 sig = "void massMatrix("
-                if not compareList(auxspec[0],['t']+self.vars):
+                if not compareList(auxspec[0],['t']+fspec.vars):
                     raise ValueError("Invalid argument list given in Mass Matrix.")
                 if any([pt in auxspec[1] for pt in ('^', '**')]):
                     auxstr = convertPowers(auxspec[1], 'pow')
@@ -1630,7 +1663,7 @@ class FuncSpec(object):
                 ismat = True
                 # specials = ["n_","np_","wkn_","wk_"]
                 sig += parlist + " double t, double *Y_, double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_)"
-                specvars = self.vars
+                specvars = fspec.vars
                 specvars.sort()
                 n = len(specvars)
                 m = n
@@ -1643,7 +1676,7 @@ class FuncSpec(object):
                     specdict_temp[specvars.values()[0]] = auxstr
                 else:
                     specdict_temp = parseMatrixStrToDictStr(auxstr, specvars, m)
-                reusestr, body_processed_dict = self._processReusedC(specvars,
+                reusestr, body_processed_dict = self._processReusedC(fspec, specvars,
                                                    specdict_temp)
                 specdict = {}.fromkeys(specvars)
                 for specname in specvars:
@@ -1683,7 +1716,7 @@ class FuncSpec(object):
                 # in reused terms and not properly matched to the formal args.
                 prep_auxstr_quant.mapNames(namemap)
                 auxspec = (auxspec[0], prep_auxstr_quant())
-                reusestr, auxspec_processedDict = self._processReusedC([auxname],
+                reusestr, auxspec_processedDict = self._processReusedC(fspec, [auxname],
                                                      {auxname:auxspec[1]})
                 # addition of parameter done in Generator code
                 # dummyQ = QuantSpec('dummy', auxspec_processedDict[auxname])
@@ -1699,7 +1732,7 @@ class FuncSpec(object):
                 #         else:
                 #             raise ValueError("Problem parsing inter-auxiliary"
                 #                              " function call")
-                #     elif tok in self.auxfns and tok not in \
+                #     elif tok in fspec.auxfns and tok not in \
                 #             ['Jacobian', 'Jacobian_pars']:
                 #         auxfn_found = True
                 #         auxspec_processed += tok
@@ -1719,99 +1752,98 @@ class FuncSpec(object):
                # + parundefines + varundefines*ismat + "}"
             # sig as second entry, whereas Python-coded specifications
             # have the fn name there
-            self.auxfns[auxname] = (auxspecstr, sig)
+            fspec.auxfns[auxname] = (auxspecstr, sig)
         # Don't apply #define's for built-in functions
-        self.auxfns['heav'] = ("int heav(double x_, double *p_, double *wk_, double *xv_) {\n" \
+        fspec.auxfns['heav'] = ("int heav(double x_, double *p_, double *wk_, double *xv_) {\n" \
                              + "  if (x_>0.0) {return 1;} else {return 0;}\n}",
                   "int heav(double x_, double *p_, double *wk_, double *xv_)")
-        self.auxfns['__rhs_if'] = ("double __rhs_if(int cond_, double e1_, " \
+        fspec.auxfns['__rhs_if'] = ("double __rhs_if(int cond_, double e1_, " \
                         + "double e2_, double *p_, double *wk_, double *xv_) {\n" \
                         + "  if (cond_) {return e1_;} else {return e2_;};\n}",
               "double __rhs_if(int cond_, double e1_, double e2_, double *p_, double *wk_, double *xv_)")
-        self.auxfns['__maxof2'] = ("double __maxof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {\n" \
+        fspec.auxfns['__maxof2'] = ("double __maxof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {\n" \
                                 + "if (e1_ > e2_) {return e1_;} else {return e2_;};\n}",
                 "double __maxof2(double e1_, double e2_, double *p_, double *wk_, double *xv_)")
-        self.auxfns['__minof2'] = ("double __minof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {\n" \
+        fspec.auxfns['__minof2'] = ("double __minof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {\n" \
                                 + "if (e1_ < e2_) {return e1_;} else {return e2_;};\n}",
                 "double __minof2(double e1_, double e2_, double *p_, double *wk_, double *xv_)")
-        self.auxfns['__maxof3'] = ("double __maxof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {\n" \
+        fspec.auxfns['__maxof3'] = ("double __maxof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {\n" \
                                + "double temp_;\nif (e1_ > e2_) {temp_ = e1_;} else {temp_ = e2_;};\n" \
                                + "if (e3_ > temp_) {return e3_;} else {return temp_;};\n}",
                 "double __maxof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_)")
-        self.auxfns['__minof3'] = ("double __minof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {\n" \
+        fspec.auxfns['__minof3'] = ("double __minof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {\n" \
                                + "double temp_;\nif (e1_ < e2_) {temp_ = e1_;} else {temp_ = e2_;};\n" \
                                + "if (e3_ < temp_) {return e3_;} else {return temp_;};\n}",
                 "double __minof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_)")
-        self.auxfns['__maxof4'] = ("double __maxof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {\n" \
+        fspec.auxfns['__maxof4'] = ("double __maxof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {\n" \
                                + "double temp_;\nif (e1_ > e2_) {temp_ = e1_;} else {temp_ = e2_;};\n" \
                                + "if (e3_ > temp_) {temp_ = e3_;};\nif (e4_ > temp_) {return e4_;} else {return temp_;};\n}",
                 "double __maxof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_)")
-        self.auxfns['__minof4'] = ("double __minof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {\n" \
+        fspec.auxfns['__minof4'] = ("double __minof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {\n" \
                                + "double temp_;\nif (e1_ < e2_) {temp_ = e1_;} else {temp_ = e2_;};\n" \
                                + "if (e3_ < temp_) {temp_ = e3_;};\nif (e4_ < temp_) {return e4_;} else {return temp_;};\n}",
                 "double __minof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_)")
         # temporary placeholders for these built-ins...
         cases_ic = ""
         cases_index = ""
-        for i in xrange(len(self.vars)):
+        for i in xrange(len(fspec.vars)):
             if i == 0:
                 command = 'if'
             else:
                 command = 'else if'
-            vname = self.vars[i]
+            vname = fspec.vars[i]
             cases_ic += "  " + command + " (strcmp(varname, " + '"' + vname + '"'\
                      + ")==0)\n\treturn gICs[" + str(i) + "];\n"
             cases_index += "  " + command + " (strcmp(name, " + '"' + vname + '"'\
                      + ")==0)\n\treturn " + str(i) + ";\n"
         # add remaining par names for getindex
-        for i in xrange(len(self.pars)):
-            pname = self.pars[i]
+        for i in xrange(len(fspec.pars)):
+            pname = fspec.pars[i]
             cases_index += "  else if" + " (strcmp(name, " + '"' + pname + '"'\
-                           +")==0)\n\treturn " + str(i+len(self.vars)) + ";\n"
+                           +")==0)\n\treturn " + str(i+len(fspec.vars)) + ";\n"
         cases_ic += """  else {\n\tfprintf(stderr, "Invalid variable name %s for """ \
                  + """initcond call\\n", varname);\n\treturn 0.0/0.0;\n\t}\n"""
         cases_index += """  else {\n\tfprintf(stderr, "Invalid name %s for """ \
                  + """getindex call\\n", name);\n\treturn 0.0/0.0;\n\t}\n"""
-        self.auxfns['initcond'] = ("double initcond(char *varname, double *p_, double *wk_, double *xv_) {\n" \
+        fspec.auxfns['initcond'] = ("double initcond(char *varname, double *p_, double *wk_, double *xv_) {\n" \
                                    + "\n" + cases_ic + "}",
                                    'double initcond(char *varname, double *p_, double *wk_, double *xv_)')
-        self.auxfns['getindex'] = ("int getindex(char *name, double *p_, double *wk_, double *xv_) {\n" \
+        fspec.auxfns['getindex'] = ("int getindex(char *name, double *p_, double *wk_, double *xv_) {\n" \
                                    + "\n" + cases_index + "}",
                                    'int getindex(char *name, double *p_, double *wk_, double *xv_)')
-        self.auxfns['globalindepvar'] = ("double globalindepvar(double t, double *p_, double *wk_, double *xv_)" \
+        fspec.auxfns['globalindepvar'] = ("double globalindepvar(double t, double *p_, double *wk_, double *xv_)" \
                                           + " {\n  return globalt0+t;\n}",
                                          'double globalindepvar(double t, double *p_, double *wk_, double *xv_)')
-        self.auxfns['getbound'] = \
+        fspec.auxfns['getbound'] = \
                     ("double getbound(char *name, int which_bd, double *p_, double *wk_, double *xv_) {\n" \
                      + "  return gBds[which_bd][getindex(name)];\n}",
                  'double getbound(char *name, int which_bd, double *p_, double *wk_, double *xv_)')
 
-
-    def _genSpecC(self):
-        assert self.targetlang == 'c', ('Wrong target language for this'
+    def generate_spec(self, fspec):
+        assert fspec.targetlang == 'c', ('Wrong target language for this'
                                              ' call')
-        assert self.varspecs != {}, 'varspecs attribute must be defined'
-        specnames_unsorted = self.varspecs.keys()
-        _vbfs_inv = invertMap(self._varsbyforspec)
+        assert fspec.varspecs != {}, 'varspecs attribute must be defined'
+        specnames_unsorted = fspec.varspecs.keys()
+        _vbfs_inv = invertMap(fspec._varsbyforspec)
         # Process state variable specifications
         if len(_vbfs_inv) > 0:
             specname_vars = []
             specname_auxvars = []
-            for varname in self.vars:
-                # check if varname belongs to a for macro grouping in self.varspecs
+            for varname in fspec.vars:
+                # check if varname belongs to a for macro grouping in fspec.varspecs
                 if varname not in specname_vars:
                     specname_vars.append(varname)
-            for varname in self.auxvars:
-                # check if varname belongs to a for macro grouping in self.varspecs
+            for varname in fspec.auxvars:
+                # check if varname belongs to a for macro grouping in fspec.varspecs
                 if varname not in specname_auxvars:
                     specname_auxvars.append(varname)
         else:
-            specname_vars = intersect(self.vars, specnames_unsorted)
-            specname_auxvars = intersect(self.auxvars, specnames_unsorted)
+            specname_vars = intersect(fspec.vars, specnames_unsorted)
+            specname_auxvars = intersect(fspec.auxvars, specnames_unsorted)
         specname_vars.sort()
         # sorted version of var and par names
-        pnames = self.pars
-        inames = self.inputs
+        pnames = fspec.pars
+        inames = fspec.inputs
         pnames.sort()
         inames.sort()
         pardefines = ""
@@ -1821,61 +1853,60 @@ class FuncSpec(object):
         varundefines = ""
         inpundefines = ""
         # produce vector field specification
-        assert self.vars == specname_vars, ('Mismatch between declared '
+        assert fspec.vars == specname_vars, ('Mismatch between declared '
                                         ' variable names and varspecs keys')
-        valid_depTargNames = self.inputs+self.vars+self.auxvars
-        for specname, specstr in self.varspecs.iteritems():
+        valid_depTargNames = fspec.inputs+fspec.vars+fspec.auxvars
+        for specname, specstr in fspec.varspecs.iteritems():
             assert type(specstr)==str, "Specification for %s was not a string"%specname
             if any([pt in specstr for pt in ('^', '**')]):
                 specstr = convertPowers(specstr, 'pow')
             specQS = QuantSpec('__spectemp__',  specstr)
             for s in specQS:
                 if s in valid_depTargNames and (specname, s) not in \
-                       self.dependencies: # and specname != s:
-                    self.dependencies.append((specname, s))
+                       fspec.dependencies: # and specname != s:
+                    fspec.dependencies.append((specname, s))
         # pre-process reused sub-expression dictionary to adapt for
         # known calling sequence in C
-        reusestr, specupdated = self._processReusedC(specname_vars,
-                                                     self.varspecs)
-        self.varspecs.update(specupdated)
-        specstr_C = self._genSpecFnC('vfieldfunc', reusestr, specname_vars,
+        reusestr, specupdated = self._processReusedC(fspec, specname_vars,
+                                                     fspec.varspecs)
+        fspec.varspecs.update(specupdated)
+        specstr_C = self._generate_fun(fspec, 'vfieldfunc', reusestr, specname_vars,
                                        pardefines, vardefines, inpdefines,
                                        parundefines, varundefines, inpundefines,
                                        True)
-        self.spec = specstr_C
+        fspec.spec = specstr_C
         # produce auxiliary variables specification
         specname_auxvars.sort()
-        assert self.auxvars == specname_auxvars, \
+        assert fspec.auxvars == specname_auxvars, \
                    ('Mismatch between declared auxiliary'
                     ' variable names and varspecs keys')
-        if self.auxvars != []:
-            reusestraux, specupdated = self._processReusedC(specname_auxvars,
-                                                        self.varspecs)
-            self.varspecs.update(specupdated)
-        if self.auxvars == []:
-            auxspecstr_C = self._genSpecFnC('auxvars', '',
+        if fspec.auxvars != []:
+            reusestraux, specupdated = self._processReusedC(fspec, specname_auxvars,
+                                                        fspec.varspecs)
+            fspec.varspecs.update(specupdated)
+        if fspec.auxvars == []:
+            auxspecstr_C = self._generate_fun(fspec, 'auxvars', '',
                                         specname_auxvars,
                                         '', '', '',
                                         '', '', '', False)
         else:
-            auxspecstr_C = self._genSpecFnC('auxvars', reusestraux,
+            auxspecstr_C = self._generate_fun(fspec, 'auxvars', reusestraux,
                                         specname_auxvars, pardefines,
                                         vardefines, inpdefines, parundefines,
                                         varundefines, inpundefines,
                                         False)
-        self.auxspec = auxspecstr_C
+        fspec.auxspec = auxspecstr_C
 
-
-    def _genSpecFnC(self, funcname, reusestr, specnames, pardefines,
+    def _generate_fun(self, fspec, funcname, reusestr, specnames, pardefines,
                     vardefines, inpdefines, parundefines, varundefines,
                     inpundefines, docodeinserts):
         sig = "void " + funcname + "(unsigned n_, unsigned np_, double t, double *Y_, " \
               + "double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_)"
         # specstr = sig + "{\n\n" + pardefines + vardefines + "\n"
         specstr = sig + "{" + pardefines + vardefines + inpundefines + "\n"
-        if docodeinserts and self.codeinserts['start'] != '':
+        if docodeinserts and fspec.codeinserts['start'] != '':
             specstr += '/* Verbose code insert -- begin */\n' \
-                            + self.codeinserts['start'] \
+                            + fspec.codeinserts['start'] \
                             + '/* Verbose code insert -- end */\n\n'
         specstr += (len(reusestr)>0)*"/* reused term definitions */\n" \
                    + reusestr + "\n"
@@ -1883,33 +1914,49 @@ class FuncSpec(object):
         # add function body
         for i in xrange(len(specnames)):
             xname = specnames[i]
-            fbody = self.varspecs[xname]
+            fbody = fspec.varspecs[xname]
             fbody_parsed = self._processSpecialC(fbody)
-            if self.auxfns:
+            if fspec.auxfns:
                 fbody_parsed = addArgToCalls(fbody_parsed,
-                                            self.auxfns.keys(),
+                                            fspec.auxfns.keys(),
                                             "p_, wk_, xv_")
-                if 'initcond' in self.auxfns:
+                if 'initcond' in fspec.auxfns:
                     # convert 'initcond(x)' to 'initcond("x")' for
                     # compatibility with C syntax
                     fbody_parsed = wrapArgInCall(fbody_parsed,
                                     'initcond', '"')
             specstr += "f_[" + str(i) + "] = " + fbody_parsed + ";\n"
             auxdefs_parsed[xname] = fbody_parsed
-        if docodeinserts and self.codeinserts['end'] != '':
+        if docodeinserts and fspec.codeinserts['end'] != '':
             specstr += '\n/* Verbose code insert -- begin */\n' \
-                    + self.codeinserts['end'] \
+                    + fspec.codeinserts['end'] \
                     + '/* Verbose code insert -- end */\n'
         specstr += "\n" + parundefines + varundefines + inpundefines + "}\n\n"
-        self._auxdefs_parsed = auxdefs_parsed
+        fspec._auxdefs_parsed = auxdefs_parsed
         return (specstr, funcname)
 
+    def _processReusedC(self, fspec, specnames, specdict):
+        """Process reused subexpression terms for C code."""
 
-    def _doPreMacrosC(self):
-        # Pre-processor macros are presently not available for C-code
-        # specifications
-        pass
-
+        if fspec.auxfns:
+            def addParToCall(s):
+                return addArgToCalls(self._processSpecialC(s),
+                                      fspec.auxfns.keys(), "p_, wk_, xv_")
+            parseFunc = addParToCall
+        else:
+            parseFunc = self._processSpecialC
+        reused, specupdated, new_protected, order = _processReused(specnames,
+                                                          specdict,
+                                                          fspec.reuseterms,
+                                                          '', 'double', ';',
+                                                          parseFunc)
+        fspec._protected_reusenames = new_protected
+        reusedefs = {}.fromkeys(new_protected)
+        for vname, deflist in reused.iteritems():
+            for d in deflist:
+                reusedefs[d[2]] = d
+        return (concatStrDict(reusedefs, intersect(order, reusedefs.keys())),
+                       specupdated)
 
     def _processSpecialC(self, specStr):
         """Pre-process 'if' statements and names of 'abs' and 'sign' functions,
@@ -1981,16 +2028,16 @@ class FuncSpec(object):
             qtoks = qspec.parser.tokenized
         return new_specStr
 
-    # ------------ Matlab code specifications -----------------------
 
-    def _genAuxFnMatlab(self):
-        auxnames = self.auxfns.keys()
+class MatlabCodeGenerator(object):
+    def generate_aux(self, fspec):
+        auxnames = fspec.auxfns.keys()
         # parameter and variable definitions
 
         # sorted version of var and par names sorted version of par
         # names (vars not #define'd in aux functions unless Jacobian)
-        vnames = self.vars
-        pnames = self.pars
+        vnames = fspec.vars
+        pnames = fspec.pars
         vnames.sort()
         pnames.sort()
 
@@ -2004,7 +2051,7 @@ class FuncSpec(object):
         # else we add these extra pars automatically to
         # every call found in the .c code (as is done currently.
         # this is still an untidy solution, but there you go...)
-        for auxname, auxspec in self._auxfnspecs.iteritems():
+        for auxname, auxspec in fspec._auxfnspecs.iteritems():
             assert len(auxspec) == 2, 'auxspec tuple must be of length 2'
             if not isinstance(auxspec[0], list):
                 print "Found type ", type(auxspec[0])
@@ -2029,7 +2076,7 @@ class FuncSpec(object):
             else:
                 ismat = False
                 topstr = "function y_ = " + auxname + "("
-                commentstr = "% Auxilliary function " + auxname + " for model " + self.name + "\n% Generated by PyDSTool for ADMC++ target\n\n"
+                commentstr = "% Auxilliary function " + auxname + " for model " + fspec.name + "\n% Generated by PyDSTool for ADMC++ target\n\n"
                 parlist = ""
                 namemap = {}
                 for parname in auxspec[0]:
@@ -2041,7 +2088,7 @@ class FuncSpec(object):
                 auxstr = auxspec[1]
                 if any([pt in auxstr for pt in ('pow', '**')]):
                     auxstr = convertPowers(auxstr, '^')
-                reusestr, auxspec_processedDict = self._processReusedMatlab([auxname],
+                reusestr, auxspec_processedDict = self._processReusedMatlab(fspec, [auxname],
                         {auxname:auxstr.replace(' ','').replace('\n','')})
                 # addition of parameter done in Generator code
 
@@ -2056,116 +2103,46 @@ class FuncSpec(object):
                 + reusestr + (len(reusestr)>0)*"\n" + body_processed
             # sig as second entry, whereas Python-coded specifications
             # have the fn name there
-            self.auxfns[auxname] = (auxspecstr, sig)
-        self._protected_auxnames.extend(auxnames)
+            fspec.auxfns[auxname] = (auxspecstr, sig)
+        fspec._protected_auxnames.extend(auxnames)
         # Don't apply #define's for built-in functions
 
-
-    def _genSpecMatlab(self):
-        assert self.targetlang == 'matlab', ('Wrong target language for this'
+    def generate_spec(self, fspec):
+        assert fspec.targetlang == 'matlab', ('Wrong target language for this'
                                              ' call')
-        assert self.varspecs != {}, 'varspecs attribute must be defined'
-        specnames_unsorted = self.varspecs.keys()
-        specname_vars = intersect(self.vars, specnames_unsorted)
+        assert fspec.varspecs != {}, 'varspecs attribute must be defined'
+        specnames_unsorted = fspec.varspecs.keys()
+        specname_vars = intersect(fspec.vars, specnames_unsorted)
         specname_vars.sort()
         # parameter and variable definitions
         # sorted version of var and par names
         vnames = specname_vars
-        pnames = self.pars
+        pnames = fspec.pars
         pnames.sort()
         pardefines = self._prepareMatlabPDefines(pnames)
         vardefines = self._prepareMatlabVDefines(vnames)
         # produce vector field specification
-        assert self.vars == specname_vars, ('Mismatch between declared '
+        assert fspec.vars == specname_vars, ('Mismatch between declared '
                                         ' variable names and varspecs keys')
-        valid_depTargNames = self.inputs+self.vars+self.auxvars
-        for specname, specstr in self.varspecs.iteritems():
+        valid_depTargNames = fspec.inputs+fspec.vars+fspec.auxvars
+        for specname, specstr in fspec.varspecs.iteritems():
             assert type(specstr)==str, "Specification for %s was not a string"%specname
             if any([pt in specstr for pt in ('pow', '**')]):
                 specstr = convertPowers(specstr, '^')
             specQS = QuantSpec('__spectemp__',  specstr)
             for s in specQS:
                 if s in valid_depTargNames and (specname, s) not in \
-                       self.dependencies: # and specname != s:
-                    self.dependencies.append((specname, s))
+                       fspec.dependencies: # and specname != s:
+                    fspec.dependencies.append((specname, s))
         # pre-process reused sub-expression dictionary to adapt for
         # known calling sequence in Matlab
-        reusestr, specupdated = self._processReusedMatlab(specname_vars,
-                                                     self.varspecs)
-        self.varspecs.update(specupdated)
-        specstr_Matlab = self._genSpecFnMatlab('vfield', reusestr, specname_vars,
+        reusestr, specupdated = self._processReusedMatlab(fspec, specname_vars,
+                                                     fspec.varspecs)
+        fspec.varspecs.update(specupdated)
+        specstr_Matlab = self._genSpecFnMatlab(fspec, 'vfield', reusestr, specname_vars,
                                           pardefines, vardefines, True)
-        self.spec = specstr_Matlab
+        fspec.spec = specstr_Matlab
         # do not produce auxiliary variables specification
-
-
-    def _genSpecFnMatlab(self, funcname, reusestr, specnames, pardefines,
-                         vardefines, docodeinserts):
-        topstr = "function [vf_, y_] = " + funcname + "(vf_, t_, x_, p_)\n"
-        commentstr = "% Vector field definition for model " + self.name + "\n% Generated by PyDSTool for ADMC++ target\n\n"
-
-        specstr = topstr + commentstr + pardefines + vardefines + "\n"
-        if docodeinserts and self.codeinserts['start'] != '':
-            specstr += '% Verbose code insert -- begin \n' \
-                            + self.codeinserts['start'] \
-                            + '% Verbose code insert -- end \n\n'
-        specstr += (len(reusestr)>0)*"% reused term definitions \n" \
-                   + reusestr + "\n"
-        # add function body
-        for i in xrange(len(specnames)):
-            xname = specnames[i]
-            fbody = self.varspecs[xname]
-            fbody_parsed = self._processIfMatlab(fbody)
-            if self.auxfns:
-                fbody_parsed = addArgToCalls(fbody_parsed,
-                                            self.auxfns.keys(),
-                                            "p_")
-               # if 'initcond' in self.auxfns:
-                    # convert 'initcond(x)' to 'initcond("x")' for
-                    # compatibility with C syntax
-                #    fbody_parsed = wrapArgInCall(fbody_parsed,
-                 #                   'initcond', '"')
-            specstr += "y_(" + str(i+1) + ") = " + fbody_parsed + ";\n"
-        if docodeinserts and self.codeinserts['end'] != '':
-            specstr += '\n% Verbose code insert -- begin \n' \
-                    + self.codeinserts['end'] \
-                    + '% Verbose code insert -- end \n'
-        specstr += "\n\n"
-        return (specstr, funcname)
-
-
-    def _processReusedMatlab(self, specnames, specdict):
-        """Process reused subexpression terms for Matlab code."""
-
-        if self.auxfns:
-            def addParToCall(s):
-                return addArgToCalls(s, self.auxfns.keys(), "p_")
-            parseFunc = addParToCall
-        else:
-            parseFunc = idfn
-        reused, specupdated, new_protected, order = _processReused(specnames,
-                                                          specdict,
-                                                          self.reuseterms,
-                                                          '', '', ';',
-                                                          parseFunc)
-        self._protected_reusenames = new_protected
-        reusedefs = {}.fromkeys(new_protected)
-        for vname, deflist in reused.iteritems():
-            for d in deflist:
-                reusedefs[d[2]] = d
-        return (concatStrDict(reusedefs, intersect(order, reusedefs.keys())),
-                       specupdated)
-    # NEED TO CHECK WHETHER THIS IS NECESSARY AND WORKS
-    # IF STATEMENTS LOOK DIFFERENT IN MATLAB
-    def _processIfMatlab(self, specStr):
-        qspec = QuantSpec('spec', specStr)
-        qtoks = qspec[:]
-        if 'if' in qtoks:
-            raise NotImplementedError
-        else:
-            new_specStr = specStr
-        return new_specStr
-
 
     def _prepareMatlabPDefines(self, pnames):
         pardefines = ""
@@ -2176,7 +2153,6 @@ class FuncSpec(object):
         alldefines = "\n% Parameter definitions\n\n" + pardefines
         return alldefines
 
-
     def _prepareMatlabVDefines(self, vnames):
         vardefines = ""
         for i in xrange(len(vnames)):
@@ -2185,64 +2161,76 @@ class FuncSpec(object):
         alldefines = "\n% Variable definitions\n\n" + vardefines
         return alldefines
 
+    def _genSpecFnMatlab(self, fspec, funcname, reusestr, specnames, pardefines,
+                         vardefines, docodeinserts):
+        topstr = "function [vf_, y_] = " + funcname + "(vf_, t_, x_, p_)\n"
+        commentstr = "% Vector field definition for model " + fspec.name + "\n% Generated by PyDSTool for ADMC++ target\n\n"
+
+        specstr = topstr + commentstr + pardefines + vardefines + "\n"
+        if docodeinserts and fspec.codeinserts['start'] != '':
+            specstr += '% Verbose code insert -- begin \n' \
+                            + fspec.codeinserts['start'] \
+                            + '% Verbose code insert -- end \n\n'
+        specstr += (len(reusestr)>0)*"% reused term definitions \n" \
+                   + reusestr + "\n"
+        # add function body
+        for i in xrange(len(specnames)):
+            xname = specnames[i]
+            fbody = fspec.varspecs[xname]
+            fbody_parsed = self._processIfMatlab(fbody)
+            if fspec.auxfns:
+                fbody_parsed = addArgToCalls(fbody_parsed,
+                                            fspec.auxfns.keys(),
+                                            "p_")
+               # if 'initcond' in fspec.auxfns:
+                    # convert 'initcond(x)' to 'initcond("x")' for
+                    # compatibility with C syntax
+                #    fbody_parsed = wrapArgInCall(fbody_parsed,
+                 #                   'initcond', '"')
+            specstr += "y_(" + str(i+1) + ") = " + fbody_parsed + ";\n"
+        if docodeinserts and fspec.codeinserts['end'] != '':
+            specstr += '\n% Verbose code insert -- begin \n' \
+                    + fspec.codeinserts['end'] \
+                    + '% Verbose code insert -- end \n'
+        specstr += "\n\n"
+        return (specstr, funcname)
+
+    def _processIfMatlab(self, specStr):
+        # NEED TO CHECK WHETHER THIS IS NECESSARY AND WORKS
+        # IF STATEMENTS LOOK DIFFERENT IN MATLAB
+        qspec = QuantSpec('spec', specStr)
+        qtoks = qspec[:]
+        if 'if' in qtoks:
+            raise NotImplementedError
+        else:
+            new_specStr = specStr
+        return new_specStr
+
+    def _processReusedMatlab(self, fspec, specnames, specdict):
+        """Process reused subexpression terms for Matlab code."""
+
+        if fspec.auxfns:
+            def addParToCall(s):
+                return addArgToCalls(s, fspec.auxfns.keys(), "p_")
+            parseFunc = addParToCall
+        else:
+            parseFunc = idfn
+        reused, specupdated, new_protected, order = _processReused(specnames,
+                                                          specdict,
+                                                          fspec.reuseterms,
+                                                          '', '', ';',
+                                                          parseFunc)
+        fspec._protected_reusenames = new_protected
+        reusedefs = {}.fromkeys(new_protected)
+        for vname, deflist in reused.iteritems():
+            for d in deflist:
+                reusedefs[d[2]] = d
+        return (concatStrDict(reusedefs, intersect(order, reusedefs.keys())),
+                       specupdated)
+
+
 
     # ------------ Other utilities -----------------------
-
-    def _infostr(self, verbose=1):
-        if verbose == 0:
-            outputStr = "FuncSpec " + self.name
-        else:
-            outputStr = '*********** FuncSpec:  '+self.name + ' ***********'
-            outputStr += '\nTarget lang:  '+ self.targetlang
-            outputStr += '\nVariables:  '
-            for v in self.vars:
-                outputStr += v+'  '
-            outputStr += '\nParameters:  '
-            if len(self.pars):
-                for p in self.pars:
-                    outputStr += p+'  '
-            else:
-                outputStr += '[]'
-            outputStr += '\nExternal inputs:  '
-            if len(self.inputs):
-                for i in self.inputs:
-                    outputStr += i+'  '
-            else:
-                outputStr += '[]'
-        if verbose == 2:
-            outputStr += "\nSpecification functions (in target language):"
-            outputStr += "\n  (ignore any arguments `ds` and `parsinps`," \
-                       + "\n   which are for internal use only)\n"
-            if self.spec == {}:
-                outputStr += "\n None\n"
-            else:
-                outputStr += "\n  "+self.spec[0]+"\n"
-            if len(self.auxvars) and self.auxspec != {}:
-                outputStr += " "+self.auxspec[0]
-            if self._protected_auxnames != []:
-                outputStr += '\n\nUser-defined auxiliary variables:  '
-                for v in self.auxvars:
-                    outputStr += v+'  '
-                outputStr += '\n\nUser-defined auxiliary functions (in target ' + \
-                             'language):'
-                for auxname in self.auxfns:
-                    # verbose option shows up builtin auxiliary func definitions
-                    if auxname not in self._builtin_auxnames or verbose>0:
-                        outputStr += '\n  '+self.auxfns[auxname][0]+'\n'
-            outputStr += "\n\nDependencies in specification functions - pair (i, o)"\
-                    " means i depends on o:\n  " + str(self.dependencies)
-        return outputStr
-
-    def info(self, verbose=0):
-        print self._infostr(verbose)
-
-    def __repr__(self):
-        return self._infostr(verbose=0)
-
-    __str__ = __repr__
-
-
-
 # -----------------------------------
 
 # Sub-classes of FuncSpec

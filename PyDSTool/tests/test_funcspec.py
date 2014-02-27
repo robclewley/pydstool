@@ -466,6 +466,18 @@ def test_c_funcspec_for_ds_with_single_var_and_single_param():
         '}'
     ]
 
+    assert all(fn in fs._pyauxfns.keys() for fn in [
+        'getbound',
+        'getindex',
+        'globalindepvar',
+        'heav',
+        'if',
+        'initcond',
+    ])
+
+    assert 'myaux' in fs._pyauxfns.keys()
+
+
 
 def test_c_funcspec_with_jacobian_and_auxfunc():
     args = {
@@ -697,6 +709,17 @@ def test_matlab_funcspec_for_ds_with_single_var_and_single_param():
         ''
     ]
 
+    assert all(fn in fs._pyauxfns.keys() for fn in [
+        'getbound',
+        'getindex',
+        'globalindepvar',
+        'heav',
+        'if',
+        'initcond',
+    ])
+
+    assert 'myaux' in fs._pyauxfns.keys()
+
 
 def test_python_funspec_ignoring_for_macro():
     fs = FuncSpec({
@@ -733,6 +756,16 @@ def test_matlab_funspec_for_macro_raises_exception():
             'varspecs': {
                 'z[i]': 'for(i, 1, 3, z[i]**2)',
             },
+        })
+
+
+def test_matlab_funspec_if_raises_exception():
+    with pytest.raises(NotImplementedError):
+        _ = FuncSpec({
+            'name': 'single_var',
+            'targetlang': 'matlab',
+            'vars': ['x'],
+            'varspecs': {'x': 'if(x < 0, x, x**3)'},
         })
 
 
