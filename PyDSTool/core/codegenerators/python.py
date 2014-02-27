@@ -321,14 +321,9 @@ class PythonCodeGenerator(CodeGenerator):
                                treatMultiRefs=False)
             dummyQ.mapNames(auxfn_namemap)
             auxfns[auxname] = (dummyQ(), auxspec[1])
-        fspec.auxfns = auxfns
-        # keep _pyauxfns handy for users to access python versions of functions
-        # from python, even using non-python target languages
-        #
-        # Changes to auxfns was already changing fspec._pyauxfns so the following line
-        # is not needed
         fspec._user_auxfn_interface = uafi
         fspec._protected_auxnames.extend(auxnames)
+        return auxfns
 
     def generate_spec(self, fspec):
         assert fspec.targetlang == 'python', ('Wrong target language for this'

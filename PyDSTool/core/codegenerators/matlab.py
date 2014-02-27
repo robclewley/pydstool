@@ -14,6 +14,7 @@ class MatlabCodeGenerator(object):
 
     def generate_aux(self, fspec):
         auxnames = fspec.auxfns.keys()
+        auxfns = {}
         # parameter and variable definitions
 
         # sorted version of var and par names sorted version of par
@@ -88,9 +89,10 @@ class MatlabCodeGenerator(object):
                 + reusestr + (len(reusestr) > 0) * "\n" + body_processed
             # sig as second entry, whereas Python-coded specifications
             # have the fn name there
-            fspec.auxfns[auxname] = (auxspecstr, sig)
+            auxfns[auxname] = (auxspecstr, sig)
         fspec._protected_auxnames.extend(auxnames)
         # Don't apply #define's for built-in functions
+        return auxfns
 
     def generate_spec(self, fspec):
         assert fspec.targetlang == 'matlab', ('Wrong target language for this'

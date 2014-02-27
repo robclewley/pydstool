@@ -15,6 +15,7 @@ class CCodeGenerator(object):
 
     def generate_aux(self, fspec):
         auxnames = fspec._auxfnspecs.keys()
+        auxfns = {}
         # parameter and variable definitions
         # sorted version of var and par names sorted version of par
         # names (vars not #define'd in aux functions unless Jacobian)
@@ -259,45 +260,45 @@ class CCodeGenerator(object):
                # + parundefines + varundefines*ismat + "}"
             # sig as second entry, whereas Python-coded specifications
             # have the fn name there
-            fspec.auxfns[auxname] = (auxspecstr, sig)
+            auxfns[auxname] = (auxspecstr, sig)
         # Don't apply #define's for built-in functions
-        fspec.auxfns['heav'] = ("int heav(double x_, double *p_, double *wk_, double *xv_) {\n"
+        auxfns['heav'] = ("int heav(double x_, double *p_, double *wk_, double *xv_) {\n"
                                 +
                                 "  if (x_>0.0) {return 1;} else {return 0;}\n}",
                                 "int heav(double x_, double *p_, double *wk_, double *xv_)")
-        fspec.auxfns['__rhs_if'] = ("double __rhs_if(int cond_, double e1_, "
+        auxfns['__rhs_if'] = ("double __rhs_if(int cond_, double e1_, "
                                     +
                                     "double e2_, double *p_, double *wk_, double *xv_) {\n"
                                     +
                                     "  if (cond_) {return e1_;} else {return e2_;};\n}",
                                     "double __rhs_if(int cond_, double e1_, double e2_, double *p_, double *wk_, double *xv_)")
-        fspec.auxfns['__maxof2'] = ("double __maxof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {\n"
+        auxfns['__maxof2'] = ("double __maxof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {\n"
                                     +
                                     "if (e1_ > e2_) {return e1_;} else {return e2_;};\n}",
                                     "double __maxof2(double e1_, double e2_, double *p_, double *wk_, double *xv_)")
-        fspec.auxfns['__minof2'] = ("double __minof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {\n"
+        auxfns['__minof2'] = ("double __minof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {\n"
                                     +
                                     "if (e1_ < e2_) {return e1_;} else {return e2_;};\n}",
                                     "double __minof2(double e1_, double e2_, double *p_, double *wk_, double *xv_)")
-        fspec.auxfns['__maxof3'] = ("double __maxof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {\n"
+        auxfns['__maxof3'] = ("double __maxof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {\n"
                                     +
                                     "double temp_;\nif (e1_ > e2_) {temp_ = e1_;} else {temp_ = e2_;};\n"
                                     +
                                     "if (e3_ > temp_) {return e3_;} else {return temp_;};\n}",
                                     "double __maxof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_)")
-        fspec.auxfns['__minof3'] = ("double __minof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {\n"
+        auxfns['__minof3'] = ("double __minof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {\n"
                                     +
                                     "double temp_;\nif (e1_ < e2_) {temp_ = e1_;} else {temp_ = e2_;};\n"
                                     +
                                     "if (e3_ < temp_) {return e3_;} else {return temp_;};\n}",
                                     "double __minof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_)")
-        fspec.auxfns['__maxof4'] = ("double __maxof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {\n"
+        auxfns['__maxof4'] = ("double __maxof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {\n"
                                     +
                                     "double temp_;\nif (e1_ > e2_) {temp_ = e1_;} else {temp_ = e2_;};\n"
                                     +
                                     "if (e3_ > temp_) {temp_ = e3_;};\nif (e4_ > temp_) {return e4_;} else {return temp_;};\n}",
                                     "double __maxof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_)")
-        fspec.auxfns['__minof4'] = ("double __minof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {\n"
+        auxfns['__minof4'] = ("double __minof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {\n"
                                     +
                                     "double temp_;\nif (e1_ < e2_) {temp_ = e1_;} else {temp_ = e2_;};\n"
                                     +
@@ -326,19 +327,21 @@ class CCodeGenerator(object):
             + """initcond call\\n", varname);\n\treturn 0.0/0.0;\n\t}\n"""
         cases_index += """  else {\n\tfprintf(stderr, "Invalid name %s for """ \
             + """getindex call\\n", name);\n\treturn 0.0/0.0;\n\t}\n"""
-        fspec.auxfns['initcond'] = ("double initcond(char *varname, double *p_, double *wk_, double *xv_) {\n"
+        auxfns['initcond'] = ("double initcond(char *varname, double *p_, double *wk_, double *xv_) {\n"
                                     + "\n" + cases_ic + "}",
                                     'double initcond(char *varname, double *p_, double *wk_, double *xv_)')
-        fspec.auxfns['getindex'] = ("int getindex(char *name, double *p_, double *wk_, double *xv_) {\n"
+        auxfns['getindex'] = ("int getindex(char *name, double *p_, double *wk_, double *xv_) {\n"
                                     + "\n" + cases_index + "}",
                                     'int getindex(char *name, double *p_, double *wk_, double *xv_)')
-        fspec.auxfns['globalindepvar'] = ("double globalindepvar(double t, double *p_, double *wk_, double *xv_)"
+        auxfns['globalindepvar'] = ("double globalindepvar(double t, double *p_, double *wk_, double *xv_)"
                                           + " {\n  return globalt0+t;\n}",
                                           'double globalindepvar(double t, double *p_, double *wk_, double *xv_)')
-        fspec.auxfns['getbound'] = \
+        auxfns['getbound'] = \
             ("double getbound(char *name, int which_bd, double *p_, double *wk_, double *xv_) {\n"
              + "  return gBds[which_bd][getindex(name)];\n}",
              'double getbound(char *name, int which_bd, double *p_, double *wk_, double *xv_)')
+
+        return auxfns
 
     def generate_spec(self, fspec):
         assert fspec.targetlang == 'c', ('Wrong target language for this'

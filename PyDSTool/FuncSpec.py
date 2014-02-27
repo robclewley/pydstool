@@ -438,8 +438,7 @@ class FuncSpec(object):
             # use by user at python level
             # FIXME: hack to generate _pyauxfns
             CG.getCodeGenerator('python').generate_aux(self)
-            self.auxfns = {}
-        self.codegen.generate_aux(self)
+        self.auxfns = self.codegen.generate_aux(self)
 
     def generateSpec(self):
         """Automatically generate callable target-language functions from
