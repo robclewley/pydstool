@@ -11,7 +11,20 @@ from PyDSTool.utils import compareList, info
 from .base import _processReused, CodeGenerator
 
 
+PYTHON_FUNCTION_TEMPLATE = """
+def {name}(ds, t, x, parsinps):
+{start}
+{spec}
+{end}
+    return array([{result}])
+"""
+
+
 class Python(CodeGenerator):
+
+    def __init__(self, *args, **kwargs):
+        super(Python, self).__init__(*args, **kwargs)
+        self._fn_template = PYTHON_FUNCTION_TEMPLATE
 
     def generate_aux(self):
         auxnames = self.fspec._auxfnspecs.keys()
@@ -400,46 +413,17 @@ class Python(CodeGenerator):
         self.fspec.spec = spec_info
         self.fspec.auxspec = auxspec_info
 
-    def _generate_fun(self, name, specstr, resname, specnames,
-                      docodeinserts=False):
-        # Set up function header
-        retstr = 'def ' + name + \
-            '(ds, t, x, parsinps):\n'  # print t, x, parsinps\n'
-        # add arbitrary code inserts, if present and option is switched on
-        # (only used for vector field definitions)
-        lstart = len(self.opts['start'])
-        lend = len(self.opts['end'])
-        if docodeinserts:
-            if lstart > 0:
-                start_code = self._format_user_code(
-                    self._specStrParse(
-                        ['inserts'],
-                        {'inserts': self.opts['start']}, '',
-                        noreturndefs=True, ignoreothers=True,
-                        doing_inserts=True).strip()
-                )
-            else:
-                start_code = ''
-            if lend > 0:
-                end_code = self._format_user_code(
-                    self._specStrParse(
-                        ['inserts'],
-                        {'inserts': self.opts['end']}, '',
-                        noreturndefs=True, ignoreothers=True,
-                        doing_inserts=True).strip()
-                )
-            else:
-                end_code = ''
-        else:
-            start_code = end_code = ''
-        retstr += start_code + specstr + end_code
-        # Add the return line to the function
-        if len(specnames) == 1:
-            retstr += _indentstr + 'return array([' + resname + '0])\n'
-        else:
-            retstr += _indentstr + 'return array([' \
-                + makeParList(range(len(specnames)), resname) + '])\n'
-        return retstr
+    def _generate_fun(self, name, specstr, resname, specnames, docodeinserts=False):
+        """Generate string with Python code for function `name`"""
+
+        fdef = self._fn_template.format(
+            name=name,
+            start=self._format_user_code(self.opts['start']) if docodeinserts else '',
+            spec=specstr,
+            end=self._format_user_code(self.opts['end']) if docodeinserts else '',
+            result=makeParList(range(len(specnames)), resname)
+        )
+        return '\n'.join([s for s in fdef.split('\n') if s]) + '\n'
 
     def _specStrParse(self, specnames, specdict, resname='', specials=[],
         dovars=True, dopars=True, doinps=True,
@@ -597,5 +581,15 @@ class Python(CodeGenerator):
         return d
 
     def _format_user_code(self, code):
+        if not code:
+            return ''
+
+        code_ = self._specStrParse(
+            ['inserts'],
+            {'inserts': code},
+            '',
+            noreturndefs=True,
+            ignoreothers=True,
+            doing_inserts=True).strip()
         after = ' \n'
-        return self._format_code(_indentstr + code, after=after)
+        return self._format_code(_indentstr + code_, after=after)
