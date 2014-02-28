@@ -434,10 +434,8 @@ class C(CodeGenerator):
             "double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_)"
         # specstr = sig + "{\n\n" + pardefines + vardefines + "\n"
         specstr = sig + "{" + pardefines + vardefines + inpundefines + "\n"
-        if docodeinserts and self.opts['start'] != '':
-            specstr += '/* Verbose code insert -- begin */\n' \
-                + self.opts['start'] + '\n' \
-                + '/* Verbose code insert -- end */\n\n'
+        if docodeinserts and self.opts['start']:
+            specstr += self._format_user_code(self.opts['start']) + '\n'
         specstr += (len(reusestr) > 0) * "/* reused term definitions */\n" \
             + reusestr + "\n"
         auxdefs_parsed = {}
@@ -457,10 +455,8 @@ class C(CodeGenerator):
                                                  'initcond', '"')
             specstr += "f_[" + str(i) + "] = " + fbody_parsed + ";\n"
             auxdefs_parsed[xname] = fbody_parsed
-        if docodeinserts and self.opts['end'] != '':
-            specstr += '\n/* Verbose code insert -- begin */\n' \
-                + self.opts['end'] + '\n' \
-                + '/* Verbose code insert -- end */\n'
+        if docodeinserts and self.opts['end']:
+            specstr += '\n' + self._format_user_code(self.opts['end'])
         specstr += "\n" + parundefines + varundefines + inpundefines + "}\n\n"
         self.fspec._auxdefs_parsed = auxdefs_parsed
         return (specstr, funcname)
@@ -561,3 +557,8 @@ class C(CodeGenerator):
             qspec = QuantSpec('spec', new_specStr)
             qtoks = qspec.parser.tokenized
         return new_specStr
+
+    def _format_user_code(self, code):
+        before = '/* Verbose code insert -- begin */'
+        after =  '/* Verbose code insert -- end */\n'
+        return self._format_code(code, before, after)

@@ -411,17 +411,23 @@ class Python(CodeGenerator):
         lend = len(self.opts['end'])
         if docodeinserts:
             if lstart > 0:
-                start_code = self._specStrParse(['inserts'],
-                                                {'inserts': _indentstr + self.opts['start'] + '\n'}, '',
-                                                noreturndefs=True, ignoreothers=True,
-                                                doing_inserts=True)
+                start_code = self._format_user_code(
+                    self._specStrParse(
+                        ['inserts'],
+                        {'inserts': self.opts['start']}, '',
+                        noreturndefs=True, ignoreothers=True,
+                        doing_inserts=True).strip()
+                )
             else:
                 start_code = ''
             if lend > 0:
-                end_code = self._specStrParse(['inserts'],
-                                              {'inserts': _indentstr + self.opts['end'] + '\n'}, '',
-                                              noreturndefs=True, ignoreothers=True,
-                                              doing_inserts=True)
+                end_code = self._format_user_code(
+                    self._specStrParse(
+                        ['inserts'],
+                        {'inserts': self.opts['end']}, '',
+                        noreturndefs=True, ignoreothers=True,
+                        doing_inserts=True).strip()
+                )
             else:
                 end_code = ''
         else:
@@ -589,3 +595,7 @@ class Python(CodeGenerator):
                     # must strip possible trailing whitespace!
                     d[specname][listix][ix] = parsedsymbol.strip()
         return d
+
+    def _format_user_code(self, code):
+        after = ' \n'
+        return self._format_code(_indentstr + code, after=after)

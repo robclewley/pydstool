@@ -28,6 +28,12 @@ class CodeGenerator(object):
 
         return opts
 
+    def _format_code(self, code, before='', after='', sep='\n'):
+        if not code:
+            return ''
+
+        return sep.join([s for s in [before, code, after] if s])
+
     def generate_aux(self):
         raise NotImplementedError
 
