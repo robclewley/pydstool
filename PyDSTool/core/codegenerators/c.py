@@ -8,10 +8,10 @@ from PyDSTool.parseUtils import convertPowers, parseMatrixStrToDictStr, addArgTo
 from PyDSTool.Symbolic import QuantSpec
 from PyDSTool.utils import compareList, info
 
-from .base import _processReused
+from .base import _processReused, CodeGenerator
 
 
-class CCodeGenerator(object):
+class C(CodeGenerator):
 
     def generate_aux(self, fspec):
         auxnames = fspec._auxfnspecs.keys()

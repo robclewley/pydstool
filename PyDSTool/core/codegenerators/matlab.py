@@ -7,10 +7,10 @@ from PyDSTool.common import intersect, concatStrDict, idfn
 from PyDSTool.parseUtils import convertPowers, addArgToCalls
 from PyDSTool.Symbolic import QuantSpec
 
-from .base import _processReused
+from .base import _processReused, CodeGenerator
 
 
-class MatlabCodeGenerator(object):
+class Matlab(CodeGenerator):
 
     def generate_aux(self, fspec):
         auxnames = fspec.auxfns.keys()

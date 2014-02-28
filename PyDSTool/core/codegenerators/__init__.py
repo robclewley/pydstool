@@ -8,13 +8,14 @@ from . import python
 from . import c
 from . import matlab
 
+
 def getCodeGenerator(lang):
     if lang == 'python':
-        return python.PythonCodeGenerator()
+        return python.Python()
     elif lang == 'c':
-        return c.CCodeGenerator()
+        return c.C()
     elif lang == 'matlab':
-        return matlab.MatlabCodeGenerator()
+        return matlab.Matlab()
     else:
         return base.CodeGenerator()
 

@@ -11,7 +11,7 @@ from PyDSTool.utils import compareList, info
 from .base import _processReused, CodeGenerator
 
 
-class PythonCodeGenerator(CodeGenerator):
+class Python(CodeGenerator):
 
     def generate_aux(self, fspec):
         auxnames = fspec._auxfnspecs.keys()
