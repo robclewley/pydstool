@@ -591,5 +591,4 @@ class Python(CodeGenerator):
             noreturndefs=True,
             ignoreothers=True,
             doing_inserts=True).strip()
-        after = ' \n'
-        return self._format_code(_indentstr + code_, after=after)
+        return self._format_code(_indentstr + code_)

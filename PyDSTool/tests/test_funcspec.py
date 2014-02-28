@@ -856,10 +856,8 @@ def test_python_funcspec_inserts_additional_code_in_vfield():
     assert fs.spec[0].split('\n') == [
         'def _specfn(ds, t, x, parsinps):',
         start,
-        ' ',
         '    xnew0 = parsinps[0] * x[0] - 1 ',
         end,
-        ' ',
         '    return array([xnew0])',
         '',
     ]
