@@ -102,7 +102,7 @@ class FuncSpec(object):
         else:
             self._ignorespecial = []
 
-        self.codegen = CG.getCodeGenerator(self.targetlang)
+        self.codegen = CG.getCodeGenerator(self)
         # ------------------------------------------
         # reusable terms in function specs
         self.reuseterms = kw.pop('reuseterms', {})
@@ -438,13 +438,13 @@ class FuncSpec(object):
             # use by user at python level
             # FIXME: hack to generate _pyauxfns
             # FIXME: as a side effect this creates '_user_auxfns_interface' field
-            CG.getCodeGenerator('python').generate_aux(self)
-        self.auxfns = self.codegen.generate_aux(self)
+            CG.getCodeGenerator(self, 'python').generate_aux()
+        self.auxfns = self.codegen.generate_aux()
 
     def generateSpec(self):
         """Automatically generate callable target-language functions from
         the user-defined specification strings."""
-        self.codegen.generate_spec(self)
+        self.codegen.generate_spec()
 
     def doPreMacros(self):
         """Pre-process any macro spec definitions (e.g. `for` loops)."""
@@ -941,18 +941,18 @@ class FuncSpec(object):
                       dovars=True, dopars=True, doinps=True,
                       noreturndefs=False, forexternal=False, illegal=[],
                       ignoreothers=False, doing_inserts=False):
-        return CG.getCodeGenerator('python')._specStrParse(self, specnames, specdict, resname, specials,
+        return CG.getCodeGenerator(self, 'python')._specStrParse(specnames, specdict, resname, specials,
                         dovars, dopars, doinps,
                         noreturndefs, forexternal, illegal,
                         ignoreothers, doing_inserts)
 
     def _parseReusedTermsPy(self, d, symbol_ixs, specials=[],
                         dovars=True, dopars=True, doinps=True, illegal=[]):
-        return CG.getCodeGenerator('python')._parseReusedTermsPy(self, d, symbol_ixs, specials,
+        return CG.getCodeGenerator(self, 'python')._parseReusedTermsPy(d, symbol_ixs, specials,
                         dovars, dopars, doinps, illegal)
 
     def _processSpecialC(self, specStr):
-        return CG.getCodeGenerator('c')._processSpecialC(specStr)
+        return CG.getCodeGenerator(self, 'c')._processSpecialC(specStr)
 
 # Sub-classes of FuncSpec
 class RHSfuncSpec(FuncSpec):

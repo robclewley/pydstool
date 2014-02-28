@@ -9,15 +9,16 @@ from . import c
 from . import matlab
 
 
-def getCodeGenerator(lang):
+def getCodeGenerator(fspec, lang_=None):
+    lang = lang_ or fspec.targetlang
     if lang == 'python':
-        return python.Python()
+        return python.Python(fspec)
     elif lang == 'c':
-        return c.C()
+        return c.C(fspec)
     elif lang == 'matlab':
-        return matlab.Matlab()
+        return matlab.Matlab(fspec)
     else:
-        return base.CodeGenerator()
+        return base.CodeGenerator(fspec)
 
 
 _processReused = base._processReused

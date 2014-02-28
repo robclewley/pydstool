@@ -9,10 +9,13 @@ from PyDSTool.parseUtils import proper_match
 
 class CodeGenerator(object):
 
-    def generate_aux(self, fspec):
+    def __init__(self, fspec):
+        self.fspec = fspec
+
+    def generate_aux(self):
         raise NotImplementedError
 
-    def generate_spec(self, fspec):
+    def generate_spec(self):
         raise NotImplementedError
 
 
