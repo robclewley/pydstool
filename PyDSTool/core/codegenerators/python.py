@@ -22,46 +22,7 @@ class Python(CodeGenerator):
         #                  fspec._protected_scipynames + \
         #                  fspec._protected_specialfns + \
         #                  ['abs', 'and', 'or', 'not', 'True', 'False']
-        # Deal with built-in auxiliary functions (don't make their names unique)
-        # In this version, the textual code here doesn't get executed. Only
-        # the function names in the second position of the tuple are needed.
-        # Later, the text will probably be removed.
-        auxfns = {}
-        auxfns['globalindepvar'] = \
-            ("def _auxfn_globalindepvar(ds, parsinps, t):\n"
-             + _indentstr
-             + "return ds.globalt0 + t", '_auxfn_globalindepvar')
-        auxfns['initcond'] = \
-            ("def _auxfn_initcond(ds, parsinps, varname):\n"
-             + _indentstr
-             + "return ds.initialconditions[varname]", '_auxfn_initcond')
-        auxfns['heav'] = \
-            ("def _auxfn_heav(ds, parsinps, x):\n" + _indentstr
-             + "if x>0:\n" + 2 * _indentstr
-             + "return 1\n" + _indentstr + "else:\n"
-             + 2 * _indentstr + "return 0", '_auxfn_heav')
-        auxfns['if'] = \
-            ("def _auxfn_if(ds, parsinps, c, e1, e2):\n"
-             + _indentstr + "if c:\n" + 2 * _indentstr
-             + "return e1\n" + _indentstr
-             + "else:\n" + 2 * _indentstr + "return e2", '_auxfn_if')
-        auxfns['getindex'] = \
-            ("def _auxfn_getindex(ds, parsinps, varname):\n"
-             + _indentstr
-             + "return ds._var_namemap[varname]", '_auxfn_getindex')
-        auxfns['getbound'] = \
-            ("def _auxfn_getbound(ds, parsinps, name, bd):\n"
-             + _indentstr + "try:\n"
-             + 2 * _indentstr + "return ds.xdomain[name][bd]\n"
-             + _indentstr + "except KeyError:\n" + 2 * _indentstr
-             + "try:\n" + 3 * _indentstr
-             + "return ds.pdomain[name][bd]\n" + 2 * _indentstr
-             + "except KeyError, e:\n" + 3 * _indentstr
-             + "print 'Invalid var / par name %s'%name,\n"
-             + 3 * _indentstr + "print 'or bounds not well defined:'\n"
-             + 3 * _indentstr + "print ds.xdomain, ds.pdomain\n"
-             + 3 * _indentstr + "raise (RuntimeError, e)",
-             '_auxfn_getbound')
+        auxfns = self.builtin_aux
         # the internal functions may be used by user-defined functions,
         # so need them to be accessible to processTokens when parsing
         fspec._pyauxfns = auxfns
@@ -323,6 +284,57 @@ class Python(CodeGenerator):
             auxfns[auxname] = (dummyQ(), auxspec[1])
         fspec._user_auxfn_interface = uafi
         fspec._protected_auxnames.extend(auxnames)
+        return auxfns
+
+    @property
+    def builtin_aux(self):
+        if not hasattr(self, '_builtin_aux'):
+            self._builtin_aux = self.__generate_builtin_aux()
+
+        return self._builtin_aux
+
+    def __generate_builtin_aux(self):
+        # Deal with built-in auxiliary functions (don't make their names unique)
+        # In this version, the textual code here doesn't get executed. Only
+        # the function names in the second position of the tuple are needed.
+        # Later, the text will probably be removed.
+        auxfns = {}
+        auxfns['globalindepvar'] = \
+            ("def _auxfn_globalindepvar(ds, parsinps, t):\n"
+             + _indentstr
+             + "return ds.globalt0 + t", '_auxfn_globalindepvar')
+        auxfns['initcond'] = \
+            ("def _auxfn_initcond(ds, parsinps, varname):\n"
+             + _indentstr
+             + "return ds.initialconditions[varname]", '_auxfn_initcond')
+        auxfns['heav'] = \
+            ("def _auxfn_heav(ds, parsinps, x):\n" + _indentstr
+             + "if x>0:\n" + 2 * _indentstr
+             + "return 1\n" + _indentstr + "else:\n"
+             + 2 * _indentstr + "return 0", '_auxfn_heav')
+        auxfns['if'] = \
+            ("def _auxfn_if(ds, parsinps, c, e1, e2):\n"
+             + _indentstr + "if c:\n" + 2 * _indentstr
+             + "return e1\n" + _indentstr
+             + "else:\n" + 2 * _indentstr + "return e2", '_auxfn_if')
+        auxfns['getindex'] = \
+            ("def _auxfn_getindex(ds, parsinps, varname):\n"
+             + _indentstr
+             + "return ds._var_namemap[varname]", '_auxfn_getindex')
+        auxfns['getbound'] = \
+            ("def _auxfn_getbound(ds, parsinps, name, bd):\n"
+             + _indentstr + "try:\n"
+             + 2 * _indentstr + "return ds.xdomain[name][bd]\n"
+             + _indentstr + "except KeyError:\n" + 2 * _indentstr
+             + "try:\n" + 3 * _indentstr
+             + "return ds.pdomain[name][bd]\n" + 2 * _indentstr
+             + "except KeyError, e:\n" + 3 * _indentstr
+             + "print 'Invalid var / par name %s'%name,\n"
+             + 3 * _indentstr + "print 'or bounds not well defined:'\n"
+             + 3 * _indentstr + "print ds.xdomain, ds.pdomain\n"
+             + 3 * _indentstr + "raise (RuntimeError, e)",
+             '_auxfn_getbound')
+
         return auxfns
 
     def generate_spec(self, fspec):
