@@ -503,7 +503,9 @@ def test_c_funcspec_with_jacobian_and_auxfunc():
     fs = FuncSpec(args)
 
     assert fs.spec[0].split('\n') == [
-        'void vfieldfunc(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_){', '', 'f_[0] = ydot0(y0,y1,y2, p_, wk_, xv_);',
+        'void vfieldfunc(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_){',
+        '',
+        'f_[0] = ydot0(y0,y1,y2, p_, wk_, xv_);',
         'f_[1] = -ydot0(y0,y1,y2, p_, wk_, xv_)-ydot2(y0,y1,y2, p_, wk_, xv_);',
         'f_[2] = ydot2(y0,y1,y2, p_, wk_, xv_);',
         '',
