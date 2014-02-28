@@ -102,7 +102,8 @@ class FuncSpec(object):
         else:
             self._ignorespecial = []
 
-        self.codegen = CG.getCodeGenerator(self)
+        codegen_opts = dict((k, kw.pop(k, '')) for k in ['codeinsert_start', 'codeinsert_end'])
+        self.codegen = CG.getCodeGenerator(self, **codegen_opts)
         # ------------------------------------------
         # reusable terms in function specs
         self.reuseterms = kw.pop('reuseterms', {})
@@ -142,35 +143,6 @@ class FuncSpec(object):
         else:
             self.varspecs = {}
         self.codeinserts = {'start': '', 'end': ''}
-        if 'codeinsert_start' in kw:
-            codestr = kw['codeinsert_start']
-            assert isinstance(codestr, str), 'code insert must be a string'
-            if self.targetlang == 'python':
-                # check initial indentation (as early predictor of whether
-                # indentation has been done properly)
-                if codestr[:4] != _indentstr:
-                    codestr = _indentstr+codestr
-            # additional spacing in function spec
-            if codestr[-1] != '\n':
-                addnl = '\n'
-            else:
-                addnl = ''
-            self.codeinserts['start'] = codestr+addnl
-        if 'codeinsert_end' in kw:
-            codestr = kw['codeinsert_end']
-            assert isinstance(codestr, str), 'code insert must be a string'
-            if self.targetlang == 'python':
-                # check initial indentation (as early predictor of whether
-                # indentation has been done properly)
-                assert codestr[:4] == "    ", ("First line of inserted "
-                                        "python code at start of spec was "
-                                               "wrongly indented")
-            # additional spacing in function spec
-            if codestr[-1] != '\n':
-                addnl = '\n'
-            else:
-                addnl = ''
-            self.codeinserts['end'] = codestr+addnl
         # spec dict of functionality, as python functions,
         # or the paths/names of C dynamic linked library files
         # can be user-defined or generated from generateSpec

@@ -9,8 +9,24 @@ from PyDSTool.parseUtils import proper_match
 
 class CodeGenerator(object):
 
-    def __init__(self, fspec):
+    def __init__(self, fspec, **kwargs):
         self.fspec = fspec
+        self.opts = self._set_options(**kwargs)
+
+    def _set_options(self, **kwargs):
+
+        try:
+            opts = {
+                'start': kwargs.pop('codeinsert_start', '').strip(),
+                'end': kwargs.pop('codeinsert_end', '').strip(),
+            }
+        except AttributeError:
+            raise ValueError('code insert must be a string')
+
+        if kwargs.keys():
+            raise KeyError("CodeGenerator: keywords %r unsupported")
+
+        return opts
 
     def generate_aux(self):
         raise NotImplementedError

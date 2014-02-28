@@ -434,9 +434,9 @@ class C(CodeGenerator):
             "double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_)"
         # specstr = sig + "{\n\n" + pardefines + vardefines + "\n"
         specstr = sig + "{" + pardefines + vardefines + inpundefines + "\n"
-        if docodeinserts and self.fspec.codeinserts['start'] != '':
+        if docodeinserts and self.opts['start'] != '':
             specstr += '/* Verbose code insert -- begin */\n' \
-                + self.fspec.codeinserts['start'] \
+                + self.opts['start'] + '\n' \
                 + '/* Verbose code insert -- end */\n\n'
         specstr += (len(reusestr) > 0) * "/* reused term definitions */\n" \
             + reusestr + "\n"
@@ -457,9 +457,9 @@ class C(CodeGenerator):
                                                  'initcond', '"')
             specstr += "f_[" + str(i) + "] = " + fbody_parsed + ";\n"
             auxdefs_parsed[xname] = fbody_parsed
-        if docodeinserts and self.fspec.codeinserts['end'] != '':
+        if docodeinserts and self.opts['end'] != '':
             specstr += '\n/* Verbose code insert -- begin */\n' \
-                + self.fspec.codeinserts['end'] \
+                + self.opts['end'] + '\n' \
                 + '/* Verbose code insert -- end */\n'
         specstr += "\n" + parundefines + varundefines + inpundefines + "}\n\n"
         self.fspec._auxdefs_parsed = auxdefs_parsed

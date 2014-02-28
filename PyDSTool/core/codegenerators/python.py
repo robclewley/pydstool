@@ -407,21 +407,19 @@ class Python(CodeGenerator):
             '(ds, t, x, parsinps):\n'  # print t, x, parsinps\n'
         # add arbitrary code inserts, if present and option is switched on
         # (only used for vector field definitions)
-        lstart = len(self.fspec.codeinserts['start'])
-        lend = len(self.fspec.codeinserts['end'])
+        lstart = len(self.opts['start'])
+        lend = len(self.opts['end'])
         if docodeinserts:
             if lstart > 0:
                 start_code = self._specStrParse(['inserts'],
-                                                {'inserts': self.fspec.codeinserts[
-                                                    'start']}, '',
+                                                {'inserts': _indentstr + self.opts['start'] + '\n'}, '',
                                                 noreturndefs=True, ignoreothers=True,
                                                 doing_inserts=True)
             else:
                 start_code = ''
             if lend > 0:
                 end_code = self._specStrParse(['inserts'],
-                                              {'inserts': self.fspec.codeinserts[
-                                                  'end']}, '',
+                                              {'inserts': _indentstr + self.opts['end'] + '\n'}, '',
                                               noreturndefs=True, ignoreothers=True,
                                               doing_inserts=True)
             else:
