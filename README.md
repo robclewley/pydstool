@@ -1,7 +1,7 @@
 PyDSTool v0.88
 ==============
 
-[![Build Status](https://travis-ci.org/z2v/pydstool.png?branch=refactoring/funcspec)](https://travis-ci.org/z2v/pydstool) [![Coverage Status](https://coveralls.io/repos/z2v/pydstool/badge.png?branch=refactoring/funcspec)](https://coveralls.io/r/z2v/pydstool?branch=refactoring/funcspec)
+[![Build Status](https://travis-ci.org/z2v/pydstool.png?branch=refactoring/funcspec)](https://travis-ci.org/z2v/pydstool) [![Coverage Status](https://coveralls.io/repos/z2v/pydstool/badge.png?branch=refactoring%2Ffuncspec)](https://coveralls.io/r/z2v/pydstool?branch=refactoring%2Ffuncspec)
 
 Dec 2012. *This is a beta release version.*
 
