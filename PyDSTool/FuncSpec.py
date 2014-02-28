@@ -437,6 +437,7 @@ class FuncSpec(object):
             # Always makes a set of python versions of the functions for future
             # use by user at python level
             # FIXME: hack to generate _pyauxfns
+            # FIXME: as a side effect this creates '_user_auxfns_interface' field
             CG.getCodeGenerator('python').generate_aux(self)
         self.auxfns = self.codegen.generate_aux(self)
 

@@ -777,3 +777,61 @@ def test_sum_macro_raises_value_error():
                 'z': 'sum(i, 1, 3, [i] / [i+1]**2)',
             },
         })
+
+
+def test_python_funcspec_has_python_user_auxfn_interface():
+    args = {
+        'name': 'test_user_auxfn_interface',
+        'vars': ['x'],
+        'pars': ['p'],
+        'varspecs': {'x': 'p * x - 1'},
+        'fnspecs': {'myaux': (['x'], 'x**2 + p')},
+    }
+    fs = FuncSpec(args)
+
+    assert fs._user_auxfn_interface['myaux'].split('\n') == [
+        'def myaux(self,x,__parsinps__=None):',
+        '\tif __parsinps__ is None:',
+        '\t\t__parsinps__=self.map_ixs(self.genref)',
+        '\treturn self.genref._auxfn_myaux(__parsinps__,x)',
+        ''
+    ]
+
+
+def test_c_funcspec_has_python_user_auxfn_interface():
+    args = {
+        'name': 'test_user_auxfn_interface',
+        'targetlang': 'c',
+        'vars': ['x'],
+        'pars': ['p'],
+        'varspecs': {'x': 'p * x - 1'},
+        'fnspecs': {'myaux': (['x'], 'x**2 + p')},
+    }
+    fs = FuncSpec(args)
+
+    assert fs._user_auxfn_interface['myaux'].split('\n') == [
+        'def myaux(self,x,__parsinps__=None):',
+        '\tif __parsinps__ is None:',
+        '\t\t__parsinps__=self.map_ixs(self.genref)',
+        '\treturn self.genref._auxfn_myaux(__parsinps__,x)',
+        ''
+    ]
+
+def test_matlab_funcspec_has_python_user_auxfn_interface():
+    args = {
+        'name': 'test_user_auxfn_interface',
+        'targetlang': 'matlab',
+        'vars': ['x'],
+        'pars': ['p'],
+        'varspecs': {'x': 'p * x - 1'},
+        'fnspecs': {'myaux': (['x'], 'x**2 + p')},
+    }
+    fs = FuncSpec(args)
+
+    assert fs._user_auxfn_interface['myaux'].split('\n') == [
+        'def myaux(self,x,__parsinps__=None):',
+        '\tif __parsinps__ is None:',
+        '\t\t__parsinps__=self.map_ixs(self.genref)',
+        '\treturn self.genref._auxfn_myaux(__parsinps__,x)',
+        ''
+    ]
