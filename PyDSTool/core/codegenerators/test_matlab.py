@@ -10,6 +10,8 @@ import pytest
 
 from PyDSTool import FuncSpec
 
+from PyDSTool.core.codegenerators.matlab import Matlab
+
 
 def test_matlab_funcspec_for_ds_with_single_var_and_single_param():
     args = {
@@ -232,7 +234,6 @@ def test_matlab_funcspec_with_reuseterms_and_aux_func():
     }
 
     fs = FuncSpec(args)
-    print fs.spec[0]
     assert fs.spec[0].split('\n') == [
         'function [vf_, y_] = vfield(vf_, t_, x_, p_)',
         '% Vector field definition for model fs_with_reuseterms',
@@ -273,4 +274,26 @@ def test_matlab_funcspec_with_reuseterms_and_aux_func():
         'y_ = x__^2;',
         '',
         ''
+    ]
+
+
+def test_define():
+    m = Matlab(None)
+    assert '\tQ = p_(1);\n' == m.define('Q', 'p', 1)
+
+
+def test_define_many_for_empty_list():
+    m = Matlab(None)
+    assert '\n% Test\n\n' == m.defineMany('Test', 'v', [])
+
+
+def test_print_single_variable_definition():
+    m = Matlab(None)
+    assert m.defineMany('Test', 'x', ['x', 'y']).split('\n') == [
+        '',
+        '% Test',
+        '',
+        '\tx = x_(1);',
+        '\ty = x_(2);',
+        '',
     ]
