@@ -45,7 +45,7 @@ pyclean:
 	@find . -type d -name "__pycache__" -delete
 
 clean:
-	-@find . -maxdepth 2 -type d \( -name "auto_temp" -o -name "radau5_temp" -o -name "dopri853_temp" \) -exec rm -rf {} \;
+	-@find . -maxdepth 1 -type d \( -name "auto_temp" -o -name "radau5_temp" -o -name "dopri853_temp" \) -exec rm -rf {} \;
 	-@find . -type f \( -name "dop853_*_vf.py" -o -name "radau5_*_vf.py" -o -name "auto_*_vf.py" \) -delete
 	-@find . -type f -name "*.so" -delete
 	-@find . -type f -name "*module.c" -delete
