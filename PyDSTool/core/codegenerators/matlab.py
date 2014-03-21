@@ -54,29 +54,6 @@ class Matlab(CodeGenerator):
     def generate_special(self, name, spec):
         raise NotImplementedError
 
-    def _validate_aux_spec(self, name, spec):
-        assert name not in ['auxvars', 'vfield'], \
-            ("auxiliary function name '" + name + "' clashes with internal"
-                " names")
-        assert len(spec) == 2, 'auxspec tuple must be of length 2'
-        if not isinstance(spec[0], list):
-            raise TypeError('aux function arguments must be given as a list')
-        if not isinstance(spec[1], str):
-            raise TypeError('aux function specification must be a string of the function code')
-
-    def generate_aux(self):
-        auxfns = {}
-
-        for auxname, auxspec in self.fspec._auxfnspecs.iteritems():
-            self._validate_aux_spec(auxname, auxspec)
-            if auxname in ['Jacobian', 'Jacobian_pars', 'massMatrix']:
-                code, signature = self.generate_special(auxname, auxspec)
-            else:
-                code, signature = self.generate_auxfun(auxname, auxspec)
-            auxfns[auxname] = (code, signature)
-            self.fspec._protected_auxnames.append(auxname)
-        return auxfns
-
     def _normalize_spec(self, auxname, auxspec):
         vars_, spec = auxspec
         if any([pt in spec for pt in ('pow', '**')]):

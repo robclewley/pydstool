@@ -411,7 +411,27 @@ class FuncSpec(object):
             # FIXME: hack to generate _pyauxfns
             # FIXME: as a side effect this creates '_user_auxfns_interface' field
             CG.getCodeGenerator(self, 'python').generate_aux()
-        self.auxfns = self.codegen.generate_aux()
+        if self.targetlang != 'matlab':
+            self.auxfns = self.codegen.generate_aux()
+        else:
+            for name, spec in self._auxfnspecs.iteritems():
+                self.__validate_aux_spec(name, spec)
+                if name in ['Jacobian', 'Jacobian_pars', 'massMatrix']:
+                    code, signature = self.codegen.generate_special(name, spec)
+                else:
+                    code, signature = self.codegen.generate_auxfun(name, spec)
+                self.auxfns[name] = (code, signature)
+                self._protected_auxnames.append(name)
+
+    def __validate_aux_spec(self, name, spec):
+        assert name not in ['auxvars', 'vfield'], \
+            ("auxiliary function name '" + name + "' clashes with internal"
+                " names")
+        assert len(spec) == 2, 'auxspec tuple must be of length 2'
+        if not isinstance(spec[0], list):
+            raise TypeError('aux function arguments must be given as a list')
+        if not isinstance(spec[1], str):
+            raise TypeError('aux function specification must be a string of the function code')
 
     def generateSpec(self):
         """Automatically generate callable target-language functions from
