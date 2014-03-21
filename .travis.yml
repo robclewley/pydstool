@@ -19,6 +19,7 @@ install:
     - pip install -q -U numpy==$NUMPY_VERSION
     - pip install -U scipy==$SCIPY_VERSION
     - pip install coveralls
+    - pip install mock
 
 script:
     - coverage run --source=PyDSTool setup.py test
