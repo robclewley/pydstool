@@ -128,7 +128,7 @@ class Matlab(CodeGenerator):
         return self.defineMany("Variable definitions", "x", vnames)
 
     def defineMany(self, header, listid, names):
-        return  "\n% {0}\n\n{1}".format(
+        return "\n% {0}\n\n{1}".format(
             header,
             ''.join([self.define(n, listid, i + 1) for i, n in enumerate(names)]))
 
@@ -142,7 +142,7 @@ class Matlab(CodeGenerator):
         for i, it in enumerate(specnames):
             specstr = "y_(" + str(i + 1) + ") = " + self._processIfMatlab(self.fspec.varspecs[it]) + ';'
             if self.fspec.auxfns:
-                specstr = addArgToCalls( specstr, self.fspec.auxfns.keys(), "p_")
+                specstr = addArgToCalls(specstr, self.fspec.auxfns.keys(), "p_")
             result.append(specstr)
 
         specstr = MATLAB_FUNCTION_TEMPLATE.format(
@@ -196,5 +196,5 @@ class Matlab(CodeGenerator):
 
     def _format_user_code(self, code):
         before = '% Verbose code insert -- begin '
-        after =  '% Verbose code insert -- end \n\n'
+        after = '% Verbose code insert -- end \n\n'
         return self._format_code(code, before, after)
