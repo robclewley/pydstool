@@ -18,6 +18,7 @@ function [vf_, y_] = {name}(vf_, t_, x_, p_)
 {pardef}{vardef}
 {start}{reuseterms}
 {result}
+
 {end}
 """
 
@@ -52,7 +53,7 @@ class Matlab(CodeGenerator):
                 'specname': self.fspec.name,
                 'vnames': ', '.join([vnames[v] for v in auxspec[0]]),
                 'pardef': self.defineMany("Parameter definitions", "p", pars),
-                'reuseterms': (len(reusestr) > 0) * "% reused term definitions \n" + reusestr + (len(reusestr) > 0) * "\n",
+                'reuseterms': (len(reusestr) > 0) * "\n% reused term definitions \n" + reusestr.strip() + (len(reusestr) > 0) * "\n",
                 'result': body,
             }
         )
@@ -139,7 +140,7 @@ class Matlab(CodeGenerator):
 
         result = []
         for i, it in enumerate(specnames):
-            specstr = "y_(" + str(i + 1) + ") = " + self._processIfMatlab(self.fspec.varspecs[it]) + ';\n'
+            specstr = "y_(" + str(i + 1) + ") = " + self._processIfMatlab(self.fspec.varspecs[it]) + ';'
             if self.fspec.auxfns:
                 specstr = addArgToCalls( specstr, self.fspec.auxfns.keys(), "p_")
             result.append(specstr)
