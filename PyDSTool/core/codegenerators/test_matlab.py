@@ -320,7 +320,7 @@ def test_matlab_funcspec_with_reuseterms_and_aux_funcs():
         '% reused term definitions ',
         'sx = sin(x);',
         '',
-        'y_ = sx-myaux(x__);',
+        'y_ = sx-myaux(x__);',  # FIXME: add 'p_' to 'myaux' call
         '',
         ''
     ]
