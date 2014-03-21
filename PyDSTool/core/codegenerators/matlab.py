@@ -25,21 +25,10 @@ function [vf_, y_] = {name}(vf_, t_, x_, p_)
 class Matlab(CodeGenerator):
 
     def generate_aux(self):
-        auxnames = self.fspec.auxfns.keys()
         auxfns = {}
-        # parameter and variable definitions
-
-        # sorted version of var and par names sorted version of par
-        # names (vars not #define'd in aux functions unless Jacobian)
         vnames = self.fspec.vars
         pnames = self.fspec.pars
-        vnames.sort()
-        pnames.sort()
 
-        for auxname in auxnames:
-            assert auxname not in ['auxvars', 'vfield'], \
-                ("auxiliary function name '" + auxname + "' clashes with internal"
-                 " names")
         # must add parameter argument so that we can name
         # pars inside the functions! this would either
         # require all calls to include this argument (yuk!) or
@@ -47,6 +36,9 @@ class Matlab(CodeGenerator):
         # every call found in the .c code (as is done currently.
         # this is still an untidy solution, but there you go...)
         for auxname, auxspec in self.fspec._auxfnspecs.iteritems():
+            assert auxname not in ['auxvars', 'vfield'], \
+                ("auxiliary function name '" + auxname + "' clashes with internal"
+                 " names")
             assert len(auxspec) == 2, 'auxspec tuple must be of length 2'
             if not isinstance(auxspec[0], list):
                 print "Found type ", type(auxspec[0])
@@ -102,7 +94,7 @@ class Matlab(CodeGenerator):
             # sig as second entry, whereas Python-coded specifications
             # have the fn name there
             auxfns[auxname] = (auxspecstr, sig)
-        self.fspec._protected_auxnames.extend(auxnames)
+        self.fspec._protected_auxnames.extend(self.fspec.auxfns.keys())
         # Don't apply #define's for built-in functions
         return auxfns
 
@@ -139,10 +131,10 @@ class Matlab(CodeGenerator):
         reusestr, specupdated = self._processReusedMatlab(specname_vars,
                                                           self.fspec.varspecs)
         self.fspec.varspecs.update(specupdated)
-        specstr_Matlab = self._genSpecFnMatlab(
+        code = self._genSpecFnMatlab(
             'vfield', reusestr, specname_vars,
             pardefines, vardefines, True)
-        self.fspec.spec = specstr_Matlab
+        self.fspec.spec = (code, 'vfield')
         # do not produce auxiliary variables specification
 
     def _prepareMatlabPDefines(self, pnames):
@@ -180,7 +172,7 @@ class Matlab(CodeGenerator):
             end=self._format_user_code(self.opts['end']) if docodeinserts and self.opts['end'] else '',
         )
 
-        return (specstr, name)
+        return specstr
 
     def _processIfMatlab(self, specStr):
         # NEED TO CHECK WHETHER THIS IS NECESSARY AND WORKS
