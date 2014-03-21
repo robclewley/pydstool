@@ -180,11 +180,7 @@ class Matlab(CodeGenerator):
         # this is still an untidy solution, but there you go...)
         parseFunc = idfn
         if self.fspec.auxfns:
-            def addParToCall(s):
-                return addArgToCalls(s, self.fspec.auxfns.keys(), "p_")
-            parseFunc = addParToCall
-        else:
-            parseFunc = idfn
+            parseFunc = lambda s: addArgToCalls(s, self.fspec.auxfns.keys(), "p_")
         reused, specupdated, new_protected, order = _processReused(specnames,
                                                                    specdict,
                                                                    self.fspec.reuseterms,
