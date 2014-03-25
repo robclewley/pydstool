@@ -107,6 +107,31 @@ def test_funcspec_sum_macro_raises_value_error():
         })
 
 
+def test_dependencies():
+    fs = FuncSpec({
+        'vars': ['x', 'y', 'z'],
+        'varspecs': {
+            'x': 'y + myaux(x, z)',
+            'y': 'z - input_y',
+            'z': '1',
+            'my': 'x + y + z',
+        },
+        'fnspecs': {
+            'myaux': (['x', 'z'], 'x**2 + z^2'),
+        },
+        'auxvars': ['my'],
+        'inputs': ['input_y'],
+        'targetlang': 'matlab',
+    })
+
+    assert ('x', 'y') in fs.dependencies
+    assert ('x', 'x') in fs.dependencies
+    assert ('x', 'z') in fs.dependencies
+    assert ('y', 'z') in fs.dependencies
+    assert ('y', 'input_y') in fs.dependencies
+    assert all(v != 'z' for v, _ in fs.dependencies)
+
+
 @pytest.fixture
 def fsargs():
     fvarspecs = {

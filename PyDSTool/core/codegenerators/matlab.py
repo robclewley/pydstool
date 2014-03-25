@@ -105,11 +105,6 @@ class Matlab(CodeGenerator):
                 specstr) == str, "Specification for %s was not a string" % specname
             if any([pt in specstr for pt in ('pow', '**')]):
                 specstr = convertPowers(specstr, '^')
-            specQS = QuantSpec('__spectemp__', specstr)
-            for s in specQS:
-                if s in valid_depTargNames and (specname, s) not in \
-                        self.fspec.dependencies:  # and specname != s:
-                    self.fspec.dependencies.append((specname, s))
         # pre-process reused sub-expression dictionary to adapt for
         # known calling sequence in Matlab
         reusestr, specupdated = self._processReusedMatlab(specname_vars,

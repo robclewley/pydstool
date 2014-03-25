@@ -156,14 +156,13 @@ class FuncSpec(object):
             # auto-generated python auxiliary variable specs (as py functions)
             self.auxspec = {}
             if 'dependencies' in kw:
-                self.dependencies = kw['dependencies']
+                self._dependencies = kw['dependencies']
             else:
                 raise PyDSTool_KeyError("Dependencies must be provided "
                          "explicitly when using 'spec' form of initialization")
         else:
             self.spec = {}
             self.auxspec = {}
-            self.dependencies = []
         self.defined = False  # initial value
         self.validateDef(self.vars, self.pars, self.inputs, self.auxvars, self._auxfnspecs.keys())
         # ... exception if not valid
@@ -220,6 +219,19 @@ class FuncSpec(object):
             raise TypeError("Expected string type for target language")
 
         self._targetlang = value
+
+    @property
+    def dependencies(self):
+        if not hasattr(self, '_dependencies'):
+            deps = set()
+            valid_targets = self.inputs + self.vars + self.auxvars
+            for name, spec in self.varspecs.iteritems():
+                specQ = QuantSpec('__spectemp__', spec)
+                [deps.add((name, s)) for s in specQ if s in valid_targets]
+
+            self._dependencies = list(deps)
+
+        return self._dependencies
 
     @property
     def reuseterms(self):
