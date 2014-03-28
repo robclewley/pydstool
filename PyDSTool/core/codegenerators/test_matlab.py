@@ -338,25 +338,6 @@ def test_matlab_funcspec_with_reuseterms_and_aux_funcs():
     ]
 
 
-def test_define():
-    m = Matlab(None)
-    assert '\tQ = p_(1);\n' == m.define('Q', 'p', 1)
-
-
-def test_define_many_for_empty_list():
-    m = Matlab(None)
-    assert '' == m.defineMany([], 'v', 1)
-
-
-def test_print_single_variable_definition():
-    m = Matlab(None)
-    assert [
-        '\tx = x_(1);',
-        '\ty = x_(2);',
-        '',
-    ] == m.defineMany(['x', 'y'], 'x', 1).split('\n')
-
-
 class TestMatlabGenerateAux(object):
 
     def setup(self):
