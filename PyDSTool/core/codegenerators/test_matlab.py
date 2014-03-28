@@ -311,7 +311,7 @@ def test_matlab_funcspec_with_reuseterms_and_aux_funcs():
         '',
         '',
         '% reused term definitions ',
-        'cy = cos(y);',
+        'cy = cos(y__);',
         '',
         'y_ = x__^3+cy;',
         '',
@@ -330,7 +330,7 @@ def test_matlab_funcspec_with_reuseterms_and_aux_funcs():
         '',
         '',
         '% reused term definitions ',
-        'sx = sin(x);',
+        'sx = sin(x__);',
         '',
         'y_ = sx-myaux(x__, p_);',
         '',
@@ -403,9 +403,7 @@ class TestMatlabGenerateAux(object):
         code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec)
 
         assert '% reused term definitions ' in code
-        # FIXME: variable names must be mangled
-        # assert 'xz = x__*z__;' in code
-        assert 'xz = x*z;' in code
+        assert 'xz = x__*z__;' in code
         assert 'y_ = xz+y__;' in code
 
     def test_auxfun_value(self):

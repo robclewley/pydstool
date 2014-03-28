@@ -67,11 +67,10 @@ class Matlab(CodeGenerator):
     def generate_auxfun(self, name, auxspec):
         names_map = dict((v, v + '__') for v in auxspec[0])
         specupdated, reusestr = self.prepare_spec({name: auxspec[1]}, namemap=names_map)
-        # # TODO: uncomment to add name mangling in reuseterms
-        # if reusestr:
-        #     reuseQ = QuantSpec('reuse', reusestr, preserveSpace=True)
-        #     reuseQ.mapNames(names_map)
-        #     reusestr = reuseQ()
+        if reusestr and names_map:
+            reuseQ = QuantSpec('reuse', reusestr, preserveSpace=True)
+            reuseQ.mapNames(names_map)
+            reusestr = reuseQ()
         context = {
             'name': name,
             'args': ', '.join([names_map[v] for v in auxspec[0]]),
