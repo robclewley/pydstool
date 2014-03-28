@@ -58,7 +58,7 @@ class Matlab(CodeGenerator):
                 'name': name,
                 'specname': self.fspec.name,
                 'vnames': ', '.join([vnames[v] for v in auxspec[0]]),
-                'pardef': self.defineMany("Parameter definitions", "p", pars),
+                'pardef': "\n% Parameter definitions\n\n" + self.defineMany(pars, "p", 1),
                 'reuseterms': (len(reusestr) > 0) * "\n% reused term definitions \n" + reusestr.strip() + (len(reusestr) > 0) * "\n",
                 'result': body,
             }
@@ -105,8 +105,8 @@ class Matlab(CodeGenerator):
             {
                 'name': name,
                 'specname': self.fspec.name,
-                'pardef': self.defineMany("Parameter definitions", "p", self.fspec.pars),
-                'vardef': self.defineMany("Variable definitions", "x", specname_vars),
+                'pardef': "\n% Parameter definitions\n\n" + self.defineMany(self.fspec.pars, "p", 1),
+                'vardef': "\n% Variable definitions\n\n" + self.defineMany(specname_vars, "x", 1),
                 'start': self._format_user_code(self.opts['start']) if self.opts['start'] else '',
                 'result': '\n'.join(result),
                 'reuseterms': (len(reusestr) > 0) * "% reused term definitions \n" + reusestr,
@@ -116,10 +116,8 @@ class Matlab(CodeGenerator):
 
         return (code, name)
 
-    def defineMany(self, header, listid, names):
-        return "\n% {0}\n\n{1}".format(
-            header,
-            ''.join([self.define(n, listid, i + 1) for i, n in enumerate(names)]))
+    def defineMany(self, names, listid, start=0):
+        return ''.join([self.define(n, listid, i + start) for i, n in enumerate(names)])
 
     def define(self, name, listid, index):
         return self.opts['define'].format(name, listid, index)

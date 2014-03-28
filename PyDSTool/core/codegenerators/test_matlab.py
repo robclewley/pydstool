@@ -333,19 +333,16 @@ def test_define():
 
 def test_define_many_for_empty_list():
     m = Matlab(None)
-    assert '\n% Test\n\n' == m.defineMany('Test', 'v', [])
+    assert '' == m.defineMany([], 'v', 1)
 
 
 def test_print_single_variable_definition():
     m = Matlab(None)
     assert [
-        '',
-        '% Test',
-        '',
         '\tx = x_(1);',
         '\ty = x_(2);',
         '',
-    ] == m.defineMany('Test', 'x', ['x', 'y']).split('\n')
+    ] == m.defineMany(['x', 'y'], 'x', 1).split('\n')
 
 
 class TestMatlabGenerateAux(object):
