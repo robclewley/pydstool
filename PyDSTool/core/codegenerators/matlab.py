@@ -116,12 +116,6 @@ class Matlab(CodeGenerator):
 
         return (code, name)
 
-    def defineMany(self, names, listid, start=0):
-        return ''.join([self.define(n, listid, i + start) for i, n in enumerate(names)])
-
-    def define(self, name, listid, index):
-        return self.opts['define'].format(name, listid, index)
-
     def _processIfMatlab(self, specStr):
         # NEED TO CHECK WHETHER THIS IS NECESSARY AND WORKS
         # IF STATEMENTS LOOK DIFFERENT IN MATLAB

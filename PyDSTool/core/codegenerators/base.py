@@ -41,6 +41,12 @@ class CodeGenerator(object):
     def generate_spec(self):
         raise NotImplementedError
 
+    def defineMany(self, names, listid, start=0):
+        return ''.join([self.define(n, listid, i + start) for i, n in enumerate(names)])
+
+    def define(self, name, listid, index):
+        return self.opts['define'].format(name, listid, index)
+
 
 def _processReused(specnames, specdict, reuseterms, indentstr='',
                    typestr='', endstatementchar='', parseFunc=idfn):
