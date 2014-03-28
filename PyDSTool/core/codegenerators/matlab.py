@@ -39,6 +39,12 @@ y_ = {result};
 
 class Matlab(CodeGenerator):
 
+    def __init__(self, fspec, **kwargs):
+        if 'define' not in kwargs:
+            kwargs['define'] = "\t{0} = {1}_({2});\n"
+
+        super(Matlab, self).__init__(fspec, **kwargs)
+
     def generate_auxfun(self, name, auxspec, pars=None):
 
         if pars is None:
@@ -116,7 +122,7 @@ class Matlab(CodeGenerator):
             ''.join([self.define(n, listid, i + 1) for i, n in enumerate(names)]))
 
     def define(self, name, listid, index):
-        return "\t{0} = {1}_({2});\n".format(name, listid, index)
+        return self.opts['define'].format(name, listid, index)
 
     def _processIfMatlab(self, specStr):
         # NEED TO CHECK WHETHER THIS IS NECESSARY AND WORKS

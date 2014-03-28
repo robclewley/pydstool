@@ -19,6 +19,7 @@ class CodeGenerator(object):
             opts = {
                 'start': kwargs.pop('codeinsert_start', '').strip(),
                 'end': kwargs.pop('codeinsert_end', '').strip(),
+                'define': kwargs.pop('define', ''),
             }
         except AttributeError:
             raise ValueError('code insert must be a string')
