@@ -7,6 +7,8 @@
     Robert Clewley, June 2005.
 """
 
+from __future__ import absolute_import, print_function
+
 from numpy import (
     sin,
     allclose,
@@ -21,8 +23,7 @@ from PyDSTool.Generator import (
 
 
 def test_explicitfngen():
-
-    print "Test of Explicit and Implicit Function generators, global time, and deletion"
+    """Test of Explicit and Implicit Function generators, global time, and deletion"""
 
     ev_args = {'name': 'threshold',
                'eventtol': 1e-4,

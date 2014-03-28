@@ -47,7 +47,6 @@ general_list = [
 
 # Map generators
 map_list = [
-    'mapsystem_test',
     'SLIP_2D_maps'
     ]
 
@@ -116,7 +115,12 @@ pycont_list = [
     'PyCont_ABCReaction',
     'PyCont_DiscPredPrey',
     'PyCont_Hopfield',
-    'PyCont_hybrid_osc'
+    'PyCont_hybrid_osc',
+    'PyCont_LevelCurve',
+    'PyCont_Logistic',
+    'PyCont_NewLorenz',
+    'PyCont_PredPrey',
+    'PyCont_SaddleNode',
     ]
 
 # Continuation with auto; requires external compilers
@@ -124,7 +128,11 @@ pycont_auto_list = [
     'PyCont_MorrisLecar_TypeI',
     'PyCont_MorrisLecar_TypeII',
     'PyCont_LPNeuron',
-    'PyCont_HindmarshRose'
+    'PyCont_HindmarshRose',
+    'PyCont_ABReaction',
+    'PyCont_Hamiltonian',
+    'PyCont_Lorenz',
+    'PyCont_vanDerPol',
     ]
 
 do_external = any([test_dopri, test_radau, test_param_est_C, test_pycont_auto])

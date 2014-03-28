@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
+from __future__ import absolute_import, print_function
+
+import platform
 import pytest
 
 from numpy import linspace, sin
@@ -18,6 +20,8 @@ from PyDSTool.Generator import (
     Radau_ODEsystem,
     Vode_ODEsystem,
 )
+
+from PyDSTool.Generator.tests.helpers import clean_files
 
 
 @pytest.fixture
@@ -92,6 +96,7 @@ def dsargs():
     return DSargs
 
 
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_dopri_event(dsargs):
     """
         Test Dopri_ODEsystem with events involving external inputs.
@@ -101,13 +106,8 @@ def test_dopri_event(dsargs):
 
     _run_checks(Dopri_ODEsystem(dsargs))
 
-    _clean_files([
-        'dop853_event_test_vf.py',
-        'dop853_event_test_vf.pyc',
-        '_dop853_event_test_vf.so',
-    ])
 
-
+@pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_radau_event(dsargs):
     """
         Test Radau_ODEsystem with events involving external inputs.
@@ -116,12 +116,6 @@ def test_radau_event(dsargs):
     """
 
     _run_checks(Radau_ODEsystem(dsargs))
-
-    _clean_files([
-        'radau5_event_test_vf.py',
-        'radau5_event_test_vf.pyc',
-        '_radau5_event_test_vf.so',
-    ])
 
 
 def test_vode_event(dsargs):
@@ -132,6 +126,16 @@ def test_vode_event(dsargs):
     _run_checks(Vode_ODEsystem(dsargs))
 
 
+def test_euler_event(dsargs):
+    """
+        Test Euler_ODEsystem with events involving external inputs.
+    """
+
+    dsargs.algparams['init_step'] = 0.0001
+    _run_checks(Euler_ODEsystem(dsargs))
+
+
+
 def _run_checks(ode):
 
     traj = ode.compute('traj')
@@ -140,10 +144,9 @@ def _run_checks(ode):
     assert ode.diagnostics.findWarnings(10) != []
     assert ode.diagnostics.findWarnings(20) != []
 
-    assert_almost_equal(traj.indepdomain[1], 1.14417, 4)
+    assert_almost_equal(traj.indepdomain[1], 1.14417, 3)
     assert_almost_equal(traj.getEventTimes()['monitor'][0], 0.80267, 4)
 
 
-def _clean_files(files):
-    for f in files:
-        os.remove(f)
+def teardown_module():
+    clean_files(['event_test'])

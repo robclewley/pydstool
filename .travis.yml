@@ -13,15 +13,19 @@ env:
     # Ubuntu 13.10
     - NUMPY_VERSION=1.7.1 SCIPY_VERSION=0.12.0
     # Cutting edge
-    - NUMPY_VERSION=1.8.0 SCIPY_VERSION=0.13.0
+    - NUMPY_VERSION=1.8.0 SCIPY_VERSION=0.13.3
 
 install:
     - pip install -q -U numpy==$NUMPY_VERSION
-    - pip install -q -U scipy==$SCIPY_VERSION
+    - pip install -U scipy==$SCIPY_VERSION
+    - pip install coveralls
 
 script:
-    - python setup.py test
+    - coverage run --source=PyDSTool setup.py test
 
 before_install:
     - sudo apt-get update
     - sudo apt-get install -qq gfortran libblas-dev liblapack-dev libatlas-dev swig
+
+after_success:
+    coveralls

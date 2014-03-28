@@ -8,7 +8,7 @@
 
 # Remove object files, bytecode
 clean:
-	rm -rf *.so *.o *.pyc *~
+	@make -C .. clean
 
 cleanup:
 	rm -rf *.pyc *~

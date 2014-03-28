@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import, print_function
+
 from numpy import (
     all,
     allclose,
@@ -62,10 +64,10 @@ def test_vode_events_compare_with_euler():
     # diagnostics and other possible user-defined python functions
     # for python solvers only (currently only Euler)
     # def before_func(euler):
-    # print euler.algparams['init_step']
+    # print(euler.algparams['init_step'])
     #
     # def after_func(euler):
-    # print euler._solver.y
+    # print(euler._solver.y)
     #
     ##DSargs.user_func_beforestep = before_func
     ##DSargs.user_func_afterstep = after_func
@@ -137,8 +139,8 @@ def test_vode_events_with_external_input(my_input):
     assert_almost_equal(traj1(0.5, 'w'), 8.9771499, 5)
     assert not testODE.diagnostics.hasWarnings()
     assert_almost_equal(traj1(0.2, ['aux_other']), 3.905819936, 5)
-    print "\nNow adding a terminating co-ordinate threshold event"
-    print " and non-terminating timer event"
+    print("\nNow adding a terminating co-ordinate threshold event")
+    print(" and non-terminating timer event")
     # Show off the general-purpose, language-independent event creator:
     #  'makeZeroCrossEvent'
     ev_args_nonterm = {'name': 'monitor',
@@ -163,12 +165,12 @@ def test_vode_events_with_external_input(my_input):
     thresh_ev_term = Events.makePythonStateZeroCrossEvent('w',
                                                           20, 1, ev_args_term)
     testODE.eventstruct.add([thresh_ev_nonterm, thresh_ev_term])
-    print "Recomputing trajectory:"
-    print "traj2 = testODE.compute('traj2')"
+    print("Recomputing trajectory:")
+    print("traj2 = testODE.compute('traj2')")
     traj2 = testODE.compute('traj2')
-    print "\ntestODE.diagnostics.showWarnings() => "
+    print("\ntestODE.diagnostics.showWarnings() => ")
     testODE.diagnostics.showWarnings()
-    print "\ntraj2.indepdomain.get() => ", traj2.indepdomain.get()
+    print("\ntraj2.indepdomain.get() => ", traj2.indepdomain.get())
     indep1 = traj2.indepdomain[1]
     assert indep1 < 1.17 and indep1 > 1.16
     mon_evs_found = testODE.getEvents('monitor')

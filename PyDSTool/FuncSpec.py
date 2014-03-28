@@ -149,8 +149,8 @@ class FuncSpec(object):
             for term, repterm in self.reuseterms.iteritems():
                 assert isinstance(term, str), \
                        "terms in 'reuseterms' dictionary must be strings"
-##                if term[0] in num_chars+['.']:
-##                    raise ValueError('terms must not be numerical values')
+                # if term[0] in num_chars+['.']:
+                #     raise ValueError('terms must not be numerical values')
                 if isNumericToken(term):
                     # don't replace numeric terms (sometimes these are
                     # generated automatically by Constructors when resolving
@@ -329,7 +329,7 @@ class FuncSpec(object):
             # exception if the following is not successful
             self.validateDependencies(self.dependencies)
         #self.generateAuxFns()
-##        self.validateSpecs()
+        # self.validateSpecs()
         # algparams is only used by ImplicitFnGen to pass extra info to Variable
         self.algparams = {}
         self.defined = True
@@ -348,7 +348,7 @@ class FuncSpec(object):
 
     def recreate(self, targetlang):
         if targetlang == self.targetlang:
-#            print "Returning a deep copy of self"
+            # print "Returning a deep copy of self"
             return deepcopy(self)
         fs = FuncSpec.__new__(self.__class__)
         new_args = deepcopy(self._initargs)
@@ -368,25 +368,25 @@ class FuncSpec(object):
         utils_info(self.__dict__, "FuncSpec " + self.name)
 
 
-#    def info(self, verbose=1):
-#        if verbose > 0:
-#            # info is defined in utils.py
-#            utils_info(self.__dict__, "FuncSpec " + self.name,
-#                 recurseDepthLimit=1+verbose)
-#        else:
-#            print self.__repr__()
+    # def info(self, verbose=1):
+    #     if verbose > 0:
+    #         # info is defined in utils.py
+    #         utils_info(self.__dict__, "FuncSpec " + self.name,
+    #              recurseDepthLimit=1+verbose)
+    #     else:
+    #         print self.__repr__()
 
 
-    # This function doesn't work -- it generates:
-    #    global name 'self' is not defined
-    # in the _specfn call
-##    def validateSpecs(self):
-##        # dummy values for internal values possibly needed by auxiliary fns
-##        self.globalt0 = 0
-##        self.initialconditions = {}.fromkeys(self.vars, 0)
-##        lenparsinps = len(self.pars)+len(self.inputs)
-##        pi_vals = zeros(lenparsinps, float64)
-##        _specfn(1, self.initialconditions.values(), pi_vals)
+    # # This function doesn't work -- it generates:
+    # #    global name 'self' is not defined
+    # # in the _specfn call
+    # def validateSpecs(self):
+    #     # dummy values for internal values possibly needed by auxiliary fns
+    #     self.globalt0 = 0
+    #     self.initialconditions = {}.fromkeys(self.vars, 0)
+    #     lenparsinps = len(self.pars)+len(self.inputs)
+    #     pi_vals = zeros(lenparsinps, float64)
+    #     _specfn(1, self.initialconditions.values(), pi_vals)
 
 
     def validateDef(self, vars, pars, inputs, auxvars, auxfns):
@@ -538,10 +538,10 @@ class FuncSpec(object):
                 assert rightbrack_ix - leftbrack_ix == 2, ('Misuse of square '
                                  'brackets in spec definition. Expected single'
                                  ' character between left and right brackets.')
-##                if remain(self._varsbyforspec[specname], self.vars) == []:
-##                    foundvar = True
-##                else:
-##                    foundvar = False  # auxiliary variable instead
+                # if remain(self._varsbyforspec[specname], self.vars) == []:
+                #     foundvar = True
+                # else:
+                #     foundvar = False  # auxiliary variable instead
                 rootstr = specname[:leftbrack_ix]
                 istr = specname[leftbrack_ix+1]
                 specstr = self.varspecs[specname]
@@ -584,24 +584,24 @@ class FuncSpec(object):
                 # now we update the dictionary of specnames with the
                 # processed, expanded versions
                 specnames.remove(specname)
-##                if foundvar:
-##                    assert rootstr+'['+istr+']' in self.varspecs, ('Mismatch '
-##                                                 'between declared variables '
-##                                               'and loop index in `for` macro')
-##                    #self.vars.remove(specname)
-##                else:
-##                    assert rootstr+'['+istr+']' in self.varspecs, ('Mismatch '
-##                                                 'between declared variables '
-##                                               'and loop index in `for` macro')
-##                    self.auxvars.remove(specname)
+                # if foundvar:
+                #     assert rootstr+'['+istr+']' in self.varspecs, ('Mismatch '
+                #                                  'between declared variables '
+                #                                'and loop index in `for` macro')
+                #     #self.vars.remove(specname)
+                # else:
+                #     assert rootstr+'['+istr+']' in self.varspecs, ('Mismatch '
+                #                                  'between declared variables '
+                #                                'and loop index in `for` macro')
+                #     self.auxvars.remove(specname)
                 del(self.varspecs[specname])
                 for sname in specnames_gen:
                     self.varspecs[sname] = varspecs[sname]
                     specnames.append(sname)
-##                    if foundvar:
-##                        self.vars.append(sname)
-##                    else:
-##                        self.auxvars.append(sname)
+                    # if foundvar:
+                    #     self.vars.append(sname)
+                    # else:
+                    #     self.auxvars.append(sname)
             elif test_sum == -2:
                 pass
                 # no brackets found. regular definition line. take no action.
@@ -675,11 +675,11 @@ class FuncSpec(object):
         auxnames = self._auxfnspecs.keys()
         # User aux fn interface
         uafi = {}
-##        protectednames = auxnames + self._protected_mathnames + \
-##                         self._protected_randomnames + \
-##                         self._protected_scipynames + \
-##                         self._protected_specialfns + \
-##                         ['abs', 'and', 'or', 'not', 'True', 'False']
+        # protectednames = auxnames + self._protected_mathnames + \
+        #                  self._protected_randomnames + \
+        #                  self._protected_scipynames + \
+        #                  self._protected_specialfns + \
+        #                  ['abs', 'and', 'or', 'not', 'True', 'False']
         # Deal with built-in auxiliary functions (don't make their names unique)
         # In this version, the textual code here doesn't get executed. Only
         # the function names in the second position of the tuple are needed.
@@ -1618,7 +1618,7 @@ class FuncSpec(object):
                 else:
                     auxstr = auxspec[1]
                 ismat = True
-#                specials = ["t","Y_","n_","np_","wkn_","wk_"]
+                # specials = ["t","Y_","n_","np_","wkn_","wk_"]
                 sig += parlist + " double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_)"
                 specvars = self.vars
                 specvars.sort()
@@ -1665,7 +1665,7 @@ class FuncSpec(object):
                     auxstr = auxspec[1]
                 parlist = "unsigned n_, unsigned np_,"
                 ismat = True
-#                specials = ["n_","np_","wkn_","wk_"]
+                # specials = ["n_","np_","wkn_","wk_"]
                 sig += parlist + " double t, double *Y_, double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_)"
                 specvars = self.vars
                 specvars.sort()
@@ -1723,37 +1723,37 @@ class FuncSpec(object):
                 reusestr, auxspec_processedDict = self._processReusedC([auxname],
                                                      {auxname:auxspec[1]})
                 # addition of parameter done in Generator code
-#                dummyQ = QuantSpec('dummy', auxspec_processedDict[auxname])
-#                auxspec_processed = ""
-#                # add pars argument to inter-aux fn call
-#                auxfn_found = False   # then expect a left brace next
-#                for tok in dummyQ:
-#                    if auxfn_found:
-#                        # expect left brace in this tok
-#                        if tok == '(':
-#                            auxspec_processed += tok + 'p_, '
-#                            auxfn_found = False
-#                        else:
-#                            raise ValueError("Problem parsing inter-auxiliary"
-#                                             " function call")
-#                    elif tok in self.auxfns and tok not in \
-#                            ['Jacobian', 'Jacobian_pars']:
-#                        auxfn_found = True
-#                        auxspec_processed += tok
-#                    else:
-#                        auxspec_processed += tok
-#                body_processed = "return "+auxspec_processed + ";\n\n"
+                # dummyQ = QuantSpec('dummy', auxspec_processedDict[auxname])
+                # auxspec_processed = ""
+                # # add pars argument to inter-aux fn call
+                # auxfn_found = False   # then expect a left brace next
+                # for tok in dummyQ:
+                #     if auxfn_found:
+                #         # expect left brace in this tok
+                #         if tok == '(':
+                #             auxspec_processed += tok + 'p_, '
+                #             auxfn_found = False
+                #         else:
+                #             raise ValueError("Problem parsing inter-auxiliary"
+                #                              " function call")
+                #     elif tok in self.auxfns and tok not in \
+                #             ['Jacobian', 'Jacobian_pars']:
+                #         auxfn_found = True
+                #         auxspec_processed += tok
+                #     else:
+                #         auxspec_processed += tok
+                # body_processed = "return "+auxspec_processed + ";\n\n"
             # add underscore to local names, to avoid clash with global
             # '#define' names
             dummyQ = QuantSpec('dummy', auxspec_processedDict[auxname],
                                treatMultiRefs=False, preserveSpace=True)
             body_processed = "return "*(not ismat) + dummyQ() + ";\n\n"
-#            auxspecstr = sig + " {\n\n" + pardefines + vardefines*ismat \
+            # auxspecstr = sig + " {\n\n" + pardefines + vardefines*ismat \
             auxspecstr = sig + " {\n\n" \
                 + "\n" + (len(reusestr)>0)*"/* reused term definitions */\n" \
                 + reusestr + (len(reusestr)>0)*"\n" + body_processed \
                 + "}"
-#                + parundefines + varundefines*ismat + "}"
+               # + parundefines + varundefines*ismat + "}"
             # sig as second entry, whereas Python-coded specifications
             # have the fn name there
             self.auxfns[auxname] = (auxspecstr, sig)
@@ -1911,7 +1911,7 @@ class FuncSpec(object):
                     inpundefines, docodeinserts):
         sig = "void " + funcname + "(unsigned n_, unsigned np_, double t, double *Y_, " \
               + "double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_)"
-#        specstr = sig + "{\n\n" + pardefines + vardefines + "\n"
+        # specstr = sig + "{\n\n" + pardefines + vardefines + "\n"
         specstr = sig + "{" + pardefines + vardefines + inpundefines + "\n"
         if docodeinserts and self.codeinserts['start'] != '':
             specstr += '/* Verbose code insert -- begin */\n' \
@@ -2056,9 +2056,9 @@ class FuncSpec(object):
                 print "Containing: ", auxspec[1]
                 raise TypeError('aux function specification '
                                 'must be a string of the function code')
-##            assert auxspec[1].find('^') == -1, ('carat character ^ is not '
-##                                            'permitted in function definitions'
-##                                            '-- use pow(x,p) syntax instead')
+            # assert auxspec[1].find('^') == -1, ('carat character ^ is not '
+            #                                 'permitted in function definitions'
+            #                                 '-- use pow(x,p) syntax instead')
             # Process Jacobian functions specially, if present
             if auxname == 'Jacobian':
                 raise NotImplementedError
@@ -2090,7 +2090,7 @@ class FuncSpec(object):
             if not ismat:
                 dummyQ.mapNames(namemap)
             body_processed = "y_ = "*(not ismat) + dummyQ() + ";\n\n"
-#            auxspecstr = sig + " {\n\n" + pardefines + vardefines*ismat \
+            # auxspecstr = sig + " {\n\n" + pardefines + vardefines*ismat \
             auxspecstr = sig + pardefines + " \n\n" \
                 + "\n" + (len(reusestr)>0)*"% reused term definitions \n" \
                 + reusestr + (len(reusestr)>0)*"\n" + body_processed
@@ -2406,11 +2406,11 @@ def _processReused(specnames, specdict, reuseterms, indentstr='',
     # reuseterms may be automatically provided for a range of definitions
     # that may or may not contain instances, and it's too inefficient to
     # check in advance, so we'll not cause an error here if none show up.
-##    if len(seenrepterms) == 0 and len(reuseterms) > 0:
-##        print "Reuse terms expected:", reuseterms
-##        info(specdict)
-##        raise RuntimeError("Declared reusable term definitions did not match"
-##                           " any occurrences in the specifications")
+    # if len(seenrepterms) == 0 and len(reuseterms) > 0:
+    #     print "Reuse terms expected:", reuseterms
+    #     info(specdict)
+    #     raise RuntimeError("Declared reusable term definitions did not match"
+    #                        " any occurrences in the specifications")
     return (reused, specdict, seenrepterms, order)
 
 

@@ -34,7 +34,7 @@ testDS = Generator.Vode_ODEsystem(DSargs)
 PyCont = ContClass(testDS)
 
 # Read cycle data from lor.dat
-cycle=transpose(importPointset('../PyCont/auto/demos/lor/lor.dat'))
+cycle=transpose(importPointset('../PyDSTool/PyCont/auto/demos/lor/lor.dat'))
 
 # Set up continuation parameters
 PCargs = args(name='LC1', type='LC-C')
