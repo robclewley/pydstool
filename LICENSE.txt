@@ -1,4 +1,4 @@
-Copyright (C) 2007-2012, Georgia State University
+Copyright (C) 2007-2014, Robert Clewley
 All rights reserved.
 
 Parts of this distribution that originate from different authors are
@@ -16,14 +16,15 @@ modification, are permitted provided that the following conditions are met:
       disclaimer in the documentation and/or other materials provided
       with the distribution.
 
-    3. The name of Georgia State University and its representatives may not
-      be used to endorse or promote products derived from this
-      software without specific prior written permission.
+    3. The name of Robert Clewley, or of his affiliates (Georgia State
+      University, and its representatives) may not be used to endorse or
+      promote products derived from this software without specific prior
+      written permission.
 
-THIS SOFTWARE IS PROVIDED BY GEORGIA STATE UNIVERSITY ``AS IS'' AND ANY
+THIS SOFTWARE IS PROVIDED BY ROBERT CLEWLEY ``AS IS'' AND ANY
 EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL GEORGIA STATE UNIVERSITY BE LIABLE
+PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ROBERT CLEWLEY BE LIABLE
 FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
