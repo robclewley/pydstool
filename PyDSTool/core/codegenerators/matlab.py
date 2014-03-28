@@ -65,15 +65,12 @@ class Matlab(CodeGenerator):
         self._endstatementchar = ';'
 
     def generate_auxfun(self, name, auxspec):
-        names_map = dict((v, v + '__') for v in auxspec[0])
-        specupdated, reusestr = self.prepare_spec({name: auxspec[1]}, namemap=names_map)
-        if reusestr and names_map:
-            reuseQ = QuantSpec('reuse', reusestr, preserveSpace=True)
-            reuseQ.mapNames(names_map)
-            reusestr = reuseQ()
+        namemap = dict((v, v + '__') for v in auxspec[0])
+        specupdated, reusestr = self.prepare_spec({name: auxspec[1]}, namemap=namemap)
+        reusestr = _map_names(reusestr, namemap)
         context = {
             'name': name,
-            'args': ', '.join([names_map[v] for v in auxspec[0]]),
+            'args': ', '.join([namemap[v] for v in auxspec[0]]),
             'reuseterms': "\n" + self.reuse.format(reusestr.strip()) if reusestr else '',
             'result': specupdated[name],
         }
@@ -116,10 +113,7 @@ class Matlab(CodeGenerator):
         namemap = kwargs.get('namemap', {})
         processed = deepcopy(specdict)
         for name, spec in processed.iteritems():
-            if namemap:
-                q = QuantSpec('__q__', spec, treatMultiRefs=False)
-                q.mapNames(kwargs['namemap'])
-                spec = q()
+            spec = _map_names(spec, namemap)
             processed[name] = self.adjust_call(spec)
         return processed
 
@@ -165,3 +159,11 @@ def _generate_reusestr(reused, reuseterms, order):
             reusedefs[d[2]] = d
 
     return concatStrDict(reusedefs, intersect(order, reusedefs.keys()))
+
+
+def _map_names(spec, namemap):
+    if spec and namemap:
+        q = QuantSpec('__temp__', spec, preserveSpace=True)
+        q.mapNames(namemap)
+        spec = q()
+    return spec
