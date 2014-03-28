@@ -24,7 +24,7 @@ class CodeGenerator(object):
             raise ValueError('code insert must be a string')
 
         if kwargs.keys():
-            raise KeyError("CodeGenerator: keywords %r unsupported")
+            raise KeyError("CodeGenerator: keywords %r unsupported" % kwargs.keys())
 
         return opts
 
