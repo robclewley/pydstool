@@ -448,7 +448,14 @@ class FuncSpec(object):
     def generateSpec(self):
         """Automatically generate callable target-language functions from
         the user-defined specification strings."""
-        self.codegen.generate_spec()
+        if self.targetlang != 'matlab':
+            self.codegen.generate_spec()
+        else:
+            assert self.varspecs != {}, 'varspecs attribute must be defined'
+            assert set(self.vars) - set(self.varspecs.keys()) == set([]), 'Mismatch between declared variable names and varspecs keys'
+            for name, spec in self.varspecs.iteritems():
+                assert type(spec) == str, "Specification for %s was not a string" % name
+            self.spec = self.codegen.generate_spec(self.vars, self.varspecs)
 
     def doPreMacros(self):
         """Pre-process any macro spec definitions (e.g. `for` loops)."""

@@ -82,45 +82,33 @@ class Matlab(CodeGenerator):
         # reuseQ.mapNames(vnames)
         return auxQ(), reuseQ() if reusestr else ''
 
-    def generate_spec(self):
-        assert self.fspec.targetlang == 'matlab', ('Wrong target language for this'
-                                              ' call')
-        assert self.fspec.varspecs != {}, 'varspecs attribute must be defined'
-        specnames_unsorted = self.fspec.varspecs.keys()
-        specname_vars = intersect(self.fspec.vars, specnames_unsorted)
-        specname_vars.sort()
-        # parameter and variable definitions
-        # sorted version of var and par names
-        vnames = specname_vars
-        pnames = self.fspec.pars
-        pnames.sort()
-        pardefines = self._prepareMatlabPDefines(pnames)
-        vardefines = self._prepareMatlabVDefines(vnames)
-        # produce vector field specification
-        assert self.fspec.vars == specname_vars, ('Mismatch between declared '
-                                             ' variable names and varspecs keys')
-        valid_depTargNames = self.fspec.inputs + self.fspec.vars + self.fspec.auxvars
-        for specname, specstr in self.fspec.varspecs.iteritems():
-            assert type(
-                specstr) == str, "Specification for %s was not a string" % specname
-            if any([pt in specstr for pt in ('pow', '**')]):
-                specstr = convertPowers(specstr, '^')
-        # pre-process reused sub-expression dictionary to adapt for
-        # known calling sequence in Matlab
-        reusestr, specupdated = self._processReusedMatlab(specname_vars,
-                                                          self.fspec.varspecs)
-        self.fspec.varspecs.update(specupdated)
-        code = self._genSpecFnMatlab(
-            'vfield', reusestr, specname_vars,
-            pardefines, vardefines, True)
-        self.fspec.spec = (code, 'vfield')
-        # do not produce auxiliary variables specification
+    def generate_spec(self, specname_vars, specs):
+        name = 'vfield'
+        for specstr in specs.itervalues():
+            specstr = self._normalize_spec(specstr)
+        reusestr, specupdated = self._processReusedMatlab(specname_vars, specs)
+        result = []
+        for i, it in enumerate(specname_vars):
+            specstr = "y_(" + str(i + 1) + ") = " + self._processIfMatlab(specupdated[it]) + ';'
+            if self.fspec.auxfns:
+                specstr = addArgToCalls(specstr, self.fspec.auxfns.keys(), "p_")
+            result.append(specstr)
 
-    def _prepareMatlabPDefines(self, pnames):
-        return self.defineMany("Parameter definitions", "p", pnames)
+        code = self._render(
+            MATLAB_FUNCTION_TEMPLATE,
+            {
+                'name': name,
+                'specname': self.fspec.name,
+                'pardef': self.defineMany("Parameter definitions", "p", self.fspec.pars),
+                'vardef': self.defineMany("Variable definitions", "x", specname_vars),
+                'start': self._format_user_code(self.opts['start']) if self.opts['start'] else '',
+                'result': '\n'.join(result),
+                'reuseterms': (len(reusestr) > 0) * "% reused term definitions \n" + reusestr,
+                'end': self._format_user_code(self.opts['end']) if self.opts['end'] else '',
+            }
+        )
 
-    def _prepareMatlabVDefines(self, vnames):
-        return self.defineMany("Variable definitions", "x", vnames)
+        return (code, name)
 
     def defineMany(self, header, listid, names):
         return "\n% {0}\n\n{1}".format(
@@ -129,29 +117,6 @@ class Matlab(CodeGenerator):
 
     def define(self, name, listid, index):
         return "\t{0} = {1}_({2});\n".format(name, listid, index)
-
-    def _genSpecFnMatlab(self, name, reusestr, specnames, pardefines,
-            vardefines, docodeinserts):
-
-        result = []
-        for i, it in enumerate(specnames):
-            specstr = "y_(" + str(i + 1) + ") = " + self._processIfMatlab(self.fspec.varspecs[it]) + ';'
-            if self.fspec.auxfns:
-                specstr = addArgToCalls(specstr, self.fspec.auxfns.keys(), "p_")
-            result.append(specstr)
-
-        specstr = MATLAB_FUNCTION_TEMPLATE.format(
-            name=name,
-            specname=self.fspec.name,
-            pardef=pardefines,
-            vardef=vardefines,
-            start=self._format_user_code(self.opts['start']) if docodeinserts and self.opts['start'] else '',
-            result='\n'.join(result),
-            reuseterms=(len(reusestr) > 0) * "% reused term definitions \n" + reusestr,
-            end=self._format_user_code(self.opts['end']) if docodeinserts and self.opts['end'] else '',
-        )
-
-        return specstr
 
     def _processIfMatlab(self, specStr):
         # NEED TO CHECK WHETHER THIS IS NECESSARY AND WORKS
