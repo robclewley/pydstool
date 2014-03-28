@@ -360,7 +360,7 @@ class TestMatlabGenerateAux(object):
 
         assert self.template[0].format(
             name=self.name,
-            vnames=', '.join([str(v) + '__' for v in self.spec[0]]),
+            args=', '.join([str(v) + '__' for v in self.spec[0]]),
         ) == sig.split('\n')[0]  # FIXME: signature should be single string
 
     def test_intro_comment_follows_signature(self):

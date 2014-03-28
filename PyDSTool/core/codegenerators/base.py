@@ -31,10 +31,7 @@ class CodeGenerator(object):
         return opts
 
     def _format_code(self, code, before='', after='', sep='\n'):
-        if not code:
-            return ''
-
-        return sep.join([s for s in [before, code, after] if s])
+        return sep.join([s for s in [before, code, after] if s]) if code else ''
 
     def generate_aux(self):
         raise NotImplementedError
@@ -42,6 +39,8 @@ class CodeGenerator(object):
     def generate_spec(self):
         raise NotImplementedError
 
+    def generate_special(self, name, spec):
+        raise NotImplementedError
     def defineMany(self, names, listid, start=0):
         return ''.join([self.define(n, listid, i + start) for i, n in enumerate(names)])
 
@@ -51,6 +50,10 @@ class CodeGenerator(object):
     def _normalize_spec(self, spec):
         if any([pt in spec for pt in ('pow', '**', '^')]):
             spec = convertPowers(spec, self.opts['power_sign'])
+        spec = self._process_builtins(spec)
+        return spec
+
+    def _process_builtins(self, spec):
         return spec
 
 def _processReused(specnames, specdict, reuseterms, indentstr='',
