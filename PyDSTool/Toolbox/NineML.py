@@ -1,7 +1,7 @@
 """
-PySCes interface code for systems biology modeling and SBML model markup.
+NineML interface code for neural network modeling.
 
-This toolbox assumes you have PySCes installed.
+This toolbox assumes you have NineML python bindings installed.
 
 R. Clewley, 2012
 """
@@ -43,10 +43,10 @@ class NineMLModel(LeafComponent):
 
 def get_nineml_model(c, model_name, target='Vode', extra_args=None,
                      alg_args=None, max_t=np.Inf):
-    """component is a NineML abstraction layer component, and
+    """component c is a NineML abstraction layer component, and
     assumes you have imported a NineML model through the Python API or built it directly.
 
-    Currently only works for 'flat' models
+    This function only works for 'flat' models, where there is no hierarchy of hybrid models.
     """
     assert c.is_flat(), "Import currently only works for 'flat' models"
 
@@ -92,6 +92,7 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
     for a in dyn.aliases:
         sig = sigs[a.lhs]
         fnspec = QuantSpec(a.lhs, a.rhs)
+        fnspec.mapNames({'heaviside': 'heav'})
         # add arguments to the function calls
         for f in dependencies[a.lhs]:
             fi_list = [i for i in range(len(fnspec.parser.tokenized)) if fnspec.parser.tokenized[i] == f]
@@ -132,7 +133,7 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
                 break
 
     if is_hybrid:
-        vars.append('_regime_')
+        vars.append('regime_')
 
     reg_ix_to_name = {}
     for reg_ix, r in enumerate(c.regimes):
@@ -148,20 +149,20 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
                 for vname in c.state_variables_map:
                     new_vars.append( Var('initcond(%s)'%vname, name=vname, specType='ExpFuncSpec') )
                 if is_hybrid:
-                    new_vars.append( Var('%i'%reg_ix, name='_regime_', specType='ExpFuncSpec',
+                    new_vars.append( Var('%i'%reg_ix, name='regime_', specType='ExpFuncSpec',
                                          domain=(int, Discrete, reg_ix)) )
             else:
                 # have to make ODEs with 0 for their RHS
                 reg_type = targetGen
-                for vname in remain(c.state_variables_map, new_vars):
+                for vname in remain(c.state_variables_map, [v.name for v in new_vars]):
                     new_vars.append( Var('0', name=vname, specType='RHSfuncSpec') )
                 if is_hybrid:
-                    new_vars.append( Var('0', name='_regime_', specType='RHSfuncSpec',
+                    new_vars.append( Var('0', name='regime_', specType='RHSfuncSpec',
                                          domain=(int, Discrete, reg_ix)) )
         else:
             reg_type = targetGen
             if is_hybrid:
-                new_vars.append( Var('0', name='_regime_', specType='RHSfuncSpec',
+                new_vars.append( Var('0', name='regime_', specType='RHSfuncSpec',
                                      domain=(int, Discrete, reg_ix)) )
         declare_vars.extend(new_vars)
         declare_list = declare_pars + declare_fns + declare_vars
@@ -176,7 +177,8 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
             extra_names = intersect([ea.name for ea in extra_args], free)
             for name in extra_names:
                 reg_spec.add([ea for ea in extra_args \
-                              if ea.name in extra_names])
+                              if (ea.name in extra_names and \
+                                  ea.name not in reg_spec._registry)])
 
         reg_spec.flattenSpec(ignoreInputs=True)
 
@@ -235,7 +237,7 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
                 for s in e.state_assignments:
                     edict[s.lhs] = s.rhs
                 if is_hybrid:
-                    edict['_regime_'] = str(reg_name_to_ix[reg_target])
+                    edict['regime_'] = str(reg_name_to_ix[reg_target])
                 if len(edict) == 0:
                     epmaps[evname] = (evname, reg_target)
                 else:
@@ -258,7 +260,7 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
                                               gen_dict},
                               indepvar=('t',[0,max_t]))
         if is_hybrid:
-            modelC.icvalues = {reg_spec.name: {'_regime_': reg_ix}}
+            modelC.icvalues = {reg_spec.name: {'regime_': reg_ix}}
 
         if events != []:
             modelC.addEvents(reg_spec.name, events)
