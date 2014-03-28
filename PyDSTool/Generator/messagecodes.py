@@ -22,7 +22,7 @@ errmessages = {E_NONUNIQUETERM: 'More than one terminal event found',
 errorfields = {E_NONUNIQUETERM: ['t', 'event list'],
                E_COMPUTFAIL: ['t', 'error info']}
 
-warnmessages = {W_UNCERTVAL: 'Uncertain value computed',
+warnmessages = {W_UNCERTVAL: 'Uncertain or boundary value computed',
               W_TERMEVENT: 'Terminal event(s) found',
               W_NONTERMEVENT: 'Non-terminal event(s) found',
               W_TERMSTATEBD: 'State variable reached bounds (terminal)',
