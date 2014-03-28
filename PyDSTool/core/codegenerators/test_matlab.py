@@ -20,7 +20,7 @@ def test_matlab_funcspec_for_ds_with_single_var_and_single_param():
         'targetlang': 'matlab',
         'vars': ['x'],
         'pars': ['p'],
-        'varspecs': {'x': 'p * x - 1'},
+        'varspecs': {'x': 'p * x ** 3 - 1'},
         'fnspecs': {'myaux': (['x'], 'x**2 + p')},
     }
     fs = FuncSpec(args)
@@ -39,7 +39,7 @@ def test_matlab_funcspec_for_ds_with_single_var_and_single_param():
         '\tx = x_(1);',
         '',
         '',
-        'y_(1) = p * x - 1;',
+        'y_(1) = p * x ** 3 - 1;', #FIXME: '**' must be converted to '^'
         '',
         '',
         '',
