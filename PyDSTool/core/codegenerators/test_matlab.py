@@ -95,6 +95,19 @@ def test_matlab_funspec_if_raises_exception():
         })
 
 
+@pytest.mark.xfail(reason="FIXME: exception is not raised")
+def test_matlab_auxspec_if_raises_exception():
+    with pytest.raises(NotImplementedError):
+        FuncSpec({
+            'name': 'single_var',
+            'targetlang': 'matlab',
+            'vars': ['x'],
+            'varspecs': {'x': 'x**3'},
+            'fnspecs': {'myaux': (['x'], 'if(x < 0, x, x**3)')},
+        })
+
+
+
 def test_matlab_funcspec_has_python_user_auxfn_interface():
     args = {
         'name': 'test_user_auxfn_interface',
