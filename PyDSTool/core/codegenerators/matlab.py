@@ -52,7 +52,7 @@ class Matlab(CodeGenerator):
 
         if pars is None:
             pars = self.fspec.pars
-        vnames = self._prepare_varnames(auxspec[0])
+        vnames = dict((v, v + '__') for v in auxspec[0])
         spec = self._normalize_spec(auxspec[1])
         body, reusestr = self._process_reused(name, spec, vnames)
         code = self._render(
@@ -73,9 +73,6 @@ class Matlab(CodeGenerator):
 
     def _render(self, template, context):
         return template.format(**context)
-
-    def _prepare_varnames(self, varnames):
-        return dict((v, v + '__') for v in varnames)
 
     def _process_reused(self, name, spec, vnames):
         reusestr, processed = self._processReusedMatlab([name], {name: spec})
