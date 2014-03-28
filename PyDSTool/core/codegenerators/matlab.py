@@ -4,7 +4,7 @@
 from __future__ import absolute_import
 
 from PyDSTool.common import intersect, concatStrDict, idfn
-from PyDSTool.parseUtils import convertPowers, addArgToCalls
+from PyDSTool.parseUtils import addArgToCalls
 from PyDSTool.Symbolic import QuantSpec
 
 from .base import _processReused, CodeGenerator
@@ -43,6 +43,9 @@ class Matlab(CodeGenerator):
         if 'define' not in kwargs:
             kwargs['define'] = "\t{0} = {1}_({2});\n"
 
+        if 'power_sign' not in kwargs:
+            kwargs['power_sign'] = "^"
+
         super(Matlab, self).__init__(fspec, **kwargs)
 
     def generate_auxfun(self, name, auxspec, pars=None):
@@ -73,11 +76,6 @@ class Matlab(CodeGenerator):
 
     def _prepare_varnames(self, varnames):
         return dict((v, v + '__') for v in varnames)
-
-    def _normalize_spec(self, spec):
-        if any([pt in spec for pt in ('pow', '**')]):
-            spec = convertPowers(spec, '^')
-        return spec
 
     def _process_reused(self, name, spec, vnames):
         reusestr, processed = self._processReusedMatlab([name], {name: spec})

@@ -4,7 +4,7 @@
 from __future__ import absolute_import
 
 from PyDSTool.common import idfn, invertMap, remain
-from PyDSTool.parseUtils import proper_match
+from PyDSTool.parseUtils import proper_match, convertPowers
 
 
 class CodeGenerator(object):
@@ -20,6 +20,7 @@ class CodeGenerator(object):
                 'start': kwargs.pop('codeinsert_start', '').strip(),
                 'end': kwargs.pop('codeinsert_end', '').strip(),
                 'define': kwargs.pop('define', ''),
+                'power_sign': kwargs.pop('power_sign', '**'),
             }
         except AttributeError:
             raise ValueError('code insert must be a string')
@@ -47,6 +48,10 @@ class CodeGenerator(object):
     def define(self, name, listid, index):
         return self.opts['define'].format(name, listid, index)
 
+    def _normalize_spec(self, spec):
+        if any([pt in spec for pt in ('pow', '**', '^')]):
+            spec = convertPowers(spec, self.opts['power_sign'])
+        return spec
 
 def _processReused(specnames, specdict, reuseterms, indentstr='',
                    typestr='', endstatementchar='', parseFunc=idfn):
