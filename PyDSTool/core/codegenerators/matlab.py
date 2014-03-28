@@ -48,30 +48,35 @@ class Matlab(CodeGenerator):
 
         super(Matlab, self).__init__(fspec, **kwargs)
 
-    def generate_auxfun(self, name, auxspec, pars=None):
+        self.context = {
+            'specname': self.fspec.name,
+            'pardef': "\n% Parameter definitions\n\n" + self.defineMany(self.fspec.pars, "p", 1),
+            'vardef': "\n% Variable definitions\n\n" + self.defineMany(self.fspec.vars, "x", 1),
+            'start': self._format_user_code(self.opts['start']) if self.opts['start'] else '',
+            'end': self._format_user_code(self.opts['end']) if self.opts['end'] else '',
+        }
 
-        if pars is None:
-            pars = self.fspec.pars
-        vnames = dict((v, v + '__') for v in auxspec[0])
-        result, reusestr = self._process_reused({name: auxspec[1]}, vnames)
-        code = self._render(
-            MATLAB_AUX_TEMPLATE,
-            {
-                'name': name,
-                'specname': self.fspec.name,
-                'vnames': ', '.join([vnames[v] for v in auxspec[0]]),
-                'pardef': "\n% Parameter definitions\n\n" + self.defineMany(pars, "p", 1),
-                'reuseterms': (len(reusestr) > 0) * "\n% reused term definitions \n" + reusestr.strip() + (len(reusestr) > 0) * "\n",
-                'result': result[name],
-            }
-        )
+        self.reuse = "% reused term definitions \n{}\n"
+
+    def generate_auxfun(self, name, auxspec):
+        names_map = dict((v, v + '__') for v in auxspec[0])
+        result, reusestr = self._process_reused({name: auxspec[1]}, names_map)
+        context = {
+            'name': name,
+            'vnames': ', '.join([names_map[v] for v in auxspec[0]]),
+            'reuseterms': "\n" + self.reuse.format(reusestr.strip()) if reusestr else '',
+            'result': result[name],
+        }
+
+        code = self._render(MATLAB_AUX_TEMPLATE, context)
         return code, '\n'.join(code.split('\n')[:5])
 
     def generate_special(self, name, spec):
         raise NotImplementedError
 
     def _render(self, template, context):
-        return template.format(**context)
+        self.context.update(context)
+        return template.format(**self.context)
 
     def _process_reused(self, specdict, names_map={}):
 
@@ -99,24 +104,17 @@ class Matlab(CodeGenerator):
 
     def generate_spec(self, specname_vars, specs):
         name = 'vfield'
-        y = "y_({0}) = {1};"
         specupdated, reusestr = self._process_reused(dict((v, specs[v]) for v in specname_vars))
-        result = [y.format(i + 1,  specupdated[it]) for i, it in enumerate(specname_vars)]
 
-        code = self._render(
-            MATLAB_FUNCTION_TEMPLATE,
-            {
-                'name': name,
-                'specname': self.fspec.name,
-                'pardef': "\n% Parameter definitions\n\n" + self.defineMany(self.fspec.pars, "p", 1),
-                'vardef': "\n% Variable definitions\n\n" + self.defineMany(specname_vars, "x", 1),
-                'start': self._format_user_code(self.opts['start']) if self.opts['start'] else '',
-                'result': '\n'.join(result),
-                'reuseterms': (len(reusestr) > 0) * "% reused term definitions \n" + reusestr,
-                'end': self._format_user_code(self.opts['end']) if self.opts['end'] else '',
-            }
-        )
+        context = {
+            'name': name,
+            'result': '\n'.join([
+            'y_({0}) = {1};'.format(i + 1,  specupdated[it]) for i, it in enumerate(specname_vars)
+            ]),
+            'reuseterms': self.reuse.format(reusestr.strip()) if reusestr else '',
+        }
 
+        code = self._render( MATLAB_FUNCTION_TEMPLATE, context)
         return (code, name)
 
     def _processIfMatlab(self, specStr):

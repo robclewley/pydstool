@@ -344,6 +344,7 @@ class TestMatlabGenerateAux(object):
         self.fspec = mock.Mock(spec=FuncSpec)
         self.fspec.name = 'funspec'
         self.fspec.pars = []
+        self.fspec.vars = ['x', 'y', 'z']
         self.name = 'myaux'
         self.spec =(['x', 'y', 'z'], 'x * z + y')
         self.fspec.auxfns = {self.name: self.spec}
@@ -368,19 +369,22 @@ class TestMatlabGenerateAux(object):
         assert self.template[2] in code
 
     def test_pardef_section_for_no_params(self):
-        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec, pars=[])
+        self.fspec.pars = []
+        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec)
 
         # FIXME: do not insert "Parameter definitions" if no par definitions
         assert '% Parameter definitions' in code
 
     def test_pardef_section_for_single_param(self):
-        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec, pars=['p'])
+        self.fspec.pars = ['p']
+        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec)
 
         assert '% Parameter definitions' in code
         assert 'p = p_(1);' in code
 
     def test_pardef_section_for_two_params(self):
-        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec, pars=['p', 'q'])
+        self.fspec.pars = ['p', 'q']
+        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec)
 
         assert '% Parameter definitions' in code
         assert 'p = p_(1);' in code
