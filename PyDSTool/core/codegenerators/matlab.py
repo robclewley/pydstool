@@ -61,7 +61,7 @@ class Matlab(CodeGenerator):
             'end': self._format_code(self.opts['end'], before, after),
         }
 
-        self.reuse = "% reused term definitions \n{}\n"
+        self.reuse = "% reused term definitions \n{0}\n"
         self._endstatementchar = ';'
 
     def generate_auxfun(self, name, auxspec):
