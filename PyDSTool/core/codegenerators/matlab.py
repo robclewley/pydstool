@@ -95,12 +95,18 @@ class Matlab(CodeGenerator):
                 # reuseQ.mapNames(names_map)
                 reusestr = reuseQ()
 
-        for name, spec in specdict.iteritems():
+        for name, spec in processed.iteritems():
             spec = self._processIfMatlab(spec)
-            if self.fspec.auxfns:
-                spec = addArgToCalls(spec, self.fspec.auxfns.keys(), "p_")
-            specdict[name] = spec
+            specdict[name] = self.adjust_call(spec)
         return processed, reusestr
+
+    @property
+    def adjust_call(self):
+        """Callable which adds parameter argument to auxiliary function calls (if any)"""
+        if self.fspec.auxfns:
+            return lambda s: addArgToCalls(s, self.fspec.auxfns.keys(), 'p_')
+        return idfn
+
 
     def generate_spec(self, specname_vars, specs):
         name = 'vfield'
@@ -131,20 +137,11 @@ class Matlab(CodeGenerator):
     def _processReusedMatlab(self, specnames, specdict):
         """Process reused subexpression terms for Matlab code."""
 
-        # must add parameter argument so that we can name
-        # pars inside the functions! this would either
-        # require all calls to include this argument (yuk!) or
-        # else we add these extra pars automatically to
-        # every call found in the .c code (as is done currently.
-        # this is still an untidy solution, but there you go...)
-        parseFunc = idfn
-        if self.fspec.auxfns:
-            parseFunc = lambda s: addArgToCalls(s, self.fspec.auxfns.keys(), "p_")
         reused, specupdated, new_protected, order = _processReused(specnames,
                                                                    specdict,
                                                                    self.fspec.reuseterms,
                                                                    '', '', ';',
-                                                                   parseFunc)
+                                                                   self.adjust_call)
         self.fspec._protected_reusenames = new_protected
         reusedefs = {}.fromkeys(new_protected)
         for _, deflist in reused.iteritems():

@@ -347,6 +347,7 @@ class TestMatlabGenerateAux(object):
         self.fspec.vars = ['x', 'y', 'z']
         self.name = 'myaux'
         self.spec =(['x', 'y', 'z'], 'x * z + y')
+        self.fspec._auxfnspecs = {self.name: self.spec}
         self.fspec.auxfns = {self.name: self.spec}
         self.fspec.reuseterms = {}
 
