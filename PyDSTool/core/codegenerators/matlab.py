@@ -53,8 +53,7 @@ class Matlab(CodeGenerator):
         if pars is None:
             pars = self.fspec.pars
         vnames = dict((v, v + '__') for v in auxspec[0])
-        spec = self._normalize_spec(auxspec[1])
-        body, reusestr = self._process_reused(name, spec, vnames)
+        result, reusestr = self._process_reused({name: auxspec[1]}, vnames)
         code = self._render(
             MATLAB_AUX_TEMPLATE,
             {
@@ -63,7 +62,7 @@ class Matlab(CodeGenerator):
                 'vnames': ', '.join([vnames[v] for v in auxspec[0]]),
                 'pardef': "\n% Parameter definitions\n\n" + self.defineMany(pars, "p", 1),
                 'reuseterms': (len(reusestr) > 0) * "\n% reused term definitions \n" + reusestr.strip() + (len(reusestr) > 0) * "\n",
-                'result': body,
+                'result': result[name],
             }
         )
         return code, '\n'.join(code.split('\n')[:5])
@@ -74,26 +73,35 @@ class Matlab(CodeGenerator):
     def _render(self, template, context):
         return template.format(**context)
 
-    def _process_reused(self, name, spec, vnames):
-        reusestr, processed = self._processReusedMatlab([name], {name: spec})
-        auxQ = QuantSpec('aux', processed[name], treatMultiRefs=False)
-        auxQ.mapNames(vnames)
-        reuseQ = QuantSpec('reuse', reusestr, preserveSpace=True)
-        # TODO: uncomment to add name mangling in reuseterms
-        # reuseQ.mapNames(vnames)
-        return auxQ(), reuseQ() if reusestr else ''
+    def _process_reused(self, specdict, names_map={}):
+
+        for name, spec in specdict.iteritems():
+            specdict[name] = self._normalize_spec(spec)
+
+        reusestr, processed = self._processReusedMatlab(specdict.keys(), specdict)
+        if names_map:
+            for name in specdict.keys():
+                q = QuantSpec('__q__', processed[name], treatMultiRefs=False)
+                q.mapNames(names_map)
+                processed[name] = q()
+            if reusestr:
+                reuseQ = QuantSpec('reuse', reusestr, preserveSpace=True)
+                # TODO: uncomment to add name mangling in reuseterms
+                # reuseQ.mapNames(names_map)
+                reusestr = reuseQ()
+
+        for name, spec in specdict.iteritems():
+            spec = self._processIfMatlab(spec)
+            if self.fspec.auxfns:
+                spec = addArgToCalls(spec, self.fspec.auxfns.keys(), "p_")
+            specdict[name] = spec
+        return processed, reusestr
 
     def generate_spec(self, specname_vars, specs):
         name = 'vfield'
-        for specstr in specs.itervalues():
-            specstr = self._normalize_spec(specstr)
-        reusestr, specupdated = self._processReusedMatlab(specname_vars, specs)
-        result = []
-        for i, it in enumerate(specname_vars):
-            specstr = "y_(" + str(i + 1) + ") = " + self._processIfMatlab(specupdated[it]) + ';'
-            if self.fspec.auxfns:
-                specstr = addArgToCalls(specstr, self.fspec.auxfns.keys(), "p_")
-            result.append(specstr)
+        y = "y_({0}) = {1};"
+        specupdated, reusestr = self._process_reused(dict((v, specs[v]) for v in specname_vars))
+        result = [y.format(i + 1,  specupdated[it]) for i, it in enumerate(specname_vars)]
 
         code = self._render(
             MATLAB_FUNCTION_TEMPLATE,

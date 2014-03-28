@@ -39,7 +39,7 @@ def test_matlab_funcspec_for_ds_with_single_var_and_single_param():
         '\tx = x_(1);',
         '',
         '',
-        'y_(1) = p * x ** 3 - 1;', #FIXME: '**' must be converted to '^'
+        'y_(1) = p*x^3-1;',
         '',
         '',
         '',
@@ -95,7 +95,6 @@ def test_matlab_funspec_if_raises_exception():
         })
 
 
-@pytest.mark.xfail(reason="FIXME: exception is not raised")
 def test_matlab_auxspec_if_raises_exception():
     with pytest.raises(NotImplementedError):
         FuncSpec({
@@ -333,7 +332,7 @@ def test_matlab_funcspec_with_reuseterms_and_aux_funcs():
         '% reused term definitions ',
         'sx = sin(x);',
         '',
-        'y_ = sx-myaux(x__);',  # FIXME: add 'p_' to 'myaux' call
+        'y_ = sx-myaux(x__, p_);',
         '',
         ''
     ]
