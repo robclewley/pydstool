@@ -9,6 +9,7 @@ from PyDSTool import (
     RHSfuncSpec,
     wrapArgInCall,
     addArgToCalls,
+    args
 )
 from PyDSTool.Generator import Vode_ODEsystem, Dopri_ODEsystem
 from PyDSTool.parseUtils import proper_match
@@ -45,12 +46,21 @@ def fsargs():
     }
     return {
         'name': 'xfn',
-        'vars': ['w', 'z[i]', 'z2'],
+        # vars is always unrolled by Gen base class if there are FOR loop macros
+        'vars': ['w','z0','z1','z2'],
         'auxvars': ['aux_wdouble', 'aux_other', 'aux_iftest'],
         'pars': ['k', 'a'],
         'inputs': 'itable',
         'varspecs': fvarspecs,
         'fnspecs': fnspecs,
+        # In practice, _for_macro_info created automatically by Generator base class
+        '_for_macro_info': args(numfors=1, totforvars=2,
+                                varsbyforspec = {'z[i]': ['z0','z1'],
+                                                 'w': ['w'],
+                                                 'z2': ['z2'],
+                                                 'aux_wdouble': ['aux_wdouble'],
+                                                 'aux_other': ['aux_other'],
+                                                 'aux_iftest': ['aux_iftest']}),
         'reuseterms': {'a*sin_t': 'ast',
                        'exp(-t)': 'expmt',
                        'sin(t)': 'sin_t',
@@ -61,14 +71,13 @@ def fsargs():
     }
 
 
-@pytest.mark.xfail(reason="FIXME: fails with ValueError")
 def test_funcspecs_python(fsargs):
     DSfuncspec = RHSfuncSpec(fsargs)
     print DSfuncspec._infostr(verbose=2)
     print "\nDSfuncspec.auxfns['Jacobian'] =>", DSfuncspec.auxfns['Jacobian'], "\n"
 
 
-@pytest.mark.xfail(reason="FIXME: fails with ValueError")
+#@pytest.mark.xfail(reason="FIXME: fails with ValueError")
 def test_funcspecs_c(fsargs):
     DSfuncspec = RHSfuncSpec(fsargs)
     fsargs['targetlang'] = 'c'

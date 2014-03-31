@@ -496,6 +496,7 @@ class Generator(object):
         fs_args['_for_macro_info'] = args(totforvars=0, numfors=0, varsbyforspec={})
         for specname, specstr in fs_args['varspecs'].items():
             if not '[' in specname:
+                # record non-FOR variables as identity mapping
                 all_vars.append(specname)
                 fs_args['_for_macro_info'].varsbyforspec[specname] = [specname]
                 continue

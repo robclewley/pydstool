@@ -808,8 +808,8 @@ class FuncSpec(object):
                         print "Found length %i"%specdict_check[specvars[row]]
                         raise ValueError("Jacobian should be %sx%s"%(m,n))
             elif auxname == 'Jacobian_pars':
-                if not compareList(auxinfo[0],['t']+self.vars):
-                    print ['t']+self.vars
+                if not compareList(auxinfo[0],['t']+self.pars):
+                    print ['t']+self.pars
                     print "Auxinfo =", auxinfo[0]
                     raise ValueError("Invalid argument list given in Jacobian.")
                 auxparlist = ["t","x","parsinps"]
@@ -818,7 +818,7 @@ class FuncSpec(object):
                 auxstr = auxinfo[1]
                 if any([pt in auxstr for pt in ('^', '**')]):
                     auxstr = convertPowers(auxstr, 'pow')
-                specvars = self.vars
+                specvars = self.pars
                 specvars.sort()
                 specdict = {}.fromkeys(self.vars)
                 if len(specvars) == len(self.vars) == 1:
@@ -1608,8 +1608,8 @@ class FuncSpec(object):
                 auxspec_processedDict = {auxname: body_processed}
             elif auxname == 'Jacobian_pars':
                 sig = "void jacobianParam("
-                if not compareList(auxspec[0],['t']+self.vars):
-                    print ['t']+self.vars
+                if not compareList(auxspec[0],['t']+self.pars):
+                    print ['t']+self.pars
                     print "Auxspec =", auxspec[0]
                     raise ValueError("Invalid argument list given in Jacobian.")
                 parlist = "unsigned n_, unsigned np_, double t, double *Y_,"
@@ -1620,7 +1620,7 @@ class FuncSpec(object):
                 ismat = True
                 # specials = ["t","Y_","n_","np_","wkn_","wk_"]
                 sig += parlist + " double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_)"
-                specvars = self.vars
+                specvars = self.pars
                 specvars.sort()
                 n = len(specvars)
                 if n == 0:
@@ -1650,6 +1650,7 @@ class FuncSpec(object):
                             body_processed += "f_[" + str(col) + "][" + str(row) \
                             + "] = " + specdict[self.vars[row]][col] + ";\n"
                         except (IndexError, KeyError):
+                            print n, specvars
                             print "\nFound matrix:\n"
                             info(specdict)
                             raise ValueError("Jacobian should be %sx%s"%(m,n))
