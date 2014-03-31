@@ -10,7 +10,6 @@ from numpy.testing import (
 )
 
 from PyDSTool import (
-    makeDataDict,
     Interval,
     Events,
     makeZeroCrossEvent,
@@ -31,7 +30,7 @@ def tb_args():
     timeData = array([0.1, 1.1, 2.1])
     x1data = array([10.2, -1.4, 4.1])
     x2data = array([0.1, 0.01, 0.4])
-    xData = makeDataDict(xnames, [x1data, x2data])
+    xData = dict(zip(xnames, [x1data, x2data]))
     itableArgs = {}
     itableArgs['tdata'] = timeData
     itableArgs['ics'] = xData

@@ -7,7 +7,7 @@ from numpy import array
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 import pytest
 
-from PyDSTool import makeDataDict, PyDSTool_BoundsError
+from PyDSTool import PyDSTool_BoundsError
 from PyDSTool.Generator import (
     InterpolateTable,
 )
@@ -25,7 +25,7 @@ def test_can_build_interpolate_table_and_use_it_for_unknown_values():
     table = InterpolateTable({
         'name': 'interp',
         'tdata': ts,
-        'ics': makeDataDict(['x1', 'x2'], [x1, x2])
+        'ics': dict(zip(['x1', 'x2'], [x1, x2]))
     })
     traj = table.compute('itable')
 
