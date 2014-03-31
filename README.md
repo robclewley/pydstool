@@ -1,7 +1,7 @@
 PyDSTool v0.88
 ==============
 
-[![Build Status](https://travis-ci.org/z2v/pydstool.png?branch=develop)](https://travis-ci.org/z2v/pydstool) [![Coverage Status](https://coveralls.io/repos/z2v/pydstool/badge.png?branch=develop)](https://coveralls.io/r/z2v/pydstool?branch=develop)
+[![Build Status](https://travis-ci.org/robclewley/pydstool.svg?branch=master)](https://travis-ci.org/robclewley/pydstool) [![Coverage Status](https://coveralls.io/repos/robclewley/pydstool/badge.png?branch=master)](https://coveralls.io/r/robclewley/pydstool?branch=master)
 
 Dec 2012. *This is a beta release version.*
 
