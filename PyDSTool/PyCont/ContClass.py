@@ -14,6 +14,8 @@ from PyDSTool.ModelConstructor import embed
 from PyDSTool import Point, Pointset
 from PyDSTool.common import pickle, Utility, args, filteredDict
 from PyDSTool.utils import remain
+from PyDSTool import utils
+from PyDSTool import common
 import PyDSTool.Redirector as redirc
 from PyDSTool.errors import *
 from PyDSTool.matplotlib_import import *
@@ -683,8 +685,8 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                   ext_modules = [Extension("_auto"+self._vf_filename_ext,
                                  sources=modfilelist,
                                  include_dirs=incdirs,
-                                 extra_compile_args=['-w', '-D__PYTHON__', '-std=c99', '-m32'],
-                                 extra_link_args=['-w', '-m32'],
+                                 extra_compile_args=utils.extra_arch_arg(['-w', '-D__PYTHON__', '-std=c99']),
+                                 extra_link_args=utils.extra_arch_arg(['-w']),
                                  library_dirs=libdirs+['./'],
                                  libraries=libsources)])
         except:

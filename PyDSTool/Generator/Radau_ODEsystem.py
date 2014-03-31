@@ -6,6 +6,9 @@ from PyDSTool.Generator import ODEsystem as ODEsystem
 from baseclasses import Generator, theGenSpecHelper, genDB, _pollInputs
 from PyDSTool.utils import *
 from PyDSTool.common import *
+# for future cleanup of * imports
+from PyDSTool import utils
+from PyDSTool import common
 from PyDSTool.ModelSpec import QuantSpec
 from PyDSTool.integrator import integrator
 from PyDSTool.parseUtils import addArgToCalls, wrapArgInCall
@@ -908,11 +911,11 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                                  include_dirs=incdirs,
                                  library_dirs=radlibdirs,
                                  libraries=['radau5'],
-                                 extra_compile_args=['-w', '-D__RADAU__'],
-                                 extra_link_args=['-w'])],
+                                 extra_compile_args=utils.extra_arch_arg(['-w', '-D__RADAU__']),
+                                 extra_link_args=utils.extra_arch_arg(['-w']))],
 #                  library_dirs=radlibdirs,
                   libraries=[('radau5',{'sources': fortfilelist,
-                                        'extra_f77_compile_args': ['-w'],
+                                        'extra_f77_compile_args': utils.extra_arch_arg(['-w']),
                               'library_dirs': radlibdirs+['./']})])
         except:
             rout.stop()
@@ -920,32 +923,6 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             print sys.exc_info()[0], sys.exc_info()[1]
             raise RuntimeError
         rout.stop()    # restore stdout
-        # Attempt to unload module through a shutdown() function being
-        # added to the SWIG module file. But it didn't work!
-##        try:
-##            modfilepy = open(os.path.join(self._compilation_tempdir,
-##                                    "radau5"+self._vf_filename_ext+".py"), 'a')
-##            extfilename = "_radau5"+self._vf_filename_ext
-##            modfilepy.write("""# The following addition made by PyDSTool:
-##def shutdown():
-##    import sys
-##    del sys.modules['""" + extfilename + """']
-##            """)
-####    del """ + extfilename + """
-####    del new_doubleArray
-####    del delete_doubleArray
-####    del doubleArray_getitem
-####    del doubleArray_setitem
-####    del new_intArray
-####    del delete_intArray
-####    del intArray_getitem
-####    del intArray_setitem
-####    del Integrate
-##            modfilepy.close()
-##        except IOError:
-##            print "radau5.py modifying error in radau temp compilation " \
-##                  + "directory"
-##            raise
         try:
             # move library files into the user's CWD
             distdestdir = distutil_destination()
@@ -965,26 +942,9 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             #print sys.exc_info()[0], sys.exc_info()[1]
             raise #RuntimeError
 
-    # doesn't work!
-#    def _ensureLoaded(self, modname):
-##        if modname in sys.modules:
-##            _integMod = reload(sys.modules[modname])
-##        else:
-#        try:
-#            _integMod = __import__(modname, globals())
-#        except:
-#            print "Error in importing compiled vector field and integrator."
-#            print "Did you compile the RHS C code?"
-#            raise
-#        # Initialize integrator
-#        assert 'Integrate' in dir(_integMod), \
-#               "radau library does not contain Integrate()"
-#        return _integMod
-
 
     def compute(self, trajname, dirn='f', ics=None):
         continue_integ = ODEsystem.prepDirection(self, dirn)
-#        _integMod = __import__("radau5"+self._vf_filename_ext, globals())
         if ics is not None:
             self.set(ics=ics)
         self.validateICs()

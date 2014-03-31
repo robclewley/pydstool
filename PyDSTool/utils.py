@@ -28,11 +28,12 @@ import copy
 _classes = []
 
 _functions = ['intersect', 'remain', 'union', 'cartesianProduct',
-              'makeDataDict', 'makeImplicitFunc', 'orderEventData',
+              'makeImplicitFunc', 'orderEventData',
               'saveObjects', 'loadObjects', 'info', 'compareList',
               'findClosestArray', 'findClosestPointIndex', 'find',
               'makeMfileFunction', 'make_RHS_wrap', 'make_Jac_wrap',
-              'progressBar', 'distutil_destination']
+              'progressBar', 'distutil_destination', 'architecture',
+              'extra_arch_arg']
 
 _mappings = ['_implicitSolveMethods', '_1DimplicitSolveMethods']
 
@@ -723,16 +724,6 @@ def cartesianProduct(a, b):
         ret.extend([(i, j) for j in b])
     return ret
 
-# deprecated
-def makeDataDict(fieldnames, fieldvalues):
-    """Zip arrays of field names and values into a dictionary.
-    For instance, to use in Generator initialization arguments.
-
-    Deprecated as of v0.89."""
-    if isinstance(fieldvalues, ndarray):
-        return dict(zip(fieldnames, [a.tolist() for a in fieldvalues]))
-    else:
-        return dict(zip(fieldnames, fieldvalues))
 
 
 # ------------------------
@@ -761,5 +752,30 @@ def distutil_destination():
         destdir = 'src.win32-'+pyname[0]+'.'+pyname[1]
     else:
         destdir = ''
-
+    # TEMP for debugging
+    #import os
+    #os.system('echo %s > temp_dist.txt' % (os.path.abspath('.') + " : " + destdir))
     return destdir
+
+
+def architecture():
+    """
+    Platform- and version-independent function to determine 32- or 64-bit architecture.
+    Used primarily to determine need for "-m32" option to C compilers for external library
+    compilation, e.g. by AUTO, Dopri, Radau.
+
+    Returns integer 32 or 64.
+    """
+    import struct
+    return struct.calcsize("P") * 8
+
+def extra_arch_arg(arglist):
+    """
+    Adds '-m32' flag to existing list of extra compiler/linker flags passed
+    as argument, based on whether architecture is detected as 32 bit. Otherwise,
+    it performs the identity function.
+    """
+    if architecture() == 32:
+        return arglist + ['-m32']
+    else:
+        return arglist
