@@ -68,13 +68,12 @@ def test_ode_system(tb_args):
     )
     testtraj = testODE.compute('test1')
     assert testODE.defined
-    assert_almost_equal(testtraj(0.5, 'w'), 6.05867901304, 4)
-    assert_almost_equal(testtraj(0.2, 'aux_other'), 3.90581993688, 4)
+    assert_almost_equal(testtraj(0.5, 'w'), 6.05867901304, 3)
+    assert_almost_equal(testtraj(0.2, 'aux_other'), 3.90581993688, 3)
     assert testODE.indepvariable.depdomain == Interval(
         't', float64, [0.11, 2.1])
     assert testODE.diagnostics.hasWarnings()
-    # FIXME: next fails with ValueError
-    # assert testODE.diagnostics.findWarnings(21) != []
+    assert testODE.diagnostics.findWarnings(21) != []
 
     # Now adding a terminating co-ordinate threshold event...
     ev_args = {
