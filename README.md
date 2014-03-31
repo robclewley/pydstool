@@ -1,7 +1,7 @@
 PyDSTool v0.88
 ==============
 
-[![Build Status](https://travis-ci.org/z2v/pydstool.png?branch=refactoring/funcspec)](https://travis-ci.org/z2v/pydstool) [![Coverage Status](https://coveralls.io/repos/z2v/pydstool/badge.png?branch=refactoring%2Ffuncspec)](https://coveralls.io/r/z2v/pydstool?branch=refactoring%2Ffuncspec)
+[![Build Status](https://travis-ci.org/robclewley/pydstool.svg?branch=master)](https://travis-ci.org/robclewley/pydstool) [![Coverage Status](https://coveralls.io/repos/robclewley/pydstool/badge.png?branch=master)](https://coveralls.io/r/robclewley/pydstool?branch=master)
 
 Dec 2012. *This is a beta release version.*
 
@@ -14,7 +14,7 @@ Dec 2012. *This is a beta release version.*
 
 #### Optional requirements
 * [matplotlib](http://www.matplotlib.org)
-    Matplotlib is needed for plotting functionality and running many of the 
+    Matplotlib is needed for plotting functionality and running many of the
     examples.
 
 * [swig](http://www.swig.org) > 2.0
@@ -52,7 +52,7 @@ Full API documentation can be found locally [here](./html/index.html). It is aut
 ### Tests and examples
 #### Running examples
 Examples can be found in the `examples` directory. Some examples can only be run once, others have produced their output, for instance HH\_loaded.py, HH\_loaded\_dopri.py. Several of the examples require an external compiler. An easy way to run all the examples in an appropriate order is to run the script
-'run\_all\_tests.py': 
+'run\_all\_tests.py':
 ```
     cd examples
     python run_all_tests.py
