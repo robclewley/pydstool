@@ -118,6 +118,7 @@ def test_dependencies():
         },
         'fnspecs': {
             'myaux': (['x', 'z'], 'x**2 + z^2'),
+            'my': (['x', 'y'], 'x + y'),
         },
         'auxvars': ['my'],
         'inputs': ['input_y'],
@@ -129,6 +130,9 @@ def test_dependencies():
     assert ('x', 'z') in fs.dependencies
     assert ('y', 'z') in fs.dependencies
     assert ('y', 'input_y') in fs.dependencies
+    assert ('my', 'x') in fs.dependencies
+    assert ('my', 'y') in fs.dependencies
+    assert ('my', 'z') in fs.dependencies
     assert all(v != 'z' for v, _ in fs.dependencies)
 
 
