@@ -4,6 +4,7 @@
 """Test FuncSpec for python and C right-hand sides.
 """
 
+from copy import deepcopy
 import os
 import platform
 import re
@@ -209,7 +210,12 @@ def _compare_with_file(specstr, filename):
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)) as f:
         for i, s in enumerate(f):
             s = s.replace('\n', '')
-            assert s == spec[i], 'line %d: %r != %r' % (i + 1, s, spec[i])
+            if i != len(spec) - 1:
+                assert s == spec[i], 'line %d: %r != %r' % (i + 1, s, spec[i])
+            else:
+                # special check for dependencies list
+                extract_deps = lambda s: re.findall(r"\('\w+', '\w+'\)", s)
+                assert set(extract_deps(s)) == set(extract_deps(spec[i]))
 
 
 def test_funcspecs_python(fsargs):
@@ -219,7 +225,7 @@ def test_funcspecs_python(fsargs):
 def test_funcspec_recreate(fsargs):
     del fsargs['codeinsert_start']
     del fsargs['codeinsert_end']
-    pyspec = RHSfuncSpec(fsargs)
+    pyspec = RHSfuncSpec(deepcopy(fsargs))
     cspec_recreated = pyspec.recreate('c')
 
     fsargs['targetlang'] = 'c'

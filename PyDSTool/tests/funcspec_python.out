@@ -98,4 +98,4 @@ User-defined auxiliary functions (in target language):
 
 
 Dependencies in specification functions - pair (i, o) means i depends on o:
-  [('z0', 'z0'), ('z1', 'w'), ('z2', 'z1'), ('z2', 'z2'), ('w', 'z0'), ('w', 'w'), ('z0', 'w'), ('z0', 'z1'), ('z1', 'z1'), ('z1', 'z2'), ('z2', 'z0'), ('z2', 'w'), ('w', 'itable'), ('aux_iftest', 'z1'), ('aux_iftest', 'w'), ('aux_wdouble', 'w')]
+  [('z0', 'z0'), ('z1', 'w'), ('z2', 'z1'), ('z2', 'z2'), ('w', 'z0'), ('w', 'w'), ('z0', 'w'), ('z0', 'z1'), ('z1', 'z1'), ('z1', 'z2'), ('z2', 'z0'), ('z2', 'w'), ('w', 'itable'), ('aux_iftest', 'z1'), ('aux_iftest', 'w'), ('aux_wdouble', 'w'), ('aux_other', 'w')]
