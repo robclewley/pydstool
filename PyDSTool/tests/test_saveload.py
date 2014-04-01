@@ -14,7 +14,6 @@ from PyDSTool import (
     saveObjects,
     Variable,
     Trajectory,
-    makeDataDict,
     Events,
 )
 from PyDSTool.Generator import (
@@ -126,9 +125,9 @@ def test_saveload_trajectory():
 @pytest.fixture
 def interptable():
     timeData = array([0.1, 1.1, 2.1])
-    xData = makeDataDict(
+    xData = dict(zip(
         ['x1', 'x2'],
-        [array([10.2, -1.4, 4.1]), array([0.1, 0.01, 0.4])])
+        [array([10.2, -1.4, 4.1]), array([0.1, 0.01, 0.4])]))
     itableArgs = {
         'tdata': timeData,
         'ics': xData,

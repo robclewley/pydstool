@@ -6,7 +6,7 @@ print PyDSTool.__LICENSE__    for the terms of use.
 """
 
 __LICENSE__ = """\
-Copyright (C) 2007-2012, Georgia State University
+Copyright (C) 2007-2012, Copyright (C) 2007-2014, Robert Clewley
 All rights reserved.
 
 Parts of this distribution that originate from different authors are
@@ -24,14 +24,15 @@ modification, are permitted provided that the following conditions are met:
       disclaimer in the documentation and/or other materials provided
       with the distribution.
 
-    3. The name of Georgia State University and its representatives may not
-      be used to endorse or promote products derived from this
-      software without specific prior written permission.
+    3. The name of Robert Clewley, or of his affiliations (Georgia State
+      University, and its representatives) may not be used to endorse or
+      promote products derived from this software without specific prior
+      written permission.
 
-THIS SOFTWARE IS PROVIDED BY GEORGIA STATE UNIVERSITY ``AS IS'' AND ANY
+THIS SOFTWARE IS PROVIDED BY ROBERT CLEWLEY ``AS IS'' AND ANY
 EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL GEORGIA STATE UNIVERSITY BE LIABLE
+PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ROBERT CLEWLEY BE LIABLE
 FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
@@ -39,13 +40,14 @@ BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """
 
-vernum = '0.88'
+vernum_major = '0.88'
+vernum_minor = '140328'
+vernum = vernum_major+'.'+vernum_minor
 __version__  = vernum
-__revision__ = '$Revision: 121202 $'
-__date__     = '$Date: 2012/12/02 23:30:00 $'
+__revision__ = '$Revision: %s $' % vernum_minor
+__date__     = '$Date: 2014/03/28 00:00:00 $'
 
 import sys, os, gc
 

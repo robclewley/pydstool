@@ -97,8 +97,8 @@ class C(CodeGenerator):
                 auxspec_processedDict = {auxname: body_processed}
             elif auxname == 'Jacobian_pars':
                 sig = "void jacobianParam("
-                if not compareList(auxspec[0], ['t'] + self.fspec.vars):
-                    print ['t'] + self.fspec.vars
+                if not compareList(auxspec[0], ['t'] + self.fspec.pars):
+                    print ['t'] + self.fspec.pars
                     print "Auxspec =", auxspec[0]
                     raise ValueError(
                         "Invalid argument list given in Jacobian.")
@@ -111,7 +111,7 @@ class C(CodeGenerator):
                 # specials = ["t","Y_","n_","np_","wkn_","wk_"]
                 sig += parlist + \
                     " double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_)"
-                specvars = self.fspec.vars
+                specvars = self.fspec.pars
                 specvars.sort()
                 n = len(specvars)
                 if n == 0:
@@ -145,6 +145,7 @@ class C(CodeGenerator):
                                 + "] = " + specdict[
                                     self.fspec.vars[row]][col] + ";\n"
                         except (IndexError, KeyError):
+                            print n, specvars
                             print "\nFound matrix:\n"
                             info(specdict)
                             raise ValueError(

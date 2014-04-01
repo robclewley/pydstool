@@ -7,7 +7,6 @@ from numpy import array
 from numpy.testing import assert_array_almost_equal, assert_almost_equal
 import pytest
 
-from PyDSTool import makeDataDict
 from PyDSTool.Generator import LookupTable
 
 
@@ -23,7 +22,7 @@ def test_can_build_lookup_table_and_use_it_for_known_values():
     table = LookupTable({
         'name': 'lookup',
         'tdata': ts,
-        'ics': makeDataDict(['x1', 'x2'], [x1, x2]),
+        'ics': dict(zip(['x1', 'x2'], [x1, x2])),
         })
 
     traj = table.compute('ltable')

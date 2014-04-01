@@ -626,9 +626,9 @@ class Diagnostics(object):
         """Return time-ordered list of warnings of kind specified using a
         single Generator warning code"""
         res = []
-        for wcode, (t, name) in self.warnings:
+        for wcode, wdata in self.warnings:
             if wcode == code:
-                res.append((t, name))
+                res.append(wdata)
         res.sort()  # increasing order
         return res
 

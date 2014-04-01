@@ -126,8 +126,8 @@ class Python(CodeGenerator):
                         print "Found length %i" % specdict_check[specvars[row]]
                         raise ValueError("Jacobian should be %sx%s" % (m, n))
             elif auxname == 'Jacobian_pars':
-                if not compareList(auxinfo[0], ['t'] + self.fspec.vars):
-                    print ['t'] + self.fspec.vars
+                if not compareList(auxinfo[0], ['t'] + self.fspec.pars):
+                    print ['t'] + self.fspec.pars
                     print "Auxinfo =", auxinfo[0]
                     raise ValueError(
                         "Invalid argument list given in Jacobian.")
@@ -137,7 +137,7 @@ class Python(CodeGenerator):
                 auxstr = auxinfo[1]
                 if any([pt in auxstr for pt in ('^', '**')]):
                     auxstr = convertPowers(auxstr, 'pow')
-                specvars = self.fspec.vars
+                specvars = self.fspec.pars
                 specvars.sort()
                 specdict = {}.fromkeys(self.fspec.vars)
                 if len(specvars) == len(self.fspec.vars) == 1:

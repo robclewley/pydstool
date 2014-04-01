@@ -6,6 +6,9 @@ from PyDSTool.Generator import ODEsystem as ODEsystem
 from baseclasses import Generator, theGenSpecHelper, genDB, _pollInputs
 from PyDSTool.utils import *
 from PyDSTool.common import *
+# for future cleanup of * imports
+from PyDSTool import utils
+from PyDSTool import common
 from PyDSTool.integrator import integrator
 from PyDSTool.parseUtils import addArgToCalls, wrapArgInCall
 import PyDSTool.Redirector as redirc
@@ -766,38 +769,12 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                                  sources=modfilelist,
                                  include_dirs=incdirs,
 #                                 library_dirs=['./'],
-                                 extra_compile_args=['-w', '-D__DOPRI__'],
-                                 extra_link_args=['-w'])])
+                                 extra_compile_args=utils.extra_arch_arg(['-w', '-D__DOPRI__']),
+                                 extra_link_args=utils.extra_arch_arg(['-w']))])
         except:
             print "\nError occurred in generating Dopri system..."
             print sys.exc_info()[0], sys.exc_info()[1]
             raise RuntimeError
-        # Attempt to unload module through a shutdown() function being
-        # added to the SWIG module file. But it didn't work!
-##        try:
-##            modfilepy = open(os.path.join(self._compilation_tempdir,
-##                                    "dop853"+self._vf_filename_ext+".py"), 'a')
-##            extfilename = "_dop853"+self._vf_filename_ext
-##            modfilepy.write("""# The following addition made by PyDSTool:
-##def shutdown():
-##    import sys
-##    del sys.modules['""" + extfilename + """']
-##            """)
-####    del """ + extfilename + """
-####    del new_doubleArray
-####    del delete_doubleArray
-####    del doubleArray_getitem
-####    del doubleArray_setitem
-####    del new_intArray
-####    del delete_intArray
-####    del intArray_getitem
-####    del intArray_setitem
-####    del Integrate
-##            modfilepy.close()
-##        except IOError:
-##            print "dop853.py modifying error in dopri853 temp compilation " \
-##                  + "directory"
-##            raise
         rout.start()    # redirect stdout
         try:
             # move library files into the user's CWD
@@ -821,25 +798,8 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
         rout.stop()    # restore stdout
 
 
-#    def _ensureLoaded(self, modname):
-##        if modname in sys.modules:
-##            _integMod = reload(sys.modules[modname])
-##        else:
-#        try:
-#            _integMod = __import__(modname, globals())
-#        except:
-#            print "Error in importing compiled vector field and integrator."
-#            print "Did you compile the RHS C code?"
-#            raise
-#        # Initialize integrator
-#        assert 'Integrate' in dir(_integMod), \
-#               "dopri853 library does not contain Integrate()"
-#        return _integMod
-
-
     def compute(self, trajname, dirn='f', ics=None):
         continue_integ = ODEsystem.prepDirection(self, dirn)
-#        _integMod = __import__("dop853"+self._vf_filename_ext, globals())
         if ics is not None:
             self.set(ics=ics)
         self.validateICs()
@@ -870,7 +830,6 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
         self.algparams['hasJac'] = self.haveJacobian()
         self.algparams['hasJacP'] = self.haveJacobian_pars()
         if self._solver is None:
-#            _integMod = self._ensureLoaded("dop853"+self._vf_filename_ext)
             self._solver = dopri("dop853"+self._vf_filename_ext,
                                  rhs=self.name, phaseDim=self.dimension,
                                  paramDim=len(plist), nAux=len(anames),

@@ -303,12 +303,15 @@ class Vode_ODEsystem(ODEsystem):
             dataDict = copy(self.initialconditions)
             dataDict.update(dict(zip(anames, avals)))
             dataDict['t'] = t0
-            evsflagged = self.eventstruct.pollHighLevelEvents(None,
-                                                            dataDict,
-                                                            parsinps,
-                                                            eventslist)
-            if len(evsflagged) > 0:
-                raise RuntimeError("Some events flagged at initial condition")
+            ## Removed this "belt and braces" pre-check because it messes
+            ## up some events in the middle of hybrid regime switches.
+            ## Not sure yet what the problem is.  (Oct 2013)
+            #evsflagged = self.eventstruct.pollHighLevelEvents(None,
+            #                                                dataDict,
+            #                                                parsinps,
+            #                                                eventslist)
+            #if len(evsflagged) > 0:
+            #    raise RuntimeError("Some events flagged at initial condition")
             if continue_integ:
                 # revert to prevprevsign, since prevsign changed after call
                 self.eventstruct.resetHighLevelEvents(t0, eventslist, 'prev')
