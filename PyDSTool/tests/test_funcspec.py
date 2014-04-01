@@ -48,20 +48,25 @@ def fsargs():
     return {
         'name': 'xfn',
         # vars is always unrolled by Gen base class if there are FOR loop macros
-        'vars': ['w','z0','z1','z2'],
+        'vars': ['w', 'z0', 'z1', 'z2'],
         'auxvars': ['aux_wdouble', 'aux_other', 'aux_iftest'],
         'pars': ['k', 'a'],
         'inputs': 'itable',
         'varspecs': fvarspecs,
         'fnspecs': fnspecs,
         # In practice, _for_macro_info created automatically by Generator base class
-        '_for_macro_info': args(numfors=1, totforvars=2,
-                                varsbyforspec = {'z[i]': ['z0','z1'],
-                                                 'w': ['w'],
-                                                 'z2': ['z2'],
-                                                 'aux_wdouble': ['aux_wdouble'],
-                                                 'aux_other': ['aux_other'],
-                                                 'aux_iftest': ['aux_iftest']}),
+        '_for_macro_info': args(
+            numfors=1,
+            totforvars=2,
+            varsbyforspec={
+                'z[i]': ['z0', 'z1'],
+                'w': ['w'],
+                'z2': ['z2'],
+                'aux_wdouble': ['aux_wdouble'],
+                'aux_other': ['aux_other'],
+                'aux_iftest': ['aux_iftest']
+            }
+        ),
         'reuseterms': {'a*sin_t': 'ast',
                        'exp(-t)': 'expmt',
                        'sin(t)': 'sin_t',
