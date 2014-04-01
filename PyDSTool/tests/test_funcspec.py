@@ -1,18 +1,19 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """Test FuncSpec for python and C right-hand sides.
 """
 
+import os
 import platform
 
 import pytest
 from PyDSTool import (
     FuncSpec,
     RHSfuncSpec,
-    wrapArgInCall,
-    addArgToCalls,
     args
 )
 from PyDSTool.Generator import Vode_ODEsystem, Dopri_ODEsystem
-from PyDSTool.parseUtils import proper_match
 
 
 @pytest.fixture
@@ -71,49 +72,36 @@ def fsargs():
     }
 
 
+def _compare_with_file(specstr, filename):
+
+    spec = specstr.split('\n')
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)) as f:
+        for i, s in enumerate(f):
+            s = s.replace('\n', '')
+            assert s == spec[i], 'line %d: %r != %r' % (i + 1, s, spec[i])
+
+
 def test_funcspecs_python(fsargs):
-    DSfuncspec = RHSfuncSpec(fsargs)
-    print DSfuncspec._infostr(verbose=2)
-    print "\nDSfuncspec.auxfns['Jacobian'] =>", DSfuncspec.auxfns['Jacobian'], "\n"
+    _compare_with_file(RHSfuncSpec(fsargs)._infostr(verbose=2), "funcspec_python.out")
 
 
-#@pytest.mark.xfail(reason="FIXME: fails with ValueError")
+def test_funcspec_recreate(fsargs):
+    pyspec = RHSfuncSpec(fsargs)
+    del fsargs['codeinsert_start']
+    del fsargs['codeinsert_end']
+    cspec_recreated = pyspec.recreate('c')
+
+    fsargs['targetlang'] = 'c'
+    cspec = RHSfuncSpec(fsargs)
+
+    assert cspec._infostr(verbose=2) == cspec_recreated._infostr(verbose=2)
+
+
 def test_funcspecs_c(fsargs):
-    DSfuncspec = RHSfuncSpec(fsargs)
     fsargs['targetlang'] = 'c'
     fsargs['codeinsert_start'] = "fprintf('code inserted at start\n')"
     fsargs['codeinsert_end'] = "fprintf('code inserted at end\n')"
-    del fsargs['codeinsert_start']
-    del fsargs['codeinsert_end']
-    DSfuncspec_C = RHSfuncSpec(fsargs)
-    print '\nC version of same specifications:\n', DSfuncspec_C._infostr(verbose=2)
-    print "Dependencies are not calculated for C code in FuncSpec. If you use ModelSpec"
-    print "to generate your models you will have that information there."
-    print "\nTesting re-targetting of funcspec using 'recreate' method..."
-    dsc = DSfuncspec.recreate('c')
-    assert dsc.spec[0] == DSfuncspec_C.spec[0], " - FAILED"
-    print " - PASSED.\n"
-    print "\n============================================================="
-    print "Test: wrapping delimiters around call arguments"
-    print """  ... around first argument: wrapArgInCall(fs, 'initcond', '"')"""
-    fs = 'initcond(v,p)'
-    print fs, " -- wrapped to: ", wrapArgInCall(fs, 'initcond', '"'), "\n"
-    print """  ... around second argument: wrapArgInCall(fs,'initcond','"',argnums=[1])"""
-    print fs, " -- wrapped to: ", wrapArgInCall(fs, 'initcond', '"', argnums=[1]), "\n"
-    print """  ... extra braces to both arguments: wrapArgInCall(fs,'initcond','[',']',[0,1])"""
-    print fs, " -- wrapped to: ", wrapArgInCall(fs, 'initcond', '[', ']', [0, 1]), "\n"
-    print "\nTest combo of addArgToCalls and wrapArgInCall with embedded calls:"
-    fs2 = "1/zeta(y_rel(y,initcond(y)+initcond(z)),z-initcond(x))+zeta(0.)"
-    print fs2, "\n"
-    fs2_p = addArgToCalls(fs2, ['zeta', 'y_rel', 'initcond', 'nothing'], "p")
-    print " ** becomes **"
-    print fs2_p, "\n"
-    fs2_p = wrapArgInCall(fs2_p, 'initcond', '"')
-    print " ** becomes **"
-    print fs2_p
-    s = '1 +abc13 + abc'
-    assert proper_match(s, 'abc')
-    assert not proper_match(s[:10], 'abc')
+    _compare_with_file(RHSfuncSpec(fsargs)._infostr(verbose=2), "funcspec_c.out")
 
 
 def test_python_funcspec_for_ds_with_single_var():
