@@ -13,7 +13,7 @@ print 'linear interpolation of sine function'
 
 timeData = linspace(0, 10, 30)
 sindata = sin(timeData)
-xData = makeDataDict(['sinx'], [sindata])
+xData = {'sinx': sindata}
 pcwc_interp = InterpolateTable({'tdata': timeData,
                               'ics': xData,
                               'name': 'interp0d',

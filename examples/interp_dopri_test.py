@@ -23,7 +23,7 @@ print "names for variables: xnames = ", xnames
 print "timeData = ", timeData
 print "x1data = ", x1data
 print "x2data = ", x2data
-xData = makeDataDict(xnames, [x1data, x2data])
+xData = dict(zip(xnames, [x1data, x2data]))
 interptable = InterpolateTable({'tdata': timeData,
                               'ics': xData,
                               'name': 'interp'
