@@ -224,7 +224,7 @@ class FuncSpec(object):
     def dependencies(self):
         if not hasattr(self, '_dependencies'):
             deps = set()
-            valid_targets = self.inputs + self.vars + self.auxvars
+            valid_targets = self.inputs + self.vars
             for name, spec in self.varspecs.iteritems():
                 specQ = QuantSpec('__spectemp__', spec)
                 [deps.add((name, s)) for s in specQ if s in valid_targets]
