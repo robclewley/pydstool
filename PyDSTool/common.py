@@ -1570,19 +1570,15 @@ def timestamp(tdigits=8):
 
 def isUniqueSeq(objlist):
     """Check that list contains items only once"""
-    if len(objlist) > 0:
-        return alltrue([objlist.count(obj) == 1 for obj in objlist])
-    else:
-        return True
+    return len(set(objlist)) == len(objlist)
+
 
 def makeSeqUnique(seq, asarray=False):
-    """Return a 1D sequence that only contains the unique values in seq.
-    Adapted from code by Raymond Hettinger, 2002"""
-    set = {}
-    if asarray:
-        return array([set.setdefault(e,e) for e in seq if e not in set])
-    else:
-        return [set.setdefault(e,e) for e in seq if e not in set]
+    """Return a 1D sequence that only contains the unique values in seq"""
+    seen = set()
+    seen_add = seen.add
+    list_ = [it for it in seq if it not in seen and not seen_add(it)]
+    return array(list_) if asarray else list_
 
 
 def object2str(x, digits=5):
