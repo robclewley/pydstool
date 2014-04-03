@@ -33,11 +33,11 @@ Overview of steps that ModelConstructor takes:
 """
 
 # PyDSTool imports
-from errors import *
-from common import *
-from utils import info, remain, intersect
+from .errors import *
+from .common import *
+from .utils import info, remain, intersect
 import Model, Generator, ModelSpec, Symbolic, Events, MProject
-from parseUtils import symbolMapClass, NAMESEP, isNumericToken
+from .parseUtils import symbolMapClass, NAMESEP, isNumericToken
 
 # Other imports
 from numpy import Inf, NaN, isfinite,  array, \

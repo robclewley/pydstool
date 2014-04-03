@@ -12,14 +12,15 @@ Interval objects have attributes:
    issingleton: boolean
    _intervalstr: str
 """
+from __future__ import absolute_import
 
 # Note: The integer intervals will later be used as the basis for
 # supporting finitely-sampled real ranges.
 
 ## PyDSTool imports
-from utils import *
-from common import *
-from errors import *
+from .utils import *
+from .common import *
+from .errors import *
 
 ## Other imports
 from numpy import Inf, NaN, isfinite, isinf, isnan, array, sign, linspace, arange

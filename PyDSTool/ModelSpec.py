@@ -12,15 +12,15 @@ Robert Clewley, October 2005.
 
 # ----------------------------------------------------------------------------
 
-from __future__ import division
-from common import *
-from utils import info as utils_info
-from parseUtils import *
-from errors import *
-from Symbolic import *
+from __future__ import division, absolute_import
+from .common import *
+from .utils import info as utils_info
+from .parseUtils import *
+from .errors import *
+from .Symbolic import *
 
 from math import *
-from utils import *
+from .utils import *
 from numpy import Inf, NaN, isfinite,  mod, sum
 from numpy import sometrue, alltrue
 from copy import copy, deepcopy

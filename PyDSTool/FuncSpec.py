@@ -8,13 +8,13 @@ and for manipulation of abstraction digraphs.
 """
 
 # PyDSTool imports
-from __future__ import division
-from utils import *
-from common import *
-from parseUtils import *
-from errors import *
-from utils import info as utils_info
-from Symbolic import QuantSpec
+from __future__ import division, absolute_import
+from .utils import *
+from .common import *
+from .parseUtils import *
+from .errors import *
+from .utils import info as utils_info
+from .Symbolic import QuantSpec
 
 # Other imports
 from copy import copy, deepcopy

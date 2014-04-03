@@ -10,10 +10,11 @@ import sys, traceback
 import numpy as npy
 
 # PyDSTool imports
-import Model, Generator, Events, ModelSpec, ModelConstructor, Symbolic, \
+import Model
+from . import Events, ModelSpec, ModelConstructor, Symbolic, \
        Trajectory
-import utils, common, parseUtils
-from errors import *
+from . import utils, common, parseUtils
+from .errors import *
 
 # --------------------
 

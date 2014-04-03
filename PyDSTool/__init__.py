@@ -4,6 +4,8 @@ Copyright (C) 2007-2012 Georgia State University
 
 print PyDSTool.__LICENSE__    for the terms of use.
 """
+from __future__ import absolute_import
+
 
 __LICENSE__ = """\
 Copyright (C) 2007-2012, Copyright (C) 2007-2014, Robert Clewley
@@ -85,31 +87,31 @@ import math, random
 import types, time
 
 # PyDSTool imports
-from Events import *
-from Interval import *
-from Points import *
-from Variable import *
-from Trajectory import *
-from FuncSpec import *
+from .Events import *
+from .Interval import *
+from .Points import *
+from .Variable import *
+from .Trajectory import *
+from .FuncSpec import *
 # \begin{hacksRus}
-import Generator as GenModule
-from Generator import Generator as Generator_
-from Generator import *
+from . import Generator as GenModule
+from .Generator import Generator as Generator_
+from .Generator import *
 Generator = GenModule
-import Model as ModelModule
-from Model import Model as Model_
-from Model import *
+from . import Model as ModelModule
+from .Model import Model as Model_
+from .Model import *
 Model = ModelModule
 # \end{hacksRus}
-from ModelConstructor import *
-from Toolbox.ParamEst import ParamEst
-from Toolbox.ModelEst import ModelEst
-from MProject import *
-from Symbolic import *
-from ModelSpec import *
-from parseUtils import auxfnDBclass, protected_allnames, protected_auxnamesDB, \
+from .ModelConstructor import *
+from .Toolbox.ParamEst import ParamEst
+from .Toolbox.ModelEst import ModelEst
+from .MProject import *
+from .Symbolic import *
+from .ModelSpec import *
+from .parseUtils import auxfnDBclass, protected_allnames, protected_auxnamesDB, \
          convertPowers
-from PyCont import *
+from .PyCont import *
 import numpy
 import numpy as npy  # alternate
 # import scipy already done at top
@@ -130,13 +132,13 @@ from copy import copy
 # note that the names with leading underscores will not be exported by
 # "from PyDSTool import *"
 # diff overwrites numpy diff
-from common import Verbose, Continuous, Discrete, targetLangs, _seq_types, \
+from .common import Verbose, Continuous, Discrete, targetLangs, _seq_types, \
               _num_types, _int_types, _float_types, _complex_types, \
               _real_types, _all_numpy_int, _all_numpy_float, \
               _all_numpy_complex, _all_int, _all_float, _all_complex, \
               LargestInt32, diff, diff2
 from scipy import who as scipy_who
-from utils import *
+from .utils import *
 
 
 # ------ Check Python version compatibility

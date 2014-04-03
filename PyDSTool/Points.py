@@ -7,13 +7,13 @@
 
 # ----------------------------------------------------------------------------
 
-from __future__ import division
+from __future__ import division, absolute_import
 
 ## PyDSTool imports
-from utils import *
-from common import *
-from errors import *
-from parseUtils import symbolMapClass, mapNames
+from .utils import *
+from .common import *
+from .errors import *
+from .parseUtils import symbolMapClass, mapNames
 
 ## Other imports
 from numpy import Inf, NaN, isfinite, array2string, r_, c_, \

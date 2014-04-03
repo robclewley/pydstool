@@ -34,19 +34,21 @@ attributes (among others):
 """
 
 # ----------------------------------------------------------------------------
+from __future__ import absolute_import
+
 
 ## PyDSTool imports
-import Generator, Events, MProject
-from utils import *
-from common import *
-from errors import *
-from Interval import *
-from Trajectory import *
-from Variable import *
-from Points import *
-from ModelSpec import *
-from Symbolic import isMultiRef
-from parseUtils import isHierarchicalName, NAMESEP, mapNames, symbolMapClass
+from . import Generator, Events, MProject
+from .utils import *
+from .common import *
+from .errors import *
+from .Interval import *
+from .Trajectory import *
+from .Variable import *
+from .Points import *
+from .ModelSpec import *
+from .Symbolic import isMultiRef
+from .parseUtils import isHierarchicalName, NAMESEP, mapNames, symbolMapClass
 
 ## Other imports
 import math, sys
