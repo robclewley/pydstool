@@ -4,7 +4,6 @@
 """Test FuncSpec for python and C right-hand sides.
 """
 
-from copy import deepcopy
 import os
 import platform
 import re
@@ -225,7 +224,7 @@ def test_funcspecs_python(fsargs):
 def test_funcspec_recreate(fsargs):
     del fsargs['codeinsert_start']
     del fsargs['codeinsert_end']
-    pyspec = RHSfuncSpec(deepcopy(fsargs))
+    pyspec = RHSfuncSpec(fsargs)
     cspec_recreated = pyspec.recreate('c')
 
     fsargs['targetlang'] = 'c'

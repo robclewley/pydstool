@@ -63,7 +63,7 @@ class FuncSpec(object):
       over the expression replacing any occurrence of `[i]` with
       the appropriate integer.
     """
-    def __init__(self, kw):
+    def __init__(self, kw_):
         # All math package names are reserved
         self._protected_mathnames = protected_mathnames
         self._protected_randomnames = protected_randomnames
@@ -79,7 +79,10 @@ class FuncSpec(object):
         optionalKeys = ['pars', 'inputs', 'varspecs', 'spec', '_for_macro_info',
                    'targetlang', 'fnspecs', 'auxvars', 'reuseterms',
                    'codeinsert_start', 'codeinsert_end', 'ignorespecial']
-        self._initargs = deepcopy(kw)
+        self._initargs = deepcopy(kw_)
+
+        # Do not destruct input arg
+        kw = deepcopy(kw_)
 
         self.__validate_input(kw, needKeys + optionalKeys)
 
