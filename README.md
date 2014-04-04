@@ -3,7 +3,7 @@ PyDSTool v0.88
 
 [![Build Status](https://travis-ci.org/robclewley/pydstool.svg?branch=master)](https://travis-ci.org/robclewley/pydstool) [![Coverage Status](https://coveralls.io/repos/robclewley/pydstool/badge.png?branch=master)](https://coveralls.io/r/robclewley/pydstool?branch=master)
 
-Dec 2012. *This is a beta release version.*
+April 2014. *This is a beta release version.*
 
 * * * * *
 
@@ -96,11 +96,11 @@ or with package manager:
 
 ### Change histories
 
-Version change histories appear in the [bzr](http://pydstool.bzr.sourceforge.net/bzr/pydstool/changes) repository browser, and some older information is in the headers of each source file. An overview of the changes in a new release can be found in the SourceForge release notes.
+Older (pre-git) version change histories appear in the [bzr](http://pydstool.bzr.sourceforge.net/bzr/pydstool/changes) repository browser, and some older information is in the headers of each source file. An overview of the changes in a new release can be found in the SourceForge release notes.
 
 * * * * *
 
 Credits:
 --------
 
-Coding and design by Robert Clewley, Erik Sherwood, Drew LaMar, and John Guckenheimer, except where otherwise stated in the code or documentation. (Several other open source codes have been redistributed here under the compatible licenses.)
+Coding and design by Robert Clewley, Erik Sherwood, Drew LaMar, Vladimir Zakharov, and John Guckenheimer, except where otherwise stated in the code or documentation. (Several other open source codes have been redistributed here under the compatible licenses.)
