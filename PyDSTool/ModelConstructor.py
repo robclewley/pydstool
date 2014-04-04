@@ -36,7 +36,7 @@ Overview of steps that ModelConstructor takes:
 from .errors import *
 from .common import *
 from .utils import info, remain, intersect
-import Model, Generator, ModelSpec, Symbolic, Events, MProject
+import Model, Generator, ModelSpec, Symbolic, Events
 from .parseUtils import symbolMapClass, NAMESEP, isNumericToken
 
 # Other imports
@@ -45,11 +45,21 @@ from numpy import Inf, NaN, isfinite,  array, \
      sometrue, alltrue, any, all
 import numpy, scipy, math # for access by user-defined code of EvMapping
 import sys, types, copy
+from . import features
+import copy
+from . import common
+import copy
+from . import parseUtils
+import copy
 
 # Exports
-__all__ = ['GeneratorConstructor', 'ModelConstructor', 'makeModelInfo',
-           'makeModelInfoEntry', 'embed', 'EvMapping', 'makeEvMapping',
-           'GDescriptor', 'MDescriptor']
+__all__ = ['GeneratorConstructor', 'ModelConstructor',
+           'makeModelInfo', 'makeModelInfoEntry', 'embed',
+           'EvMapping', 'makeEvMapping',
+           'GDescriptor', 'MDescriptor',
+           'ModelManager', 'ModelLibrary',
+           'GenTransform', 'ModelTransform'
+           ]
 
 # -----------------------------------------------------------------------------
 
@@ -1880,3 +1890,552 @@ def processReused(sourcenames, auxvarnames, flatspec, registry,
         dummyQ.mapNames(mathNameMap)
         subsExpr[v] = dummyQ()
     return reuseTerms, subsExpr
+
+class ModelManager(object):
+    """Model management and repository class."""
+
+    def __init__(self, name):
+        assert isinstance(name, str)
+        self.proj_name = name
+        # registry of model descriptors and instances that form the project
+        self._mReg = MProject.MReg()
+        # transformation transaction holder
+        self.trans = None
+        # shortcut to model instances
+        self.instances = {}
+
+    def get_desc(self, name):
+        if name in self._mReg:
+            return self._mReg.descs[name]
+        else:
+            raise KeyError('Model %s does not exist in registry'%name)
+
+    def __getitem__(self, name):
+        if name in self._mReg:
+            return self._mReg[name]
+        else:
+            raise KeyError('Model %s does not exist in registry'%name)
+
+    def add(self, model_desc):
+        if not isinstance(model_desc, MDescriptor):
+            raise TypeError("Invalid model descriptor")
+        if not model_desc.validate():
+            raise ValueError("Model definition not successfully validated")
+        if model_desc not in self._mReg:
+            self._mReg.add(model_desc)
+        else:
+            raise KeyError('Model with this name already exists in registry')
+
+    def remove(self, name):
+        if name in self._mReg:
+            del(self._mReg[name])
+        else:
+            raise KeyError('Model with this name does not exist in registry')
+
+    __delitem__ = remove
+
+    def open_trans(self, name):
+        """Open a model transformation transaction"""
+        if self.trans is None:
+            self.trans = ModelTransform(name, self.__getitem__(name))
+            return self._mReg.descs[name]
+        else:
+            raise AssertionError("A transaction is already open")
+
+    def rollback_trans(self):
+        if self.trans is None:
+            raise AssertionError("No transaction open")
+        else:
+            self.trans = None
+
+    def commit_trans(self, new_name, description=''):
+        if self.trans is None:
+            raise AssertionError("No transaction open")
+        else:
+            self.add(self.trans.commit(new_name))
+            self.trans = None
+
+    def build(self, name, icvalues=None, parvalues=None,
+              inputs=None, tdata=None):
+        try:
+            mdesc = copy.deepcopy(self._mReg[name])
+        except KeyError:
+            raise KeyError("No such model description")
+        for gd in mdesc.generatorspecs.values():
+            gd.modelspec.flattenSpec(ignoreInputs=True, force=True)
+        filt_keys = ('userevents', 'userfns', 'unravelInfo',
+                 'inputs', 'checklevel', 'activateAllBounds',
+                 'generatorspecs', 'indepvar',
+                 'parvalues', 'icvalues', 'reuseTerms',
+                 'withJac', 'withJacP', 'tdata',
+                 'abseps', 'eventtol', 'eventPars',
+                 'withStdEvts', 'stdEvtArgs')
+        if icvalues is not None:
+            mdesc.icvalues.update(icvalues)
+        if parvalues is not None:
+            mdesc.parvalues.update(parvalues)
+        if inputs is not None:
+            mdesc.inputs.update(inputs)
+        if tdata is not None:
+            mdesc.tdata = tdata
+        if not mdesc.isinstantiable(True):
+            raise ValueError("Model description incomplete: not instantiable")
+        ## would like ModelConstructor to be able to deal with the remaining
+        # keys of mdesc so that all the information in mdesc gets passed into
+        # the _mspec attribute of the instantiated model, otherwise mdesc needs
+        # to be stored somewhere else.
+        mc = ModelConstructor(mdesc.name,
+                                **common.filteredDict(dict(mdesc), filt_keys))
+        assert len(mdesc.generatorspecs) > 0, "No Generator descriptions found"
+        for gdname, gd in mdesc.generatorspecs.iteritems():
+            if gd.userEvents is not None:
+                mc.addEvents(gdname, gd.userEvents)
+            if gd.userFunctions is not None:
+                mc.addFunctions(gdname, gd.userFunctions)
+            if gd.userEventMaps is not None:
+                for em in gd.userEventMaps:
+                    try:
+                        # in case evmap included
+                        evname, target, evmap = em
+                    except ValueError:
+                        # otherwise expect just these
+                        evname, target = em
+                        evmap = None
+                    mc.mapEvent(gdname, evname, target, evmap)
+        model = mc.getModel()
+        self._mReg[name] = model
+        # shortcut
+        self.instances = self._mReg.instances
+
+    def _infostr(self, verbose=1):
+        if verbose == 0:
+            outputStr = 'MProject: '+self.proj_name
+        elif verbose > 0:
+            outputStr = 'MProject: '+self.proj_name
+            if len(self._mReg):
+                for m in self._mReg:
+                    outputStr += "\n" + m._infostr(verbose-1)
+            else:
+                outputStr += 'No models in MProject '+self.proj_name
+        return outputStr
+
+    def __repr__(self):
+        return self._infostr(verbose=0)
+
+    __str__ = __repr__
+
+    def info(self, verboselevel=1):
+        print self._infostr(verboselevel)
+
+
+# -----------------------------------------------------------------------------
+
+
+class ModelTransform(object):
+    """Model Transformer class.
+    """
+    def __init__(self, name, model):
+        if not isinstance(model, MDescriptor):
+            raise TypeError("ModelTransform must be initialized with a "
+                            "MDescriptor object")
+        self.orig_model_name = name
+        self.orig_model = model
+        self.trans_model = copy.deepcopy(model)
+        self.changelog = []
+        self.gentrans = None   # transactions for any GenTransforms
+
+    def remove(self, obj):
+        "Remove hybrid model generator"
+        self.trans_model.remove(obj)
+        self.changelog.append(common.args(action='remove',
+                                          target=obj.modelspec.name))
+
+    def add(self, obj):
+        "Add hybrid model generator"
+        self.trans_model.add(obj)
+        self.changelog.append(common.args(action='add',
+                                          target=obj.modelspec.name))
+
+    def open_gentrans(self, name):
+        """Open a generator transformation transaction"""
+        if self.gentrans is None:
+            if name in self.trans_model.generatorspecs:
+                self.gentrans = GenTransform(name,
+                               self.trans_model.generatorspecs[name],
+                               self.trans_model.icvalues,
+                               self.trans_model.parvalues,
+                               self.trans_model.inputs)
+            else:
+                raise KeyError('Generator %s does not exist in registry'%name)
+            return self.trans_model.generatorspecs[name]
+        else:
+            raise AssertionError("A transaction is already open")
+
+    def rollback_gentrans(self):
+        if self.gentrans is None:
+            raise AssertionError("No transaction open")
+        else:
+            self.gentrans = None
+
+    def commit_gentrans(self, new_name, description=''):
+        if self.gentrans is None:
+            raise AssertionError("No transaction open")
+        else:
+            self.add(self.gentrans.commit(new_name))
+            del self.trans_model.generatorspecs[self.gentrans.orig_gen_name]
+            # update these if they were changed by gen transformation
+            self.trans_model.icvalues = self.gentrans.model_icvalues
+            self.trans_model.parvalues = self.gentrans.model_parvalues
+            self.trans_model.inputs = self.gentrans.model_inputs
+            self.gentrans = None
+
+    def unresolved(self):
+        """Returns the unresolved inconsistencies in model's internal
+        interfaces.
+        """
+        return self.trans_model.validate()[1]
+
+    def commit(self, new_name):
+        """Verifies internal interface consistency before returning new
+        model spec.
+        """
+        if self.changelog == []:
+            raise PyDSTool_ValueError("No changes made")
+        validated, inconsistencies = self.trans_model.validate()
+        if validated:
+            self.trans_model.name = new_name
+            self.trans_model.orig_name = self.orig_model.name
+            self.trans_model.changelog = copy.copy(self.changelog)
+            return self.trans_model
+        else:
+            print "Internal interface inconsistencies: ", inconsistencies
+            raise PyDSTool_ValueError("New Model spec cannot be committed")
+
+
+
+class GenTransform(object):
+    """Generator Transformer class.
+    Acts on GDescriptor objects that define Generators.
+    For these, the only non-trivial transformations are inside the modelspec
+    attribute.
+    """
+    def __init__(self, name, gen, model_icvalues=None, model_parvalues=None,
+                 model_inputs=None):
+        if not isinstance(gen, GDescriptor):
+            raise TypeError("GenTransform must be initialized with a "
+                            "GDescriptor object")
+        self.orig_gen_name = name
+        self.orig_gen = gen
+        self.trans_gen = copy.deepcopy(gen)
+        self.changelog = []
+        if model_icvalues is None:
+            self.model_icvalues = {}
+        else:
+            self.model_icvalues = model_icvalues
+        if model_parvalues is None:
+            self.model_parvalues = {}
+        else:
+            self.model_parvalues = model_parvalues
+        if model_inputs is None:
+            self.model_inputs = {}
+        else:
+            self.model_inputs = model_inputs
+
+    def remove(self, obj):
+        """Remove component, parameter, variable, input, function"""
+        self.trans_gen.modelspec.remove(obj)
+        self.changelog.append(common.args(action='remove', target=obj.name))
+
+    def add(self, parent_name, obj):
+        """Add component, parameter, variable, input, function"""
+        # resolve parent_name structure
+        self.trans_gen.modelspec.add(obj, parent_name)
+        self.changelog.append(common.args(action='add', target=obj.name))
+
+    def findStaticVars(self):
+        """Find RHSfuncSpec variables with RHS=0"""
+        return [v for v in self.trans_gen.modelspec.search(Var) if \
+                gen.modelspec[v].spec.specStr == '0']
+
+    def changeTargetGen(self, target):
+        """Change target generator type. Target is a string name of the Generator
+        class."""
+        self.trans_gen.target = target
+
+    def changeDomain(self, obj_name, domain):
+        """Change valid domain of a quantity"""
+        try:
+            self.trans_gen.modelspec[obj_name].setDomain(domain)
+        except (KeyError, AttributeError):
+            raise PyDSTool_TypeError("Invalid quantity for domain change")
+        self.changelog.append(common.args(action='changeDomain', \
+                                          target=obj_name, pars=(domain,)))
+
+    def redefineQuantity(self, obj_name, specstr):
+        """Redefine a Quantity using a new specification string,
+        leaving its type unchanged.
+        """
+        try:
+            obj = self.trans_gen.modelspec[obj_name]
+        except KeyError:
+            raise PyDSTool_ValueError("Unknown object")
+        try:
+            obj.spec.redefine(specstr)
+        except AttributeError:
+            raise PyDSTool_TypeError("Invalid quantity for redefinition")
+        self.trans_gen.modelspec.remove(obj_name)
+        if parseUtils.isHierarchicalName(obj_name):
+            parts = obj_name.split(parseUtils.NAMESEP)
+            parent_name = ".".join(parts[:-1])
+            obj.rename(".".join(parts[1:]))
+        else:
+            parent_name = None
+        self.trans_gen.modelspec.add(obj, parent_name)
+        self.changelog.append(common.args(action='redefineQuantity', \
+                                          target=obj_name, pars=(specstr,)))
+
+    def convertQuantity(self, obj_name, targetType, targetSpecType=None):
+        """Convert quantity between parameter, variable, or input types.
+        If parameter -> variable, the RHS will be set to zero ('static'
+        variable).
+        """
+        try:
+            obj = self.trans_gen.modelspec[obj_name]
+        except KeyError:
+            raise PyDSTool_ValueError("Unknown object")
+        if parseUtils.isHierarchicalName(obj_name):
+            parent_name = obj_name.split(parseUtils.NAMESEP)[0]
+        else:
+            parent_name = ''
+        try:
+            currentType = obj.typestr
+            assert currentType in ('par', 'var', 'input')
+            assert targetType in ('par', 'var', 'input')
+        except (AttributeError, AssertionError):
+            raise PyDSTool_TypeError("Only convert between parameter, variable or "
+                            "input quantity types")
+        if targetType == currentType:
+            if currentType != 'var' or obj.specType is None:
+                # either (1) par->par, (2) input->input, or
+                # (3) var->var with no specType to change
+                # In any of these cases, nothing to do
+                return
+        if currentType == 'var':
+            assert obj.specType in ('RHSfuncSpec', 'ExpFuncSpec'), \
+                   "Cannot process implicit function specs"
+        if targetType == 'var':
+            assert targetSpecType in ('RHSfuncSpec', 'ExpFuncSpec'), \
+                   "target specType must be RHSfuncSpec of ExpFuncSpec only"
+        if targetType == 'par':
+            if currentType == 'var' and obj_name in self.model_icvalues:
+                # use existing initial condition for variable as parameter value
+                new_obj = Symbolic.Par(repr(self.model_icvalues[obj_name]),
+                                       obj.name, domain=obj.domain)
+                #del(self.trans_gen.icvalues[obj_name])
+            else:
+                #if currentType == 'input' and name in self.model_inputs:
+                #    del(self.model_inputs[obj_name])
+                new_obj = Symbolic.Par(obj.name, domain=obj.domain)
+        elif targetType == 'input':
+            #if currentType == 'var' and name in self.model_icvalues:
+            #    del(self.model_icvalues[name])
+            #elif currentType == 'par' and name in self.model_parvalues:
+            #    del(self.model_parvalues[name])
+            new_obj = Symbolic.Input(obj.name, domain=obj.domain)
+        elif targetType == 'var':
+            new_obj = Symbolic.Var('0', obj_name, domain=obj.domain,
+                                   specType=targetSpecType)
+            if currentType == 'par':
+                try:
+                    val = float(obj.spec())
+                except ValueError:
+                    if obj_name in self.model_parvalues:
+                        val = self.model_parvalues[obj_name]
+                    else:
+                        val = None
+                if val is not None:
+                    # par had a value already, so use that for the
+                    # initial condition of this var
+                    self.model_icvalues[obj_name] = val
+            #elif currentType == 'input' and name in self.model_inputs:
+            #    del(self.model_inputs[obj_name])
+        else:
+            raise PyDSTool_TypeError("Invalid conversion")
+        self.trans_gen.modelspec.remove(obj_name)
+        self.trans_gen.modelspec.add(new_obj, parent_name)
+        self.changelog.append(common.args(action='convertQuantity',
+                                target=obj_name,
+                                pars=(targetType, targetSpecType)))
+
+    def convertComponent(self, obj_name, targetType):
+        """Convert component object to given type (provide actual type),
+        provided the new type is compatible with the old one.
+        """
+        try:
+            obj = self.trans_gen.modelspec[obj_name]
+        except KeyError:
+            raise PyDSTool_ValueError("Unknown object")
+        if parseUtils.isHierarchicalName(obj_name):
+            parent_name = obj_name.split(parseUtils.NAMESEP)[0]
+        else:
+            parent_name = ''
+        currentType = common.className(obj)
+        if not isinstance(obj, ModelSpec.ModelSpec):
+            raise PyDSTool_TypeError("Only convert ModelSpec Component objects")
+        if targetType == currentType:
+            # nothing to do
+            return
+        if not obj.compatibleContainers == targetType.compatibleContainers or \
+           not obj.compatibleSubcomponents == targetType.compatibleSubcomponents:
+            raise PyDSTool_TypeError("Only convert to equivalently-compatible type")
+        new_obj = targetType(obj.name)
+        new_obj.__dict__.update(obj.__dict__)
+        self.trans_gen.modelspec.remove(obj)
+        self.trans_gen.modelspec.add(new_obj, parent_name)
+        self.changelog.append(common.args(action='convertComponent', target=obj.name,
+                                   pars=(common.className(targetType),)))
+
+
+    def makeStaticVar(self, obj_name):
+        """Force RHSfuncSpec variable to have RHS=0.
+        """
+        try:
+            obj = self.trans_gen.modelspec[obj_name]
+        except KeyError:
+            raise PyDSTool_ValueError("Unknown object")
+        if parseUtils.isHierarchicalName(obj_name):
+            parent_name = obj_name.split(parseUtils.NAMESEP)[0]
+        else:
+            parent_name = ''
+        if obj.typestr != 'var' and obj.specType != 'RHSfuncSpec':
+            raise PyDSTool_TypeError("Invalid variable object passed")
+        new_obj = Symbolic.Var('0', obj.name, domain=obj.domain,
+                               specType='RHSfuncSpec')
+        self.trans_gen.modelspec.remove(obj)
+        self.trans_gen.modelspec.add(new_obj, parent_name)
+        self.changelog.append(common.args(action='makeStaticVar',
+                                          target=obj.name))
+
+    def unresolved(self):
+        """Returns the generator spec's remaining free symbols.
+        """
+        return self.trans_gen.validate()[1]
+
+    def commit(self, new_name):
+        """Verifies completeness of definition before returning new
+        generator spec.
+        """
+        if self.changelog == []:
+            raise PyDSTool_ValueError("No changes made")
+        validated, freeSymbols = self.trans_gen.validate()
+        if validated:
+            self.trans_gen.modelspec.name = new_name
+            self.trans_gen.orig_name = self.orig_gen.modelspec.name
+            self.trans_gen.changelog = copy.copy(self.changelog)
+            return self.trans_gen
+        else:
+            print "Remaining free symbols: ", freeSymbols
+            raise PyDSTool_ValueError("New Generator spec cannot be committed")
+
+
+class ModelLibrary(object):
+    """Store a set of related candidate model types, and within each, represent
+    various relevant "dimensions" along which the model can be augmented
+    structurally."""
+    def __init__(self, name, spectype, indepdomain, depdomain,
+                 pars=None, description=''):
+        self.name = name
+        self.spectype = spectype
+        # instances is name -> spec mapping
+        self.instances = {}
+        self.indepdomain = indepdomain
+        self.depdomain = depdomain
+        self.pars = pars
+        self.description = ''
+
+    def __getitem__(self, name):
+        return self.instances[name]
+
+    def add_spec(name, specs):
+        if not isinstance(specs, common._seq_types):
+            specs = [specs]
+        for spec in specs:
+            if isinstance(spec, self.spectype):
+                self.instances[spec.name] = spec
+                spec.library_tag = self.name
+            else:
+                raise PyDSTool_TypeError("Spec of wrong type")
+
+    def __str__(self):
+        return "Model Library %s: %s"%(self.name, self.description)
+
+
+
+
+# ----------------------------------------------------------------------------
+# Private classes
+
+class MReg(object):
+    """Registry class for Model descriptors and instances in Model projects.
+    For internal use by PyDSTool."""
+
+    def __init__(self):
+        # for model descriptors
+        self.descs = {}
+        # for associated model instances
+        self.instances = {}
+
+    def add(self, descriptor):
+        """descriptor expected to be an MDescriptor object.
+        """
+        if isinstance(descriptor, MDescriptor):
+            self.descs[descriptor.name] = descriptor
+            self.instances[descriptor.name] = {}
+        else:
+            raise TypeError("Only MDescriptor objects valid for MReg class")
+
+    def __setitem__(self, name, model_instance):
+        try:
+            self.instances[name] = model_instance
+        except KeyError:
+            raise ValueError("No such model descriptor")
+
+    def __contains__(self, name):
+        return name in self.descs
+
+    def __getitem__(self, name):
+        return self.descs[name]
+
+    def __delitem__(self, name):
+        del(self.descs[name])
+        del(self.instances[name])
+
+    remove = __delitem__
+
+    def query(self, querykey, value):
+        """Return info about stored model specifications.
+        Valid query keys: 'orig_name', 'in_description'
+        """
+        assert isinstance(querykey, str), \
+                       ("Query argument must be a single string")
+        _keylist = ['orig_name', 'in_description']
+        if querykey not in _keylist:
+            print 'Valid query keys are:', _keylist
+            raise TypeError('Query key '+querykey+' is not valid')
+        if querykey == 'orig_name':
+            res = []
+            for name, regentry in self.descs.iteritems():
+                if regentry.orig_name == value:
+                    res.append(name)
+            return res
+        if querykey == 'in_description':
+            res = []
+            for name, regentry in self.descs.iteritems():
+                if value in regentry.description:
+                    res.append(name)
+            return res
+
+
+
+
+
