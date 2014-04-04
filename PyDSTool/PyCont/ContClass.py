@@ -10,7 +10,7 @@ from Plotting import pargs, initializeDisplay
 
 from PyDSTool.Model import Model, findTrajInitiator
 from PyDSTool.Generator import Generator
-from PyDSTool.ModelConstructor import embed
+from PyDSTool.ModelTools import embed
 from PyDSTool import Point, Pointset
 from PyDSTool.common import pickle, Utility, args, filteredDict
 from PyDSTool.utils import remain
