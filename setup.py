@@ -37,7 +37,8 @@ def read(fname):
 
 
 def check_dependency_versions():
-    assert(int(sys.version_info[0]) < 3), "PyDSTool only work with Python < 3"
+    if sys.version_info[:2] < (2, 6) or (3, 0) <= sys.version_info[0:2] < (3, 3):
+        raise RuntimeError("Python version 2.6, 2.7 or >= 3.3 required.")
 
 
 class clean(Command):
@@ -64,7 +65,7 @@ class PyTest(TestCommand):
 
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = filter(lambda a: a is not None, self.test_args)
+        self.test_args = [a for a in self.test_args if a is not None]
         self.test_suite = True
 
     def run_tests(self):
