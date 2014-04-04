@@ -25,7 +25,12 @@ from setuptools.command.test import test as TestCommand
 from setuptools import Command
 import sys
 
-import PyDSTool as app
+vernum_major = '0.88'
+vernum_minor = '140328'
+vernum = vernum_major+'.'+vernum_minor
+__version__  = vernum
+__revision__ = '$Revision: %s $' % vernum_minor
+__date__     = '$Date: 2014/03/28 00:00:00 $'
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -74,7 +79,7 @@ class PyTest(TestCommand):
 check_dependency_versions()
 setup(
     name="PyDSTool",
-    version=app.__version__,
+    version=__version__,
     packages=find_packages(),
     install_requires=[
         "scipy>=0.9",

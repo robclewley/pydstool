@@ -44,13 +44,6 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-vernum_major = '0.88'
-vernum_minor = '140328'
-vernum = vernum_major+'.'+vernum_minor
-__version__  = vernum
-__revision__ = '$Revision: %s $' % vernum_minor
-__date__     = '$Date: 2014/03/28 00:00:00 $'
-
 import sys, os, gc
 
 try:
@@ -122,10 +115,8 @@ try:
     from matplotlib.pyplot import figure, plot, show, draw, hold
 except ImportError:
     pass
-from numpy import *    # overwrites __version__ for PyDSTool, so fix now
-# Restore PyDSTool version
-__version__ = vernum
-del vernum
+
+from numpy import *
 
 #from numpy.linalg import *
 from copy import copy
