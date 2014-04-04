@@ -1111,7 +1111,8 @@ class Generator(object):
 
     def _addEvents(self, evs):
         if isinstance(evs, list):
-            map(self.eventstruct.add, copy(evs))
+            for e in copy(evs):
+                self.eventstruct.add(e)
         elif isinstance(evs, Event):
             # singleton
             self.eventstruct.add(evs)
