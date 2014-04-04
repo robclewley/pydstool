@@ -38,7 +38,7 @@ from __future__ import absolute_import
 
 
 ## PyDSTool imports
-from . import Generator, Events
+from . import Generator, Events, ModelContext
 from .utils import *
 from .common import *
 from .errors import *
@@ -67,11 +67,11 @@ __all__ = ['Model', 'HybridModel', 'NonHybridModel',
 # ----------------------------------------------------------------------------
 
 
-class boundary_containment(MProject.qt_feature_leaf):
+class boundary_containment(ModelContext.qt_feature_leaf):
     # not implemented using metrics because the metrics are trivial
     # and cause a lot of overhead for this often-evaluated feature
     def __init__(self, name, description='', pars=None):
-        MProject.qt_feature_leaf.__init__(self, name, description, pars)
+        ModelContext.qt_feature_leaf.__init__(self, name, description, pars)
         try:
             pars.thresh
         except AttributeError:
@@ -213,9 +213,9 @@ class boundary_containment_by_postproc(boundary_containment):
         return adjusted_res.index(True)
 
 
-class domain_test(MProject.qt_feature_node):
+class domain_test(ModelContext.qt_feature_node):
     def __init__(self, name, description='', pars=None):
-        MProject.qt_feature_node.__init__(self, name, description, pars)
+        ModelContext.qt_feature_node.__init__(self, name, description, pars)
         try:
             self.pars.interval
         except AttributeError:
@@ -2104,7 +2104,7 @@ class NonHybridModel(Model):
                "Non-hybrid model must contain a single Generator"
         # Avoids circular dependence
         #infodict = self.modelInfo.values()[0]
-        #if not isinstance(infodict['dsi'], MProject.GeneratorInterface):
+        #if not isinstance(infodict['dsi'], ModelContext.GeneratorInterface):
         #    raise TypeError("Must provide a single Generator object"
         #                    " wrapped in a GeneratorInterface")
 
@@ -2879,7 +2879,7 @@ class HybridModel(Model):
                 raise ValueError("Model %s failed to create a trajectory"%model.name)
             else:
                 # rename from ModelInterface default name
-                model.renameTraj(MProject.ModelInterface._trajname,
+                model.renameTraj(ModelContext.ModelInterface._trajname,
                                  trajname+'_'+str(partition_num),
                                  force=force_overwrite)
 #                if self._abseps is not None:
@@ -3078,7 +3078,7 @@ class HybridModel(Model):
 ##                raise AssertionError("Use a non-hybrid Model class")
 ##        # Avoid circular import for access to ModelInterface
 ##        #for infodict in self.modelInfo.values():
-##        #    if not isinstance(infodict['dsi'], MProject.ModelInterface):
+##        #    if not isinstance(infodict['dsi'], ModelContext.ModelInterface):
 ##        #        raise TypeError("Must provide ModelInterface objects")
 ##        allDSnames = self.modelInfo.keys()
 ###        print "\n_validateRegistry: ", obsvars, intvars
@@ -3305,7 +3305,7 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
         xdict, t, I = MI._get_initiator_cache(xdict, t)
         while True:
             # descend into sub-models until leaf found
-            if isinstance(I, MProject.GeneratorInterface):
+            if isinstance(I, ModelContext.GeneratorInterface):
                 I.model.diagnostics.clearWarnings()
                 break
             else:

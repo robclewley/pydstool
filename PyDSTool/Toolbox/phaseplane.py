@@ -19,7 +19,7 @@ import itertools, operator
 
 from PyDSTool import *
 from PyDSTool.errors import PyDSTool_ValueError
-from PyDSTool.MProject import *
+from PyDSTool.ModelContext import *
 from PyDSTool.utils import findClosestPointIndex
 from PyDSTool.common import args, metric, metric_L2, metric_weighted_L2, \
      metric_float, remain, fit_quadratic, fit_exponential, fit_diff_of_exp, \

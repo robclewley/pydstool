@@ -4,7 +4,7 @@ Contains functions, expressions, etc.
 """
 
 from numpy import inf
-from PyDSTool.ModelConstructor import ModelLibrary
+from PyDSTool.ModelTools import ModelLibrary
 import PyDSTool.ModelSpec
 from PyDSTool.Symbolic import Fun
 
