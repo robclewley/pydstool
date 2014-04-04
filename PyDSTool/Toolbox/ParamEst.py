@@ -13,7 +13,7 @@ from PyDSTool.common import Utility, _seq_types, metric, args, sortedDictValues,
 from PyDSTool.utils import intersect, filteredDict
 from PyDSTool.errors import *
 from PyDSTool import common
-from PyDSTool.MProject import qt_feature_leaf, process_raw_residual
+from PyDSTool.ModelContext import qt_feature_leaf, process_raw_residual
 import PyDSTool.Redirector as redirc
 from PyDSTool.Toolbox.optimizers import *
 

@@ -1,0 +1,101 @@
+*********** FuncSpec:  xfn ***********
+Target lang:  python
+Variables:  w  z0  z1  z2  
+Parameters:  a  k  
+External inputs:  itable  
+Specification functions (in target language):
+  (ignore any arguments `ds` and `parsinps`,
+   which are for internal use only)
+
+  def _specfn(ds, t, x, parsinps):
+    print 'code inserted at start'
+    sin_t = math.sin(t)
+    expmt = math.exp(-t)
+    afn1call = ds._auxfn_myauxfn1(parsinps, 2+t)
+    ast = parsinps[0]*sin_t
+    xnew0 = parsinps[1]* x[0] + ast*parsinps[2] + ds._auxfn_myauxfn1(parsinps, t)*ds._auxfn_myauxfn2(parsinps, x[0])/(ast)
+    xnew1 = 2*parsinps[0]+afn1call-x[0]*expmt+3*math.pow(x[1],2)+x[2] 
+    xnew2 = 2*parsinps[0]+afn1call-x[0]*expmt+3*math.pow(x[2],2)+x[3] 
+    xnew3 = 2*parsinps[0]+afn1call-x[0]*expmt+3*math.pow(x[3],2)+x[1] 
+    print 'code inserted at end'
+    return array([xnew0, xnew1, xnew2, xnew3])
+
+ def _auxspecfn(ds, t, x, parsinps):
+    print 'code inserted at start'
+    sin_t = math.sin(t)
+    auxvals0 = 1+ds._auxfn_if(parsinps, x[2]>0,(1e-2+x[0]), parsinps[1]+0.4)
+    auxvals1 = ds._auxfn_myauxfn1(parsinps, 2*t) + ds._auxfn_initcond(parsinps, 'w')
+    auxvals2 = x[0]*2 + ds._auxfn_globalindepvar(parsinps, t)-0.5*sin_t 
+    print 'code inserted at end'
+    return array([auxvals0, auxvals1, auxvals2])
+
+
+User-defined auxiliary variables:  aux_iftest  aux_other  aux_wdouble  
+
+User-defined auxiliary functions (in target language):
+  def _auxfn_getindex(ds, parsinps, varname):
+    return ds._var_namemap[varname]
+
+  def _auxfn_globalindepvar(ds, parsinps, t):
+    return ds.globalt0 + t
+
+  def _auxfn_getbound(ds, parsinps, name, bd):
+    try:
+        return ds.xdomain[name][bd]
+    except KeyError:
+        try:
+            return ds.pdomain[name][bd]
+        except KeyError, e:
+            print 'Invalid var / par name %s'%name,
+            print 'or bounds not well defined:'
+            print ds.xdomain, ds.pdomain
+            raise (RuntimeError, e)
+
+  def _auxfn_Jac_p(ds, t, x, parsinps):
+    sin_t = math.sin(t)
+    pjac0 = [0.,2.] 
+    pjac1 = [x[1],1] 
+    pjac2 = [3*x[0],0.] 
+    pjac3 = [2-x[2],sin_t*x[3]] 
+    return array([pjac0, pjac1, pjac2, pjac3])
+
+  def _auxfn_heav(ds, parsinps, x):
+    if x>0:
+        return 1
+    else:
+        return 0
+
+  def _auxfn_simpfn(ds, parsinps):
+    return 1+parsinps[0]
+
+  def _auxfn_initcond(ds, parsinps, varname):
+    return ds.initialconditions[varname]
+
+  def _auxfn_Jac(ds, t, x, parsinps):
+    sin_t = math.sin(t)
+    expmt = math.exp(-t)
+    xjac0 = [2e5*x[1]+.1,-x[0]/2,0,1.] 
+    xjac1 = [-3.e-2-parsinps[0]*x[0]+x[2],1.,x[1]+1,x[1]+sin_t] 
+    xjac2 = [parsinps[1],x[0]*x[2]+expmt,0.,x[3]/3+x[0]] 
+    xjac3 = [0,x[2]+parsinps[0],1.,x[1]-x[0]/3] 
+    return array([xjac0, xjac1, xjac2, xjac3])
+
+  def _auxfn_myauxfn1(ds, parsinps, t):
+    sin_t = math.sin(t)
+    return 2.5*math.cos(3*t)*ds._auxfn_simpfn(parsinps, )+sin_t*2.e-3
+
+  def _auxfn_myauxfn2(ds, parsinps, z0, w):
+    return ds._auxfn_if(parsinps, -z0<0,w/2+math.exp(-w),0)
+
+  def _auxfn_myauxfn3(ds, parsinps, w):
+    return parsinps[1]*w/2+ math.pow(w,-3.0+parsinps[1])
+
+  def _auxfn_if(ds, parsinps, c, e1, e2):
+    if c:
+        return e1
+    else:
+        return e2
+
+
+Dependencies in specification functions - pair (i, o) means i depends on o:
+  [('z0', 'z0'), ('z1', 'w'), ('z2', 'z1'), ('z2', 'z2'), ('w', 'z0'), ('w', 'w'), ('z0', 'w'), ('z0', 'z1'), ('z1', 'z1'), ('z1', 'z2'), ('z2', 'z0'), ('z2', 'w'), ('w', 'itable'), ('aux_iftest', 'z1'), ('aux_iftest', 'w'), ('aux_wdouble', 'w'), ('aux_other', 'w')]

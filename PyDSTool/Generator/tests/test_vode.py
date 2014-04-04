@@ -18,7 +18,6 @@ import pytest
 from PyDSTool import (
     Events,
     args,
-    makeDataDict,
     makeMultilinearRegrFn,
 )
 
@@ -97,7 +96,7 @@ def test_vode_events_compare_with_euler():
 def my_input():
     timeData = linspace(0, 10, 20)
     sindata = sin(20 * timeData)
-    xData = makeDataDict(['example_input'], [sindata])
+    xData = {'example_input': sindata}
     return InterpolateTable({
         'tdata': timeData,
         'ics': xData,

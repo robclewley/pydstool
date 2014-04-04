@@ -458,7 +458,7 @@ def find_regime_transition(criteria_list, min_tstart=-np.Inf,
                 if tri0 is None:
                     # for all criteria that returned earlier intervals, re-run to see if
                     # they have later intervals that might match using min_t = earliest_t0
-                    re_run_trans = common.remain(crit_ixs, [trans_earliest_crit_ix])
+                    re_run_trans = utils.remain(crit_ixs, [trans_earliest_crit_ix])
                 else:
                     match_trans = True
             else:
@@ -494,7 +494,7 @@ def find_regime_transition(criteria_list, min_tstart=-np.Inf,
                 if gli0 is None:
                     # for all criteria that returned earlier intervals, re-run to see if
                     # they have later intervals that might match using min_t = earliest_t0
-                    re_run_glob = common.remain(crit_ixs, [glob_earliest_crit_ix])
+                    re_run_glob = utils.remain(crit_ixs, [glob_earliest_crit_ix])
                 else:
                     match_global = True
             else:
@@ -612,7 +612,7 @@ class epoch(object):
             uo_str = "(ord.)"
         else:
             uo_str = "(~ord.)"
-        str1 = "Epoch for %s at sigma %.4f %s: [%.4f, %.4f]" % \
+        str1 = "Epoch for %s at sigma %.3f %s: [%.4f, %.4f]" % \
              (self.focus_var, self.sigma, uo_str, self.t0, self.t1)
         if verboselevel == 0:
             return str1
@@ -761,7 +761,7 @@ def check_opts(opts):
         for k in ok_keys:
             if k not in opts.keys():
                 opts[k] = def_vals[k]
-        rem_keys = common.remain(opts.keys(), ok_keys)
+        rem_keys = utils.remain(opts.keys(), ok_keys)
         if rem_keys != []:
             raise ValueError("Invalid options passed in opts argument: %s" % rem_keys)
         else:
@@ -850,8 +850,8 @@ class domscales(object):
                         act_vars = actives
                         mod_vars = modulatory
                         i_stop = 1
-                elif not (len(old_fast) == len(fast) and common.remain(old_fast, fast) == [] and \
-                          len(old_slow) == len(slow) and common.remain(old_slow, slow) == []):
+                elif not (len(old_fast) == len(fast) and utils.remain(old_fast, fast) == [] and \
+                          len(old_slow) == len(slow) and utils.remain(old_slow, slow) == []):
                     # non-identical sets
                     if i - ep_start > 1:
                         complete_epoch = True
@@ -881,7 +881,7 @@ class domscales(object):
                         # so put it in with the current point, assuming that this trend will
                         # continue
                         #raise ValueError("Reduce step size! Single time-point epochs are not allowed")
-                        old_actives = common.remain(old_actives, common.intersect(modulatory, old_actives))
+                        old_actives = utils.remain(old_actives, common.intersect(modulatory, old_actives))
                     all_modulatory.update(dict(zip(modulatory,enumerate(modulatory))))
                     ignore_change = True
                 else:
@@ -918,11 +918,11 @@ class domscales(object):
                         # influence actually zero so actually should be in
                         # inactive set
                         not_mod.append(m)
-                mod_vars = common.remain(mod_vars, not_mod)
+                mod_vars = utils.remain(mod_vars, not_mod)
                 # get approximate order
                 mod_vars = common.sortedDictLists(avg_influence,
                                                   reverse=True)[0]
-                inact_vars = common.remain(self.coordnames,
+                inact_vars = utils.remain(self.coordnames,
                                            act_vars+mod_vars)
                 pts = self.traj_pts[ep_start:i_stop]
                 order1, slow, fast, ever_slow, ever_fast, rel_taus = \
@@ -1090,7 +1090,7 @@ def define_tau_events(slow, fast, order1, ref):
         else:
             fast_leave_def = "max([ %s ])/(%s) - 1./dssrt_gamma" % (fast_list, ref_name)
         evdefs['fast_leave_ev'] = common.args(defn=fast_leave_def, dirn=1, pars=['dssrt_gamma'])
-    other_o1 = common.remain(order1, ref)
+    other_o1 = utils.remain(order1, ref)
     if other_o1 != []:
         o1_list = ", ".join(['tau_'+c for c in other_o1])
         if len(other_o1) == 1:
@@ -1576,6 +1576,10 @@ class dssrt_assistant(object):
         # how to reuse tau and inf values instead of calling functions repeatedly
         #print "Use tau_v instead of tau_v(<args>) etc. for definition of psi function to take"
         #print "advantage of pre-computed taus and infs"
+        if utils.remain(psi_defs.keys(), all_var_inputs) != []:
+            print("Warning: some influence definitions have labels that are" +\
+                   " not matched by the recognized inputs to variable '%s':" % fv)
+            print("  %s" % str(utils.remain(psi_defs.keys(), all_var_inputs)))
         for inp in all_var_inputs:
             if inp not in psi_defs:
                 continue
@@ -1799,7 +1803,7 @@ def spectral_gaps_absolute(as_abs_ratios, thresh):
         else:
             gaps.append(cutoff_ix+gaps[-1])
         as_abs_ratios = as_abs_ratios[cutoff_ix:]
-        if len(common.remain(as_abs_ratios, [np.inf])) <= 1:
+        if len(utils.remain(as_abs_ratios, [np.inf])) <= 1:
             break
         else:
             as_abs_ratios /= min(as_abs_ratios)
@@ -2077,8 +2081,8 @@ class EpochSeqScorer(Scorer):
                 else:
                     a_un.append(a[ixa])
                     b_un.append(b[ixb])
-        a_un = a_un + common.remain(a, a_un)
-        b_un = b_un + common.remain(b, b_un)
+        a_un = a_un + utils.remain(a, a_un)
+        b_un = b_un + utils.remain(b, b_un)
         a_dyn = only_dynamic(pad(a, maxlen), s1.alphabet.dynamic_vars)
         b_dyn = only_dynamic(pad(b, maxlen), s1.alphabet.dynamic_vars)
         #unordered_sim = swdist(pad(a_un, maxlen), pad(b_un, maxlen), s)

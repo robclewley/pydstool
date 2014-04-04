@@ -8,9 +8,9 @@
 """
 
 # IMPORTS
-from __future__ import division
-from errors import *
-from common import *
+from __future__ import division, absolute_import
+from .errors import *
+from .common import *
 import re
 import math, random
 from numpy import alltrue, sometrue

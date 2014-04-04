@@ -25,6 +25,7 @@ from setuptools.command.test import test as TestCommand
 from setuptools import Command
 import sys
 
+import PyDSTool as app
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -66,14 +67,14 @@ class PyTest(TestCommand):
         import pytest
         errno = pytest.main(self.test_args)
         import os
-        os.system("rm -rf dopri853_temp radau5_temp")
+        os.system("rm -rf dopri853_temp radau5_temp auto_temp")
         sys.exit(errno)
 
 
 check_dependency_versions()
 setup(
     name="PyDSTool",
-    version="0.88-20130406",
+    version=app.__version__,
     packages=find_packages(),
     install_requires=[
         "scipy>=0.9",
@@ -84,9 +85,9 @@ setup(
         'test': PyTest,
         'clean': clean
     },
-    author="Rob Clewley; W. Erik Sherwood; M. Drew Lamar",
+    author="Rob Clewley; W. Erik Sherwood; M. Drew Lamar; Vladimir Zakharov",
     maintainer="Rob Clewley",
-    maintainer_email="rclewley@gsu.edu",
+    maintainer_email="rob.clewley@gmail.com",
     description=("Python dynamical systems simulation and modeling"),
     long_description = read('README.md'),
     license = "BSD",

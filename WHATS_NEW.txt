@@ -1,6 +1,9 @@
 Release notes: Highlights of new features
 =========================================
 
+As of 2014: see http://github.com/robclewley/pydstool
+
+
 version 0.88 04 May 2012
 ------------------------
 
@@ -411,7 +414,7 @@ PyCont:
  * Added pseudo-arclength continuation (Keller method).  This is unstable
     right now (trouble detecting bifurcation points). Use only when
     MoorePenrose gives strange output.
- 
+
 
 
 Version 0.83, 12 Mar 2006

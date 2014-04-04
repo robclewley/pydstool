@@ -11,7 +11,7 @@ from copy import copy
 tdomain = [0,100]
 timeData = linspace(tdomain[0], tdomain[1], 500)
 sindata = sin(timeData)+2*cos(timeData/2+pi/5)
-xData = makeDataDict(['in'], [sindata])
+xData = {'in': sindata}
 # This is an archaic way to generate this
 # Better now is to create a Pointset of data then
 # use pointset_to_traj, and pass the variable from

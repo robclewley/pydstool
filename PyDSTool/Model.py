@@ -34,19 +34,21 @@ attributes (among others):
 """
 
 # ----------------------------------------------------------------------------
+from __future__ import absolute_import
+
 
 ## PyDSTool imports
-import Generator, Events, MProject
-from utils import *
-from common import *
-from errors import *
-from Interval import *
-from Trajectory import *
-from Variable import *
-from Points import *
-from ModelSpec import *
-from Symbolic import isMultiRef
-from parseUtils import isHierarchicalName, NAMESEP, mapNames, symbolMapClass
+from . import Generator, Events, ModelContext
+from .utils import *
+from .common import *
+from .errors import *
+from .Interval import *
+from .Trajectory import *
+from .Variable import *
+from .Points import *
+from .ModelSpec import *
+from .Symbolic import isMultiRef
+from .parseUtils import isHierarchicalName, NAMESEP, mapNames, symbolMapClass
 
 ## Other imports
 import math, sys
@@ -65,11 +67,11 @@ __all__ = ['Model', 'HybridModel', 'NonHybridModel',
 # ----------------------------------------------------------------------------
 
 
-class boundary_containment(MProject.qt_feature_leaf):
+class boundary_containment(ModelContext.qt_feature_leaf):
     # not implemented using metrics because the metrics are trivial
     # and cause a lot of overhead for this often-evaluated feature
     def __init__(self, name, description='', pars=None):
-        MProject.qt_feature_leaf.__init__(self, name, description, pars)
+        ModelContext.qt_feature_leaf.__init__(self, name, description, pars)
         try:
             pars.thresh
         except AttributeError:
@@ -211,9 +213,9 @@ class boundary_containment_by_postproc(boundary_containment):
         return adjusted_res.index(True)
 
 
-class domain_test(MProject.qt_feature_node):
+class domain_test(ModelContext.qt_feature_node):
     def __init__(self, name, description='', pars=None):
-        MProject.qt_feature_node.__init__(self, name, description, pars)
+        ModelContext.qt_feature_node.__init__(self, name, description, pars)
         try:
             self.pars.interval
         except AttributeError:
@@ -2092,14 +2094,6 @@ class NonHybridModel(Model):
             # this Generator has no eventstruct
             pass
 
-        ## New code in Trajectory.__init__ takes care of this now
-        # Take a copy of the events as they were at the time that the
-        # trajectory was computed, for future reference
-        #traj.events = epochEvents
-        #traj._createEventTimes()
-        # TEMP
-        #print "Nonhybridmodel - temp removal of eventstruct non-copy"
-        #traj.modelEventStructs = gen.eventstruct #copy.deepcopy(gen.eventstruct)
         self.trajectories[trajname] = traj
 
 
@@ -2108,10 +2102,11 @@ class NonHybridModel(Model):
         # ensure that modelInfo is a single Generator object only
         assert len(self.modelInfo) == 1, \
                "Non-hybrid model must contain a single Generator"
-        infodict = self.modelInfo.values()[0]
-        if not isinstance(infodict['dsi'], MProject.GeneratorInterface):
-            raise TypeError("Must provide a single Generator object"
-                            " wrapped in a GeneratorInterface")
+        # Avoids circular dependence
+        #infodict = self.modelInfo.values()[0]
+        #if not isinstance(infodict['dsi'], ModelContext.GeneratorInterface):
+        #    raise TypeError("Must provide a single Generator object"
+        #                    " wrapped in a GeneratorInterface")
 
     def _infostr(self, verbose=1):
         if verbose > 0:
@@ -2884,7 +2879,7 @@ class HybridModel(Model):
                 raise ValueError("Model %s failed to create a trajectory"%model.name)
             else:
                 # rename from ModelInterface default name
-                model.renameTraj(MProject.ModelInterface._trajname,
+                model.renameTraj(ModelContext.ModelInterface._trajname,
                                  trajname+'_'+str(partition_num),
                                  force=force_overwrite)
 #                if self._abseps is not None:
@@ -3081,9 +3076,10 @@ class HybridModel(Model):
 ##                # model class, otherwise has discrete event mappings
 ##                # that make the model technically "hybrid"
 ##                raise AssertionError("Use a non-hybrid Model class")
-##        for infodict in self.modelInfo.values():
-##            if not isinstance(infodict['dsi'], MProject.ModelInterface):
-##                raise TypeError("Must provide ModelInterface objects")
+##        # Avoid circular import for access to ModelInterface
+##        #for infodict in self.modelInfo.values():
+##        #    if not isinstance(infodict['dsi'], ModelContext.ModelInterface):
+##        #        raise TypeError("Must provide ModelInterface objects")
 ##        allDSnames = self.modelInfo.keys()
 ###        print "\n_validateRegistry: ", obsvars, intvars
 ##        for modelName, infodict in self.modelInfo.iteritems():
@@ -3309,7 +3305,7 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
         xdict, t, I = MI._get_initiator_cache(xdict, t)
         while True:
             # descend into sub-models until leaf found
-            if isinstance(I, MProject.GeneratorInterface):
+            if isinstance(I, ModelContext.GeneratorInterface):
                 I.model.diagnostics.clearWarnings()
                 break
             else:

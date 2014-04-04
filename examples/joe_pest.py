@@ -71,7 +71,7 @@ pars_ref.update(est_pars_ref)
 
 allValDict = importPointset('xtraj_prebotfast.dat',
                             t='ttraj_prebotfast.dat')
-xDataDict = makeDataDict(['v', 'n'], allValDict['vararray'])
+xDataDict = dict(zip(['v', 'n'], allValDict['vararray']))
 tmesh = allValDict['t'].tolist()
 tdomain = [tmesh[0], tmesh[-1]]
 refDS = Generator.LookupTable({'tdata': tmesh,

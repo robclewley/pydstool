@@ -10,8 +10,7 @@ from numpy import linspace, sin
 from numpy.testing import assert_almost_equal
 from PyDSTool import (
     args,
-    Events,
-    makeDataDict,
+    Events
 )
 from PyDSTool.Generator import (
     Dopri_ODEsystem,
@@ -28,7 +27,7 @@ from PyDSTool.Generator.tests.helpers import clean_files
 def dsargs():
     timeData = linspace(0, 10, 20)
     sindata = sin(20 * timeData)
-    xData = makeDataDict(['in'], [sindata])
+    xData = {'in': sindata}
     my_input = InterpolateTable({
         'tdata': timeData,
         'ics': xData,

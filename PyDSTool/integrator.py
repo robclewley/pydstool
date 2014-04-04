@@ -1,10 +1,11 @@
 """Basic integrator interface class
    Erik Sherwood, September 2006
 """
+from __future__ import absolute_import
 
-from errors import PyDSTool_InitError as InitError
-from errors import PyDSTool_ClearError as ClearError
-from common import _all_int, _real_types, \
+from .errors import PyDSTool_InitError as InitError
+from .errors import PyDSTool_ClearError as ClearError
+from .common import _all_int, _real_types, \
      verify_intbool, verify_pos, verify_nonneg, verify_values
 from numpy import isinf, Inf
 import operator

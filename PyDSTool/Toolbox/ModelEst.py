@@ -30,14 +30,14 @@ class ModelEst(Utility):
     _optionalKeys = ['libraries', 'verboselevel']
 
     def __init__(self, **kw):
-        # MProject model manager object
+        # Model manager object
         self.manager = kw['manager']
-        # model library object
+        # Model library object
         if 'libraries' in kw:
             self.libraries = kw['libraries']
         else:
             self.libraries = None
-        # MProject.context class
+        # ModelContext.context class
         self.context = kw['context']
         if 'verboselevel' in kw:
             self.verboselevel = kw['verboselevel']

@@ -4,16 +4,17 @@
 """
 
 # ----------------------------------------------------------------------------
+from __future__ import absolute_import
 
 # PyDSTool imports
-from Variable import *
-from Interval import *
-from Points import *
-from utils import *
-from common import *
-from common import _num_types
-from parseUtils import *
-from errors import *
+from .Variable import *
+from .Interval import *
+from .Points import *
+from .utils import *
+from .common import *
+from .common import _num_types
+from .parseUtils import *
+from .errors import *
 
 # Other imports
 from numpy import array, arange, float64, int32, concatenate, zeros, shape, \

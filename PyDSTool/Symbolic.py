@@ -56,16 +56,16 @@ Robert Clewley, October 2005.
 
 # ----------------------------------------------------------------------------
 
-from __future__ import division
+from __future__ import division, absolute_import
 import os, sys, types, cPickle
-from Interval import Interval
-from common import *
-from utils import info as utils_info
-from parseUtils import *
-from errors import *
+from .Interval import Interval
+from .common import *
+from .utils import info as utils_info
+from .parseUtils import *
+from .errors import *
 
 #from math import *
-from utils import *
+from .utils import *
 from numpy import array, Inf, NaN, isfinite, mod, sum, float64, int32
 from numpy import sometrue, alltrue
 # replacements of math functions so that expr2fun etc. produce vectorizable math functions
@@ -420,7 +420,7 @@ def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, **values):
     """
     # put in local namespace for sake of final class method's
     # alt_call use of filteredDict
-    from common import filteredDict
+    from .common import filteredDict
     # convert values into a dictionary of strings where possible
     valDict = {}
     # functions that will end up as methods in the wrapper

@@ -4,7 +4,7 @@ from PyDSTool.common import args, metric, metric_L2, metric_weighted_L2, \
      metric_float, remain, fit_quadratic, fit_exponential, fit_diff_of_exp, \
      smooth_pts, nearest_2n_indices, make_poly_interpolated_curve, simple_bisection
 from PyDSTool.Trajectory import numeric_to_traj
-from PyDSTool.MProject import *
+from PyDSTool.ModelContext import *
 from PyDSTool.Toolbox.data_analysis import butter, filtfilt, rectify
 from PyDSTool.errors import PyDSTool_KeyError
 import copy
