@@ -103,10 +103,10 @@ from .Model import Model as Model_
 from .Model import *
 Model = ModelModule
 # \end{hacksRus}
-from .ModelConstructor import *
+from .ModelTools import *
 from .Toolbox.ParamEst import ParamEst
 from .Toolbox.ModelEst import ModelEst
-from .MProject import *
+from .ModelContext import *
 from .Symbolic import *
 from .ModelSpec import *
 from .parseUtils import auxfnDBclass, protected_allnames, protected_auxnamesDB, \
