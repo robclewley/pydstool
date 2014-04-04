@@ -4,14 +4,15 @@
 """
 
 # ----------------------------------------------------------------------------
+from __future__ import absolute_import
 
 # PyDSTool imports
-from utils import *
-from common import *
-from errors import *
-from Points import *
-from Interval import *
-from FuncSpec import ImpFuncSpec
+from .utils import *
+from .common import *
+from .errors import *
+from .Points import *
+from .Interval import *
+from .FuncSpec import ImpFuncSpec
 
 from numpy import Inf, NaN, isfinite, sometrue, alltrue, any, all, \
      array, float64, int32, ndarray, asarray

@@ -4,7 +4,9 @@
     Robert Clewley, September 2005.
 """
 
-from errors import *
+from __future__ import absolute_import
+
+from .errors import *
 
 import sys, types
 import numpy as npy

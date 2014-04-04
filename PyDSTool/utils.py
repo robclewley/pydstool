@@ -1,11 +1,13 @@
 """
     User utilities.
 """
+from __future__ import absolute_import
 
-from errors import *
-from common import *
-import Redirector as redirc
-from parseUtils import joinStrs
+
+from .errors import *
+from .common import *
+from . import Redirector as redirc
+from .parseUtils import joinStrs
 
 from numpy import Inf, NaN, isfinite, less, greater, sometrue, alltrue, \
      searchsorted, take, argsort, array, swapaxes, asarray, zeros, transpose, \

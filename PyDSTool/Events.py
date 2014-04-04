@@ -7,17 +7,18 @@ may include its own event determination implementation.)
 
     Robert Clewley, October 2005.
 """
+from __future__ import absolute_import
 
 # PyDSTool imports
-from Variable import *
-from utils import *
-from common import *
-from parseUtils import *
-from errors import *
-from Interval import *
-from utils import info as utils_info
-from Symbolic import QuantSpec, Var, ensureStrArgDict
-import FuncSpec
+from .Variable import *
+from .utils import *
+from .common import *
+from .parseUtils import *
+from .errors import *
+from .Interval import *
+from .utils import info as utils_info
+from .Symbolic import QuantSpec, Var, ensureStrArgDict
+from . import FuncSpec
 
 # Other imports
 import scipy, numpy, scipy, scipy.special
