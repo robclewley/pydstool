@@ -1099,7 +1099,7 @@ def scatterplot_slopes(data, num_samples=None, startix=10, stopix=None,
     if range_step > 0:
         refpts = arange(0,len(data),range_step,'i')
     else:
-        raise "too many sample points specified"
+        raise ValueError("too many sample points specified")
     num_refpts = len(refpts)
     plotdata = zeros((num_refpts,3),Float)
     ixdata = {}
@@ -1115,7 +1115,7 @@ def scatterplot_slopes(data, num_samples=None, startix=10, stopix=None,
         title_str = ''
         col = array([0.3,0.3,0.3])
     else:
-        raise "invalid color source"
+        raise ValueError("invalid color source")
     print "Expect %i dots when finished:"%int(num_refpts/50)
     for i in range(num_refpts):
         if mod(i,50) == 49:
@@ -1199,7 +1199,7 @@ def rescatter(plotdata, colors, color_source=None, marker='o', marker_size=40,
         if not isinstance(colors, str):
             assert shape(colors) == (3,)
     else:
-        raise "invalid color source"
+        raise ValueError("invalid color source")
     if newfigure:
         figure()
     if color_source is None:

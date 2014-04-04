@@ -154,7 +154,7 @@ class ixmap(dict):
         try:
             return self.pars[self.parixmap[k]]
         except:
-            raise "Cannot access external input values using ixmap class"
+            raise PyDSTool_KeyError("Cannot access external input values using ixmap class")
 
     def __repr__(self):
         return "Index mapping: " + str(self.parixmap)
@@ -884,6 +884,8 @@ class Generator(object):
                 parlist = self.pars.keys()
                 parstr = "".join(["'%s': %s, "%(parname,parname) \
                                   for parname in parlist])
+            else:
+                parstr = ""
             if 'codeinsert_start' in fs_args:
                 fs_args['codeinsert_start'] = \
                     '    %s.set(pars={%s})\n'%(self._solver.name, parstr) \

@@ -23,6 +23,7 @@
 from PyDSTool import pointsToPointset, Point, Pointset
 from PyDSTool.common import args
 from PyDSTool.matplotlib_import import *
+from PyDSTool.errors import PyDSTool_ValueError
 
 # THESE ARE REPEATS FROM CONTINUATION!  MAKE SURE AND UPDATE!!!
 all_point_types = ['P', 'RG', 'LP', 'BP', 'H', 'BT', 'ZH', 'CP', 'GH',
@@ -82,7 +83,7 @@ def monotone(x, num=None, direc=1):
     elif num < -1:
         ind = range(num, -1)
     else:
-        raise 'Number of indices must be larger than 1.'
+        raise PyDSTool_ValueError('Number of indices must be larger than 1.')
 
     mon = True
     for i in ind:

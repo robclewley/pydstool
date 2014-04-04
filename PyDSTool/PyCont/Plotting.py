@@ -86,7 +86,7 @@ class pargs(args):
 
     def get(self, objtype, bylabel=None, byname=None, bytype=None, bylegend=None, obj=None, ct=0):
         if objtype not in ['point', 'text', 'cycle', 'curve']:
-            raise 'Object type must be point, text, cycle, or curve'
+            raise TypeError('Object type must be point, text, cycle, or curve')
 
         ct += 1
         if isinstance(bylabel, str):
@@ -637,12 +637,12 @@ def initializeDisplay(plot, figure=None, axes=None):
         if len(plot[cfl]) <= 2:
             axes = plt.gca()
         else:
-            raise 'Please specify axes.'
+            raise ValueError('Please specify axes.')
     elif isinstance(axes, tuple):
         if len(axes) == 3:
             axes = plt.subplot(axes[0],axes[1],axes[2])
         else:
-            raise 'Tuple must be of length 3'
+            raise TypeError('Tuple must be of length 3')
 
     cal = None
     if isinstance(axes, plt.Axes):

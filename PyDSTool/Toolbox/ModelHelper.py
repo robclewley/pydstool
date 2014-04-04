@@ -22,12 +22,12 @@ def makeSpiffyODEModel(**kw):
     if 'modelName' in kw:
         modelName = kw['modelName']
     else:
-        raise 'No modelName specified'
+        raise KeyError('No modelName specified')
 
     if 'modelDict' in kw:
         modelDict = kw['modelDict']
     else:
-        raise 'No modelDict specified'
+        raise KeyError('No modelDict specified')
 
     if 'targetGen' in kw:
         targetGen = kw['targetGen']

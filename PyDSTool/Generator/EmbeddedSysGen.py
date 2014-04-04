@@ -56,7 +56,7 @@ class EmbeddedSysGen(ctsGen):
         try:
             self._embed_spec = kw['specfn']
         except:
-            raise "Must provide a function for the specification of this system"
+            raise PyDSTool_KeyError("Must provide a function for the specification of this system")
         else:
             self.foundKeys += 1
         self.eventstruct = EventStruct()

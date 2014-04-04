@@ -1623,7 +1623,7 @@ class dssrt_assistant(object):
     def calc_rankings(self, influence_type='psi'):
         self.ensure()
         if not hasattr(self, influence_type+'_pts'):
-            raise "Call make_pointsets first"
+            raise AttributeError("Call make_pointsets first")
         else:
             influence_pts = getattr(self, influence_type+'_pts')
         varnames = influence_pts.coordnames
@@ -2108,7 +2108,7 @@ def get_symbol_sequence(epoch_list, get_actives=True, get_modulatory=False):
             if get_modulatory:
                 l = m
             else:
-                raise "Must specify at least one type of output"
+                raise ValueError("Must specify at least one type of output")
         seq.append(l)
     return seq
 
