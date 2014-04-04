@@ -7,7 +7,7 @@ details.
 Robert Clewley, 2009
 
 """
-from __future__ import division
+from __future__ import division, absolute_import, print_function
 
 from PyDSTool import common
 from PyDSTool import utils
@@ -18,10 +18,13 @@ from PyDSTool.Trajectory import numeric_to_traj
 from PyDSTool.Points import Point, Pointset, pointsToPointset
 from PyDSTool.errors import *
 
+import itertools
 import numpy as np
 import scipy as sp
 import copy
-import cStringIO, operator
+import operator
+
+from six.moves import cStringIO, range, reduce, zip_longest
 
 #############
 
@@ -338,7 +341,7 @@ def find_regime_transition(criteria_list, min_tstart=-np.Inf,
     trans_earliest_t0s = [min_tstart]*len(criteria_list)
     glob_earliest_t0_ixs = [None]*len(criteria_list)
     glob_earliest_t0s = [min_tstart]*len(criteria_list)
-    crit_ixs = range(len(criteria_list))
+    crit_ixs = list(range(len(criteria_list)))
     re_run = crit_ixs[:]  # initial copy
     re_run_glob = []
     re_run_trans = []
@@ -623,7 +626,7 @@ class epoch(object):
             return str1 + str2 + str3
 
     def info(self, verboselevel=1):
-        print self._infostr(verboselevel)
+        print(self._infostr(verboselevel))
 
     def __str__(self):
         return self._infostr(0)
@@ -759,9 +762,9 @@ def check_opts(opts):
         return common.args(**def_vals)
     else:
         for k in ok_keys:
-            if k not in opts.keys():
+            if k not in list(opts.keys()):
                 opts[k] = def_vals[k]
-        rem_keys = utils.remain(opts.keys(), ok_keys)
+        rem_keys = utils.remain(list(opts.keys()), ok_keys)
         if rem_keys != []:
             raise ValueError("Invalid options passed in opts argument: %s" % rem_keys)
         else:
@@ -859,7 +862,7 @@ class domscales(object):
                         # ignore epoch made up of single time point
                         ignore_change = True
                     act_vars = old_actives
-                    mod_vars = all_modulatory.keys()
+                    mod_vars = list(all_modulatory.keys())
                     i_stop = i
                 if ignore_change:
                     old_fast = fast
@@ -891,7 +894,7 @@ class domscales(object):
                         i_stop = 1
                     else:
                         act_vars = old_actives
-                        mod_vars = all_modulatory.keys()
+                        mod_vars = list(all_modulatory.keys())
                         i_stop = i
                     complete_epoch = True
                 if ignore_change:
@@ -1110,12 +1113,12 @@ class dssrt_assistant(object):
         if isinstance(model, HybridModel):
             # check that there is a single sub-model (not a true hybrid system)
             assert len(model.registry) == 1
-            self.model = model.registry.values()[0]
-            self.gen = self.model.registry.values()[0]
+            self.model = list(model.registry.values())[0]
+            self.gen = list(self.model.registry.values())[0]
         elif isinstance(model, NonHybridModel):
             assert len(model.registry) == 1
             self.model = model
-            self.gen = self.model.registry.values()[0]
+            self.gen = list(self.model.registry.values())[0]
         else:
             # assume generator
             self.model = None
@@ -1159,7 +1162,7 @@ class dssrt_assistant(object):
                 self.gamma2[k] = gamma2
             # all_vars includes 'mock' variables
             # given by auxiliary functions
-            self.all_vars = inputs.keys()
+            self.all_vars = list(inputs.keys())
         else:
             # deduce them from the dependencies in the
             # ModelSpec dict
@@ -1170,9 +1173,9 @@ class dssrt_assistant(object):
             #self.gamma1 = ?
             #self.gamma2 = ?
             # Can expect only mspec
-            self._init_from_MSpec(self.model._mspecdict.values()[0]['modelspec'])
+            self._init_from_MSpec(list(self.model._mspecdict.values())[0]['modelspec'])
         all_inputs = []
-        for ins in self.gamma1.values() + self.gamma2.values():
+        for ins in itertools.chain(self.gamma1.values(), self.gamma2.values()):
             try:
                 all_inputs.extend(ins)
             except TypeError:
@@ -1363,11 +1366,11 @@ class dssrt_assistant(object):
         else:
             # test for valid math expression
             # - may include auxiliary function call (with arguments)
-            fnames = self.gen.auxfns.keys()
+            fnames = list(self.gen.auxfns.keys())
             themap = dict(self.gen.auxfns.items())
             themap.update(dict(self.gen.inputs.items()))
             defs = {'refpars': self.pars}
-            pnames = self.pars.keys()
+            pnames = list(self.pars.keys())
             pvals = ['refpars["%s"]' % pn for pn in pnames]
 #            parmap = dict(zip(pnames,
 #                              [Symbolic.expr2fun(v, **defs) for v in pvals]))
@@ -1377,7 +1380,7 @@ class dssrt_assistant(object):
             val_q = Symbolic.QuantSpec('__expr__', val)
             mapping = dict(zip(pnames, pvals))
             used_inputs = utils.intersect(val_q.parser.tokenized,
-                               self.gen.inputs.keys())
+                               list(self.gen.inputs.keys()))
             for inp in used_inputs:
                 # turn into a function of t
                 mapping[inp] = inp + '(t)'
@@ -1454,8 +1457,8 @@ class dssrt_assistant(object):
             try:
                 return f(**common.filteredDict(ptFS, args))
             except:
-                print f._args
-                print f._call_spec
+                print(f._args)
+                print(f._call_spec)
                 raise
 
 
@@ -1474,8 +1477,8 @@ class dssrt_assistant(object):
             try:
                 return f(**common.filteredDict(ptFS, args))
             except:
-                print f._args
-                print f._call_spec
+                print(f._args)
+                print(f._call_spec)
                 raise
 
 
@@ -1500,8 +1503,8 @@ class dssrt_assistant(object):
             try:
                 return f(**common.filteredDict(ptFS, args))
             except:
-                print f._args
-                print f._call_spec
+                print(f._args)
+                print(f._call_spec)
                 raise
 
 
@@ -1515,7 +1518,7 @@ class dssrt_assistant(object):
         if focus:
             vars = [self.focus_var]
         else:
-            vars = self.taus.keys()
+            vars = list(self.taus.keys())
         pts = self._FScompatMap(self.pts)
 #        ptvals = dict(self.pts)
 #        # permit access from external inputs or other autonomous functions
@@ -1531,8 +1534,8 @@ class dssrt_assistant(object):
                     vals['tau_'+k] = np.array([f(**common.filteredDict(pt, args)) \
                                                for pt in pts])
                 except:
-                    print f._args
-                    print f._call_spec
+                    print(f._args)
+                    print(f._call_spec)
                     raise
             inf_info = self.infs[k]
             if inf_info is None:
@@ -1543,8 +1546,8 @@ class dssrt_assistant(object):
                     vals['inf_'+k] = np.array([f(**common.filteredDict(pt, args)) \
                                                for pt in pts])
                 except:
-                    print f._args
-                    print f._call_spec
+                    print(f._args)
+                    print(f._call_spec)
                     raise
         # we know that taus and infs have same set of keys -- the variable names
         self.tau_inf_vals.update(vals)
@@ -1576,10 +1579,10 @@ class dssrt_assistant(object):
         # how to reuse tau and inf values instead of calling functions repeatedly
         #print "Use tau_v instead of tau_v(<args>) etc. for definition of psi function to take"
         #print "advantage of pre-computed taus and infs"
-        if utils.remain(psi_defs.keys(), all_var_inputs) != []:
-            print("Warning: some influence definitions have labels that are" +\
-                   " not matched by the recognized inputs to variable '%s':" % fv)
-            print("  %s" % str(utils.remain(psi_defs.keys(), all_var_inputs)))
+        if utils.remain(list(psi_defs.keys()), all_var_inputs) != []:
+            print(("Warning: some influence definitions have labels that are" +\
+                   " not matched by the recognized inputs to variable '%s':" % fv))
+            print(("  %s" % str(utils.remain(list(psi_defs.keys()), all_var_inputs))))
         for inp in all_var_inputs:
             if inp not in psi_defs:
                 continue
@@ -1601,8 +1604,8 @@ class dssrt_assistant(object):
                     psis[inp] = np.array([f(*val_array.flatten()) \
                                       for val_array in all_coords[:,[arg_ixs]]])
                 except:
-                    print f._args
-                    print f._call_spec
+                    print(f._args)
+                    print(f._call_spec)
                     raise
         self.psi_vals[fv] = psis
 
@@ -1648,7 +1651,7 @@ class dssrt_assistant(object):
                               ics=common.filteredDict(gen.initialconditions,vars),
                               varspecs=varspecs, auxvars=gen.funcspec._initargs['auxvars'],
                               fnspecs=gen.funcspec._initargs['fnspecs'])
-        nan_auxs = [xname for xname, val in gen.initialconditions.iteritems() if not np.isfinite(val)]
+        nan_auxs = [xname for xname, val in gen.initialconditions.items() if not np.isfinite(val)]
         sysargs.pars.update(common.filteredDict(gen.initialconditions, vars+nan_auxs, neg=True))
         return Vode_ODEsystem(sysargs)
 
@@ -1658,7 +1661,7 @@ class dssrt_assistant(object):
 def get_taus(pts, tau_names):
     """pts can be a Point or Pointset"""
     # filter this way in case there are None entries in tau_names.values()
-    clist = [cname for cname in pts.coordnames if cname in tau_names.values()]
+    clist = [cname for cname in pts.coordnames if cname in list(tau_names.values())]
     t = pts[clist]
     t.mapNames(parseUtils.symbolMapClass(common.invertMap(tau_names)))
     return t
@@ -1666,7 +1669,7 @@ def get_taus(pts, tau_names):
 def get_infs(pts, inf_names):
     """pts can be a Point or Pointset"""
     # filter this way in case there are None entries in inf_names.values()
-    clist = [cname for cname in pts.coordnames if cname in inf_names.values()]
+    clist = [cname for cname in pts.coordnames if cname in list(inf_names.values())]
     i = pts[clist]
     i.mapNames(parseUtils.symbolMapClass(common.invertMap(inf_names)))
     return i
@@ -1688,7 +1691,7 @@ def split_pts(pts, interval, reset_t0=None):
     try:
         vals = pts[ix0:ix1].coordarray.copy()
     except ValueError:
-        print ix0, ix1
+        print("%d %d" % (ix0, ix1))
         raise
     ts = pts.indepvararray[ix0:ix1].copy()
     if reset_t0 is not None:
@@ -1704,10 +1707,10 @@ def find_epoch_period(epochs, verbose=False):
     # don't start i at 0 b/c will be in middle of an epoch
     for i, ep0 in enumerate(epochs[1:-1]):
         if verbose:
-            print "start epoch = ", i+1
+            print("start epoch = %d" % (i+1))
         for j, ep in enumerate(epochs[i+1:]):
             if verbose:
-                print "end epoch =", i+j+1
+                print("end epoch = %d" % (i+j+1))
             try:
                 res = [epochs[k]==epochs[k+j+1] for k in range(i,j)]
             except IndexError:
@@ -1715,10 +1718,10 @@ def find_epoch_period(epochs, verbose=False):
                 continue
             else:
                 if verbose:
-                    print i, j, res
+                    print("%d %d %s" % (i, j, res))
             if np.all(res) and j > i+1:
                 if verbose:
-                    print "Found period between epochs", i+1, j+2+i, " len=", j+1
+                    print("Found period between epochs %d %d len=%d" % (i+1, j+2+i, j+1))
                 cycle_len = j+1
                 ixs = [i+1, i+j+2]
                 return cycle_len, ixs
@@ -1815,7 +1818,7 @@ def partition_range(range_tuple, split_ixs):
     # split_ixs is a list
     if not range_tuple[0] < range_tuple[1]:
         raise ValueError("Range tuple not in increasing order")
-    if not np.alltrue(ix in xrange(range_tuple[0],range_tuple[1]) \
+    if not np.alltrue(ix in range(range_tuple[0],range_tuple[1]) \
                       for ix in split_ixs):
         raise ValueError("Split indices out of range")
     if range_tuple[0] in split_ixs or range_tuple[1] in split_ixs:
@@ -1884,7 +1887,7 @@ def normalized_psis(epochs, root, midpoint_only=True, small=1e-16):
 def show_epochs(eps):
     "Small utility to print more detailed information about epochs"
     for i, ep in enumerate(eps):
-        print i,
+        print(i, end=' ')
         ep.info()
 
 
@@ -1916,16 +1919,16 @@ def plot_psis(da, cols=None, do_vars=None, do_log=True, use_prefix=True):
                 cols.append(c+s)
     if len(do_vars) > len(cols):
         raise ValueError("Max number of permitted variables for these colors/styles is %i"%len(cols))
-    print "Color scheme:"
+    print("Color scheme:")
     if do_log:
         for i, v in enumerate(do_vars):
             if root+v in pts.coordnames:
-                print " ", v, cols[i]
+                print(" %s %s" % (v, cols[i]))
                 plot(ts, np.log(pts[root+v]), cols[i])
     else:
         for i, v in enumerate(do_vars):
             if root+v in pts.coordnames:
-                print " ", v, cols[i]
+                print(" %s %s" % (v, cols[i]))
                 plot(ts, pts[root+v], cols[i])
 
 # ---------------------------------------------------------------------------
@@ -2020,7 +2023,7 @@ class EpochSeqScorer(Scorer):
             s2[(a,a)] = MATCH #VCLOSE
             s2[(a,'_')] = CLOSE
 
-        for k, v in s1.score_dict.iteritems():
+        for k, v in s1.score_dict.items():
             if v is None:
                 d_common = len(common.intersect(alphabet.dynamic_vars, strip_speed(k)))
         #        s.score_dict[k] = MISMATCH
@@ -2380,7 +2383,7 @@ def editdist_edits(str1, str2):
 
     d = []  # Table with the full distance matrix
 
-    current = range(n+1)
+    current = list(range(n+1))
     d.append(current)
 
     for i in range(1,m+1):
@@ -2500,9 +2503,9 @@ def jaro(str1, str2, min_threshold=None):
             workstr1 = workstr1[:index]+JARO_MARKER_CHAR+workstr1[index+1:]
 
     if (common1 != common2):
-        print 'Jaro: Wrong common values for strings "%s" and "%s"' % \
-                         (str1, str2) + ', common1: %i, common2: %i' % (common1, common2) + \
-                         ', common should be the same.'
+        print('Jaro: Wrong common values for strings "%s" and "%s"' % (str1, str2)
+              + ', common1: %i, common2: %i' % (common1, common2)
+              + ', common should be the same.')
         common1 = float(common1+common2) / 2.0  ##### This is just a fix #####
 
     if (common1 == 0):
@@ -2533,7 +2536,7 @@ def tabulate_epoch_seqs(epseq1, epseq2):
         eps1 = epseq1[i]
         eps2 = epseq2[i]
         str_table.append([",".join(eps1), ",".join(eps2)])
-    print indent(str_table)
+    print(indent(str_table))
 
 def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left',
            separateRows=False, prefix='', postfix='', wrapfunc=lambda x:x):
@@ -2554,24 +2557,26 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left',
     # closure for breaking logical rows to physical, using wrapfunc
     def rowWrapper(row):
         newRows = [wrapfunc(item).split('\n') for item in row]
-        return [[substr or '' for substr in item] for item in map(None,*newRows)]
+        return list(zip_longest(*newRows, fillvalue=''))
     # break each logical row into one or more physical ones
     logicalRows = [rowWrapper(row) for row in rows]
     # columns of physical rows
-    columns = map(None,*reduce(operator.add,logicalRows))
+    columns = zip_longest(*reduce(operator.add, logicalRows), fillvalue='')
     # get the maximum of each column by the string length of its items
     maxWidths = [max([len(str(item)) for item in column]) for column in columns]
     rowSeparator = headerChar * (len(prefix) + len(postfix) + sum(maxWidths) + \
                                  len(delim)*(len(maxWidths)-1))
     # select the appropriate justify method
     justify = {'center':str.center, 'right':str.rjust, 'left':str.ljust}[justify.lower()]
-    output=cStringIO.StringIO()
-    if separateRows: print >> output, rowSeparator
+    output=cStringIO()
+    if separateRows:
+        print(rowSeparator, file=output)
     for physicalRows in logicalRows:
         for row in physicalRows:
-            print >> output, \
-                prefix \
-                + delim.join([justify(str(item),width) for (item,width) in zip(row,maxWidths)]) \
-                + postfix
-        if separateRows or hasHeader: print >> output, rowSeparator; hasHeader=False
+            print(prefix
+                  + delim.join([justify(str(item),width) for (item,width) in zip(row,maxWidths)])
+                  + postfix, file=output)
+        if separateRows or hasHeader:
+            print(rowSeparator, file=output)
+            hasHeader=False
     return output.getvalue()

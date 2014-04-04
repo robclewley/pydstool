@@ -82,6 +82,7 @@ setup(
     version=__version__,
     packages=find_packages(),
     install_requires=[
+        "six",
         "scipy>=0.9",
         "numpy>=1.6"
     ],

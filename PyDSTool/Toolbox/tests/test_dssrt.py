@@ -7,7 +7,8 @@ from PyDSTool import (
 
 from PyDSTool.Toolbox.dssrt import (
     transition_psi,
-    transition_tau
+    transition_tau,
+    indent
 )
 
 import pytest
@@ -92,3 +93,26 @@ class TestDSSRT:
 
     def test_ten(self):
         assert self.res10 == ('slow_leave', 'w')
+
+
+def test_indent_regression():
+    table = [
+        ['Name', 'Value', 'Comment'],
+        ['x', '0.0', ''],
+        ['y', '1.0', 'Multi line\ncomment'],
+        ['z', '2.0', 'Z value'],
+    ]
+
+    assert  [
+        '-------------------------',
+        'Name | Value | Comment   ',
+        '-------------------------',
+        'x    | 0.0   |           ',
+        '-------------------------',
+        'y    | 1.0   | Multi line',
+        '     |       | comment   ',
+        '-------------------------',
+        'z    | 2.0   | Z value   ',
+        '-------------------------',
+        '',
+    ] == indent(table, hasHeader=True, separateRows=True).split('\n')
