@@ -1089,7 +1089,7 @@ class intModelInterface(ModelInterface):
         Use force option if model is known to have changed and trajectory
         needs refreshing.
         """
-        if force and not isinstance(self.test_traj, Trajectory.Trajectory):
+        if force and not isinstance(self.test_traj, Trajectory):
             self.compute_traj()
             recomputed = True
         else:
