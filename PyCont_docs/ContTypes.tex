@@ -1,0 +1,387 @@
+% ***********
+% NOTES
+% ***********
+% 
+% BIO220
+% 	* For Life Tables, see Sebastion's Calc book (End of Chapter 7)
+%
+\documentclass{article}[12pt]
+
+\input{math_def}
+\input{ca_def}
+
+\textwidth 6in
+\oddsidemargin 0.25in
+\evensidemargin 0.25in
+\textheight 8in
+
+\usepackage{fancybox}
+\usepackage{epsfig}
+\usepackage{graphicx}% Include figure files
+\usepackage{color}
+\usepackage{dcolumn}% Align table columns on decimal point
+\usepackage{bm}% bold math
+%\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsxtra}
+\usepackage{cancel}
+\usepackage{multirow}
+\usepackage{undertilde}
+\usepackage{calc}
+\usepackage{stackrel}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=magenta,%
+    filecolor=magenta,%
+    linkcolor=magenta,%
+    urlcolor=blue
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{cor}[theorem]{Corollary}
+\newtheorem{lem}[theorem]{Lemma}
+\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{rem}[theorem]{Remark}
+\newtheorem{conj}[theorem]{Conjecture}
+\newtheorem{ques}[theorem]{Question}
+\newtheorem{alg}[figure]{Algorithm}
+
+\renewcommand{\setminus}{-}
+\newcommand{\swtw}[4]{\ensuremath{\left(\begin{array}{c} #1 \ #3 \\ #2 \ #4 \end{array}\right)}}
+
+\newcommand{\swth}[6]{\ensuremath{\left(\begin{array}{c} #1 \ #3 \ #5 \\ #2 \ #4 \ #6 \end{array}\right)}}
+
+% Test functions
+%\renewcommand{\theequation}{LP-T\arabic{equation}}
+
+\def\bF{\bm{F}}
+\def\bV{\bm{V}}
+\def\by{\bm{y}}
+\def\bty{\bm{\tilde{y}}}
+\def\ba{\bm{a}}
+\def\bta{\bm{\tilde{a}}}
+\def\bzero{\bm{0}}
+\def\coloneqq{\mathrel{\mathop:}=}
+
+\newenvironment{whitebox}[1][0pt]{
+\def\FrameCommand{\psshadowbox[shadowsize=0.3em, framesep=1.0em, fillstyle=solid, fillcolor=white]}
+\MakeFramed{\advance\hsize-\width \advance\hsize-#1 \FrameRestore}}
+{\endMakeFramed}
+
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{5}
+ 
+\newenvironment{Shadowed}{\begin{center}\begin{shadow}\begin{minipage}{.8\textwidth}}{\end{minipage}\end{shadow}\end{center}}
+
+%\makeatletter
+%\newcommand\Paragraph[1]{%
+%  \addcontentsline{prg}{Paragraph}{#1}%
+%  \paragraph{#1}}
+%\newcommand\l@Paragraph[2]{#1,~\textit{#2}}
+%\newcommand\listParagraphname{\large{-- List of Bifurcation Points --}}
+%\newcommand\listofParagraphs{%
+%  \section*{\listParagraphname}\@starttoc{prg}}
+%\makeatother
+%\newcommand\AddSep{\addtocontents{prg}{\newline}}
+
+\title{PyCont: Continuation Types}
+
+\pagestyle{empty}
+
+\begin{document}
+
+\date{}
+\maketitle
+
+\tableofcontents
+
+\newpage
+\section{Introduction and notation}
+
+Consider the following differential equation:
+\[
+\frac{d\by}{dt} = \bF(\by,\ba),
+\]
+where $\by = (y_{1},y_{2},\ldots,y_{n})$ are phase variables, $\ba = (a_{1},a_{2},\ldots,a_{m})$ are parameters, and $\bF = (F_{1}(\bm{y},\bm{a}),\ldots,F_{n}(\bm{y},\bm{a}))$ are $n$ functions.  The jacobian of $\bF$ will be denoted by $\bF_{\by}$.
+
+\begin{center}
+\shadowbox{
+\begin{minipage}{0.8\textwidth}
+PyCont: The function $\bF$ is stored in the variable \texttt{self.sysfunc}.
+\end{minipage}
+}
+\end{center}
+
+\section{Bordered Matrix Methods (\texttt{class BorderMethod(TestFunc)})}
+\label{sec:bord}
+
+Suppose we have a test function that signals a bifurcation point when $\det(A) = 0$, where $A$ is an $n\times n$ matrix.  We can consider the bordered extension $M$ of $A$ given by
+\[
+M = \left(\begin{array}{cc}
+A & b \\
+c^{T} & d
+\end{array}\right),
+\]
+where $b,c\in \mathbb{R}^{n}$ and $d\in \mathbb{R}$.  If we suppose that $M$ is nonsingular and we solve the system
+\[
+M\left(\begin{array}{c} r \\ s \end{array}\right) = \left(\begin{array}{c} 0_{n} \\ 1 \end{array}\right),
+\]
+where $r\in\mathbb{R}^{n}$ and $s\in \mathbb{R}$, then by Cramer's rule we have
+\[
+s = \frac{\det(A)}{\det(M)}.
+\]
+Thus, $\det(A) = 0$ if and only if $s(A) = 0$.
+
+In the general case, we have
+\begin{equation}
+\left(\begin{array}{cc}
+A & B \\
+C^{T} & D
+\end{array}\right)
+\left(\begin{array}{c}
+V \\
+G
+\end{array}\right) = 
+\left(\begin{array}{c}
+0 \\
+1
+\end{array}\right)
+\label{eq:bord1}
+\end{equation}
+where
+\begin{eqnarray*}
+r & = & \mbox{corank} \\
+A & = & n\times m \\
+s & = & \max(n,m) \\
+p & = & s-m+r \\
+q & = & s-n+r \\
+B & = & n\times p \\
+C & = & m\times q \\
+D & = & 0_{q\times p} \\
+V & = & m\times q \\
+G & = & p\times q \\
+0 & = & n\times q \\
+1 & = & q\times q.
+\end{eqnarray*}
+The matrix $G$ can also be seen as a function of $A$ as
+\[
+G_{\mathrm{bor}}:\mathbb{R}^{nm} \rightarrow \mathbb{R}^{pq} \qquad \mbox{such that} \qquad G_{\mathrm{bor}}(A) = G.
+\]
+It can also be written as
+\begin{equation}
+\left(\begin{array}{cc} W^{T} & G \end{array}\right)
+\left(\begin{array}{cc}
+A & B \\
+C^{T} & D
+\end{array}\right) =
+\left(\begin{array}{cc} 0 & 1 \end{array}\right),
+\label{eq:bord2}
+\end{equation}
+where now
+\begin{eqnarray*}
+W & = & n\times p \\
+0 & = & p\times m \\
+1 & = & p\times p.
+\end{eqnarray*}
+This is important for calculating derivatives, since we have
+\[
+G_{z} = -W^T A_{z} V.
+\]
+
+\subsection{Initialization (\texttt{BorderMethod.setdata})}
+
+In the bordered matrix methods, we need to initialize the $B$ and $C$ matrices so that the matrix $M$ is nonsingular.  Suppose we have the singular value decomposition of $A$ as $A = U\Sigma Z^{T}$, where $U$ is $n\times t$, $\Sigma$ is $t\times t$, $Z$ is $m\times t$ and $t = \min(n,m)$.  We initialize $B$ and $C$ as follows:
+\begin{eqnarray*}
+B & = & \left(\begin{array}{ccc} U_{t-p+1} & \cdots & U_{t} \end{array}\right) \\
+C & = & \left(\begin{array}{ccc} Z_{t-q+1} & \cdots & Z_{t} \end{array}\right)
+\end{eqnarray*}
+Note that $p, q \leq t$.
+
+\subsection{Function evaluation (\texttt{BorderMethod.func})}
+
+By using the LU factorization of $M$, we can solve \eqref{eq:bord1} and \eqref{eq:bord2} for $V$, $W$ and $G$.  We then update the matrices $B$ and $C$ as follows:
+\begin{eqnarray*}
+B & = & ||A||_{1}\frac{W}{||W||_{1}}, \\
+C & = & ||A||_{\infty}\frac{V}{||V||_{1}}.
+\end{eqnarray*}
+
+\section{Codimension 1}
+
+\subsection{Continuous Dynamical Systems}
+
+\subsubsection{Equilibrium Curves (EP-C) (\texttt{class EquilibriumCurve(Continuation)})}
+
+%\listofParagraphs
+%\bigskip
+
+\paragraph{Mathematical definition}
+
+In this case, we are concerned with curves of {\it equilibrium points} (EP) as a function of a free parameter $a_{1}$, defined by
+\[
+\bF(\bty,\bta) = \bzero,
+\]
+where $\bF:\mathbb{R}^{n+1} \rightarrow \mathbb{R}^{n}$, $\bty = (y_{1},\ldots,y_{n},a_{1})$ and $\bta = (a_{2},\ldots,a_{m})$.
+
+\begin{center}
+\shadowbox{
+\begin{minipage}{.8\textwidth}
+The phase variables $(y_{1},\ldots,y_{n})$ are stored in \texttt{self.coords}, while the free parameter $a_{1}$ is stored in \texttt{self.params}.
+\end{minipage}
+}
+\end{center}
+
+The jacobian is given by $\bF_{\bty} : \mathbb{R}^{n+1} \rightarrow \mathbb{R}^{n}$, where
+\[
+\bm{F}_{\bty}(\bty,\bta) = \left(\bF_{\by} \ \bF_{a_{1}}\right).
+\]
+
+\paragraph{Detection of bifurcation points}
+
+We have the following bifurcation points on an equilibrium curve:
+\begin{itemize}
+\item Branch Bifurcation Point (BP) (\texttt{class BranchPoint(BifPoint)})
+\item Fold Bifurcation Point (LP) (\texttt{class FoldPoint(BifPoint)})
+\item Hopf Bifurcation Point (H) (\texttt{class HopfPoint(BifPoint)})
+\end{itemize}
+To detect these bifurcation points, we use the following test functions:
+\begin{eqnarray}
+\phi_{1}(\bty) = & \det\left(\begin{array}{c} \bF_{\bty} \\ \bV^{T} \end{array}\right) \qquad & \mbox{(\texttt{Branch\_Det})} \label{eq:BP-T1} \\
+\phi_{2}(\bty) = & V_{n+1} \qquad & \mbox{(\texttt{Fold\_Tan})} \label{eq:LP-T1} \\
+\phi_{3}(\bty) = & G_{\mathrm{bor}}(2\bF_{\by} \odot I_{n}) \qquad & \mbox{(\texttt{Hopf\_Bor})} \label{eq:H-T1}
+\end{eqnarray}
+\begin{center}
+    \begin{tabular}{ | c | c | c | c |}
+    \hline
+     & $\phi_{1}$ & $\phi_{2}$ & $\phi_{3}$ \\ \hline
+    BP & 0 & - & - \\ \hline
+    LP & 1 & 0 & - \\ \hline
+    H  & - & - & 0 \\ \hline
+    \end{tabular}
+\end{center}
+In the table above, a zero and a one corresponds to the test functions being zero or nonzero, respectively.  Alternate test functions include:
+\begin{eqnarray*}
+\phi(\bty) = & \det(\bF_{\by}) \qquad & \mbox{(\texttt{Fold\_Det})} \label{eq:LP-T2} \\
+\phi(\bty) = & G_{\mathrm{bor}}(\bF_{\by}) \qquad & \mbox{(\texttt{Fold\_Bor})} \label{eq:LP-T3} \\
+\phi(\bty) = & \det(2\bF_{\by} \odot I_{n}) \qquad & \mbox{(\texttt{Hopf\_Det})} \label{eq:H-T2} \\
+& \mbox{\textit{NOT USED}}  \qquad & \mbox{(\texttt{Hopf\_Eig})} \label{eq:H-T3}
+\end{eqnarray*}
+
+\paragraph{Location of bifurcation points (general)}
+
+%\begin{figure}[h!]
+\begin{center}
+\shadowbox{
+\ttfamily\upshape
+
+\begin{tabular}{l} \hline\hline
+{\bf Algorithm:} Locate zeros of test functions \\ \hline
+{\bf Input:} Two points on the curve given by $(x_{1},v_{1})$ and $(x_{2},v_{2})$ such that \\
+\quad $\phi_{1}(x_{1},v_{1}) < 0$ and $\phi_{1}(x_{2},v_{2}) > 0$ \\ 
+{\bf Output:} Found point $(x,v)$ \\ \\
+$\Phi_{1} \coloneqq \phi_{1}(x_{1},v_{1})$ \\
+$\Phi_{2} \coloneqq \phi_{1}(x_{2},v_{2})$ \\
+{\bf for} $i \coloneqq$ 1 to MaxTestIters \\
+\qquad $r \coloneqq \left|\frac{\Phi_{1}}{\Phi_{1}-\Phi_{2}}\right|$ \\
+\qquad {\bf if} $r \geq 1$ \\
+\qquad\qquad $r = 0.5$ \\
+\qquad $x \coloneqq x_{1} + r(x_{2}-x_{1})$ \\
+\qquad $v \coloneqq v_{1} + r(v_{2}-v_{1})$ \\
+\qquad $(x,v) \coloneqq$ Corrector$\bigl((x,v)\bigr)$ \\
+\qquad $\Phi \coloneqq \phi_{1}(x,v)$ \\
+\qquad {\bf if} $|T| <$ TestTol {\bf and} $\min\left(|x-x_{1}|,|x-x_{2}|\right) <$ VarTol \\
+\qquad\qquad {\bf break} \\
+\qquad {\bf else} \\
+\qquad\qquad {\bf if} $\mathrm{sign}(\Phi) == \mathrm{sign}(\Phi_{2})$ \\
+\qquad\qquad\qquad $(x_{2},v_{2},\Phi_{2}) \coloneqq (x,v,\Phi)$ \\
+\qquad\qquad {\bf else} \\
+\qquad\qquad\qquad $(x_{1},v_{1},\Phi_{1}) \coloneqq (x,v,\Phi)$ \\
+{\bf return} $(x,v)$ \\
+\hline\hline
+\end{tabular}
+\rmfamily
+}
+\end{center}
+
+\paragraph{Location of branch points (\texttt{class BranchPoint(BifPoint).locate})}
+\label{sec:locateBP}
+
+As mentioned in MATCONT, the region of attraction near a BP point has the shape of a cone, which we cannot guarentee to stay within.  We thus define temporary variables $\beta\in\mathbb{R}$ and $p\in\mathbb{R}^{n}$ and implement Newton's method in the space $(\bty,\beta,p)\in\mathbb{R}^{2(n+1)}$ with the extended system given by:
+\begin{equation}
+\left\{\begin{array}{rcc}
+\bF(\bty,\bta) + \beta p & = & 0 \\
+\left[\bF_{\by}(\bty,\bta) \ \bF_{a_{1}}(\bty,\bta)\right]^{T}p & = & 0 \\
+p^{T}p - 1 & = & 0
+\end{array}\right.
+\end{equation}
+We start with $\beta=0$ and $p$ the left eigenvector of $\bF_{\by}$ associated with the smallest eigenvalue.
+
+\subparagraph{Computation of branch direction}
+
+NOTE: Doesn't currently work!!!!!  See \cite{Beyn_numericalcontinuation} for mathematical discussion, notes in NoteTakerHD and PyCont\_Brusselator.py for example code.
+
+Setting $\psi$ to the $p$ found upon convergence in the above Newton's method, we first set $V_{1}$ to the real part of the eigenvector associated with the smallest (i.e. zero) eigenvalue of the matrix associated with the test function \eqref{eq:BP-T1}
+\[
+\left(\begin{array}{c} \bF_{\bty} \\ \bV^{T} \end{array}\right).
+\]
+Then, given the Hessian $H$ of $\bF(\bty)$, we compute the following scalars:
+\begin{eqnarray*}
+c_{11} & = & \psi^{T}H[V,V] \\
+c_{12} & = & \psi^{T}H[V,V_{1}] \\
+c_{22} & = & \psi^{T}H[V_{1},V_{1}] \\
+\beta & = & 1 \\
+\alpha & = & -\frac{c_{22}}{2c_{12}} 
+\end{eqnarray*}
+We then compute the direction of the new branch as
+\[
+V_{\mathrm{new}} = \alpha V + \beta V_{1}.
+\]
+{\bf Note:} $c_{11}$ is not used in the computation but is included for completeness.  Also, $\beta = 1$ and so can be omitted.  (I need to find reference for this!)
+
+\subsection{Discrete Dynamical Systems}
+
+\section{Codimension 2}
+
+\subsection{Continuous Dynamical Systems}
+
+\subsubsection{Fold Curves (LP-C) (\texttt{class FoldCurve(Continuation)})}
+
+In this case, we are concerned with curves of {\it fold bifurcation points} (LP) as a function of two free-parameters $(a_{1},a_{2})$, defined by the augmented system
+\begin{equation}
+\bm{C}(\bty,\bta) = \left\{\begin{array}{c} \bF(\bty,\bta) \\ G_{\mathrm{bor}}(\bF_{\by}) \end{array}\right. = \bzero,
+\label{eq:LP-C}
+\end{equation}
+such that $\bm{C}:\mathbb{R}^{n+2} \rightarrow \mathbb{R}^{n+1}$, $\bty = (y_{1},\ldots,y_{n},a_{1},a_{2})$ and $\bta = (a_{3},\ldots,a_{m})$.  We have the following bifurcation points on a fold curve:
+\begin{itemize}
+\item Bogdanov-Takens (BT) (\texttt{class BTPoint(BifPoint)})
+\item Zero-Hopf point (ZH) (\texttt{class ZHPoint(BifPoint)})
+\item Cusp point (CP) (\texttt{class CPPoint(BifPoint)})
+\item Branch point (BP) (\texttt{class BranchPoint(BifPoint)})
+\end{itemize}
+For the bordered method \texttt{Fold\_Bor} in \eqref{eq:LP-C}, we have $p=q=1$, and thus the vectors $v=V$ and $w=W$ in equations \eqref{eq:bord1} and \eqref{eq:bord2} are both $n\times 1$.  They are updated continuously throughout the continuation, and are used in the test functions for these bifurcation points as follows:
+\begin{eqnarray}
+\phi_{1}(\bty) = & w^{T}v \qquad & \mbox{(\texttt{BT\_Fold})} \label{eq:BT-T1} \\
+\phi_{2}(\bty) = & G_{\mathrm{bor}}(2\bF_{\by} \odot I_{n}) \qquad & \mbox{(\texttt{Hopf\_Bor}, \eqref{eq:H-T1})} \nonumber \\
+\phi_{3}(\bty) = & w^{T}\bF_{\by\by}[v,v] \qquad & \mbox{(\texttt{CP\_Fold})} \label{eq:CP-T1} \\
+\phi_{4}(\bty) = & w^{T}\left[\bF_{a_{1}} \ \bF_{a_{2}}\right] \qquad & \mbox{(\texttt{BP\_Fold})} \label{eq:BPF-T1}
+\end{eqnarray}
+\begin{center}
+    \begin{tabular}{ | c | c | c | c | c | c | }
+    \hline
+     & $\phi_{1}$ & $\phi_{2}$ & $\phi_{3}$ & $\phi_{4,1}$ & $\phi_{4,2}$ \\ \hline
+    BT & 0 & 0 & - & - & - \\ \hline
+    ZH & 1 & 0 & - & - & - \\ \hline
+    CP & - & - & 0 & - & - \\ \hline
+    BP & - & - & - & 0 & - \\ \hline
+    BP & - & - & - & - & 0 \\ \hline 
+    \end{tabular}
+\end{center}
+
+For an example of branch points on a fold curve, see PyCont\_BranchFold.py.
+
+\bibliography{ContTypes}
+\bibliographystyle{plain}
+
+\end{document}

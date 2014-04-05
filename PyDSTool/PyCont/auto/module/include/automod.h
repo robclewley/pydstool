@@ -4,30 +4,56 @@
 #include "Python.h"
 #include "auto_f2c.h"
 #include "auto_c.h"
-#include "autovfield.h"
-#include <numpy/libnumarray.h>
+#include <numpy/arrayobject.h>
 
-#define SUCCESS 1
-#define FAILURE 0
+int Initialize(void);
 
-PyObject* Compute(void);
-PyObject* PackOut(int state);
+int SetData(int ips, int ilp, int isw, int isp, int sjac, int sflow, int nsm, int nmx, int ndim, 
+                  int ntst, int ncol, int iad, double epsl, double epsu, double epss, int itmx,
+                  int itnw, double ds, double dsmin, double dsmax, int npr, int iid,
+                  int nicp, int *icp, int nuzr, int *iuz, double *vuz);
+                      
+int SetInitPoint(double *u, int npar, int *ipar, double *par, int *icp, int nups,
+                       double *ups, double *udotps, double *rldot, int adaptcycle);
 
-// Auto routines
-int func(integer ndim, const doublereal *u, const integer *icp,
-         const doublereal *par, integer ijac,
-         doublereal *f, doublereal *dfdu, doublereal *dfdp);
-int stpnt(integer ndim, doublereal t, doublereal *u, doublereal *par);
-int bcnd(integer ndim, const doublereal *par, const integer *icp,
-         integer nbc, const doublereal *u0, const doublereal *u1, integer ijac,
-         doublereal *fb, doublereal *dbc);
-int icnd(integer ndim, const doublereal *par, const integer *icp,
-         integer nint, const doublereal *u, const doublereal *uold,
-         const doublereal *udot, const doublereal *upold, integer ijac,
-         doublereal *fi, doublereal *dint);
-int fopt(integer ndim, const doublereal *u, const integer *icp,
-         const doublereal *par, integer ijac,
-         doublereal *fs, doublereal *dfdu, doublereal *dfdp);
-int pvls(integer ndim, const void *u, doublereal *par);
+int Compute(void);
+
+int ClearAll(void);
+
+int getSolutionNum(void);
+
+void getSolutionVar(double *A, int nd1, int nd2, int nd3);
+
+void getSolutionPar(double *A, int nd1, int nd2);
+
+void getFloquetMultipliers(double *A, int nd1, int nd2, int nd3);
+
+void getJacobians(double *A, int nd1, int nd2, int nd3);
+
+void getNumIters(int *A, int nd1, int nd2);
+
+int getSpecPtNum(void);
+
+void getSpecPtDims(int i, int *A, int nd1);
+
+void getSpecPtFlags(int i, int *A, int nd1);
+
+void getSpecPt_ups(int i, double *A, int nd1, int nd2);
+
+void getSpecPt_udotps(int i, double *A, int nd1, int nd2);
+
+void getSpecPt_rldot(int i, double *A, int nd1);
+
+void getSpecPt_flow1(int i, double *A, int nd1, int nd2, int nd3);
+
+void getSpecPt_flow2(int i, double *A, int nd1, int nd2, int nd3);
+
+/* int Reset(void);
+
+int ClearParams(void);
+
+int ClearSolution(void);
+
+int ClearSpecialPoints(void); */
 
 #endif

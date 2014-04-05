@@ -516,6 +516,7 @@ int BlankData(AutoData *Data) {
     Data->nsm = 0;
     Data->sjac = 0;
     Data->sflow = 0;
+    Data->snit = 0;
     Data->u = NULL;
     Data->usm = NULL;
     Data->par = NULL;
@@ -526,6 +527,7 @@ int BlankData(AutoData *Data) {
     Data->a2 = NULL;
     Data->nit = NULL;
 
+    Data->npar = 0;
     Data->sp_len = 0;
     Data->sp_inc = 0;
     Data->sp_ind = 0;

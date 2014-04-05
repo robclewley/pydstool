@@ -3,8 +3,12 @@
     Drew LaMar, March 2006
 """
 
-from Continuation import EquilibriumCurve, FoldCurve, HopfCurveOne, HopfCurveTwo, \
-                         FixedPointCurve, LimitCycleCurve, UserDefinedCurve
+from .Continuation import (
+    EquilibriumCurve, FoldCurve, HopfCurveOne, HopfCurveTwo,
+    FixedPointCurve, LimitCycleCurve, UserDefinedCurve,
+    FixedPointFoldCurve, FixedPointFlipCurve, FixedPointNSCurve, \
+    FixedPointCuspCurve
+    )
 from misc import *
 from Plotting import pargs, initializeDisplay
 
@@ -30,6 +34,7 @@ from PyDSTool.parseUtils import addArgToCalls, wrapArgInCall
 from PyDSTool.utils import distutil_destination
 from numpy.distutils.core import setup, Extension
 from distutils.sysconfig import get_python_inc
+# from distutils import ccompiler  ## NEEDED?
 import scipy
 import scipy.io as io
 import os, platform, shutil, sys
@@ -51,7 +56,10 @@ rerr = redirc.Redirector(redirc.STDERR)
 curve_list = {'EP-C': EquilibriumCurve, 'LP-C': FoldCurve,
               'H-C1': HopfCurveOne, 'H-C2': HopfCurveTwo,
               'FP-C': FixedPointCurve, 'LC-C': LimitCycleCurve,
-              'UD-C': UserDefinedCurve}
+              'UD-C': UserDefinedCurve, 'FD-C': FixedPointFoldCurve,
+              'FL-C': FixedPointFlipCurve, 'NS-C': FixedPointNSCurve,
+              'CP-C': FixedPointCuspCurve
+              }
 
 curve_args_list = ['verbosity']
 

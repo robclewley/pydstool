@@ -27,7 +27,7 @@ from PyDSTool.matplotlib_import import *
 # THESE ARE REPEATS FROM CONTINUATION!  MAKE SURE AND UPDATE!!!
 all_point_types = ['P', 'RG', 'LP', 'BP', 'H', 'BT', 'ZH', 'CP', 'GH',
                    'DH', 'LPC', 'PD', 'NS', 'MX', 'UZ']
-all_curve_types = ['EP', 'LP', 'H', 'FP', 'LC']
+all_curve_types = ['EP', 'LP', 'H', 'FP', 'LC', 'FD']
 
 from time import clock
 from scipy import linalg
@@ -55,11 +55,11 @@ FLOQ_TOL = 0.01
 
 class IterationError(Exception):
     pass
-    
+
 class Struct(object):
     def __init__(self, **entries):
         self.__dict__.update(entries)
-    
+
     def __repr__(self):
         attributes = [attr for attr in dir(self) if attr[0] != '_']
         string = 'Struct(' + ', '.join(attributes) + ')'
@@ -67,12 +67,13 @@ class Struct(object):
 
 iszero = lambda x, y: x*y < 0
 isnotzero = lambda x, y: x*y > 0
+#anyiszero = lambda x, y: (x[0]*y[0] < 0) or (x[1]*y[1] < 0)
 
 def monotone(x, num=None, direc=1):
     """Checks to see if the list 'x' is increasing/decreasing ('direc'
     = 1/-1, respectively). If 'num' is specified, then it checks the
     first 'num' indices in 'x' if num > 0 and the last 'num' indices
-    in 'x' if num < 0.    
+    in 'x' if num < 0.
     """
     if num is None:
         ind = range(len(x)-1)
@@ -82,31 +83,31 @@ def monotone(x, num=None, direc=1):
         ind = range(num, -1)
     else:
         raise 'Number of indices must be larger than 1.'
-        
+
     mon = True
     for i in ind:
         if direc*(x[i+1]-x[i]) < 0:
             mon = False
             break
-    
+
     return mon
-    
+
 def todict(C, X):
     # Variables
     VARS = dict(zip(C.varslist,array(X)[C.coords]))
-    
+
     # Free parameters
     for i, par in enumerate(C.freepars):
         VARS.update({par: X[C.params[i]]})
     #for i, par in enumerate(C.freepars):
     #   C.parsdict[par] = X[C.params[i]]
     #VARS.update(C.parsdict)
-    
+
     # Auxiliary parameters
     for i, par in enumerate(C.auxpars):
         VARS.update({par: X[C.params[C.freeparsdim+i]]})
     return VARS
-    
+
 def tocoords(C, D):
     X = zeros(C.dim, float)
     for i in range(C.varsdim):
@@ -122,9 +123,9 @@ def jac(func, x0, ind):
     len(x0) and m = len(ind).  ind denotes the indices along which to
     compute the Jacobian.
 
-    NOTE:  This assumes func has 1 more variable than it has equations!!    
+    NOTE:  This assumes func has 1 more variable than it has equations!!
     """
-    
+
     eps = 1e-6
     n = len(x0)
     m = len(ind)
@@ -134,7 +135,7 @@ def jac(func, x0, ind):
         ei[ind[i]] = 1.0
         J[:,i] = (func(x0+eps*ei)-func(x0-eps*ei))/(2*eps)
     return J
-    
+
 def hess(func, x0, ind):
     """Computes second derivative using 2nd order centered finite difference scheme."""
     eps = 1e-3
@@ -156,7 +157,7 @@ def hess(func, x0, ind):
                             func(x0+eps*(ei-ej)) - func(x0+eps*(ej-ei)) + \
                             func(x0-eps*(ei+ej)))/(4*eps*eps)
     return H
-    
+
 def hess3(func, x0, ind):
     """Computes third derivative using hess function."""
     eps = sqrt(1e-3)
@@ -168,31 +169,31 @@ def hess3(func, x0, ind):
         ei[ind[i]] = 1.0
         C[i,:,:,:] = (hess(func,x0+eps*ei,ind) - hess(func,x0-eps*ei,ind))/(2*eps)
     return C
-    
+
 def bilinearform(A, x1, x2):
     return matrixmultiply(transpose(x2),matrixmultiply(A,x1))
-    
+
 def trilinearform(A, x1, x2, x3):
     dim = A.shape
     return matrixmultiply(transpose([bilinearform(A[i,:,:],x1,x2) \
                                      for i in range(dim[0])]),x3)
-    
+
 def ijtoind(i, j):
     """ 0 <= j < i """
     return i*(i-1)/2 + j
-    
+
 def indtoij(ind):
     #size = array([n*(n-1)/2 - k*(k-1)/2 for k in range(1,n+1)])
     #temp = nonzero(size <= ind)[0]
     #j = n - temp
     #i = j+1 + ind - size[temp]
-    
+
     x = 0.5*(1 + sqrt(1 + 8*ind))
     i = int(x)
     j = int(round(i*(x-i)))
-    
+
     return i, j
-    
+
 def testindij(n):
     bn = n*(n-1)/2
     print "Testing %d..." % n
@@ -202,27 +203,27 @@ def testindij(n):
         if ind != ind2:
             print "DAMNIT!\n"
         #print "  %d ---> (%d,%d) ---> %d" % (ind,i,j,ind2)
-    
+
 def wedge(u, v):
     n = u.shape[0]
     bn = n*(n-1)/2
     q = zeros((bn,1), float)
-    
+
     for ind in range(bn):
         i, j = indtoij(ind)
         q[ind] = u[j]*v[i] - u[i]*v[j]
-    
+
     return q
-    
+
 def invwedge(q, n):
     ind = argmax(abs(q),0)[0]
     q = q/q[ind]
-    
+
     i, j = indtoij(ind)
-    
+
     v1 = zeros((n,1), float)
     v2 = zeros((n,1), float)
-    
+
     v1[i,0] = 0
     v2[j,0] = 0
     v1[j,0] = 1
@@ -232,19 +233,19 @@ def invwedge(q, n):
             v1[k,0] = q[ijtoind(i, k),0]
     for k in range(i+1,n):
         v1[k,0] = -1*q[ijtoind(k, i),0]
-    
+
     for k in range(0,j):
         v2[k,0] = -1*q[ijtoind(j, k),0]
     for k in range(j+1,n):
         if k != i:
             v2[k,0] = q[ijtoind(k, j),0]
-    
+
     return v1, v2
 
 def bialttoeig(q, p, n, A):
     v1, v2 = invwedge(q, n)
     w1, w2 = invwedge(p, n)
-    
+
     A11 = bilinearform(A,v1,v1)
     A22 = bilinearform(A,v2,v2)
     A12 = bilinearform(A,v1,v2)
@@ -261,34 +262,34 @@ def firstlyapunov(X, F, w, J_coords=None, V=None, W=None, p=None, q=None,
                   check=False):
     if J_coords is None:
         J_coords = F.jac(X, F.coords)
-    
+
     if p is None:
         alpha = bilinearform(transpose(J_coords),V[:,0],V[:,1]) - \
                 1j*w*matrixmultiply(V[:,0],V[:,1])
         beta = -1*bilinearform(transpose(J_coords),V[:,0],V[:,0]) + \
                 1j*w*matrixmultiply(V[:,0],V[:,0])
         q = alpha*V[:,0] + beta*V[:,1]
-        
+
         alpha = bilinearform(J_coords,W[:,0],W[:,1]) + \
                 1j*w*matrixmultiply(W[:,0],W[:,1])
         beta = -1*bilinearform(J_coords,W[:,0],W[:,0]) - \
                 1j*w*matrixmultiply(W[:,0],W[:,0])
         p = alpha*W[:,0] + beta*W[:,1]
-        
+
         p /= linalg.norm(p)
         q /= linalg.norm(q)
-        
+
         direc = conjugate(1/matrixmultiply(conjugate(p),q))
         p = direc*p
-    
+
     if check:
         print 'Checking...'
         print '  |q| = %f' % linalg.norm(q)
         temp = matrixmultiply(conjugate(p),q)
-        print '  |<p,q> - 1| = ', abs(temp-1)   
+        print '  |<p,q> - 1| = ', abs(temp-1)
         print '  |Aq - iwq| = %f' % linalg.norm(matrixmultiply(J_coords,q) - 1j*w*q)
         print '  |A*p + iwp| = %f\n' % linalg.norm(matrixmultiply(transpose(J_coords),p) + 1j*w*p)
-    
+
     # Compute first lyapunov coefficient
     B = F.hess(X, F.coords, F.coords)
     D = hess3(F, X, F.coords)
@@ -304,13 +305,13 @@ def firstlyapunov(X, F, w, J_coords=None, V=None, W=None, p=None, q=None,
                  for i in range(D.shape[0])]) + b2 - 2*b4
 
     l1 = 0.5*real(matrixmultiply(conjugate(p), temp))
-    
+
     return l1
 
 def CheckHopf(C, X):
     J_coords = C.CorrFunc.jac(X, C.coords)
     eigs = linalg.eig(J_coords,left=0,right=0)
-    
+
     # Check for neutral saddles
     found = False
     for i in range(len(eigs)):
@@ -320,7 +321,7 @@ def CheckHopf(C, X):
                    abs(real(eigs[i]) - real(eigs[j])) < 1e-5:
                     found = True
                     T = 2*PI/abs(imag(eigs[i]))
-    
+
     if found:
         return T
     else:
@@ -401,11 +402,11 @@ def partition(a, elems):
     """Current issue with neutral points changing past bifurcation
     point. False advertising as well: Not really a general function
     (specialized for my use)
-    """    
+    """
     delems = {'X': []}
     for n in range(len(elems)):
         delems[elems[n]] = []
-        
+
     loc1 = loc2 = 0
     elem = a[0]
     while loc2 < len(a):
@@ -426,11 +427,11 @@ def partition(a, elems):
                     if loc2-loc1 > 1:
                         delems['X'].append([loc1,loc2+1])
                         loc1 = loc2
-                    
+
                 elem = a[loc2]
 
     return delems
-    
+
 def negate(x):
     if isinstance(x, dict):
         for k, v in x.iteritems():
@@ -449,7 +450,7 @@ def negate(x):
             x[k] = negate(x[k])
     else:
         raise TypeError("Invalid argument type given")
-        
+
     return x
 
 
@@ -466,7 +467,7 @@ def getFlowJac(pt, verbose=False):
         print "------------\n"
         print J
         print "\n"
-        
+
         print "Check Jacobian"
         print "--------------\n"
         print "   eigs = ", linalg.eig(J)[0]
@@ -524,13 +525,13 @@ def getLeftEvecs(n, ntst, maps, flow_vecs, method='standard', verbose=False):
                         maps[i]) - evals[i][ind]*transpose(levecs[i][:,ind]))
         if check1 > 1e-5 or check2 > 1e-5:
             raise RuntimeError("Bad eigenvectors of monodromy matrix")
-    
+
     if method == 'standard':
         # all left eigenvectors w are given in the array evec1
         evec1 = evec1_standard(idxs, evals, levecs)
     else:
         raise RuntimeError('Method %s not supported'%method)
-    
+
     ### Normalization
     # (flow vectors eval'd at limit cycle points, assuming mesh points are evenly spaced)
     evn = multiply(evec1, flow_vecs)
@@ -540,13 +541,13 @@ def getLeftEvecs(n, ntst, maps, flow_vecs, method='standard', verbose=False):
 
 
 def evec1_standard(idxs, evals, levecs):
-    """Standard method"""        
+    """Standard method"""
     evec1 = []
     for i in idxs:
         ind = argsort(abs(evals[i]-1.))[0]
         if abs(evals[i][ind]-1) > FLOQ_TOL:
             raise RuntimeError("Bad Floquet multipliers")
-        
+
         vsgn = 1
         if i > 1:
             vsgn = sign(matrixmultiply(transpose(evec1[-1]),

@@ -1,0 +1,47 @@
+This is BibTeX, Version 0.99c (TeX Live 2009)
+The top-level auxiliary file: ContTypes.aux
+The style file: plain.bst
+Database file #1: ContTypes.bib
+Warning--empty year in Beyn_numericalcontinuation
+You've used 1 entry,
+            2118 wiz_defined-function locations,
+            501 strings with 4287 characters,
+and the built_in function-call counts, 417 in all, are:
+= -- 30
+> -- 33
+< -- 0
++ -- 13
+- -- 12
+* -- 34
+:= -- 77
+add.period$ -- 3
+call.type$ -- 1
+change.case$ -- 9
+chr.to.int$ -- 0
+cite$ -- 2
+duplicate$ -- 14
+empty$ -- 29
+format.name$ -- 12
+if$ -- 79
+int.to.chr$ -- 0
+int.to.str$ -- 1
+missing$ -- 1
+newline$ -- 8
+num.names$ -- 2
+pop$ -- 15
+preamble$ -- 1
+purify$ -- 8
+quote$ -- 0
+skip$ -- 6
+stack$ -- 0
+substring$ -- 5
+swap$ -- 2
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 4
+warning$ -- 1
+while$ -- 2
+width$ -- 2
+write$ -- 11
+(There was 1 warning)

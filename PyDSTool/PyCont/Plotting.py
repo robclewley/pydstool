@@ -525,6 +525,10 @@ class KeyEvent(object):
             line.set(linewidth=self.bgd_lw)
         self.cycles[0].set(linewidth=self.fgd_lw)
         plt.draw()
+
+        # NOT WORKING!
+        # currfig = plt.gcf()
+        # currfig.canvas.mpl_connect('key_press_event', self.__call__)
         plt.connect('key_press_event', self.__call__)
 
     def __call__(self, event):

@@ -1,10 +1,35 @@
 """ Curve classes: Continuation, EquilibriumCurve, FoldCurve, HopfCurveOne, HopfCurveTwo
 
-    Drew LaMar, March 2006
+    Drew LaMar, 2006;
+    Last edited: December 2012
 
     Continuation is the ancestral class of all curve classes and contains the continuation algorithms
     (Moore-Penrose, etc.)  It also contains all methods that are general to any curve found using
     continuation.
+
+    TO DO/Notes:
+        * Highlight not working in plot_cycles
+        * Branch point curve
+        * Phase plane stuff! (see PyCont_PredPreyI-III examples in Phage project)
+        * Symbolic jacobians not working!!! (see PyCont_PredPreyI.py)
+        * Modify bifurcation point locators to handle nonzero parts; check MATCONT again
+        * LPC detection problem in PyCont_Logistic.py
+        * Branch points on fold curve problem (PyCont_PredPrey.py)
+        * Need to check update in BorderMethod.  Not currently working.  Sticking with random for now.
+        * Implement pseudo-Newton method for branch point locator (BranchPoint.locate)
+        * Need to revisit alternate branch locator in BranchPoint.process
+        * Allow user to toggle update in BorderMethods (see BranchFold.py for example) -- how to make matrix as well-conditioned as possible?
+            (In AddTestFunction:  Changed to "self.testfunc = TF_type(self.sysfunc, C, update=False)
+        * Removed BP in Continuation class
+        * Implement branch points for FixedPointCuspCurve [Networks/Global/dat/PyCont_Oscillator.py]
+    	* FixedPointCuspCurve - Merge AddTestFunction_FixedPoint_Mult and AddTestFunction_FixedPoint
+    	* FixedPointCuspCurve - Merge CP_Fold and CP_Fold2
+    	* Create NSCurve (PyCont_DiscPredPrey2.py) [using NS_Bor]
+    	* Allow for xdomain (see PyCont_DiscPredPrey2.py)
+    	* Labels plot off screen when xlim or ylim
+    	* Add cleanLabels to all children classes?  (e.g., in FixedPointNSCurve)
+    	* Rename FoldCurve to LimitPointCurve
+    	* Allow for PCargs to include different parameters (e.g. initpars)
 """
 
 # -----------------------------------------------------------------------------------------
@@ -30,7 +55,7 @@ from numpy import dot as matrixmultiply
 from scipy import optimize, linalg
 from numpy import array, float, complex, int, float64, complex64, int32, \
     zeros, divide, subtract, arange, all, any, argsort, reshape, nonzero, \
-    log10, Inf, NaN, isfinite, r_, c_, sign, mod, mat, \
+    log10, Inf, NaN, isfinite, r_, c_, sign, mod, mat, log2, \
     subtract, divide, transpose, eye, real, imag, isnan, resize
 
 from copy import copy, deepcopy
@@ -39,13 +64,15 @@ from math import ceil
 #####
 _classes = ['Continuation', 'EquilibriumCurve', 'FoldCurve', 'HopfCurveOne',
             'HopfCurveTwo', 'FixedPointCurve', 'LimitCycleCurve',
-            'UserDefinedCurve']
+            'UserDefinedCurve', 'FixedPointFoldCurve', 'FixedPointFlipCurve',
+            'FixedPointNSCurve', 'FixedPointCuspCurve']
 
 _constants = ['cont_args_list', 'cont_bif_points', 'equilibrium_args_list',
               'equilibrium_bif_points', 'fold_args_list', 'fold_bif_points',
               'hopf_args_list', 'hopf_bif_points', 'limitcycle_args_list',
               'limitcycle_bif_points', 'fixedpoint_args_list',
-              'fixedpoint_bif_points', 'userdefined_args_list',
+              'fixedpoint_bif_points', 'flip_args_list', 'flip_bif_points',
+              'NS_args_list', 'NS_bif_points', 'userdefined_args_list',
               'all_args_list', 'all_point_types', 'all_curve_types',
               'bif_curve_colors', 'bif_point_colors',
               'stab_line_styles','auto_point_types', 'other_special_points',
@@ -61,19 +88,31 @@ cont_args_list = ['name','force','freepars','MaxNumPoints','MaxCorrIters',
                   'SaveEigen', 'Corrector', 'UseAuto', 'StopAtPoints',
                   'SPOut']
 
-cont_bif_points = ['BP', 'B', 'SP']
+cont_bif_points = ['B', 'SP']
 
 equilibrium_args_list = ['LocBifPoints']
-equilibrium_bif_points = ['LP', 'H']
+equilibrium_bif_points = ['BP', 'LP', 'H']
 
 fold_args_list = ['LocBifPoints']
-fold_bif_points = ['BT', 'ZH', 'CP']
+fold_bif_points = ['BT', 'ZH', 'CP', 'BP']
 
 hopf_args_list = ['LocBifPoints']
 hopf_bif_points = ['BT', 'ZH', 'GH', 'DH']
 
 fixedpoint_args_list = ['LocBifPoints', 'period']
-fixedpoint_bif_points = ['PD', 'LPC', 'NS']
+fixedpoint_bif_points = ['BP', 'PD', 'LPC', 'NS']
+
+fold_map_args_list = ['LocBifPoints', 'period']
+fold_map_bif_points = ['CP']
+
+flip_args_list = ['LocBifPoints', 'period']
+flip_bif_points = []
+
+NS_args_list = ['LocBifPoints', 'period']
+NS_bif_points = []
+
+cusp_args_list = ['LocBifPoints', 'period']
+cusp_bif_points = ['']
 
 limitcycle_args_list = ['LocBifPoints', 'NumCollocation', 'NumIntervals',
                         'AdaptMesh', 'NumSPOut', 'DiagVerbosity',
@@ -82,7 +121,7 @@ limitcycle_bif_points = ['PD', 'LPC', 'NS']
 
 userdefined_args_list = ['LocBifPoints']
 
-other_special_points = ['RG', 'UZ', 'P', 'MX']
+other_special_points = ['RG', 'UZ', 'P', 'MX', 'B']
 
 auto_point_types = {1: 'BP', 2: 'LP', 3: 'H', 4: 'RG', -4: 'UZ', 5: 'LPC',
                     6: 'BP', 7: 'PD', 8: 'NS', 9: 'P', -9: 'MX'}
@@ -91,23 +130,25 @@ solution_measures_list = ['max', 'min', 'avg', 'nm2']   # Ordering is important
 solution_measures = dict(zip(solution_measures_list,[0, 0, 1, 2]))
 
 all_args_list = unique(cont_args_list + equilibrium_args_list + fold_args_list +
-                       hopf_args_list + fixedpoint_args_list +
-                       limitcycle_args_list)
+                       hopf_args_list + fixedpoint_args_list + flip_args_list +
+                       NS_args_list + limitcycle_args_list)
 all_point_types = unique(other_special_points + cont_bif_points +
                          equilibrium_bif_points + fold_bif_points +
                          hopf_bif_points + fixedpoint_bif_points +
+                         flip_bif_points + NS_bif_points +
                          limitcycle_bif_points)
-all_curve_types = ['EP-C', 'LP-C', 'H-C1', 'H-C2', 'FP-C', 'LC-C']
+all_curve_types = ['EP-C', 'LP-C', 'H-C1', 'H-C2', 'FP-C', 'LC-C', 'FD-C',
+                   'FL-C', 'NS-C', 'CP-C']
 
 bif_curve_colors = {'EP-C': 'k', 'LP-C': 'r', 'H-C1': 'b', 'H-C2': 'b',
-                    'FP-C': 'g', 'LC-C': 'm', 'UD-C': 'k'}
+                    'FP-C': 'k', 'LC-C': 'm', 'UD-C': 'k', 'FD-C': 'r',
+                    'FL-C': 'g', 'NS-C': 'b', 'CP-C': 'c'}
 bif_point_colors = {'P': 'ok', 'RG': 'ok', 'LP': 'or', 'BP': 'og',
                     'H': 'ob', 'B': 'dr', 'BT': 'sy', 'ZH': 'sk',
                     'CP': 'sr', 'GH': 'sb', 'DH': 'sg', 'LPC': 'Dr',
-                    'PD': 'Dg', 'NS': 'Db', 'MX': 'xr', 'UZ': '^r'}
+                    'PD': 'Dg', 'NS': 'Db', 'MX': 'xr', 'UZ': '^r',
+                    'SP': '*b'}
 stab_line_styles = {'S': '-', 'U': '--', 'N': '-.', 'X': ':'}
-
-
 
 
 class Continuation(object):
@@ -367,14 +408,14 @@ class Continuation(object):
         for bftype in self.LocBifPoints:
             if bftype in cont_bif_points:
                 stop = bftype in self.StopAtPoints  # Set stopping flag
-                if bftype is 'BP':
-                    method = Branch_Det(self.CorrFunc, self, save=True,
-                                        numpoints=self.MaxNumPoints+1)
-                    self.TestFuncs.append(method)
+                #if bftype is 'BP':
+                    #method = Branch_Det(self.CorrFunc, self, save=True,
+                                        #numpoints=self.MaxNumPoints+1)
+                    #self.TestFuncs.append(method)
 
-                    self.BifPoints['BP'] = BranchPoint(method, iszero,
-                                                       stop=stop)
-                elif bftype is 'B':
+                    #self.BifPoints['BP'] = BranchPoint(method, iszero,
+                                                       #stop=stop)
+                if bftype is 'B':
                     method = B_Check(self.CorrFunc, self, save=True,
                                      numpoints=self.MaxNumPoints+1)
                     self.TestFuncs.append(method)
@@ -472,17 +513,20 @@ class Continuation(object):
         V_loc = V[loc]
         curve_loc = curve[loc]
         for bftype, bfinfo in self.BifPoints.iteritems():
+            bftype = bftype.split('-')[0]
             flag_list = []
             for i, testfunc in enumerate(bfinfo.testfuncs):
                 for k in range(testfunc.m):
                     flag_list.append(bfinfo.flagfuncs[i](testfunc[loc-1][k],
                                                          testfunc[loc][k]))
 
+                # if bftype == 'NS':
+                # 	print loc, bftype, flag_list, testfunc[loc]	# DREW WUZ HERE 2012
             bfpoint_found = all(flag_list)
             if bfpoint_found:
                 # Locate bifurcation point
                 Xval, Vval = bfinfo.locate((curve[loc-1], V[loc-1]),
-                                     (curve_loc, V_loc), self)
+                                           (curve_loc, V_loc), self)
                 found = bfinfo.process(Xval, Vval, self)
 
                 if found:
@@ -501,8 +545,8 @@ class Continuation(object):
 
                     self._savePointInfo(loc)
                     self.CurveInfo[loc] = (bftype,
-                                            {'data': bfinfo.found[-1],
-                                             'plot': args()})
+                                        {'data': bfinfo.found[-1],
+                                         'plot': args()})
                     if not bfinfo.stop:
                         self.loc += 1
                         loc += 1  # update in sync with self.loc
@@ -535,9 +579,9 @@ class Continuation(object):
                 alim[n][1] = max(alim[n][1], max(self.sol[coords[n]]))
 
             GeomviewOutput += "(progn (hdefine geometry axes_" + \
-                  self.model.name + " { appearance { linewidth 2 } SKEL 4 3 " +\
-                  "0 0 0 1 0 0 0 1 0 0 0 1 " + \
-                  "2 0 1 1 0 0 1 2 0 2 0 1 0 1 2 0 3 0 0 1 1})\n\n"
+                self.model.name + " { appearance { linewidth 2 } SKEL 4 3 " +\
+                "0 0 0 1 0 0 0 1 0 0 0 1 " + \
+                "2 0 1 1 0 0 1 2 0 2 0 1 0 1 2 0 3 0 0 1 1})\n\n"
 
             #for cname, curve in self.curves.iteritems():
             cname = self.name
@@ -545,12 +589,12 @@ class Continuation(object):
                 " { LIST {: curve_" + cname + "} {: specpts_" + cname + "}})\n\n"
 
             GeomviewOutput += "(hdefine geometry curve_" + cname + \
-                              " { appearance { linewidth 2 } SKEL " + \
-                              repr(len(self.sol)) + " " + repr(len(self.sol)-1)
+                " { appearance { linewidth 2 } SKEL " + \
+                repr(len(self.sol)) + " " + repr(len(self.sol)-1)
             for n in range(len(self.sol)):
                 GeomviewOutput += " " + repr((self.sol[n][coords[0]]-alim[0][0])/(alim[0][1]-alim[0][0])) + \
-                                  " " + repr((self.sol[n][coords[1]]-alim[1][0])/(alim[1][1]-alim[1][0])) + \
-                                  " " + repr((self.sol[n][coords[2]]-alim[2][0])/(alim[2][1]-alim[2][0]))
+                    " " + repr((self.sol[n][coords[1]]-alim[1][0])/(alim[1][1]-alim[1][0])) + \
+                    " " + repr((self.sol[n][coords[2]]-alim[2][0])/(alim[2][1]-alim[2][0]))
             for n in range(len(self.sol)-1):
                 GeomviewOutput += " 2 " + repr(n) + " " + repr(n+1) + " 0 0 0 1"
 
@@ -730,7 +774,7 @@ class Continuation(object):
             val = self.BifPoints['B'].testfuncs[0][loc][0]
             # if val >= 0 set domain = 'inside' otherwise 'outside'
             self.CurveInfo[loc][ptlabel]['domain'] = (val >= 0) \
-                                            and 'inside' or 'outside'
+                and 'inside' or 'outside'
 
         # Save eigenvalue information
         if self.SaveEigen:
@@ -742,14 +786,24 @@ class Continuation(object):
             self.CurveInfo[loc][ptlabel]['data'].evals = w
             self.CurveInfo[loc][ptlabel]['data'].evecs = vr
 
-            realpos = [real(eig) > 1e-6 for eig in w]
-            realneg = [real(eig) < -1e-6 for eig in w]
-            if all(realneg):
-                self.CurveInfo[loc][ptlabel]['stab'] = 'S'
-            elif all(realpos):
-                self.CurveInfo[loc][ptlabel]['stab'] = 'U'
+            if ptlabel == 'FP':
+                inside = [abs(eig) < 1-1e-6 for eig in w]
+                outside = [abs(eig) > 1+1e-6 for eig in w]
+                if all(inside):
+                    self.CurveInfo[loc][ptlabel]['stab'] = 'S'
+                elif all(outside):
+                    self.CurveInfo[loc][ptlabel]['stab'] = 'U'
+                else:
+                    self.CurveInfo[loc][ptlabel]['stab'] = 'N'
             else:
-                self.CurveInfo[loc][ptlabel]['stab'] = 'N'
+                realpos = [real(eig) > 1e-6 for eig in w]
+                realneg = [real(eig) < -1e-6 for eig in w]
+                if all(realneg):
+                    self.CurveInfo[loc][ptlabel]['stab'] = 'S'
+                elif all(realpos):
+                    self.CurveInfo[loc][ptlabel]['stab'] = 'U'
+                else:
+                    self.CurveInfo[loc][ptlabel]['stab'] = 'N'
 
         # Save jacobian information
         if self.SaveJacobian:
@@ -784,7 +838,7 @@ class Continuation(object):
             R = r_[matrixmultiply(A,V),0]
             Q = r_[fun(X),0]
             if self.curvetype == 'UD-C' and self._userdata.has_key('problem') \
-                                        and self._userdata.problem:
+               and self._userdata.problem:
                 problem = 1
                 break
             if self.verbosity >= 10:
@@ -967,10 +1021,32 @@ class Continuation(object):
             # Compute tangent vector v0 to curve at ix0 by solving:
             #   [A; rand(n)] * v0 = [zeros(n-1); 1]
             #
-            v0 = zeros(self.dim, float)
-            v0 = linalg.solve(r_[c_[J_coords, J_params],
-                                 [2*(random(self.dim)-0.5)]], \
-                              r_[zeros(self.dim-1),1])
+            singular = True
+            perpvec = r_[1,zeros(self.dim-1)]
+            d = 1
+            while singular and d <= self.dim:
+                try:
+                    v0 = linalg.solve(r_[c_[J_coords, J_params],
+                                         [perpvec]], \
+                                      r_[zeros(self.dim-1),1])
+                except:
+                    perpvec = r_[0., perpvec[0:(self.dim-1)]]
+                    d += 1
+                    if self.verbosity >= 10:
+                        print "%d: %lf" % (d,log10(cond(r_[c_[J_coords, J_params], [perpvec]])))
+                else:
+                    singular = False
+                    if self.verbosity >= 10:
+                        print "%d: %lf" % (d,log10(cond(r_[c_[J_coords, J_params], [perpvec]])))
+                    # perpvec = r_[0., perpvec[0:(self.dim-1)]]
+                    # d += 1
+
+            if singular:
+                raise PyDSTool_ExistError("Problem in _compute: Failed to compute tangent vector.")
+#             v0 = zeros(self.dim, float)
+#             v0 = linalg.solve(r_[c_[J_coords, J_params],
+#                                  [2*(random(self.dim)-0.5)]], \
+#                               r_[zeros(self.dim-1),1])
             v0 /= linalg.norm(v0)
             v0 = direc*sign([x for x in v0 if abs(x) > 1e-8][0])*v0
         elif isinstance(v0, dict):
@@ -1007,15 +1083,22 @@ class Continuation(object):
             attempts += 1
             if not converged and attempts > 1:
                 # Stop continuation
-                raise PyDSTool_ExistError("Could not find starting point on curve.  Stopping continuation.")
+                self.Corrector = self._Natural
+                if attempts > 2:
+                    print "Not converged: ", curve[0], "\n"
+                    raise PyDSTool_ExistError("Could not find starting point on curve.  Stopping continuation.")
         # Initialize index location on curve data set
         self.loc = 0
         if self.verbosity >= 3:
-            print '    Found initial point on curve.'
+            print '    Found initial point on curve: ' + \
+                  repr(todict(self, curve[0]))
 
         # Initialize test functions
         self._createTestFuncs()
 
+        # self.CorrFunc.J_coords = self.CorrFunc.jac(x0,self.coords)
+        # self.CorrFunc.J_params = self.CorrFunc.jac(x0,self.params)
+        # old above (2 lines); r345 below (5 lines)
         x0 = curve[0]
         v0 = V[0]
         J = self.CorrFunc.jac(x0)
@@ -1058,6 +1141,7 @@ class Continuation(object):
 
             # Corrector -- update self.loc for Corrector's reference
             self.loc = loc
+
             try:
                 k, converged, problem, diag = self.Corrector(curve[loc], V[loc])
             except:
@@ -1065,6 +1149,7 @@ class Continuation(object):
             #if self._userdata.has_key('problem'):  # Uncomment the these three lines to "find" the boundary between regions
             #    self._userdata.problem = False
             #    problem = False
+
             if self.verbosity >= 10:
                 print "Step #%d:" % loc
                 print "  Corrector steps: %d/%d" % (k, self.MaxCorrIters)
@@ -1094,6 +1179,10 @@ class Continuation(object):
                     for testfunc in self.TestFuncs:
                         testfunc[loc] = testfunc(curve[loc], V[loc])
 
+                # DREW WUZ HERE 2012
+                #if self.curvetype == 'FP-C':
+                #    print array([linalg.det(r_[c_[self.sysfunc.J_coords - eye(self.sysfunc.m, self.sysfunc.m), self.sysfunc.J_params],[V[loc]]])])
+
                 # Check for bifurcation points.
                 # If _checkForBifPoints returns True, stop loop
                 # update self.loc for Corrector's reference
@@ -1103,8 +1192,9 @@ class Continuation(object):
 
                 # Checks to see if curve is closed and if closed, it closes the curve
                 if self.ClosedCurve < loc+1 < self.MaxNumPoints and \
-                linalg.norm(curve[loc]-curve[0]) < self.StepSize:
+                   linalg.norm(curve[loc]-curve[0]) < self.StepSize:
                     # Need to be able to copy PointInfo information
+                    print "Detected closed curve.  Stopping continuation...\n"
                     curve[loc+1] = curve[0]
                     V[loc+1] = V[0]
 
@@ -1121,7 +1211,7 @@ class Continuation(object):
                 # Print information
                 if self.verbosity >= 4:
                     print "Loc = %4d    %s = %lf" % (loc, self.freepars[0],
-                                                  curve[loc][-1])
+                                                     curve[loc][-1])
 
                 # Save information
                 self._savePointInfo(loc)
@@ -1205,6 +1295,7 @@ class Continuation(object):
             except:
                 pass
 
+            # RC: Why remove the MX? I think there was a case where it was needed...
             #try:
             #    self.sol.labels.remove(len(self.sol)-1,'MX')
             #except:
@@ -1267,7 +1358,7 @@ class Continuation(object):
                 for k, v in self.sol[-1].labels[etype1]['data'].V.iteritems():
                     self.sol[-1].labels[etype1]['data'].V[k] = -1*v
 
-                # Turn tangent vectors at curve type around
+                # Turn tangent vectors at curve type around (PROBLEM AT MX POINTS)
                 ctype = self.curvetype.split('-')[0]
                 for pt in self.sol:
                     for k, v in pt.labels[ctype]['data'].V.iteritems():
@@ -1382,7 +1473,7 @@ class Continuation(object):
         Dy = 0.0
         self.CorrFunc.jac = Function((self.CorrFunc.n,
                                       (self.CorrFunc.m,self.CorrFunc.n)), \
-                                self.CorrFunc.diff, numpoints=1)
+                                     self.CorrFunc.diff, numpoints=1)
 
         # Process V
         try:
@@ -1463,7 +1554,7 @@ class Continuation(object):
 
         self.CorrFunc.jac = Function((self.CorrFunc.n,
                                       (self.CorrFunc.m,self.CorrFunc.n)), \
-                                self.CorrFunc.diff, numpoints=1)
+                                     self.CorrFunc.diff, numpoints=1)
 
         # Process V
         try:
@@ -1574,7 +1665,7 @@ class Continuation(object):
 
         self.CorrFunc.jac = Function((self.CorrFunc.n,
                                       (self.CorrFunc.m,self.CorrFunc.n)), \
-                                self.CorrFunc.diff, numpoints=1)
+                                     self.CorrFunc.diff, numpoints=1)
 
         # Process V
         try:
@@ -1748,18 +1839,28 @@ class Continuation(object):
             self.sol[loc].labels[ptlabel]['data'].evals = w
             self.sol[loc].labels[ptlabel]['data'].evecs = vr
 
-            realpos = [real(eig) > 1e-6 for eig in w]
-            realneg = [real(eig) < -1e-6 for eig in w]
-            if all(realneg):
-                self.sol[loc].labels[ptlabel]['stab'] = 'S'
-            elif all(realpos):
-                self.sol[loc].labels[ptlabel]['stab'] = 'U'
+            if ptlabel == 'FP':
+                inside = [abs(eig) < 1-1e-6 for eig in w]
+                outside = [abs(eig) > 1+1e-6 for eig in w]
+                if all(inside):
+                    self.sol[loc].labels[ptlabel]['stab'] = 'S'
+                elif all(outside):
+                    self.sol[loc].labels[ptlabel]['stab'] = 'U'
+                else:
+                    self.sol[loc].labels[ptlabel]['stab'] = 'N'
             else:
-                self.sol[loc].labels[ptlabel]['stab'] = 'N'
+                realpos = [real(eig) > 1e-6 for eig in w]
+                realneg = [real(eig) < -1e-6 for eig in w]
+                if all(realneg):
+                    self.sol[loc].labels[ptlabel]['stab'] = 'S'
+                elif all(realpos):
+                    self.sol[loc].labels[ptlabel]['stab'] = 'U'
+                else:
+                    self.sol[loc].labels[ptlabel]['stab'] = 'N'
 
 
     def cleanLabels(self):
-        for pttype in all_point_types:
+        for pttype in self.LocBifPoints+other_special_points:
             if pttype not in ['P', 'MX']:
                 if self.sol.bylabel(pttype) is not None:
                     num = 1;
@@ -1901,10 +2002,18 @@ class EquilibriumCurve(Continuation):
         for bftype in self.LocBifPoints:
             if bftype in equilibrium_bif_points:
                 stop = bftype in self.StopAtPoints  # Set stopping flag
-                if bftype is 'LP':
-                    method1 = Fold_Bor(self.CorrFunc, self, corr=False,
-                                      save=True, numpoints=self.MaxNumPoints+1)
+                if bftype is 'BP':
+                    method = Branch_Det(self.CorrFunc, self, save=True,
+                                        numpoints=self.MaxNumPoints+1)
+                    self.TestFuncs.append(method)
+                    self.BifPoints['BP'] = BranchPoint(method, iszero,
+                                                       stop=stop)
+                elif bftype is 'LP':
+                    #method1 = Fold_Bor(self.CorrFunc, self, corr=False,
+                    #                  save=True, numpoints=self.MaxNumPoints+1)
                     #method1 = Fold_Det(self.CorrFunc, self, save=True, numpoints=self.MaxNumPoints+1)
+                    method1 = Fold_Tan(self.CorrFunc, self, save=True,
+                                       numpoints=self.MaxNumPoints+1)
                     self.TestFuncs.append(method1)
                     if 'BP' not in self.BifPoints.keys():
                         method2 = Branch_Det(self.CorrFunc, self, save=True,
@@ -1969,12 +2078,12 @@ class FoldCurve(Continuation):
     def update(self, args):
         """Update parameters for FoldCurve."""
         Continuation.update(self, args)
-        if 'BP' in self.LocBifPoints:
-            print "BP point detection not implemented: ignoring this type of point"
-            self.LocBifPoints.remove('BP')
-        if 'BP' in self.StopAtPoints:
-            print "BP point detection not implemented: ignoring this type of point"
-            self.StopAtPoints.remove('BP')
+        #if 'BP' in self.LocBifPoints:
+        #    print "BP point detection not implemented: ignoring this type of point"
+        #    self.LocBifPoints.remove('BP')
+        #if 'BP' in self.StopAtPoints:
+        #    print "BP point detection not implemented: ignoring this type of point"
+        #    self.StopAtPoints.remove('BP')
         #self.LocBifPoints = []  # Temporary fix: Delete after branch point implementation for fold curve
 
         if args is not None:
@@ -1998,7 +2107,7 @@ class FoldCurve(Continuation):
                                     w = [w]
 
                         for bftype in v:
-                            if bftype == 'BP' or bftype not in cont_bif_points \
+                            if bftype not in cont_bif_points \
                                and bftype not in fold_bif_points:
                                 if self.verbosity >= 1:
                                     print "Warning: Detection of " + bftype + " points not implemented for curve LP-C."
@@ -2031,31 +2140,35 @@ class FoldCurve(Continuation):
         for bftype in self.LocBifPoints:
             if bftype in fold_bif_points:
                 stop = bftype in self.StopAtPoints
-                if bftype is 'BT':
-                    method = BT_Fold(self.CorrFunc, self, save=True,
-                                     numpoints=self.MaxNumPoints+1)
-                    self.TestFuncs.append(method)
-
-                    self.BifPoints['BT'] = BTPoint(method, iszero, stop=stop)
-                elif bftype is 'ZH':
-                    method1 = Hopf_Det(self.CorrFunc.sysfunc, self,
-                                      save=True, numpoints=self.MaxNumPoints+1)
+                if bftype in ('BT','ZH'):
+                    method1 = BT_Fold(self.CorrFunc, self, save=True,
+                                      numpoints=self.MaxNumPoints+1)
                     self.TestFuncs.append(method1)
-                    if 'BT' not in self.BifPoints.keys():
-                        method2 = BT_Fold(self.CorrFunc, self, save=True,
-                                          numpoints=self.MaxNumPoints+1)
-                        self.TestFuncs.append(method2)
+                    method2 = Hopf_Bor(self.CorrFunc.sysfunc, self,
+                                       save=True, numpoints=self.MaxNumPoints+1)
+                    self.TestFuncs.append(method2)
+                    if bftype is 'BT':
+                        self.BifPoints['BT'] = BTPoint([method1, method2],
+                                                       [iszero, iszero], stop=stop)
                     else:
-                        method2 = self.BifPoints['BT'].testfuncs[0]
-
-                    self.BifPoints['ZH'] = ZHPoint([method1, method2],
-                                                [iszero, isnotzero], stop=stop)
+                        self.BifPoints['ZH'] = ZHPoint([method1, method2],
+                                                       [isnotzero, iszero], stop=stop)
                 elif bftype is 'CP':
                     method = CP_Fold(self.CorrFunc, self, save=True,
                                      numpoints=self.MaxNumPoints+1)
                     self.TestFuncs.append(method)
-
                     self.BifPoints['CP'] = CPPoint(method, iszero, stop=stop)
+                elif bftype is 'BP':
+                    method1 = BP_Fold(self.CorrFunc, self, 0, save=True,
+                                      numpoints=self.MaxNumPoints+1)
+                    self.TestFuncs.append(method1)
+                    method2 = BP_Fold(self.CorrFunc, self, 1, save=True,
+                                      numpoints=self.MaxNumPoints+1)
+                    self.TestFuncs.append(method2)
+                    self.BifPoints['BP-P1'] = BranchPointFold(method1,
+                                                        iszero, stop=stop)
+                    self.BifPoints['BP-P2'] = BranchPointFold(method2,
+                                                        iszero, stop=stop)
 
 
 
@@ -2351,8 +2464,11 @@ class FixedPointCurve(Continuation):
 
 
     def _preTestFunc(self, X, V):
-        """Need CorrFunc jacobian for BP detection."""
-        Continuation._preTestFunc(self, X, V)
+        """Need CorrFunc jacobian for BP detection.  Could compute jacobian of CorrFunc,
+        since it is a FixedPointMap, but this is a waste of energy as sysfunc jacobian
+        was already computed in Continuation._preTestFunc."""
+
+        Continuation._preTestFunc(self, X, V)	# Compute jacobian of system function
         self.CorrFunc.J_coords = self.sysfunc.J_coords - eye(self.varsdim,self.varsdim)
         self.CorrFunc.J_params = self.sysfunc.J_params
 
@@ -2366,9 +2482,9 @@ class FixedPointCurve(Continuation):
         Point type (Processor): Test function(s)
         ----------------------------------------
 
-        LP (FoldPoint): Fold_Tan
-                        Fold_Det
-                        Fold_Bor
+        LPC (FoldPoint): Fold_Tan
+                         Fold_Det
+                         Fold_Bor
         H (HopfPoint): Hopf_Det
                        Hopf_Bor
         """
@@ -2378,7 +2494,8 @@ class FixedPointCurve(Continuation):
             if bftype in fixedpoint_bif_points:
                 stop = bftype in self.StopAtPoints
                 if bftype is 'LPC':
-                    method1 = LPC_Det(self.sysfunc, self, save=True, numpoints=self.MaxNumPoints+1)
+                    method1 = Fold_Tan(self.CorrFunc, self, save=True,
+                                      numpoints=self.MaxNumPoints+1)
                     self.TestFuncs.append(method1)
                     if 'BP' not in self.BifPoints.keys():
                         method2 = Branch_Det(self.CorrFunc, self, save=True, numpoints=self.MaxNumPoints+1)
@@ -2397,6 +2514,14 @@ class FixedPointCurve(Continuation):
                     self.TestFuncs.append(method)
 
                     self.BifPoints['NS'] = NSPoint(method, iszero, stop=stop)
+                elif bftype is 'BP':
+                    if 'LPC' not in self.BifPoints.keys():
+                        method = Branch_Det(self.CorrFunc, self, save=True, numpoints=self.MaxNumPoints+1)
+                        self.TestFuncs.append(method)
+                    else:
+                        method = self.BifPoints['LPC'].testfuncs[1]
+                    self.BifPoints['BP'] = BranchPoint(method, iszero, stop=stop)
+
 
 
     def update(self, args):
@@ -2441,6 +2566,397 @@ class FixedPointCurve(Continuation):
 
 
 
+class FixedPointFoldCurve(FixedPointCurve):
+    """Child of Continuation class that represents curves of limit
+    points.
+
+    Augmented system h(x,a): Uses single bordering on the matrix A
+    given by
+
+            A = f_{x}(x,a)
+
+        (see class PyCont.TestFunc.BorderMethod)
+        (see class PyCont.TestFunc.Fold_Bor)
+
+        The continuation variables are (x,a) with
+
+            x = State variables
+            a = Free parameters
+
+        and the continuation curve is defined by
+
+            h(x,a) = { f(x,a) = 0
+                     { G(x,a) = 0
+
+    Detection of points: BT, ZH, CP (BP points not currently
+    implemented).
+    """
+
+    def __init__(self, model, gen, automod, plot, args=None):
+        FixedPointCurve.__init__(self, model, gen, automod, plot, args=args)
+
+        self.CorrFunc = AddTestFunction_FixedPoint(self, LPC_Bor)
+        self.CorrFunc.setdata(self.initpoint, None)
+
+    def _preTestFunc(self, X, V):
+        """Need CorrFunc jacobian for BP detection."""
+        Continuation._preTestFunc(self, X, V)
+        self.CorrFunc.J_coords = self.sysfunc.J_coords - eye(self.varsdim,self.varsdim)
+        self.CorrFunc.J_params = self.sysfunc.J_params
+
+    def _createTestFuncs(self):
+        """Creates processors and test functions for FoldCurve class.
+
+        Note:  In the following list, processors are in
+        PyCont.Bifpoint and test functions are in PyCont.TestFunc.
+
+        Point type (Processor): Test function(s)
+        ----------------------------------------
+
+        BT (BTPoint): BT_Fold
+        ZH (ZHPoint): Hopf_Det (or Hopf_Bor), BT_Fold
+        CP (CPPoint): CP_Fold
+        """
+        Continuation._createTestFuncs(self)
+
+        for bftype in self.LocBifPoints:
+            if bftype in fold_map_bif_points:
+                stop = bftype in self.StopAtPoints
+                if bftype is 'CP':
+                    method = CP_Fold(self.CorrFunc, self, save=True,
+                                     numpoints=self.MaxNumPoints+1)
+                    self.TestFuncs.append(method)
+
+                    self.BifPoints['CP'] = CPPoint(method, iszero, stop=stop)
+
+    def update(self, args):
+        """Update parameters for FixedPointCurve."""
+        Continuation.update(self, args)
+
+        if args is not None:
+            for k, v in args.iteritems():
+                if k in fold_args_list:
+                    if k == 'LocBifPoints':
+                        if isinstance(v, str):
+                            if v.lower() == 'all':
+                                v = fold_bif_points
+                            else:
+                                v = [v]
+
+                        # Handle stopping points
+                        w = []
+                        if args.has_key('StopAtPoints'):
+                            w = args['StopAtPoints']
+                            if isinstance(w, str):
+                                if w.lower() == 'all':
+                                    w = fold_bif_points
+                                else:
+                                    w = [w]
+
+                        for bftype in v:
+                            if bftype not in cont_bif_points and bftype not in fold_bif_points:
+                                if self.verbosity >= 1:
+                                    print "Warning: Detection of " + bftype + " points not implemented for curve FP-C."
+                            else:
+                                if bftype not in self.LocBifPoints:
+                                    self.LocBifPoints.append(bftype)
+                                if bftype in w and bftype not in self.StopAtPoints:
+                                    self.StopAtPoints.append(bftype)
+
+                    elif k != 'StopAtPoints':
+                        exec('self.' + k + ' = ' + repr(v))
+
+class FixedPointFlipCurve(FixedPointCurve):
+    """Child of Continuation class that represents curves of limit
+    points.
+
+    Augmented system h(x,a): Uses single bordering on the matrix A
+    given by
+
+            A = f_{x}(x,a)
+
+        (see class PyCont.TestFunc.BorderMethod)
+        (see class PyCont.TestFunc.Fold_Bor)
+
+        The continuation variables are (x,a) with
+
+            x = State variables
+            a = Free parameters
+
+        and the continuation curve is defined by
+
+            h(x,a) = { f(x,a) = 0
+                     { G(x,a) = 0
+
+    Detection of points: BT, ZH, CP (BP points not currently
+    implemented).
+    """
+
+    def __init__(self, model, gen, automod, plot, args=None):
+        FixedPointCurve.__init__(self, model, gen, automod, plot, args=args)
+
+        self.CorrFunc = AddTestFunction_FixedPoint(self, PD_Bor)
+        self.CorrFunc.setdata(self.initpoint, None)
+
+    def _preTestFunc(self, X, V):
+        """Need CorrFunc jacobian for BP detection."""
+        Continuation._preTestFunc(self, X, V)
+        self.CorrFunc.J_coords = self.sysfunc.J_coords - eye(self.varsdim,self.varsdim)
+        self.CorrFunc.J_params = self.sysfunc.J_params
+
+    def _createTestFuncs(self):
+        """Creates processors and test functions for FixedPointFoldCurve class.
+
+        Note:  In the following list, processors are in
+        PyCont.Bifpoint and test functions are in PyCont.TestFunc.
+
+        Point type (Processor): Test function(s)
+        ----------------------------------------
+
+        BT (BTPoint): BT_Fold
+        ZH (ZHPoint): Hopf_Det (or Hopf_Bor), BT_Fold
+        CP (CPPoint): CP_Fold
+        """
+        Continuation._createTestFuncs(self)
+
+        for bftype in self.LocBifPoints:
+            if bftype in flip_bif_points:
+                stop = bftype in self.StopAtPoints
+
+    def update(self, args):
+        """Update parameters for FixedPointCurve."""
+        Continuation.update(self, args)
+
+        if args is not None:
+            for k, v in args.iteritems():
+                if k in flip_args_list:
+                    if k == 'LocBifPoints':
+                        if isinstance(v, str):
+                            if v.lower() == 'all':
+                                v = flip_bif_points
+                            else:
+                                v = [v]
+
+                        # Handle stopping points
+                        w = []
+                        if args.has_key('StopAtPoints'):
+                            w = args['StopAtPoints']
+                            if isinstance(w, str):
+                                if w.lower() == 'all':
+                                    w = flip_bif_points
+                                else:
+                                    w = [w]
+
+                        for bftype in v:
+                            if bftype not in cont_bif_points and bftype not in flip_bif_points:
+                                if self.verbosity >= 1:
+                                    print "Warning: Detection of " + bftype + " points not implemented for curve FP-C."
+                            else:
+                                if bftype not in self.LocBifPoints:
+                                    self.LocBifPoints.append(bftype)
+                                if bftype in w and bftype not in self.StopAtPoints:
+                                    self.StopAtPoints.append(bftype)
+
+                    elif k != 'StopAtPoints':
+                        exec('self.' + k + ' = ' + repr(v))
+
+class FixedPointNSCurve(FixedPointCurve):
+    """Child of Continuation class that represents curves of limit
+    points.
+
+    Augmented system h(x,a): Uses single bordering on the matrix A
+    given by
+
+            A = f_{x}(x,a)
+
+        (see class PyCont.TestFunc.BorderMethod)
+        (see class PyCont.TestFunc.Fold_Bor)
+
+        The continuation variables are (x,a) with
+
+            x = State variables
+            a = Free parameters
+
+        and the continuation curve is defined by
+
+            h(x,a) = { f(x,a) = 0
+                     { G(x,a) = 0
+
+    Detection of points: BT, ZH, CP (BP points not currently
+    implemented).
+    """
+
+    def __init__(self, model, gen, automod, plot, args=None):
+        FixedPointCurve.__init__(self, model, gen, automod, plot, args=args)
+
+        self.CorrFunc = AddTestFunction_FixedPoint(self, NS_Det)
+        self.CorrFunc.setdata(self.initpoint, None)
+
+    def _preTestFunc(self, X, V):
+        """Need CorrFunc jacobian for BP detection."""
+        Continuation._preTestFunc(self, X, V)
+        self.CorrFunc.J_coords = self.sysfunc.J_coords - eye(self.varsdim,self.varsdim)
+        self.CorrFunc.J_params = self.sysfunc.J_params
+
+    def _createTestFuncs(self):
+        """Creates processors and test functions for FixedPointFoldCurve class.
+
+        Note:  In the following list, processors are in
+        PyCont.Bifpoint and test functions are in PyCont.TestFunc.
+
+        Point type (Processor): Test function(s)
+        ----------------------------------------
+
+        BT (BTPoint): BT_Fold
+        ZH (ZHPoint): Hopf_Det (or Hopf_Bor), BT_Fold
+        CP (CPPoint): CP_Fold
+        """
+        Continuation._createTestFuncs(self)
+
+        for bftype in self.LocBifPoints:
+            if bftype in NS_bif_points:
+                stop = bftype in self.StopAtPoints
+
+    def update(self, args):
+        """Update parameters for FixedPointCurve."""
+        Continuation.update(self, args)
+
+        if args is not None:
+            for k, v in args.iteritems():
+                if k in NS_args_list:
+                    if k == 'LocBifPoints':
+                        if isinstance(v, str):
+                            if v.lower() == 'all':
+                                v = NS_bif_points
+                            else:
+                                v = [v]
+
+                        # Handle stopping points
+                        w = []
+                        if args.has_key('StopAtPoints'):
+                            w = args['StopAtPoints']
+                            if isinstance(w, str):
+                                if w.lower() == 'all':
+                                    w = NS_bif_points
+                                else:
+                                    w = [w]
+
+                        for bftype in v:
+                            if bftype not in cont_bif_points and bftype not in NS_bif_points:
+                                if self.verbosity >= 1:
+                                    print "Warning: Detection of " + bftype + " points not implemented for curve FP-C."
+                            else:
+                                if bftype not in self.LocBifPoints:
+                                    self.LocBifPoints.append(bftype)
+                                if bftype in w and bftype not in self.StopAtPoints:
+                                    self.StopAtPoints.append(bftype)
+
+                    elif k != 'StopAtPoints':
+                        exec('self.' + k + ' = ' + repr(v))
+
+class FixedPointCuspCurve(FixedPointCurve):
+    """Child of Continuation class that represents curves of limit
+    points.
+
+    Augmented system h(x,a): Uses single bordering on the matrix A
+    given by
+
+            A = f_{x}(x,a)
+
+        (see class PyCont.TestFunc.BorderMethod)
+        (see class PyCont.TestFunc.Fold_Bor)
+
+        The continuation variables are (x,a) with
+
+            x = State variables
+            a = Free parameters
+
+        and the continuation curve is defined by
+
+            h(x,a) = { f(x,a) = 0
+                     { G(x,a) = 0
+
+    Detection of points: BT, ZH, CP (BP points not currently
+    implemented).
+    """
+
+    def __init__(self, model, gen, automod, plot, args=None):
+        FixedPointCurve.__init__(self, model, gen, automod, plot, args=args)
+
+        self.CorrFunc = AddTestFunction_FixedPoint_Mult(self, [LPC_Bor, CP_Fold2])
+        self.CorrFunc.setdata(self.initpoint, None)
+
+    def _preTestFunc(self, X, V):
+        """Need CorrFunc jacobian for BP detection."""
+        Continuation._preTestFunc(self, X, V)
+        self.CorrFunc.J_coords = self.sysfunc.J_coords - eye(self.varsdim,self.varsdim)
+        self.CorrFunc.J_params = self.sysfunc.J_params
+
+    def _createTestFuncs(self):
+        """Creates processors and test functions for FoldCurve class.
+
+        Note:  In the following list, processors are in
+        PyCont.Bifpoint and test functions are in PyCont.TestFunc.
+
+        Point type (Processor): Test function(s)
+        ----------------------------------------
+
+        BT (BTPoint): BT_Fold
+        ZH (ZHPoint): Hopf_Det (or Hopf_Bor), BT_Fold
+        CP (CPPoint): CP_Fold
+        """
+        Continuation._createTestFuncs(self)
+
+        for bftype in self.LocBifPoints:
+            if bftype in cusp_bif_points:
+                stop = bftype in self.StopAtPoints
+                if bftype is 'BP':
+                    method = Branch_Det(self.CorrFunc, self, save=True,
+                                        numpoints=self.MaxNumPoints+1)
+                    self.TestFuncs.remove(self.TestFuncs[-1])
+                    self.TestFuncs.append(method)
+
+                    self.BifPoints['BP'] = BranchPoint(method, iszero,
+                                                       stop=stop)
+
+
+    def update(self, args):
+        """Update parameters for FixedPointCurve."""
+        Continuation.update(self, args)
+
+        if args is not None:
+            for k, v in args.iteritems():
+                if k in fold_args_list:
+                    if k == 'LocBifPoints':
+                        if isinstance(v, str):
+                            if v.lower() == 'all':
+                                v = fold_bif_points
+                            else:
+                                v = [v]
+
+                        # Handle stopping points
+                        w = []
+                        if args.has_key('StopAtPoints'):
+                            w = args['StopAtPoints']
+                            if isinstance(w, str):
+                                if w.lower() == 'all':
+                                    w = fold_bif_points
+                                else:
+                                    w = [w]
+
+                        for bftype in v:
+                            if bftype not in cont_bif_points and bftype not in fold_bif_points:
+                                if self.verbosity >= 1:
+                                    print "Warning: Detection of " + bftype + " points not implemented for curve FP-C."
+                            else:
+                                if bftype not in self.LocBifPoints:
+                                    self.LocBifPoints.append(bftype)
+                                if bftype in w and bftype not in self.StopAtPoints:
+                                    self.StopAtPoints.append(bftype)
+
+                    elif k != 'StopAtPoints':
+                        exec('self.' + k + ' = ' + repr(v))
+
 
 class LimitCycleCurve(Continuation):
     """Wrapper for auto limit cycle computations.
@@ -2483,6 +2999,12 @@ class LimitCycleCurve(Continuation):
     def update(self, args):
         """Update parameters for LimitCycleCurve."""
         Continuation.update(self, args)
+        if 'BP' in self.LocBifPoints:
+            self.LocBifPoints.remove('BP')
+        if 'BP' in self.StopAtPoints:
+            self.StopAtPoints.remove('BP')
+        #self.LocBifPoints = []  # Temporary fix: Delete after branch fix for LimitCycleCurve
+
         if args is not None:
             for k, v in args.iteritems():
                 if k in limitcycle_args_list:
@@ -2522,7 +3044,7 @@ class LimitCycleCurve(Continuation):
                                     w = [w]
 
                         for bftype in v:
-                            if bftype not in cont_bif_points \
+                            if bftype == 'BP' or bftype not in cont_bif_points \
                                and bftype not in limitcycle_bif_points:
                                 if self.verbosity >= 1:
                                     print "Warning: Detection of %s"%bftype,
@@ -2599,7 +3121,7 @@ class LimitCycleCurve(Continuation):
         if coords[0] == 't':
             if tlim is not None:
                 if isinstance(tlim, str) and tlim[-1] == 'T' \
-                            and isinstance(eval(tlim.rstrip('T')), int):
+                       and isinstance(eval(tlim.rstrip('T')), int):
                     tmult = eval(tlim.rstrip('T'))
                 else:
                     raise PyDSTool_TypeError("tlim must be a string of the form '#T'")
@@ -2993,8 +3515,9 @@ class LimitCycleCurve(Continuation):
 
         # Load data into auto module and call AUTO if successful
         #print ups
-        if self._autoMod.SetInitPoint(u[0:self.varsdim+1],parsdim+1,ipar,par,
-                       freepars, upslen, ups, udotps, rldot, self._AdaptCycle):
+        if self._autoMod.SetInitPoint(u[0:self.varsdim+1], parsdim+1,
+                                      ipar, par, freepars, upslen, ups,
+                                      udotps, rldot, self._AdaptCycle):
             AutoOut = self._autoMod.Compute()
 
             ##############
@@ -3002,9 +3525,21 @@ class LimitCycleCurve(Continuation):
             ##############
 
             # Save curve (all solution measures and parameters at end)
-            self.curve = c_[AutoOut[0], AutoOut[1]]
-            for i in range(len(self.SolutionMeasures)-1):
-                self.curve = c_[self.curve, AutoOut[2+i]]
+            #self.curve = c_[AutoOut[0], AutoOut[1]]
+            #for i in range(len(self.SolutionMeasures)-1):
+            #    self.curve = c_[self.curve, AutoOut[2+i]]
+            num_u = self._autoMod.getSolutionNum()[0]
+            VarOut = zeros((num_u,self.varsdim,2+int(log2(nsm))))
+            self._autoMod.getSolutionVar(VarOut)
+            ParOut = zeros((num_u,self.freeparsdim+self.auxparsdim))
+            self._autoMod.getSolutionPar(ParOut)
+            self.curve = array([])
+            self.curve = c_[VarOut[:,:,0],VarOut[:,:,1]]
+            for i in range(len(self.SolutionMeasures)-2):
+                self.curve = c_[self.curve, VarOut[:,:,i]]
+            self.curve = c_[self.curve, ParOut]
+
+            # Find bad points on curve
             self.loc = len(self.curve)-1    # This might change based on bad points
             badpts = nonzero([any(isnan(pt)) for pt in self.curve])[0]
             if len(badpts) > 0:
@@ -3013,33 +3548,73 @@ class LimitCycleCurve(Continuation):
             else:
                 endpt = self.loc
 
-            # TEMP: Save floquet multipliers
-            extra_out = 0
+            # Save floquet multipliers
             evals = None
             if self.SaveEigen or 'PD' in self.LocBifPoints or \
-                                 'NS' in self.LocBifPoints:
+               'NS' in self.LocBifPoints:
                 self.SaveEigen = True
-                evals = AutoOut[1+len(self.SolutionMeasures)]
-                extra_out += 1
+                EV = zeros((num_u,self.varsdim,2))
+                self._autoMod.getFloquetMultipliers(EV)
+                evals = EV[:,:,0] + 1j*EV[:,:,1]
 
-            # Jacobian info
+            # Save Jacobian info
             jacx = None
             if self.SaveJacobian:
-                jacx = (AutoOut[1+len(self.SolutionMeasures)+extra_out], \
-                        AutoOut[1+len(self.SolutionMeasures)+extra_out+1])
-                extra_out += 2
+                JacOut = zeros((2,num_u,self.varsdim*self.varsdim))
+                self._autoMod.getJacobians(JacOut)
+                jacx = (JacOut[0,:,:],JacOut[1,:,:])
 
             # Save number of iterations
             nit = None
             if 1:
-                nit = AutoOut[1+len(self.SolutionMeasures)+extra_out]
-                extra_out += 1
+                nit = zeros((num_u,1),dtype=int32)
+                self._autoMod.getNumIters(nit)
 
             # Insert cycle info and determine stopping point
             sp_endpt = 0
             sp_endpt_type = 'P'
-            for i in range(1+len(self.SolutionMeasures)+extra_out, len(AutoOut)):
-                (sp_ind, sp_type, sp_ups, sp_udotps, sp_rldot, sp_flow) = AutoOut[i]
+            num_sp = self._autoMod.getSpecPtNum()[0]
+
+            for i in range(num_sp):
+                sp_dims = zeros((5,),dtype=int32)
+                self._autoMod.getSpecPtDims(i, sp_dims)
+                (sp_ind,sp_type,ntpl,nar,nfpr) = sp_dims
+
+                sp_flags = zeros((4,),dtype=int32)
+                self._autoMod.getSpecPtFlags(i, sp_flags)
+                (ups_flag,udotps_flag,rldot_flag,flow_flag) = sp_flags
+
+                if ups_flag:
+                    sp_ups = zeros((ntpl,nar))
+                    self._autoMod.getSpecPt_ups(i, sp_ups)
+                else:
+                    sp_ups = None
+
+                if udotps_flag:
+                    sp_udotps = zeros((ntpl,nar-1))
+                    self._autoMod.getSpecPt_udotps(i,sp_udotps)
+                else:
+                    sp_udotps = None
+
+                if rldot_flag:
+                    sp_rldot = zeros((nfpr,))
+                    self._autoMod.getSpecPt_rldot(i,sp_rldot)
+                    sp_rldot = transpose(sp_rldot)
+                else:
+                    sp_rldot = None
+
+                if flow_flag:
+                    sp_flow1 = zeros((self.NumIntervals,nar-1,nar-1))
+                    sp_flow2 = zeros((self.NumIntervals,nar-1,nar-1))
+                    self._autoMod.getSpecPt_flow1(i,sp_flow1)
+                    self._autoMod.getSpecPt_flow2(i,sp_flow2)
+                    sp_flow = ()
+                    for i in range(self.NumIntervals):
+                        sp_flow = sp_flow + (sp_flow1[i,:,:],)
+                        sp_flow = sp_flow + (sp_flow2[i,:,:],)
+                else:
+                    sp_flow = None
+
                 if sp_ups is not None and sp_ind <= endpt:
                     pttype = auto_point_types[sp_type]
 
@@ -3136,8 +3711,9 @@ class UserDefinedCurve(Continuation):
         if initargs.has_key('userdomain'):
             self._userdomain = initargs['userdomain']
 
-        [initargs.pop(i) for i in ['uservars','userpars','userjac','userfunc',
-                'usertestfuncs','userbifpoints','userdomain'] if i in initargs]
+        [initargs.pop(i) for i in ['uservars', 'userpars', 'userjac',
+                'userfunc', 'usertestfuncs', 'userbifpoints',
+                'userdomain'] if i in initargs]
         Continuation.__init__(self, model, gen, automod, plot, args=initargs)
 
         self.CorrFunc = self.sysfunc

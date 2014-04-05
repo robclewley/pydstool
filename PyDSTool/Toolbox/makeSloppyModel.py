@@ -2,6 +2,7 @@
 # Robert Clewley, Oct 2005
 
 from PyDSTool import *
+from PyDSTool.parseUtils import symbolMapClass
 from copy import copy
 
 allODEgens = findGenSubClasses('ODEsystem')
@@ -11,7 +12,16 @@ class sloppyModel(LeafComponent):
     targetLangs=targetLangs
 
 def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
-                    algParams=None, silent=False):
+                    algParams=None, silent=False, containsRHSdefs=False):
+    """
+    containsRHSdefs: A boolean indicating whether or not ODEs contain symbols
+    indicating that they should include the right-hand sides of other ODEs.
+    To indicate that a right hand side of an ODE should be included in another ODE,
+    the following symbol should be used: _var_RHS .
+    For example
+      dy/dt = -k*x/m      |  'y': '-k*x/m'
+      dx/dt = y + (dy/dt) |  'x': 'y + _y_RHS'
+    """
     if targetGen not in allODEgens:
         print 'Valid target ODE solvers: ' + ", ".join(allODEgens)
         raise ValueError('Invalid target ODE solver')
@@ -39,15 +49,48 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
             else:
                 raise ValueError("Name %s unknown in domain specs"%name)
 
+    if 'derived_params' in modelDict:
+        paramMapping = {}
+        for assgnName, expr in modelDict['derived_params'].iteritems():
+            if not silent:
+                print 'Adding derived parameters: ', assgnName
+            paramMapping[assgnName] = '(%s)' % expr
+        derivedParamsMap = symbolMapClass(paramMapping)
+    else:
+        derivedParamsMap = None
 
-    for odeName, expr in modelDict['odes'].iteritems():
+    odeItems = modelDict['odes'].items()
+    if containsRHSdefs:
+        # the sentinal chosen to indicate a RHS is '_var_RHS'
+        _ode_map = {}
+        for k,v in odeItems:
+            _ode_map['_%s_RHS' % k] = '(%s)' % v
+        odeRHSMap = symbolMapClass(_ode_map)
+
+    for odeName, expr in odeItems:
         if not silent:
             print 'Adding ODE: ', odeName
         if odeName in xdomains:
-            sModelSpec.add(Var(expr, odeName, specType='RHSfuncSpec',
-                               domain=xdomains[odeName]))
+            odeRHS = Var(expr, odeName, specType='RHSfuncSpec', domain=xdomains[odeName])
         else:
-            sModelSpec.add(Var(expr, odeName, specType='RHSfuncSpec'))
+            odeRHS = Var(expr, odeName, specType='RHSfuncSpec')
+
+        if containsRHSdefs:
+            if not silent:
+                print 'Making substitutions based on potential right-hand-side usage in the ODE: ', odeName
+            odeRHS.mapNames(odeRHSMap)
+
+        if derivedParamsMap:
+            # Incorporate the derived parameter mappings into the odes.
+            # Make this substitution twice because the derived parameters
+            # may have internal inter-dependencies. It would be better to
+            # have a helper function to resolve these inter-dependencies ahead of time.
+            if not silent:
+                print 'Making derived parameter substitutions in the ODE: ', odeName
+            odeRHS.mapNames(derivedParamsMap)
+            odeRHS.mapNames(derivedParamsMap)
+
+        sModelSpec.add(odeRHS)
 
     auxvarnames = []
     if 'assignments' in modelDict:
@@ -117,8 +160,7 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
                                        varnames, parnames, [], auxfndict, targetlang)
             evcount += 1
             sModel.addEvents(genName, ev)
-            evmap = EvMapping(mappingDict, infodict={'vars': varnames+auxvarnames,
-                                                     'pars': parnames})
+            evmap = makeEvMapping(mappingDict, varnames+auxvarnames, parnames)
             sModel.mapEvent(genName, evname, genName, evmap)
     if not silent:
         print "Building target model with default settings"
