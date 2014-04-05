@@ -38,7 +38,7 @@ Overview of steps that ModelConstructor takes:
 from .errors import *
 from .common import *
 from .utils import info, remain, intersect
-import Model, Generator, ModelSpec, Symbolic, Events
+from . import Model, Generator, ModelSpec, Symbolic, Events, ModelContext
 from .parseUtils import symbolMapClass, NAMESEP, isNumericToken
 
 # Other imports

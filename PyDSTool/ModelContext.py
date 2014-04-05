@@ -9,7 +9,7 @@ import sys, traceback
 import numpy as npy
 
 # PyDSTool imports
-from . import Events, ModelSpec, ModelTools, Symbolic, Trajectory
+from . import Events, ModelSpec, Symbolic, Trajectory
 from . import utils, common, parseUtils
 from .errors import *
 
