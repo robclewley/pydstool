@@ -215,7 +215,7 @@ extern AutoData *gData;
 #   include <Python.h>
 #   define MALLOC(size) (PyMem_Malloc(size))
 #   define REALLOC(ptr, size) (PyMem_Realloc(ptr, size))
-#   define FREE(ptr) (PyMem_Free(ptr))
+#   define FREE(ptr) PyMem_Free(ptr)
 #else
 #   define MALLOC(size) (malloc(size))
 #   define REALLOC(ptr, size) (realloc(ptr, size))

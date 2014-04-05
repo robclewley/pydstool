@@ -1,42 +1,18 @@
 %module auto
 
-%include typemaps.i
-%include carrays.i
-
-%array_functions(double,doubleArray)
-%array_functions(int, intArray)
-
 %{
-#include <numpy/libnumarray.h>
+    #define SWIG_FILE_WITH_INIT
+    #include "automod.h"
 %}
+
+%include "numpy.i"
 
 %init %{
-import_libnumarray();
+    import_array();
 %}
 
-%typemap(in) double * {
-	int i, n;
-	if((!PyList_Check($input)) && ($input != Py_None)) {
-		PyErr_SetString(PyExc_ValueError,"Expected a list or None as input");
-		return NULL;
-	}
-    if($input == Py_None) {
-        $1 = NULL;
-    } else {
-        n = PyList_Size($input);
-        $1 = (double *) malloc(n*sizeof(double));
-        for( i = 0; i < n; i++ ) {
-            PyObject *o = PyList_GetItem($input,i);
-            if(PyNumber_Check(o)) {
-                $1[i] = PyFloat_AsDouble(o);
-            }
-            else {
-                PyErr_SetString(PyExc_ValueError,"List elements must be numbers.");
-                return NULL;
-            }
-        }
-    }
-}
+%include typemaps.i
+%include carrays.i
 
 %typemap(in) int * {
 	int i, n;
@@ -62,6 +38,34 @@ import_libnumarray();
     }
 }
 
+%typemap(in) double * {
+	int i, n;
+	if((!PyList_Check($input)) && ($input != Py_None)) {
+		PyErr_SetString(PyExc_ValueError,"Expected a list or None as input");
+		return NULL;
+	}
+    if($input == Py_None) {
+        $1 = NULL;
+    } else {
+        n = PyList_Size($input);
+        $1 = (double *) malloc(n*sizeof(double));
+        for( i = 0; i < n; i++ ) {
+            PyObject *o = PyList_GetItem($input,i);
+            if(PyNumber_Check(o)) {
+                $1[i] = PyFloat_AsDouble(o);
+            }
+            else {
+                PyErr_SetString(PyExc_ValueError,"List elements must be numbers.");
+                return NULL;
+            }
+        }
+    }
+}
+
+%typemap(out) int {
+	$result = Py_BuildValue("(i)", $1);
+}
+
 %typemap(freearg) double* {
 	if($1) free($1);
 }
@@ -70,24 +74,10 @@ import_libnumarray();
     if($1) free($1);
 }
 
-extern PyObject* Compute(void);
+%apply (int* INPLACE_ARRAY1, int DIM1) {(int* A, int nd1)}
+%apply (int* INPLACE_ARRAY2, int DIM1, int DIM2) {(int* A, int nd1, int nd2)}
+%apply (double* INPLACE_ARRAY1, int DIM1) {(double* A, int nd1)}
+%apply (double* INPLACE_ARRAY2, int DIM1, int DIM2) {(double* A, int nd1, int nd2)}
+%apply (double* INPLACE_ARRAY3, int DIM1, int DIM2, int DIM3) {(double* A, int nd1, int nd2, int nd3)}
 
-extern PyObject* Initialize(void);
-
-extern PyObject* SetData(int ips, int ilp, int isw, int isp, int sjac, int sflow, int nsm, int nmx, int ndim, 
-                         int ntst, int ncol, int iad, double epsl, double epsu, double epss, int itmx,
-                         int itnw, double ds, double dsmin, double dsmax, int npr, int iid,
-                         int nicp, int *icp, int nuzr, int *iuz, double *vuz);
-                  
-extern PyObject* SetInitPoint(double *u, int npar, int *ipar, double *par, int *icp, int nups,
-                              double *ups, double *udotps, double *rldot, int adaptcycle);
-
-extern PyObject* Reset(void);
-
-extern PyObject* ClearParams(void);
-
-extern PyObject* ClearSolution(void);
-
-extern PyObject* ClearSpecialPoints(void);
-
-extern PyObject* ClearAll(void);
+%include "automod.h"

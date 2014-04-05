@@ -70,10 +70,6 @@ void z_exp(doublecomplex *r, doublecomplex *z);
 /* z_log.c */
 void z_log(doublecomplex *r, doublecomplex *z);
 
-#ifdef __FreeBSD__
-#define log2(x)        (log(x) / M_LN2)
-#endif /* __FreeBSD__ */
-
 #endif
 
 

@@ -1,6 +1,6 @@
 #include "automod.h"
 
-AutoData *gIData = NULL;
+extern AutoData *gIData;
 
 /**************************************
  **************************************
@@ -8,344 +8,401 @@ AutoData *gIData = NULL;
  **************************************
  **************************************/
 
-PyObject* Compute( void ) {
-    
+int Compute( void ) {
+
     if (!AUTO(gIData))
-        return PackOut(0);
+        return 0;
     else {
-        return PackOut(1);
+        return 1;
     }
 }
 
 /**************************************
  **************************************
- *       PACKOUT
+ *       Python -> C
  **************************************
  **************************************/
 
-PyObject* PackOut(int state) {
-    int i, j, k, l;
-    int ind;
-    int vardim;
-    int extdim = 0;
-    
-    Complex64 evtemp;
-    
-    PyObject *OutObj = NULL; /* Overall PyTuple output object */
-    PyArrayObject **VarOut = NULL;
-    PyArrayObject *ParOut = NULL;
-    PyArrayObject *EvOut = NULL;
-    PyArrayObject *JacOut0 = NULL;
-    PyArrayObject *JacOut1 = NULL;
-    PyArrayObject *NitOut = NULL;
-    
-    PyObject **SPOutTuple = NULL;
-    PyObject **SPOutFlowTuple = NULL;
-    
-    PyArrayObject **SPOut_ups = NULL;
-    PyArrayObject **SPOut_udotps = NULL;
-    PyArrayObject **SPOut_rldot = NULL;
-    PyArrayObject ***SPOut_Flow1 = NULL;
-    PyArrayObject ***SPOut_Flow2 = NULL;
-    
-    assert(gIData);
-    
-    if (state == FAILURE) {
-        Py_INCREF(Py_None);
-        return Py_None;
+int Initialize( void ) {
+    if (gIData == NULL) {
+      gIData = (AutoData *)PyMem_Malloc(sizeof(AutoData));
+      assert(gIData);
     }
+
+    BlankData(gIData);
+    DefaultData(gIData);
     
-    /* for NumArray compatibility */
-    import_libnumarray();
-    
-    // Initialize and store VarOut and ParOut
-    if (gIData->u != NULL)
-        vardim = 1; // AE
-    else
-        vardim = 2+(int)(log2(gIData->nsm)); // BVP (will increase later -- user controlled, e.g. average, L2, ...)
-    VarOut = (PyArrayObject **)PyMem_Malloc(vardim*sizeof(PyArrayObject *));
-    for (i=0; i<vardim; i++) {
-        VarOut[i] = NA_NewArray(NULL, tFloat64, 2, gIData->num_u, gIData->iap.ndim);
-        assert(VarOut[i]);
-    }
-    ParOut = NA_NewArray(NULL, tFloat64, 2, gIData->num_u, gIData->iap.nicp);
-    assert(ParOut);
-    
-    for(i = 0; i < gIData->num_u; i++) {
-        for(j = 0; j < gIData->iap.ndim; j++) {
-            if (gIData->u != NULL)
-                NA_set2_Float64(VarOut[0], i, j, gIData->u[i][j]);
-            else
-                for(k = 0; k < vardim; k++)
-                    NA_set2_Float64(VarOut[k], i, j, gIData->usm[k][i][j]);
-        }
+    return 1;
+}
+
+/* Needs to set main data for auto computation and before call to SetInitPoint */
+int SetData(int ips, int ilp, int isw, int isp, int sjac, int sflow, int nsm, int nmx, int ndim, 
+                  int ntst, int ncol, int iad, double epsl, double epsu, double epss, int itmx,
+                  int itnw, double ds, double dsmin, double dsmax, int npr, int iid,
+                  int nicp, int *icp, int nuzr, int *iuz, double *vuz) {
+    int i;
+
+    gIData->iap.ips = ips;
+    gIData->iap.ilp = ilp;
+    gIData->iap.isw = isw;
+    gIData->iap.isp = isp;
+    gIData->iap.nmx = nmx;
+    gIData->iap.ndim = ndim;
+    gIData->iap.ntst = ntst;
+    gIData->iap.ncol = ncol;
+    gIData->iap.iad = iad;
+    gIData->iap.itmx = itmx;
+    gIData->iap.itnw = itnw;
+    gIData->iap.npr = npr;
+    gIData->iap.iid = iid;
+    gIData->iap.nicp = nicp;
         
-        for(j=0; j < gIData->iap.nicp; j++)
-            NA_set2_Float64(ParOut, i, j, gIData->par[i][j]);
+    gIData->rap.epsl = epsl;
+    gIData->rap.epsu = epsu;
+    gIData->rap.epss = epss;
+    gIData->rap.ds = ds;
+    gIData->rap.dsmin = dsmin;
+    gIData->rap.dsmax = dsmax;
+    
+    gIData->sjac = sjac;
+    gIData->sflow = sflow;
+    gIData->snit = 1;
+    gIData->nsm = nsm;
+    
+    gIData->icp = (integer *)REALLOC(gIData->icp,gIData->iap.nicp*sizeof(integer));
+    for (i=0; i<gIData->iap.nicp; i++)
+        gIData->icp[i] = icp[i];
+    
+    gIData->iap.nuzr = nuzr;
+    if (gIData->iap.nuzr > 0) {
+        gIData->iuz = (integer *)REALLOC(gIData->iuz,gIData->iap.nuzr*sizeof(integer));
+        gIData->vuz = (doublereal *)REALLOC(gIData->vuz,gIData->iap.nuzr*sizeof(doublereal));
+    }
+    for (i=0; i<gIData->iap.nuzr; i++) {
+        gIData->iuz[i] = iuz[i];
+        gIData->vuz[i] = vuz[i];
+    }
+
+    return 1;
+}
+
+// Assumes there has been a call to SetData before this.
+int SetInitPoint(double *u, int npar, int *ipar, double *par, int *icp, int nups,
+                       double *ups, double *udotps, double *rldot, int adaptcycle) {
+    /* Still think I should get rid of typemap(freearg) and send address to pointer in
+    prepare_cycle so I can realloc if necessary and not have to use this my_... crap */
+    integer itp;
+    integer i, j;
+    integer SUCCESS = 1;
+    double *my_ups = ups;
+    double *my_udotps = udotps;
+    double *my_rldot = rldot;
+
+    if (ups == NULL)
+        itp = 3;
+    else {
+        itp = 9;
+        
+        if (adaptcycle || udotps == NULL || rldot == NULL) {
+            // NOTE: AUTO allocates (ntst+1)*ncol points, but only displays ntpl=ntst*ncol+1
+            my_ups = (double *)MALLOC(gIData->iap.ncol*(gIData->iap.ntst+1)*(gIData->iap.ndim+1)*sizeof(double));
+            my_udotps = (double *)MALLOC(gIData->iap.ncol*(gIData->iap.ntst+1)*gIData->iap.ndim*sizeof(double));
+            my_rldot = (double *)MALLOC(gIData->iap.nicp*sizeof(double));
+            prepare_cycle(gIData, ups, nups, my_ups, my_udotps, my_rldot);
+        }
     }
     
-    // Initialize and store eigenvalues, if computed
-    if (gIData->ev != NULL) {
-        EvOut = NA_NewArray(NULL, tComplex64, 2, gIData->num_u, gIData->iap.ndim);
-        for (i = 0; i < gIData->num_u; i++) {
-            for (j = 0; j < gIData->iap.ndim; j++) {
-                evtemp.r = gIData->ev[i][j].r;
-                evtemp.i = gIData->ev[i][j].i;
-                NA_set2_Complex64(EvOut, i, j, evtemp);
+    if (!CreateSpecialPoint(gIData, itp, 1, u, npar, ipar, par, icp, my_ups, my_udotps, my_rldot)) {
+        fprintf(stderr,"*** Warning [interface.c]: Problem in CreateSpecialPoint.\n");
+        fflush(stderr);
+        SUCCESS = 0;
+    }
+    
+    if ((SUCCESS) && (itp == 9) && (adaptcycle || udotps == NULL || rldot == NULL)) {
+        integer nmx, npr, verbosity;
+        double ds, dsmin, dsmax;
+        
+        // Adjust rldot and sp.nfpr = 1 (AUTO detects this to get udotps and rldot for
+        //  starting point)
+        gIData->sp[0].nfpr = 1;
+
+        // Remove from here till } once findPeriodicOrbit is created
+        FREE(my_ups);
+        FREE(my_udotps);
+        FREE(my_rldot);
+        
+        // Make sure initial point is on curve...
+        nmx = gIData->iap.nmx;
+        npr = gIData->iap.npr;
+        ds = gIData->rap.ds;
+        dsmin = gIData->rap.dsmin;
+        dsmax = gIData->rap.dsmax;
+        verbosity = gIData->verbosity;
+        
+        gIData->iap.nmx = 3;
+        gIData->iap.npr = 3;
+        gIData->rap.ds = min(1e-4, gIData->rap.ds);
+        gIData->rap.dsmin = min(1e-4, gIData->rap.dsmin);
+        gIData->rap.dsmax = min(1e-4, gIData->rap.dsmax);
+        gIData->verbosity = 0;
+        
+        AUTO(gIData);
+        CleanupSolution(gIData);
+        
+        gIData->iap.nmx = nmx;
+        gIData->iap.npr = npr;
+        gIData->rap.ds = ds;
+        gIData->rap.dsmin = dsmin;
+        gIData->rap.dsmax = dsmax;
+        gIData->verbosity = verbosity;
+        
+        // Check for NaNs
+        for (i=0; i<gIData->sp[0].nar; i++) {
+            if (isnan(gIData->sp[1].u[i])) {
+                fprintf(stderr,"*** Warning [interface.c]: NaNs in auto solution.\n");
+                fflush(stderr);
+                SUCCESS = 0;
+                break;
             }
         }
-        extdim++;
-    }
-    
-    // Initialize and store jacobian
-    if (gIData->sjac) {
-        JacOut0 = NA_NewArray(NULL, tFloat64, 2, gIData->num_u, gIData->iap.ndim*gIData->iap.ndim);
-        JacOut1 = NA_NewArray(NULL, tFloat64, 2, gIData->num_u, gIData->iap.ndim*gIData->iap.ndim);
-        for (i = 0; i < gIData->num_u; i++) {
-            for (j = 0; j < gIData->iap.ndim; j++) {
-                for (k = 0; k < gIData->iap.ndim; k++) {
-                    NA_set2_Float64(JacOut0, i, k+j*gIData->iap.ndim, gIData->c0[i][j][k]);
-                    NA_set2_Float64(JacOut1, i, k+j*gIData->iap.ndim, gIData->c1[i][j][k]);
-                }
-            }
-        }
-        extdim += 2;
-    }
-    
-    // Initialize and store number of iterations
-    if (gIData->snit) {
-        NitOut = NA_NewArray(NULL, tInt64, 2, gIData->num_u, 1);
-        for (i = 0; i < gIData->num_u; i++) {
-            NA_set2_Int64(NitOut, i, 0, gIData->nit[i]);
-        }
-        extdim += 1;
-    }
-    
-    // Initialize and store SPOut
-    SPOutTuple = PyMem_Malloc(gIData->num_sp*sizeof(PyObject *));
-    assert(SPOutTuple);
-    for (i=0; i<gIData->num_sp; i++) {
-        SPOutTuple[i] = PyTuple_New(6);
-        assert(SPOutTuple);
-    }
-    
-    SPOut_ups = PyMem_Malloc(gIData->num_sp*sizeof(PyArrayObject *));
-    assert(SPOut_ups);
-    
-    SPOut_udotps = PyMem_Malloc(gIData->num_sp*sizeof(PyArrayObject *));
-    assert(SPOut_udotps);
-    
-    SPOut_rldot = PyMem_Malloc(gIData->num_sp*sizeof(PyArrayObject *));
-    assert(SPOut_rldot);
-    
-    if (gIData->sflow) {
-        SPOutFlowTuple = PyMem_Malloc(gIData->num_sp*sizeof(PyObject *));
-        assert(SPOutFlowTuple);
-        for (i=0; i<gIData->num_sp; i++) {
-            SPOutFlowTuple[i] = PyTuple_New(2*gIData->iap.ntst);
-            assert(SPOutFlowTuple[i]);
+        
+        if (SUCCESS) {
+            for (i=0; i<gIData->sp[0].nar; i++)
+                gIData->sp[0].u[i] = gIData->sp[1].u[i];
+            
+            for (i=0; i<gIData->iap.ntst*gIData->iap.ncol+1; i++)
+                for (j=0; j<gIData->iap.ndim+1; j++)
+                    gIData->sp[0].ups[i][j] = gIData->sp[1].ups[i][j];
+            
+            for (i=0; i<gIData->iap.ntst*gIData->iap.ncol+1; i++)
+                for (j=0; j<gIData->iap.ndim; j++)
+                    gIData->sp[0].udotps[i][j] = gIData->sp[1].udotps[i][j];
+            
+            for (i=0; i<gIData->iap.nicp; i++)
+                gIData->sp[0].rldot[i] = gIData->sp[1].rldot[i];
         }
         
-        SPOut_Flow1 = PyMem_Malloc(gIData->num_sp*sizeof(PyArrayObject **));
-        SPOut_Flow2 = PyMem_Malloc(gIData->num_sp*sizeof(PyArrayObject **));
-        assert(SPOut_Flow1);
-        assert(SPOut_Flow2);
+        gIData->sp[0].nfpr = gIData->iap.nicp;
         
-        for (i=0; i<gIData->num_sp; i++) {
-            SPOut_Flow1[i] = PyMem_Malloc(gIData->iap.ntst*sizeof(PyArrayObject *));
-            SPOut_Flow2[i] = PyMem_Malloc(gIData->iap.ntst*sizeof(PyArrayObject *));
-            assert(SPOut_Flow1[i]);
-            assert(SPOut_Flow2[i]);
-        }
-    }
-    
-    for(i = 0; i < gIData->num_sp; i++) {
-        ind = 0;    // Used so I can insert more info w/o worrying about indices, just ordering
-        // Index
-        PyTuple_SetItem(SPOutTuple[i], ind++, PyInt_FromLong(gIData->sp[i].mtot-1));
-        
-        // Type of point
-        PyTuple_SetItem(SPOutTuple[i], ind++, PyInt_FromLong(gIData->sp[i].itp));
-        
-        // ups
-        if (gIData->sp[i].ups != NULL) {
-            SPOut_ups[i] = NA_NewArray(NULL, tFloat64, 2, gIData->sp[i].ntpl, gIData->sp[i].nar);
-            assert(SPOut_ups[i]);
-            for (k = 0; k < gIData->sp[i].ntpl; k++)
-                for (l = 0; l < gIData->sp[i].nar; l++)
-                    NA_set2_Float64(SPOut_ups[i], k, l, gIData->sp[i].ups[k][l]);
-            PyTuple_SetItem(SPOutTuple[i], ind++, SPOut_ups[i]);
-        } else {
-            PyTuple_SetItem(SPOutTuple[i], ind++, Py_None);
-            Py_INCREF(Py_None);
-        }
-        
-        // udotps
-        if (gIData->sp[i].udotps != NULL) {
-            SPOut_udotps[i] = NA_NewArray(NULL, tFloat64, 2, gIData->sp[i].ntpl, gIData->sp[i].nar-1);
-            assert(SPOut_udotps[i]);
-            for (k = 0; k < gIData->sp[i].ntpl; k++)
-                for (l = 0; l < gIData->sp[i].nar-1; l++)
-                    NA_set2_Float64(SPOut_udotps[i], k, l, gIData->sp[i].udotps[k][l]);
-            PyTuple_SetItem(SPOutTuple[i], ind++, SPOut_udotps[i]);
-        } else {
-            PyTuple_SetItem(SPOutTuple[i], ind++, Py_None);
-            Py_INCREF(Py_None);
-        }
-        
-        // rldot
-        if (gIData->sp[i].rldot != NULL) {
-            SPOut_rldot[i] = NA_NewArray(NULL, tFloat64, 1, gIData->sp[i].nfpr);
-            assert(SPOut_rldot[i]);
-            for (j = 0; j < gIData->sp[i].nfpr; j++)
-                NA_set1_Float64(SPOut_rldot[i], j, gIData->sp[i].rldot[j]);
-            PyTuple_SetItem(SPOutTuple[i], ind++, SPOut_rldot[i]);
-        } else {
-            PyTuple_SetItem(SPOutTuple[i], ind++, Py_None);
-            Py_INCREF(Py_None);
-        }
-        
-        // sflow (a1 and a2)
+        FREE(gIData->sp[1].icp);
+        FREE(gIData->sp[1].u);
+        FREE(gIData->sp[1].rldot);
+        FREE_DMATRIX(gIData->sp[1].ups);
+        FREE_DMATRIX(gIData->sp[1].udotps);
         if (gIData->sflow) {
-            for (j = 0; j < gIData->iap.ntst; j++) {
-                SPOut_Flow1[i][j] = NA_NewArray(NULL, tFloat64, 2, gIData->sp[i].nar-1, gIData->sp[i].nar-1);
-                SPOut_Flow2[i][j] = NA_NewArray(NULL, tFloat64, 2, gIData->sp[i].nar-1, gIData->sp[i].nar-1);
-                assert(SPOut_Flow1[i][j]);
-                assert(SPOut_Flow2[i][j]);
-                for (k = 0; k < gIData->sp[i].nar-1; k++) {
-                    for (l = 0; l < gIData->sp[i].nar-1; l++) {
-                        NA_set2_Float64(SPOut_Flow1[i][j], k, l, gIData->sp[i].a1[j][k][l]);
-                        NA_set2_Float64(SPOut_Flow2[i][j], k, l, gIData->sp[i].a2[j][k][l]);
-                    }
-                }
-                PyTuple_SetItem(SPOutFlowTuple[i], 2*j, SPOut_Flow1[i][j]);
-                PyTuple_SetItem(SPOutFlowTuple[i], 2*j+1, SPOut_Flow2[i][j]);
-            }
-            PyTuple_SetItem(SPOutTuple[i], ind++, SPOutFlowTuple[i]);
-        } else {
-            PyTuple_SetItem(SPOutTuple[i], ind++, Py_None);
-            Py_INCREF(Py_None);
+            FREE_DMATRIX_3D(gIData->sp[1].a1);
+            FREE_DMATRIX_3D(gIData->sp[1].a2);
         }
+        gIData->sp[1].icp = NULL;
+        gIData->sp[1].u = NULL;
+        gIData->sp[1].rldot = NULL;
+        gIData->sp[1].ups = NULL;
+        gIData->sp[1].udotps = NULL;
+        gIData->sp[1].a1 = NULL;
+        gIData->sp[1].a2 = NULL;
+        
+        gIData->num_sp = 1;
+        gIData->sp_len = 1;
+        
+        gIData->sp = (AutoSPData *)REALLOC(gIData->sp, (gIData->num_sp)*sizeof(AutoSPData));
     }
     
-    // Wrap it up
-    OutObj = PyTuple_New(1+vardim+extdim+gIData->num_sp);
-    assert(OutObj);
+    return SUCCESS;
+}
+
+/* int Reset( void ) {
+    int result = 1;
+
+    result = result && (CleanupSolution(gIData));
+    result = result && (CleanupSpecialPoints(gIData));
     
-    for (i=0; i<vardim; i++)
-        PyTuple_SetItem(OutObj, i, (PyObject *)VarOut[i]);
-    PyTuple_SetItem(OutObj, vardim, (PyObject *)ParOut);
+    DefaultData(gIData);
     
-    if (EvOut != NULL)
-        PyTuple_SetItem(OutObj, 1+vardim, (PyObject *)EvOut);
-    
-    if (gIData->sjac) {
-        //PyTuple_SetItem(OutObj, 1+vardim+extdim-2, (PyObject *)JacOut0);
-        //PyTuple_SetItem(OutObj, 1+vardim+extdim-1, (PyObject *)JacOut1);
-        PyTuple_SetItem(OutObj, 1+vardim+extdim-3, (PyObject *)JacOut0);
-        PyTuple_SetItem(OutObj, 1+vardim+extdim-2, (PyObject *)JacOut1);
-    }
-    
-    if (gIData->snit) {
-        PyTuple_SetItem(OutObj, 1+vardim+extdim-1, (PyObject *)NitOut);
-    }
-    
-    for (i = 0; i < gIData->num_sp; i++)
-        PyTuple_SetItem(OutObj, 1+vardim+extdim+i, SPOutTuple[i]);
-    
-    // Free
-    PyMem_Free(VarOut);
-    PyMem_Free(SPOut_ups);
-    PyMem_Free(SPOut_udotps);
-    PyMem_Free(SPOut_rldot);
-    if (gIData->sflow) {
-        PyMem_Free(SPOutFlowTuple);
-        for (i=0; i<gIData->num_sp; i++) {
-            PyMem_Free(SPOut_Flow1[i]);
-            PyMem_Free(SPOut_Flow2[i]);
-        }
-        PyMem_Free(SPOut_Flow1);
-        PyMem_Free(SPOut_Flow2);
-    }
-    PyMem_Free(SPOutTuple);
-    
-    // Ship it out
-    return OutObj;
+    return result;
+} */
+
+/******************************************
+ ******************************************
+ *       C -> Python
+ *
+ * Most functions use NumPy INPLACE_ARRAY 
+ * routines (see %apply commands in 
+ * automod.i). Ultimately, gIData should be 
+ * implemented as a class structure, with
+ * these functions as methods.  Maybe
+ * cython would be perfect for this.
+ * 
+ ******************************************
+ ******************************************/
+
+int getSolutionNum(void)
+{
+	return gIData->num_u;
+}
+
+void getSolutionVar(double *A, int nd1, int nd2, int nd3)
+{
+	int i, j, k;
+	
+	for (i=0; i<nd1; i++)
+		for (j=0; j<nd2; j++)
+			for (k=0; k<nd3; k++)
+				if (gIData->u != NULL)
+					A[i*nd2*nd3+j*nd3+k] = gIData->u[i][j];
+				else
+					A[i*nd2*nd3+j*nd3+k] = gIData->usm[k][i][j];
+}
+
+void getSolutionPar(double *A, int nd1, int nd2)
+{
+	int i, j;
+	
+	for (i=0; i<nd1; i++)
+		for (j=0; j<nd2; j++)
+			A[i*nd2+j] = gIData->par[i][j];
+}
+
+void getFloquetMultipliers(double *A, int nd1, int nd2, int nd3)
+{
+	int i, j, k;
+	
+	for (i=0; i<nd1; i++)
+		for (j=0; j<nd2; j++)
+			for (k=0; k<nd3; k++)
+				if (k == 0)
+					A[i*nd2*nd3+j*nd3+k] = gIData->ev[i][j].r;
+				else
+					A[i*nd2*nd3+j*nd3+k] = gIData->ev[i][j].i;	
+}
+
+void getJacobians(double *A, int nd1, int nd2, int nd3)
+{
+	int i, j, k, l;
+	int ndim = gIData->iap.ndim;
+	
+	for (i=0; i<nd1; i++)
+		for (j=0; j<nd2; j++)
+			for (k=0; k<ndim; k++)
+				for (l=0; l<ndim; l++)
+					if (i == 0)
+						A[i*nd2*nd3+j*nd3+k*ndim+l] = gIData->c0[j][k][l];
+					else
+						A[i*nd2*nd3+j*nd3+k*ndim+l] = gIData->c1[j][k][l];
+}
+
+void getNumIters(int *A, int nd1, int nd2)
+{
+/* Needs to be 2D on Python side.  Should change in future. */
+	int i;
+	
+	for (i=0; i<nd1; i++)
+		A[i] = gIData->nit[i];
+}
+
+int getSpecPtNum(void)
+{
+	return gIData->num_sp;
+}
+
+void getSpecPtDims(int i, int *A, int nd1)
+{
+	A[0] = gIData->sp[i].mtot-1;
+	A[1] = gIData->sp[i].itp;
+	A[2] = gIData->sp[i].ntpl;
+	A[3] = gIData->sp[i].nar;
+	A[4] = gIData->sp[i].nfpr;
+}
+
+void getSpecPtFlags(int i, int *A, int nd1)
+{
+	A[0] = (gIData->sp[i].ups != NULL);
+	A[1] = (gIData->sp[i].udotps != NULL);
+	A[2] = (gIData->sp[i].rldot != NULL);
+	A[3] = (gIData->sflow);
+}
+
+void getSpecPt_ups(int i, double *A, int nd1, int nd2)
+{
+	int j, k;
+	
+	for (j=0; j<nd1; j++)
+		for (k=0; k<nd2; k++)
+			A[j*nd2+k] = gIData->sp[i].ups[j][k];
+}
+
+void getSpecPt_udotps(int i, double *A, int nd1, int nd2)
+{
+	int j, k;
+	
+	for (j=0; j<nd1; j++)
+		for (k=0; k<nd2; k++)
+			A[j*nd2+k] = gIData->sp[i].udotps[j][k];
+}
+
+void getSpecPt_rldot(int i, double *A, int nd1)
+{
+	int j;
+	
+	for (j=0; j<nd1; j++)
+		A[j] = gIData->sp[i].rldot[j];
+}
+
+void getSpecPt_flow1(int i, double *A, int nd1, int nd2, int nd3)
+{
+	int j, k, l;
+	
+	for (j=0; j<nd1; j++)
+		for (k=0; k<nd2; k++)
+			for (l=0; l<nd3; l++)
+				A[j*nd2*nd3+k*nd3+l] = gIData->sp[i].a1[j][k][l];	
+}
+
+void getSpecPt_flow2(int i, double *A, int nd1, int nd2, int nd3)
+{
+	int j, k, l;
+	
+	for (j=0; j<nd1; j++)
+		for (k=0; k<nd2; k++)
+			for (l=0; l<nd3; l++)
+				A[j*nd2*nd3+k*nd3+l] = gIData->sp[i].a2[j][k][l];	
 }
 
 /**************************************
  **************************************
- *    REQUIRED AUTO FUNCTIONS
+ *       CLEANUP
  **************************************
  **************************************/
 
-/* ---------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------- */
-int func(integer ndim, const doublereal *u, const integer *icp,
-         const doublereal *par, integer ijac,
-         doublereal *f, doublereal *dfdu, doublereal *dfdp) {
+/* int ClearParams( void ) {
+	int result;
+    
+    result = CleanupParams(gIData);
 
-  /* Jacobian and Parameter Jacobian loops clearly slow things down here. */
-  
-  integer i;
-  doublereal **jac;
-  doublereal **jacp;
-  
-  vfieldfunc(ndim, 0, 0, u, par, f, 0, NULL, 0, NULL);
-  
-  // Jacobian
-  jac = (doublereal **)MALLOC(ndim*sizeof(doublereal *));
-  jac[0] = dfdu;
-  for (i=1; i<ndim; i++) jac[i] = jac[i-1] + ndim;
-  jacobian(ndim, 0, 0, u, par, jac, 0, NULL, 0, NULL);
-  FREE(jac);
-  
-  // Parameter Jacobian
-  jacp = (doublereal **)MALLOC(gIData->npar*sizeof(doublereal *));
-  jacp[0] = dfdp;
-  for (i=1; i<gIData->npar; i++) {
-      if (i != 10)
-          jacp[i] = jacp[i-1] + ndim;
-      else
-          jacp[i] = jacp[i-1] + 41*ndim;    // Index = 50
-  }
-  jacobianParam(ndim, 0, 0, u, par, jacp, 0, NULL, 0, NULL);
-  FREE(jacp);
-  
-  return 0;
+    return result;
 }
-/* ---------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------- */
-int stpnt(integer ndim, doublereal t, doublereal *u, doublereal *par) {
-    return 0;
+
+int ClearSolution( void ) {
+    int result;
+    
+    result = CleanupSolution(gIData);
+    
+    return result;
 }
-/* ---------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------- */
-int bcnd(integer ndim, const doublereal *par, const integer *icp,
-         integer nbc, const doublereal *u0, const doublereal *u1, integer ijac,
-         doublereal *fb, doublereal *dbc) {
-    return 0;
+
+int ClearSpecialPoints( void ) {
+    int result;
+
+    result = CleanupSpecialPoints(gIData);
+    
+    return result;
+} */
+
+int ClearAll( void ) {
+    int result;
+    
+    result = CleanupAll(gIData);
+	if (result)
+        gIData = NULL;
+    
+    return result;
 }
-/* ---------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------- */
-int icnd(integer ndim, const doublereal *par, const integer *icp,
-         integer nint, const doublereal *u, const doublereal *uold,
-         const doublereal *udot, const doublereal *upold, integer ijac,
-         doublereal *fi, doublereal *dint) {
-    return 0;
-}
-/* ---------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------- */
-int fopt(integer ndim, const doublereal *u, const integer *icp,
-         const doublereal *par, integer ijac,
-         doublereal *fs, doublereal *dfdu, doublereal *dfdp) {
-    return 0;
-}
-/* ---------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------- */
-int pvls(integer ndim, const void *u, doublereal *par) {
-    u = (doublereal *)u;
-    return 0;
-}
-/* ---------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------- */

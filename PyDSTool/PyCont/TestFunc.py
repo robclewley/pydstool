@@ -17,26 +17,30 @@
 #       Added DiscreteMap and FixedPointMap classes.
 #       Added LPC_Det, NS_Det, PD_Det test functions for FP-C
 #
+#    May 2012
+#		Added AddTestFunction_FixedPoint and LPC_Bor
+#
 # ----------------------------------------------------------------------------
 
 from misc import *
 from PyDSTool.common import args, copy
 
+from numpy.linalg import cond
 from scipy import optimize, linalg
 from numpy import dot as matrixmultiply
 from numpy import array, float, complex, int, float64, complex64, int32, \
-    zeros, divide, subtract, any, argsort, product, Inf, NaN, isfinite, \
-    r_, c_, sign, mod, mat, subtract, divide, transpose, eye, real, imag, \
-    conjugate, shape, reshape, sqrt, random
+     zeros, divide, subtract, any, argsort, product, Inf, NaN, isfinite, \
+     r_, c_, sign, mod, mat, subtract, divide, transpose, eye, real, imag, \
+     conjugate, shape, reshape, sqrt, random, spacing
 from numpy.random import random
 
 #####
-_classes = ['Function', 'TestFunc', 'AddTestFunction', 'DiscreteMap', 'FixedPointMap',
+_classes = ['Function', 'TestFunc', 'AddTestFunction', 'AddTestFunction_FixedPoint', 'DiscreteMap', 'FixedPointMap',
             'BiAltMethod', 'BorderMethod', 'B_Check', 'Fold_Tan',
             'Fold_Det', 'Fold_Bor', 'Branch_Det', 'Branch_Bor', 'Hopf_Det', 'Hopf_Bor', 'Hopf_Eig',
             'Hopf_Double_Bor_One', 'Hopf_Double_Bor_Two', 'BT_Fold', 'BT_Hopf', 'BT_Hopf_One',
-            'CP_Fold', 'DH_Hopf', 'GH_Hopf', 'GH_Hopf_One', 'LPC_Det', 'PD_Det', 'NS_Det',
-            'ParTestFunc', 'UserDefinedTestFunc']
+            'CP_Fold', 'CP_Fold2', 'BP_Fold', 'DH_Hopf', 'GH_Hopf', 'GH_Hopf_One', 'LPC_Det', 'LPC_Bor', 'PD_Det', 'PD_Bor', 'NS_Det',
+            'NS_Bor', 'ParTestFunc', 'UserDefinedTestFunc', 'AddTestFunction_FixedPoint_Mult']
 
 __all__ = _classes
 #####
@@ -156,16 +160,22 @@ class TestFunc(Function):
 
         self.C._preTestFunc(X1, V1)
         T1 = self.func(X1, V1)[ind]
+        # print 'X1 = ', repr(X1)
+        # print 'T1 = ', repr(T1)
 
         self.C._preTestFunc(X2, V2)
         T2 = self.func(X2, V2)[ind]
+        # print 'X2 = ', repr(X2)
+        # print 'T2 = ', repr(T2)
 
+        Tmax = 10*max(abs(T1),abs(T2))
+        p = 1
         for i in range(self.C.MaxTestIters):
-            try:
-                r = abs(T1/(T1-T2))
+            if (Tmax < Inf) and (abs(T1-T2) > spacing(1)):
+                r = pow(abs(T1/(T1-T2)),p)
                 if r >= 1:
                     r = 0.5
-            except:
+            else:
                 r = 0.5
 
             X = X1 + r*(X2-X1)
@@ -175,18 +185,25 @@ class TestFunc(Function):
 
             self.C._preTestFunc(X, V)
             T = self.func(X, V)[ind]
+            # print 'X = ', repr(X)
+            # print 'T = ', repr(T)
 
             if abs(T) < self.C.TestTol and min(linalg.norm(X-X1),linalg.norm(X-X2)) < self.C.VarTol:
+                break
+            elif abs(T) > Tmax:
+                print 'Test function going crazy: ', self, '\n'
                 break
             else:
                 if sign(T) == sign(T2):
                     X2 = X
                     V2 = V
                     T2 = T
+                    p = 1.02
                 else:
                     X1 = X
                     V1 = V
                     T1 = T
+                    p = 0.98
 
         if self.C.verbosity >= 2 and i == self.C.MaxTestIters-1:
             print 'Maximum test function iterations reached.\n'
@@ -290,6 +307,9 @@ class BorderMethod(TestFunc):
             self.data.B = U[:,-1*self.data.p:]
             self.data.C = transpose(Vh)[:,-1*self.data.q:]
         else:
+                # self.data.B = eye(self.data.Brand.shape)
+                # self.data.C = eye(self.data.Crand.shape)
+                # USE OF RANDOM
             self.data.B = self.data.Brand
             self.data.C = self.data.Crand
             #self.data.B = zeros(self.data.Brand.shape, float)
@@ -299,15 +319,17 @@ class BorderMethod(TestFunc):
     def updatedata(self, A):
         if self.update:
             if self.corr:
-                self.data.B = self.data.w*(linalg.norm(A,1)/linalg.norm(self.data.w,1))
-                self.data.C = self.data.v*(linalg.norm(A,Inf)/linalg.norm(self.data.v,1))
+                B = self.data.w
+                C = self.data.v
             else:
                 # Note: Problem when singular vectors switch smallest singular value (See NewLorenz).
                 #       To overcome this, I have implemented a 1e-8 random nudge.
                 try:
                     ALU = linalg.lu_factor(A)
+                    # BC = linalg.lu_solve(ALU, c_[linalg.lu_solve(ALU, self.data.B), self.data.C], trans=1)
+                    # USE OF RANDOM NUDGE
                     BC = linalg.lu_solve(ALU, c_[linalg.lu_solve(ALU, self.data.B + 1e-8*self.data.Brand), \
-                                         self.data.C + 1e-8*self.data.Crand], trans=1)
+                                                 self.data.C + 1e-8*self.data.Crand], trans=1)
                     C = linalg.lu_solve(ALU, BC[:,-1*self.data.q:])
                     B = BC[:,0:self.data.p]
                 except:
@@ -317,13 +339,13 @@ class BorderMethod(TestFunc):
                     B = U[:,-1*self.data.p:]
                     C = transpose(Vh)[:,-1*self.data.q:]
 
-                bmult = cmult = 1
-                if matrixmultiply(transpose(self.data.B), B) < 0:
-                    bmult = -1
-                if matrixmultiply(transpose(self.data.C), C) < 0:
-                    cmult = -1
-                self.data.B = bmult*B*(linalg.norm(A,1)/linalg.norm(B))
-                self.data.C = cmult*C*(linalg.norm(A,Inf)/linalg.norm(C))
+            bmult = cmult = 1
+            if matrixmultiply(transpose(self.data.B), B) < 0:
+                bmult = -1
+            if matrixmultiply(transpose(self.data.C), C) < 0:
+                cmult = -1
+            self.data.B = bmult*B*(linalg.norm(A,1)/linalg.norm(B))
+            self.data.C = cmult*C*(linalg.norm(A,Inf)/linalg.norm(C))
 
     def func(self, A):
         V, W = self.getVW(A)
@@ -385,10 +407,11 @@ class BiAltMethod(TestFunc):
         return self.data.P
 
 class AddTestFunction(Function):
-    """Only works with testfuncs that don't have PreTestFunc and rely only on sysfunc."""
+    """Only works with testfuncs that don't have PreTestFunc and rely only on sysfunc.
+    BorderMethod update is set to False for now since updating is not working."""
     def __init__(self, C, TF_type):
         self.sysfunc = C.sysfunc
-        self.testfunc = TF_type(self.sysfunc, C)
+        self.testfunc = TF_type(self.sysfunc, C, update=False)
 
         self.coords = self.sysfunc.coords
         self.params = self.sysfunc.params
@@ -402,6 +425,7 @@ class AddTestFunction(Function):
             self.testfunc.setdata(X, V)
 
     def func(self, X):
+        # This is for the testfunc
         self.sysfunc.J_coords = self.sysfunc.jac(X, self.sysfunc.coords)
         self.sysfunc.J_params = self.sysfunc.jac(X, self.sysfunc.params)
         tmp1 = self.sysfunc(X)
@@ -411,6 +435,8 @@ class AddTestFunction(Function):
 
     def diff(self, X, ind=None):
         return r_[self.sysfunc.jac(X, ind), self.testfunc.jac(X, ind)]
+
+# DISCRETE MAPS
 
 class DiscreteMap(Function):
     """Turns a function into a map composed with itself period times.  Chain rule gives jacobian.
@@ -481,6 +507,87 @@ class FixedPointMap(Function):
             ind = range(n)
 
         return self.F.jac(X, ind) - eye(self.F.m, self.F.n)[:,ind[0]:ind[-1]+1]
+
+class AddTestFunction_FixedPoint(FixedPointMap):
+    """Only works with testfuncs that don't have PreTestFunc and rely only on sysfunc."""
+    def __init__(self, C, TF_type):
+        self.sysfunc = C.sysfunc
+        self.testfunc = TF_type(self.sysfunc, C)
+
+        self.coords = self.sysfunc.coords
+        self.params = self.sysfunc.params
+
+        Function.__init__(self, (self.sysfunc.n, self.sysfunc.m + self.testfunc.m))
+        FixedPointMap.__init__(self, self.sysfunc)
+
+    def setdata(self, X, V):
+        if hasattr(self.testfunc, "setdata"):
+            self.F.J_coords = self.F.jac(X, self.F.coords)
+            self.F.J_params = self.F.jac(X, self.F.params)
+            self.testfunc.setdata(X, V)
+
+    def func(self, X):
+        self.F.J_coords = self.F.jac(X, self.F.coords)
+        self.F.J_params = self.F.jac(X, self.F.params)
+        tmp1 = self.F(X)
+        tmp2 = self.testfunc(X, None)
+        # Broke with move to SciPy 0.5.2
+        return c_[[self.F(X) - X[0:self.F.m]], [self.testfunc(X, None)]][0]
+
+    def diff(self, X, ind=None):
+        try:
+            n = len(ind)
+        except:
+            n = self.n
+            ind = range(n)
+
+        return r_[self.F.jac(X, ind) - eye(self.F.m, self.F.n)[:,ind[0]:ind[-1]+1], self.testfunc.jac(X, ind)]
+
+class AddTestFunction_FixedPoint_Mult(FixedPointMap):
+    """Only works with testfuncs that don't have PreTestFunc and rely only on sysfunc."""
+    def __init__(self, C, TF_types):
+        self.sysfunc = C.sysfunc
+
+        self.testfunc = []
+        tf_m = 0
+        for tftype in TF_types:
+            self.testfunc.append(tftype(self.sysfunc, C))
+            tf_m = tf_m + self.testfunc[-1].m
+
+        self.coords = self.sysfunc.coords
+        self.params = self.sysfunc.params
+
+        Function.__init__(self, (self.sysfunc.n, self.sysfunc.m + tf_m))
+        FixedPointMap.__init__(self, self.sysfunc)
+
+    def setdata(self, X, V):
+        self.F.J_coords = self.F.jac(X, self.F.coords)
+        self.F.J_params = self.F.jac(X, self.F.params)
+        for tf in self.testfunc:
+            if hasattr(tf, "setdata"):
+                tf.setdata(X, V)
+
+    def func(self, X):
+        self.F.J_coords = self.F.jac(X, self.F.coords)
+        self.F.J_params = self.F.jac(X, self.F.params)
+        tf_vals = []
+        for tf in self.testfunc:
+            tf_vals = r_[tf_vals, tf(X,None)]
+        # Broke with move to SciPy 0.5.2
+        return c_[[self.F(X) - X[0:self.F.m]], [tf_vals]][0]
+
+    def diff(self, X, ind=None):
+        try:
+            n = len(ind)
+        except:
+            n = self.n
+            ind = range(n)
+
+        tf_jacs = self.testfunc[0].jac(X,ind)[0]
+        for tf in self.testfunc[1:]:
+            tf_jacs = r_[[tf_jacs], [tf.jac(X, ind)[0]]]
+
+        return r_[self.F.jac(X, ind) - eye(self.F.m, self.F.n)[:,ind[0]:ind[-1]+1], tf_jacs]
 
 # BOUNDARY POINTS
 
@@ -590,7 +697,7 @@ class Fold_Bor(BorderMethod):
         V, W = self.getVW(self.F.jac(X, self.F.coords))
         H = self.F.hess(X, self.F.coords, ind)
         return -1*reshape([bilinearform(H[:,:,i], V[0:self.data.m,:], W[0:self.data.n,:]) \
-            for i in range(n)],(1,len(ind)))
+                           for i in range(n)],(1,len(ind)))
 
 # HOPF POINTS
 
@@ -603,7 +710,7 @@ class Hopf_Det(BiAltMethod):
         return array([linalg.det(self.data.P)])
 
 class Hopf_Bor(BorderMethod, BiAltMethod):
-    def __init__(self, F, C, update=True, corr=True, save=False, numpoints=None):
+    def __init__(self, F, C, update=False, corr=False, save=False, numpoints=None):
         n = F.m
         BiAltMethod.__init__(self, (F.n, 1), F, C, save=save, numpoints=numpoints)
         BorderMethod.__init__(self, (F.n, 1), (n*(n-1)/2, n*(n-1)/2), F, C, update=update, corr=corr, save=save, numpoints=numpoints)
@@ -627,7 +734,10 @@ class Hopf_Bor(BorderMethod, BiAltMethod):
         V, W = self.getVW(self.data.P)
         H = self.F.hess(X, self.F.coords, ind)
         return -1*reshape([bilinearform(self.bialtprodeye(2*H[:,:,i]), V[0:self.data.m,:], W[0:self.data.n,:]) \
-            for i in range(n)],(1,len(ind)))
+                           for i in range(n)],(1,len(ind)))
+
+    def __str__(self):
+        return 'class Hopf_Bor(BorderMethod, BiAltMethod)'
 
 class Hopf_Eig(TestFunc):
     def __init__(self, F, C, save=False, numpoints=None):
@@ -676,6 +786,9 @@ class Hopf_Double_Bor_One(BorderMethod, BiAltMethod):
             self.data.D[0,1] = U2[A.shape[0],-1]
             self.data.D[1,0] = transpose(Vh2)[A.shape[1],-1]
         else:
+                # self.data.B = eye(self.data.Brand.shape)
+                # self.data.C = eye(self.data.Crand.shape)
+                # USE OF RANDOM
             self.data.B = self.data.Brand
             self.data.C = self.data.Crand
             #self.data.B[0,0] = self.data.C[0,0] = self.data.B[1,1] = self.data.C[1,1] = 1.0
@@ -684,8 +797,11 @@ class Hopf_Double_Bor_One(BorderMethod, BiAltMethod):
         # Update b, c
         try:
             ALU = linalg.lu_factor(A)
+            # BC = linalg.lu_solve(ALU, c_[linalg.lu_solve(ALU, self.data.b), \
+            #                      self.data.c], trans=1)
+            # USE OF RANDOM NUDGING
             BC = linalg.lu_solve(ALU, c_[linalg.lu_solve(ALU, self.data.b + 1e-8*self.data.Brand[:,:1]), \
-                                 self.data.c + 1e-8*self.data.Crand[:,:1]], trans=1)
+                                         self.data.c + 1e-8*self.data.Crand[:,:1]], trans=1)
             C = linalg.lu_solve(ALU, BC[:,-1:])
             B = BC[:,:1]
         except:
@@ -755,13 +871,47 @@ class BT_Fold(TestFunc):
         return array(matrixmultiply(transpose(self.F.testfunc.data.w), self.F.testfunc.data.v)[0])
 
 class CP_Fold(TestFunc):
+    """self.F is of type AddTestFunction***, with testfunc of type LP_Bor (or) LPC_Bor"""
+
     def __init__(self, F, C, save=False, numpoints=None):
         TestFunc.__init__(self, (F.n, 1), F, C, save=save, numpoints=numpoints)
 
     def func(self, X, V):
         H = self.F.sysfunc.hess(X, self.F.coords, self.F.coords)
-        q = self.F.testfunc.data.v/linalg.norm(self.F.testfunc.data.v)
-        p = self.F.testfunc.data.w/matrixmultiply(transpose(self.F.testfunc.data.w),q)
+        v = self.F.testfunc.data.v
+        w = self.F.testfunc.data.w
+        return array(matrixmultiply(transpose(w), reshape([bilinearform(H[i,:,:], v, v) \
+                                                           for i in range(H.shape[0])],(H.shape[0],1)))[0])
+
+        """This commented text is normal form information (I think).  It's a temporary commment.  Delete when comfortable."""
+#q = self.F.testfunc.data.v/linalg.norm(self.F.testfunc.data.v)
+#p = self.F.testfunc.data.w/matrixmultiply(transpose(self.F.testfunc.data.w),q)
+#return array(0.5*matrixmultiply(transpose(p), reshape([bilinearform(H[i,:,:], q, q) \
+#     for i in range(H.shape[0])],(H.shape[0],1)))[0])
+
+class BP_Fold(TestFunc):
+    def __init__(self, F, C, pind=0, save=False, numpoints=None):
+        TestFunc.__init__(self, (F.n, 1), F, C, save=save, numpoints=numpoints)
+        self.pind = pind;
+
+    def func(self, X, V):
+        J_params = self.F.sysfunc.J_params
+        return [matrixmultiply(transpose(self.F.testfunc.data.w), J_params[:,self.pind])[0]]
+
+class CP_Fold2(TestFunc):
+    """Used for Cusp Curve"""
+    def __init__(self, F, C, save=False, numpoints=None):
+        TestFunc.__init__(self, (F.n, 1), F, C, save=save, numpoints=numpoints)
+
+    def func(self, X, V):
+        F = self.C.CorrFunc
+        # print F.testfunc[0]
+        # print F.testfunc[0].data
+        F.testfunc[0](X,V)
+        # print F.testfunc[0].data
+        H = F.sysfunc.hess(X, self.F.coords, self.F.coords)
+        q = F.testfunc[0].data.v/linalg.norm(F.testfunc[0].data.v)
+        p = F.testfunc[0].data.w/matrixmultiply(transpose(F.testfunc[0].data.w),q)
 
         return array(0.5*matrixmultiply(transpose(p), reshape([bilinearform(H[i,:,:], q, q) \
              for i in range(H.shape[0])],(H.shape[0],1)))[0])
@@ -841,6 +991,13 @@ class GH_Hopf(TestFunc):
 
 # Test functions for FixedPointCurve
 
+# class Branch_FP_Det(TestFunc):
+#     def __init__(self, F, C, save=False, numpoints=None):
+#         TestFunc.__init__(self, (F.n, 1), F, C, save=save, numpoints=numpoints)
+#
+#     def func(self, X, V):
+#         return array([linalg.det(r_[c_[self.F.J_coords - eye(self.F.m, self.F.m),self.F.J_params],[V]])])
+
 class LPC_Det(TestFunc):
     def __init__(self, F, C, save=False, numpoints=None):
         TestFunc.__init__(self, (F.n, 1), F, C, save=save, numpoints=numpoints)
@@ -848,12 +1005,56 @@ class LPC_Det(TestFunc):
     def func(self, X, V):
         return array([linalg.det(self.F.J_coords - eye(self.F.m, self.F.m))])
 
+class LPC_Bor(BorderMethod):
+    def __init__(self, F, C, update=True, corr=True, save=False, numpoints=None):
+        BorderMethod.__init__(self, (F.n, 1), (F.m,F.m), F, C, update=update, corr=corr, save=save, numpoints=numpoints)
+
+    def setdata(self, X, V):
+        BorderMethod.setdata(self, self.F.J_coords-eye(self.F.m, self.F.m))
+
+    def func(self, X, V):
+        return array(BorderMethod.func(self, self.F.J_coords-eye(self.F.m, self.F.m))[0])
+
+    def diff(self, X, ind=None):
+        try:
+            n = len(ind)
+        except:
+            n = self.n
+            ind = range(n)
+
+        V, W = self.getVW(self.F.jac(X, self.F.coords)-eye(self.F.m, self.F.m))
+        H = self.F.hess(X, self.F.coords, ind)
+        return -1*reshape([bilinearform(H[:,:,i], V[0:self.data.m,:], W[0:self.data.n,:]) \
+                           for i in range(n)],(1,len(ind)))
+
 class PD_Det(TestFunc):
     def __init__(self, F, C, save=False, numpoints=None):
         TestFunc.__init__(self, (F.n, 1), F, C, save=save, numpoints=numpoints)
 
     def func(self, X, V):
         return array([linalg.det(self.F.J_coords + eye(self.F.m, self.F.m))])
+
+class PD_Bor(BorderMethod):
+    def __init__(self, F, C, update=True, corr=True, save=False, numpoints=None):
+        BorderMethod.__init__(self, (F.n, 1), (F.m,F.m), F, C, update=update, corr=corr, save=save, numpoints=numpoints)
+
+    def setdata(self, X, V):
+        BorderMethod.setdata(self, self.F.J_coords+eye(self.F.m, self.F.m))
+
+    def func(self, X, V):
+        return array(BorderMethod.func(self, self.F.J_coords+eye(self.F.m, self.F.m))[0])
+
+    def diff(self, X, ind=None):
+        try:
+            n = len(ind)
+        except:
+            n = self.n
+            ind = range(n)
+
+        V, W = self.getVW(self.F.jac(X, self.F.coords)+eye(self.F.m, self.F.m))
+        H = self.F.hess(X, self.F.coords, ind)
+        return -1*reshape([bilinearform(H[:,:,i], V[0:self.data.m,:], W[0:self.data.n,:]) \
+                           for i in range(n)],(1,len(ind)))
 
 class NS_Det(BiAltMethod):
     def __init__(self, F, C, save=False, numpoints=None):
@@ -864,6 +1065,35 @@ class NS_Det(BiAltMethod):
         self.bialtprod(self.F.J_coords,self.F.J_coords)
         return array([linalg.det(self.data.P - eye(n,n))])
 
+class NS_Bor(BorderMethod, BiAltMethod):
+    def __init__(self, F, C, update=True, corr=True, save=False, numpoints=None):
+        n = F.m
+        BiAltMethod.__init__(self, (F.n, 1), F, C, save=save, numpoints=numpoints)
+        BorderMethod.__init__(self, (F.n, 1), (n*(n-1)/2, n*(n-1)/2), F, C, update=update, corr=corr, save=save, numpoints=numpoints)
+
+    def setdata(self, X, V):
+        n = self.F.m*(self.F.m-1)/2
+        self.bialtprod(self.F.J_coords,self.F.J_coords)
+        BorderMethod.setdata(self, self.data.P - eye(n, n))
+
+    def func(self, X, V):
+        n = self.F.m*(self.F.m-1)/2
+        self.bialtprod(self.F.J_coords,self.F.J_coords)
+        return array(BorderMethod.func(self, self.data.P - eye(n, n))[0])
+
+    def diff(self, X, ind=None):
+        try:
+            n = len(ind)
+        except:
+            n = self.F.m*(self.F.m-1)/2
+            ind = range(n)
+
+        self.F.J_coords = self.F.jac(X, self.F.coords)
+        self.bialtprod(self.F.J_coords,self.F.J_coords)
+        V, W = self.getVW(self.data.P - eye(n, n))
+        H = self.F.hess(X, self.F.coords, ind)
+        return -1*reshape([bilinearform(H[:,:,i], V[0:self.data.m,:], W[0:self.data.n,:]) \
+                           for i in range(n)],(1,len(ind)))
 
 # Test function for stopping at parameter values (SPOut for PyCont)
 

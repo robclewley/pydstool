@@ -1,5 +1,8 @@
 """ Bifurcation point classes.  Each class locates and processes bifurcation points.
 
+    * _BranchPointFold is a version based on BranchPoint location algorithms
+    * BranchPoint: Branch process is broken (can't find alternate branch -- see MATCONT notes)
+
     Drew LaMar, March 2006
 """
 
@@ -17,8 +20,9 @@ from numpy import array, float, complex, int, float64, complex64, int32, \
 
 #####
 _classes = ['BifPoint', 'BPoint', 'BranchPoint', 'FoldPoint', 'HopfPoint',
-            'BTPoint', 'ZHPoint', 'CPPoint', 'DHPoint', 'GHPoint', 'LPCPoint',
-            'PDPoint', 'NSPoint', 'SPoint']
+            'BTPoint', 'ZHPoint', 'CPPoint',
+            'BranchPointFold', '_BranchPointFold', 'DHPoint',
+            'GHPoint', 'LPCPoint', 'PDPoint', 'NSPoint', 'SPoint']
 
 __all__ = _classes
 #####
@@ -140,7 +144,7 @@ class BPoint(BifPoint):
 
 
 class BranchPoint(BifPoint):
-    """Currently only works for EquilibriumCurve"""
+    """May only work for EquilibriumCurve ... (needs fixing)"""
     def __init__(self, testfuncs, flagfuncs, stop=False):
         BifPoint.__init__(self, testfuncs, flagfuncs, 'BP', stop=stop)
 
@@ -160,6 +164,7 @@ class BranchPoint(BifPoint):
     def locate(self, P1, P2, C):
         # Initiliaze p vector to eigenvector with smallest eigenvalue
         X, V = P1
+        X2, V2 = P2
 
         J_coords = C.CorrFunc.jac(X, C.coords)
 
@@ -175,6 +180,8 @@ class BranchPoint(BifPoint):
         self.data.psi = X[C.dim+1:]
         X = X[0:C.dim]
 
+        V = 0.5*(V+V2)
+
         return X, V
 
     def process(self, X, V, C):
@@ -183,6 +190,27 @@ class BranchPoint(BifPoint):
         # Finds the new branch
         J_coords = C.CorrFunc.jac(X, C.coords)
         J_params = C.CorrFunc.jac(X, C.params)
+
+
+        singular = True
+        perpvec = r_[1,zeros(C.dim-1)]
+        d = 1
+        while singular and d <= C.dim:
+            try:
+                v0 = linalg.solve(r_[c_[J_coords, J_params],
+                                  [perpvec]], \
+                                  r_[zeros(C.dim-1),1])
+            except:
+                perpvec = r_[0., perpvec[0:(C.dim-1)]]
+                d += 1
+            else:
+                singular = False
+
+        if singular:
+            raise PyDSTool_ExistError("Problem in _compute: Failed to compute tangent vector.")
+        v0 /= linalg.norm(v0)
+        V = sign([x for x in v0 if abs(x) > 1e-8][0])*v0
+
         A = r_[c_[J_coords, J_params], [V]]
         W, VR = linalg.eig(A)
         W0 = [ind for ind, eig in enumerate(W) if abs(eig) < 5e-5]
@@ -215,6 +243,11 @@ class BranchPoint(BifPoint):
         for n, i in enumerate(ind):
             strlist.append('branch angle = ' + repr(matrixmultiply(tocoords(C, self.found[i].V), \
                 tocoords(C, self.found[i].branch))))
+
+        X = tocoords(C, self.found[-1].X)
+        V = tocoords(C, self.found[-1].V)
+        C._preTestFunc(X, V)
+        strlist.append('Test function #1: ' + repr(self.testfuncs[0](X,V)[0]))
 
         BifPoint.info(self, C, ind, strlist)
 
@@ -449,6 +482,168 @@ class CPPoint(BifPoint):
         BifPoint.info(self, C, ind)
 
 
+class BranchPointFold(BifPoint):
+    """Check Equilibrium.m in MATCONT"""
+    def __init__(self, testfuncs, flagfuncs, stop=False):
+        BifPoint.__init__(self, testfuncs, flagfuncs, 'BP', stop=stop)
+
+    def process(self, X, V, C):
+        BifPoint.process(self, X, V, C)
+
+        pind = self.testfuncs[0].pind
+
+        # Finds the new branch
+        J_coords = C.CorrFunc.jac(X, C.coords)
+        J_params = C.CorrFunc.jac(X, C.params)
+
+        A = r_[c_[J_coords, J_params[:,pind]]]
+        #A = r_[c_[J_coords, J_params], [V]]
+
+        W, VR = linalg.eig(A)
+        W0 = [ind for ind, eig in enumerate(W) if abs(eig) < 5e-5]
+        tmp = real(VR[:,W0[0]])
+        V1 = r_[tmp[:-1], 0, 0]
+        V1[len(tmp)-1+pind] = tmp[-1]
+
+        """NEED TO FIX THIS!"""
+        H = C.CorrFunc.hess(X, C.coords+C.params, C.coords+C.params)
+        # c11 = matrixmultiply(self.data.psi,[bilinearform(H[i,:,:], V, V) for i in range(H.shape[0])])
+        # c12 = matrixmultiply(self.data.psi,[bilinearform(H[i,:,:], V, V1) for i in range(H.shape[0])])
+        # c22 = matrixmultiply(self.data.psi,[bilinearform(H[i,:,:], V1, V1) for i in range(H.shape[0])])
+
+        # beta = 1
+        # alpha = -1*c22/(2*c12)
+        # V1 = alpha*V + beta*V1
+        # V1 /= linalg.norm(V1)
+
+        self.found[-1].eigs = W
+        self.found[-1].branch = None
+        self.found[-1].par = C.freepars[self.testfuncs[0].pind]
+        # self.found[-1].branch = todict(C, V1)
+
+        self.info(C, -1)
+
+        return True
+
+    def info(self, C, ind=None):
+        if ind is None:
+            ind = range(len(self.found))
+        elif isinstance(ind, int):
+            ind = [ind]
+
+        strlist = []
+        #for n, i in enumerate(ind):
+        #    strlist.append('branch angle = ' + repr(matrixmultiply(tocoords(C, self.found[i].V), \
+        #        tocoords(C, self.found[i].branch))))
+
+        X = tocoords(C, self.found[-1].X)
+        V = tocoords(C, self.found[-1].V)
+        C._preTestFunc(X, V)
+        strlist.append('Test function #1: ' + repr(self.testfuncs[0](X,V)[0]))
+
+        BifPoint.info(self, C, ind, strlist)
+
+class _BranchPointFold(BifPoint):
+    """Check Equilibrium.m in MATCONT"""
+    def __init__(self, testfuncs, flagfuncs, stop=False):
+        BifPoint.__init__(self, testfuncs, flagfuncs, 'BP', stop=stop)
+
+    def __locate_newton(self, X, C):
+        """Note:  This is redundant!! B is a column of A!!!  Works for now, though..."""
+        pind = self.testfuncs[0].pind
+
+        J_coords = C.CorrFunc.jac(X[0:C.dim], C.coords)
+        J_params = C.CorrFunc.jac(X[0:C.dim], C.params)
+
+        A = c_[J_coords, J_params[:,pind]]
+        B = J_params[:,pind]
+
+        return r_[C.CorrFunc(X[0:C.dim]) + X[C.dim]*X[C.dim+1:], \
+                  matrixmultiply(transpose(A),X[C.dim+1:]), \
+                  matrixmultiply(transpose(X[C.dim+1:]),B), \
+                  matrixmultiply(transpose(X[C.dim+1:]),X[C.dim+1:]) - 1]
+
+    def locate(self, P1, P2, C):
+        # Initiliaze p vector to eigenvector with smallest eigenvalue
+        X, V = P1
+
+        pind = self.testfuncs[0].pind
+
+        J_coords = C.CorrFunc.jac(X, C.coords)
+        J_params = C.CorrFunc.jac(X, C.params)
+
+        A = r_[c_[J_coords, J_params[:,pind]]]
+
+        W, VL = linalg.eig(A, left=1, right=0)
+        ind = argsort([abs(eig) for eig in W])[0]
+        p = real(VL[:,ind])
+
+        initpoint = zeros(2*C.dim, float)
+        initpoint[0:C.dim] = X
+        initpoint[C.dim+1:] = p
+
+        X = optimize.fsolve(self.__locate_newton, initpoint, C)
+        self.data.psi = X[C.dim+1:]
+        X = X[0:C.dim]
+
+        return X, V
+
+    def process(self, X, V, C):
+        BifPoint.process(self, X, V, C)
+
+        pind = self.testfuncs[0].pind
+
+        # Finds the new branch
+        J_coords = C.CorrFunc.jac(X, C.coords)
+        J_params = C.CorrFunc.jac(X, C.params)
+
+        A = r_[c_[J_coords, J_params[:,pind]]]
+        #A = r_[c_[J_coords, J_params], [V]]
+
+        W, VR = linalg.eig(A)
+        W0 = [ind for ind, eig in enumerate(W) if abs(eig) < 5e-5]
+        tmp = real(VR[:,W0[0]])
+        V1 = r_[tmp[:-1], 0, 0]
+        V1[len(tmp)-1+pind] = tmp[-1]
+
+        """NEED TO FIX THIS!"""
+        H = C.CorrFunc.hess(X, C.coords+C.params, C.coords+C.params)
+        c11 = matrixmultiply(self.data.psi,[bilinearform(H[i,:,:], V, V) for i in range(H.shape[0])])
+        c12 = matrixmultiply(self.data.psi,[bilinearform(H[i,:,:], V, V1) for i in range(H.shape[0])])
+        c22 = matrixmultiply(self.data.psi,[bilinearform(H[i,:,:], V1, V1) for i in range(H.shape[0])])
+
+        beta = 1
+        alpha = -1*c22/(2*c12)
+        V1 = alpha*V + beta*V1
+        V1 /= linalg.norm(V1)
+
+        self.found[-1].eigs = W
+        self.found[-1].branch = None
+        self.found[-1].par = C.freepars[self.testfuncs[0].pind]
+        self.found[-1].branch = todict(C, V1)
+
+        self.info(C, -1)
+
+        return True
+
+    def info(self, C, ind=None):
+        if ind is None:
+            ind = range(len(self.found))
+        elif isinstance(ind, int):
+            ind = [ind]
+
+        strlist = []
+        #for n, i in enumerate(ind):
+        #    strlist.append('branch angle = ' + repr(matrixmultiply(tocoords(C, self.found[i].V), \
+        #        tocoords(C, self.found[i].branch))))
+
+        X = tocoords(C, self.found[-1].X)
+        V = tocoords(C, self.found[-1].V)
+        C._preTestFunc(X, V)
+        strlist.append('Test function #1: ' + repr(self.testfuncs[0](X,V)[0]))
+
+        BifPoint.info(self, C, ind, strlist)
+
 
 class DHPoint(BifPoint):
     def __init__(self, testfuncs, flagfuncs, stop=False):
@@ -568,9 +763,14 @@ class LPCPoint(BifPoint):
         elif isinstance(ind, int):
             ind = [ind]
 
-        BifPoint.info(self, C, ind)
+        strlist = []
+        X = tocoords(C, self.found[-1].X)
+        V = tocoords(C, self.found[-1].V)
+        C._preTestFunc(X, V)
+        strlist.append('Test function #1: ' + repr(self.testfuncs[0](X,V)[0]))
+        strlist.append('Test function #2: ' + repr(self.testfuncs[1](X,V)[0]))
 
-
+        BifPoint.info(self, C, ind, strlist)
 
 class PDPoint(BifPoint):
     def __init__(self, testfuncs, flagfuncs, stop=False):
@@ -647,7 +847,9 @@ class NSPoint(BifPoint):
         found = False
         for i in range(len(eigs)):
             for j in range(i+1,len(eigs)):
-                if imag(eigs[i]) > 1e-5 and imag(eigs[j]) > 1e-5 and abs(eigs[i]*eigs[j] - 1) < 1e-5:
+                if abs(imag(eigs[i])) > 1e-10 and \
+                   abs(imag(eigs[j])) > 1e-10 and \
+                   abs(eigs[i]*eigs[j] - 1) < 1e-5:
                     found = True
 
         if not found:
