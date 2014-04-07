@@ -33,6 +33,7 @@ Overview of steps that ModelConstructor takes:
  order to use its structure in resolving information about the relationship
  between variables.
 """
+from __future__ import absolute_import
 
 # PyDSTool imports
 from .errors import *

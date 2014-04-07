@@ -4,6 +4,8 @@
     Robert Clewley, March 2006.
 """
 
+from __future__ import absolute_import
+
 from numpy import Inf, NaN, isfinite, int, int8, int16, int32, int64, float, float32, float64
 try:
     import matplotlib
@@ -38,8 +40,8 @@ if failed:
     plt = None   # will cause an error if someone tries to access in order to plot
 else:
     import os
-    from Trajectory import Trajectory
-    from common import _num_types
+    from .Trajectory import Trajectory
+    from .common import _num_types
 
     # Convenient shorthand to permit singleton numeric types and Trajectories
     # in the plot arguments without first converting them to lists or arrays.

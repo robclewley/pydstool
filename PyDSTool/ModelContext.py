@@ -4,6 +4,8 @@
    Robert Clewley, September 2007.
 """
 
+from __future__ import absolute_import
+
 import copy
 import sys, traceback
 import numpy as npy
