@@ -12,3 +12,6 @@ radau5*
 tags
 matplotlibrc
 .coverage
+PyDSTool.egg-info/
+.ropeproject/
+.python-version
