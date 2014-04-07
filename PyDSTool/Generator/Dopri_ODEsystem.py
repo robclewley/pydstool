@@ -1,9 +1,9 @@
 # Dopri ODE system
-from __future__ import division
+from __future__ import division, absolute_import
 
-from allimports import *
+from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem
-from baseclasses import Generator, theGenSpecHelper, genDB, _pollInputs
+from .baseclasses import Generator, theGenSpecHelper, genDB, _pollInputs
 from PyDSTool.utils import *
 from PyDSTool.common import *
 # for future cleanup of * imports

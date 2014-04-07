@@ -1,11 +1,11 @@
 """VODE integrator for ODE systems, imported from a mild modification of
 the scipy-wrapped VODE Fortran solver.
 """
-from __future__ import division
+from __future__ import division, absolute_import
 
-from allimports import *
+from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem
-from baseclasses import Generator, theGenSpecHelper, _pollInputs
+from .baseclasses import Generator, theGenSpecHelper, _pollInputs
 from PyDSTool.utils import *
 from PyDSTool.common import *
 from PyDSTool.scipy_ode import ode

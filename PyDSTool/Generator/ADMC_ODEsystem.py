@@ -1,9 +1,9 @@
 # ADMC++ ODE system
-from __future__ import division
+from __future__ import division, absolute_import
 
-from allimports import *
+from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem
-from baseclasses import Generator, theGenSpecHelper
+from .baseclasses import Generator, theGenSpecHelper
 from PyDSTool.utils import *
 from PyDSTool.common import *
 from PyDSTool.integrator import integrator

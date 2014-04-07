@@ -1,8 +1,8 @@
 # Explicit function generator
-from __future__ import division
+from __future__ import division, absolute_import
 
-from allimports import *
-from baseclasses import ctsGen, theGenSpecHelper, \
+from .allimports import *
+from .baseclasses import ctsGen, theGenSpecHelper, \
      auxfn_container, _pollInputs
 from PyDSTool.utils import *
 from PyDSTool.common import *

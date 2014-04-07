@@ -3,10 +3,10 @@
 #  values for x at a specifc "time". Purely abstract time (i.e., iteration
 #  steps) is represented using integers. (We could make LookupTable a
 #  0-param sequence of maps with explicit time range?)
-from __future__ import division
+from __future__ import division, absolute_import
 
-from allimports import *
-from baseclasses import Generator, discGen, theGenSpecHelper, \
+from .allimports import *
+from .baseclasses import Generator, discGen, theGenSpecHelper, \
      auxfn_container, _pollInputs
 from PyDSTool.utils import *
 from PyDSTool.common import *

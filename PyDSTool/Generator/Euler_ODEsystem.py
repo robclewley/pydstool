@@ -1,10 +1,10 @@
 """Euler integrator for ODE systems, with no step refinement for events.
 """
-from __future__ import division
+from __future__ import division, absolute_import
 
-from allimports import *
+from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem
-from baseclasses import Generator, theGenSpecHelper, _pollInputs
+from .baseclasses import Generator, theGenSpecHelper, _pollInputs
 from PyDSTool.utils import *
 from PyDSTool.common import *
 

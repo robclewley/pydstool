@@ -2,21 +2,22 @@
 
    Robert Clewley, September 2005
 """
+from __future__ import absolute_import
 
-from baseclasses import *
-from ODEsystem import *
-from Euler_ODEsystem import *
-from Vode_ODEsystem import *
-from Dopri_ODEsystem import *
-from Radau_ODEsystem import *
-from ADMC_ODEsystem import *
-from ExplicitFnGen import *
-from ImplicitFnGen import *
-from EmbeddedSysGen import *
-from LookupTable import *
-from InterpolateTable import *
-from ExtrapolateTable import *
-from MapSystem import *
+from .baseclasses import *
+from .ODEsystem import *
+from .Euler_ODEsystem import *
+from .Vode_ODEsystem import *
+from .Dopri_ODEsystem import *
+from .Radau_ODEsystem import *
+from .ADMC_ODEsystem import *
+from .ExplicitFnGen import *
+from .ImplicitFnGen import *
+from .EmbeddedSysGen import *
+from .LookupTable import *
+from .InterpolateTable import *
+from .ExtrapolateTable import *
+from .MapSystem import *
 
 
 def findGenSubClasses(superclass):

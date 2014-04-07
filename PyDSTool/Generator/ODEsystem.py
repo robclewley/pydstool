@@ -1,7 +1,8 @@
 # ODEsystem base class
+from __future__ import absolute_import
 
-from allimports import *
-from baseclasses import ctsGen, theGenSpecHelper, auxfn_container
+from .allimports import *
+from .baseclasses import ctsGen, theGenSpecHelper, auxfn_container
 from PyDSTool.utils import *
 from PyDSTool.common import *
 from PyDSTool.Variable import Variable, iscontinuous

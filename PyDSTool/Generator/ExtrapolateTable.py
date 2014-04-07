@@ -1,8 +1,8 @@
 # Interpolated lookup table with extrapolated end points
-from __future__ import division
+from __future__ import division, absolute_import
 
-from allimports import *
-from baseclasses import ctsGen, theGenSpecHelper
+from .allimports import *
+from .baseclasses import ctsGen, theGenSpecHelper
 from PyDSTool.utils import *
 from PyDSTool.common import *
 

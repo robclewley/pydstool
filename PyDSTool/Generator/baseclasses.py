@@ -1,7 +1,7 @@
 # Generator base classes: Generator, ctsGen, discGen
-from __future__ import division
+from __future__ import division, absolute_import
 
-from allimports import *
+from .allimports import *
 from PyDSTool.utils import *
 from PyDSTool.common import *
 from PyDSTool.Symbolic import ensureStrArgDict, Quantity, QuantSpec, mathNameMap
