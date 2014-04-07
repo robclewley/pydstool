@@ -2,7 +2,9 @@
 # Matthieu Brucher
 # Last Change : 2007-08-23 10:12
 
-import quadratic
+from __future__ import absolute_import
+
+from . import quadratic
 import numpy
 
 class LMQuadratic(quadratic.Quadratic):

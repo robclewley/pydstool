@@ -2,6 +2,8 @@
 # Matthieu Brucher
 # Last Change : 2007-07-23 10:50
 
+from __future__ import absolute_import
+
 """
 Module containing the core optimizers
 
@@ -16,8 +18,8 @@ Optimizers :
     - modifies the resulting parameters
 """
 
-from standard_optimizer import *
-from standard_optimizer_modifying import *
+from .standard_optimizer import *
+from .standard_optimizer_modifying import *
 
 optimizer__all__ = ['StandardOptimizer', 'StandardOptimizerModifying']
 

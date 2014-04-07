@@ -38,10 +38,12 @@ Information criteria :
     - Identical to AICCriterion except that a number of increases are tolerated
 """
 
-from criteria import *
-from composite_criteria import *
-from information_criteria import *
-from facilities import *
+from __future__ import absolute_import
+
+from .criteria import *
+from .composite_criteria import *
+from .information_criteria import *
+from .facilities import *
 
 criterion__all__ = ['IterationCriterion', 'MonotonyCriterion', 'RelativeValueCriterion', 'AbsoluteValueCriterion', 'RelativeParametersCriterion', 'AbsoluteParametersCriterion', 'GradientCriterion',
                     'OrComposition', 'AndComposition',

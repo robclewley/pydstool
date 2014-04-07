@@ -6,6 +6,8 @@
 Optimization module
 """
 
+from __future__ import absolute_import
+
 # Needed so that default paramaters are accessible from everywhere in the submodule
 def mod_path():
   import sys
@@ -14,12 +16,12 @@ def mod_path():
 
 mod_path()
 
-import defaults
-import criterion
-import line_search
-import optimizer
-import step
-import helpers
+from . import defaults
+from . import criterion
+from . import line_search
+from . import optimizer
+from . import step
+from . import helpers
 
 __all__= ['defaults', 'criterion', 'line_search', 'optimizer', 'step', 'helpers']
 

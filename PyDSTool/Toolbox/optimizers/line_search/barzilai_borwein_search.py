@@ -5,11 +5,10 @@
 ##  def gradient(self, x):
 ##    return numpy.array((2 * (x[0] - 2), 4 * (2 * x[1] + 4)))
 
-import sys
-sys.path.append('/home/dmitrey/scikits/openopt/scikits/openopt/solvers/optimizers')
+from __future__ import absolute_import
 
-    
-from line_search import CubicInterpolationSearch
+
+from .line_search import CubicInterpolationSearch
 from numpy import *
 from numpy.linalg import norm
 

@@ -6,6 +6,8 @@
 Composite criteria allow to use several criteria together, with and/or composition
 """
 
+from __future__ import absolute_import
+
 import sys
 
 if sys.version < '2.5':

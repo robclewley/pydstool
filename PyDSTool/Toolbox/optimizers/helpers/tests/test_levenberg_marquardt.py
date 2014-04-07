@@ -3,6 +3,8 @@
 # Matthieu Brucher
 # Last Change : 2007-08-23 20:50
 
+from __future__ import absolute_import
+
 import unittest
 import numpy
 import numpy.random

@@ -6,10 +6,12 @@
 Proposes a way to create a composite criterion
 """
 
+from __future__ import absolute_import
+
 __all__ = ['criterion']
 
-from criteria import IterationCriterion, RelativeValueCriterion, RelativeParametersCriterion, GradientCriterion
-from composite_criteria import OrComposition
+from .criteria import IterationCriterion, RelativeValueCriterion, RelativeParametersCriterion, GradientCriterion
+from .composite_criteria import OrComposition
 
 def criterion(**kwargs):
   """

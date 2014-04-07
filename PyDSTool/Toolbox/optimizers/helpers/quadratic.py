@@ -2,6 +2,8 @@
 # Matthieu Brucher
 # Last Change : 2007-07-20 15:04
 
+from __future__ import absolute_import
+
 import numpy.linalg
 
 class Quadratic(object):

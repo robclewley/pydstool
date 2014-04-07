@@ -6,6 +6,8 @@
 A list of standard convergence criteria based on the number of iterations, the last values taken by the cost function and the associated points
 """
 
+from __future__ import absolute_import
+
 import math
 import numpy
 import defaults

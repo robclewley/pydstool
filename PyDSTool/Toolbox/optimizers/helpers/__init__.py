@@ -15,10 +15,12 @@ Finite Difference functions :
   - also, versions with in-built caching of previous values
 """
 
-from quadratic import *
+from __future__ import absolute_import
 
-from finite_difference import *
-from levenberg_marquardt import *
+from .quadratic import *
+
+from .finite_difference import *
+from .levenberg_marquardt import *
 
 helpers__all__ = ['Quadratic', 'FiniteDifferencesFunction',
                   'ForwardFiniteDifferences',

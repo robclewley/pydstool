@@ -2,6 +2,8 @@
 # Matthieu Brucher
 # Last Change : 2007-08-28 14:42
 
+from __future__ import absolute_import
+
 import math
 
 class AICCriterion(object):

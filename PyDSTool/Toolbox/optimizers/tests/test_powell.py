@@ -3,6 +3,8 @@
 # Matthieu Brucher
 # Last Change : 2007-10-16 20:48
 
+from __future__ import absolute_import
+
 """
 Class defining the Powell function
 """

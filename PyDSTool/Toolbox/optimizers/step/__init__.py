@@ -2,6 +2,8 @@
 # Matthieu Brucher
 # Last Change : 2007-08-31 13:42
 
+from __future__ import absolute_import
+
 """
 Module containing every step use to lower a cost function
 
@@ -43,19 +45,19 @@ Steps :
     - local brute force step in 1D (experimental)
 """
 
-from gradient_step import *
-from conjugate_gradient_step import *
+from .gradient_step import *
+from .conjugate_gradient_step import *
 
-from newton_step import *
-from marquardt_step import *
-from quasi_newton_step import *
-from goldfeld_step import *
-from goldstein_price_step import *
+from .newton_step import *
+from .marquardt_step import *
+from .quasi_newton_step import *
+from .goldfeld_step import *
+from .goldstein_price_step import *
 
-from partial_step import *
-from restart_conjugate_gradient import *
+from .partial_step import *
+from .restart_conjugate_gradient import *
 
-from local_brute_force_1dstep import *
+from .local_brute_force_1dstep import *
 
 step__all__ = ['GradientStep',
                'CWConjugateGradientStep', 'DYConjugateGradientStep', 'DConjugateGradientStep', 'FRConjugateGradientStep', 'PRPConjugateGradientStep', 'FRPRPConjugateGradientStep',
