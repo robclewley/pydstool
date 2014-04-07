@@ -7,6 +7,8 @@
 
   2008: This is superceded by GDescriptor class. See PyDSTool/tests/
 """
+from __future__ import absolute_import
+
 from PyDSTool import *
 from copy import copy
 from time import clock

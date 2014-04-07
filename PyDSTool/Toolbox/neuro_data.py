@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import numpy as npy
 from PyDSTool import Events, Variable, Pointset, Trajectory
 from PyDSTool.common import args, metric, metric_L2, metric_weighted_L2, \

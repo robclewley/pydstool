@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from PyDSTool import *
 from PyDSTool.PyCont.misc import getFlowMaps, getFlowJac, getLeftEvecs
 

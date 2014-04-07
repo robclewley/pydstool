@@ -10,7 +10,7 @@
 
 Rob Clewley, September 2005.
 """
-from __future__ import division
+from __future__ import division, absolute_import
 
 from PyDSTool import *
 from copy import copy

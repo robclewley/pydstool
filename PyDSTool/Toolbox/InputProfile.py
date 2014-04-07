@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from PyDSTool import *
 
 def makeSpikeProfile(rawT, rawX, baseline=0.0, upshift=0.0, peak='max', endTime=1000000):

@@ -5,7 +5,7 @@ This toolbox assumes you have PySCes installed.
 
 R. Clewley, 2012
 """
-from __future__ import division
+from __future__ import division, absolute_import
 
 from PyDSTool import Generator
 from PyDSTool.common import args, remain

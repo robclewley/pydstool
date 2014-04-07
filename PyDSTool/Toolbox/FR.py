@@ -1,7 +1,7 @@
 # Fruchterman-Reingold graph drawing algorithm in Python
 # R. Clewley, November 2005
 
-from __future__ import division
+from __future__ import division, absolute_import
 from numpy import array, alltrue, arange, sign
 from numpy.linalg import norm
 import math
@@ -24,7 +24,7 @@ class edge(object):
     """v -> u directed edge"""
     def __init__(self, u, v):
         self.u = u #vertex(u.pos[0], u.pos[1])
-        self.v = v #vertex(v.pos[0], v.pos[1]) 
+        self.v = v #vertex(v.pos[0], v.pos[1])
 
     def __eq__(self, other):
         return self.u == other.u and self.v == other.v

@@ -5,7 +5,7 @@ This toolbox assumes you have NineML python bindings installed.
 
 R. Clewley, 2012
 """
-from __future__ import division
+from __future__ import division, absolute_import
 
 from PyDSTool import *
 from PyDSTool.common import _seq_types, _num_types

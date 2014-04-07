@@ -3,6 +3,8 @@
 Contains functions, expressions, etc.
 """
 
+from __future__ import absolute_import
+
 from numpy import inf
 from PyDSTool.ModelTools import ModelLibrary
 import PyDSTool.ModelSpec

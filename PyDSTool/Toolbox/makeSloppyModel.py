@@ -1,6 +1,8 @@
 # makeSloppyModel: conversion from sloppy cell model description to PyDSTool
 # Robert Clewley, Oct 2005
 
+from __future__ import absolute_import
+
 from PyDSTool import *
 from PyDSTool.parseUtils import symbolMapClass
 from copy import copy

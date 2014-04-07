@@ -4,6 +4,8 @@ Robert Clewley, 2006, 2007.
 
 """
 
+from __future__ import absolute_import
+
 from PyDSTool import *
 from numpy import random, array, dot, zeros, transpose
 from numpy.linalg import norm, inv

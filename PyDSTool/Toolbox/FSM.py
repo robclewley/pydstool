@@ -70,6 +70,9 @@ you can always prevent this just by defining a default transition.
 Noah Spurrier 20020822
 """
 
+from __future__ import absolute_import
+
+
 class ExceptionFSM(Exception):
 
     """This is the FSM Exception class."""

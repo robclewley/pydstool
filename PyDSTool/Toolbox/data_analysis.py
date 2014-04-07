@@ -4,7 +4,7 @@ Data analysis utilities
 Robert Clewley, August 2006
 """
 
-from __future__ import division
+from __future__ import division, absolute_import
 from PyDSTool.Points import Point, Pointset
 from PyDSTool.Interval import Interval
 from PyDSTool.utils import intersect, filteredDict

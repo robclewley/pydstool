@@ -3,6 +3,8 @@
    Robert Clewley.
 """
 
+from __future__ import absolute_import
+
 # PyDSTool imports
 from PyDSTool.Points import Point, Pointset
 from PyDSTool.Model import Model

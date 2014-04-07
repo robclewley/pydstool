@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from PyDSTool.common import *
 from PyDSTool.errors import *
 from PyDSTool.utils import remain, info

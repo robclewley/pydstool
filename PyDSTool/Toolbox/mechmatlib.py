@@ -1,6 +1,8 @@
 # Library functions for building matrices for rigid body mechanics
 # Robert Clewley, (c) 2005, 2006
 
+from __future__ import absolute_import
+
 from numpy import mat, identity, shape, resize, dot, array, transpose
 import math
 import copy
@@ -59,14 +61,14 @@ def make_rot(a):
     a1 = a[0]
     a2 = a[1]
     a3 = a[2]
-    
+
     ca1 = math.cos(a1)
     sa1 = math.sin(a1)
     ca2 = math.cos(a2)
     sa2 = math.sin(a2)
     ca3 = math.cos(a3)
     sa3 = math.sin(a3)
-    
+
     # rot: new y, by a3
     roty = augment_3x3_matrix(mat([[ca3, 0., sa3], [0., 1., 0.],
                                               [-sa3, 0, ca3]]))

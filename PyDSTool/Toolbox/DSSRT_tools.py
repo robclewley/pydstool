@@ -10,6 +10,8 @@ Partial templates for the graphical specs are created.
 
 """
 
+from __future__ import absolute_import
+
 from PyDSTool import *
 from PyDSTool.parseUtils import symbolMapClass
 from FR import *

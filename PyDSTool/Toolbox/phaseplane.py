@@ -13,7 +13,7 @@ variable increases.
 R. Clewley, 2006 - 2011
 """
 
-from __future__ import division
+from __future__ import division, absolute_import
 # itertools, operator used for _filter_consecutive function
 import itertools, operator
 

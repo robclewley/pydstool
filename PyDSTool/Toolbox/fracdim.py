@@ -6,7 +6,7 @@ IEEE Transactions on BioMedical Engineering, 2008.
 (c) 2005, 2006. Robert Clewley, John Guckenheimer.
 """
 
-from __future__ import division
+from __future__ import division, absolute_import
 from PyDSTool import *
 from PyDSTool.common import _seq_types
 from PyDSTool.Toolbox.data_analysis import *
