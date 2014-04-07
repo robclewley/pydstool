@@ -20,6 +20,8 @@
 #
 # ----------------------------------------------------------------------------
 
+from __future__ import absolute_import
+
 from PyDSTool import pointsToPointset, Point, Pointset
 from PyDSTool.common import args
 from PyDSTool.matplotlib_import import *

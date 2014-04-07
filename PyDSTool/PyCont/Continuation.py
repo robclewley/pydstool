@@ -34,10 +34,12 @@
 
 # -----------------------------------------------------------------------------------------
 
-from misc import *
-from TestFunc import *
-from BifPoint import *
-from Plotting import *
+from __future__ import absolute_import
+
+from .misc import *
+from .TestFunc import *
+from .BifPoint import *
+from .Plotting import *
 
 from PyDSTool import Point, Pointset, PointInfo, args
 from PyDSTool.common import pickle, sortedDictValues, sortedDictKeys

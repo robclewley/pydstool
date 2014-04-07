@@ -6,9 +6,11 @@
     Drew LaMar, March 2006
 """
 
-from misc import *
+from __future__ import absolute_import
+
+from .misc import *
 from PyDSTool.common import args
-from TestFunc import DiscreteMap, FixedPointMap
+from .TestFunc import DiscreteMap, FixedPointMap
 
 from numpy import Inf, NaN, isfinite, r_, c_, sign, mod, mat, \
     subtract, divide, transpose, eye, real, imag, \

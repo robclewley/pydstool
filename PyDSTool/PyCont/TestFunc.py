@@ -22,7 +22,9 @@
 #
 # ----------------------------------------------------------------------------
 
-from misc import *
+from __future__ import absolute_import
+
+from .misc import *
 from PyDSTool.common import args, copy
 
 from numpy.linalg import cond

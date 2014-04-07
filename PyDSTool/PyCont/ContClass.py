@@ -3,14 +3,16 @@
     Drew LaMar, March 2006
 """
 
+from __future__ import absolute_import
+
 from .Continuation import (
     EquilibriumCurve, FoldCurve, HopfCurveOne, HopfCurveTwo,
     FixedPointCurve, LimitCycleCurve, UserDefinedCurve,
     FixedPointFoldCurve, FixedPointFlipCurve, FixedPointNSCurve, \
     FixedPointCuspCurve
     )
-from misc import *
-from Plotting import pargs, initializeDisplay
+from .misc import *
+from .Plotting import pargs, initializeDisplay
 
 from PyDSTool.Model import Model, findTrajInitiator
 from PyDSTool.Generator import Generator

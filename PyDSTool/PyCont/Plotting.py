@@ -3,6 +3,8 @@
     Drew LaMar, May 2006
 """
 
+from __future__ import absolute_import
+
 from PyDSTool.common import args
 from PyDSTool.matplotlib_import import *
 
