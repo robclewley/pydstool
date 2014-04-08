@@ -4,7 +4,7 @@
     Robert Clewley, September 2005.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from .errors import *
 
@@ -52,7 +52,7 @@ if os.name == 'nt':
     # slow object copying for you guys
     import fixedpickle as pickle
 else:
-    import cPickle as pickle
+    from six.moves import cPickle as pickle
 
 # ----------------------------------------------------------------------------
 ### EXPORTS
@@ -418,7 +418,7 @@ class args(object):
         # removed offset=0 from arg list
         if len(self.__dict__) > 0:
             res = "%s ("%attributeTitle
-            for k, v in self.__dict__.iteritems():
+            for k, v in self.__dict__.items():
                 try:
                     istr = v._infostr(verbose-1) #, offset+2)
                 except AttributeError:
@@ -435,27 +435,27 @@ class args(object):
         return self._infostr()
 
     def info(self):
-        print self._infostr()
+        print(self._infostr())
 
     __str__ = __repr__
 
     def values(self):
-        return self.__dict__.values()
+        return list(self.__dict__.values())
 
     def keys(self):
-        return self.__dict__.keys()
+        return list(self.__dict__.keys())
 
     def items(self):
-        return self.__dict__.items()
+        return list(self.__dict__.items())
 
     def itervalues(self):
-        return self.__dict__.itervalues()
+        return iter(self.__dict__.values())
 
     def iterkeys(self):
-        return self.__dict__.iterkeys()
+        return iter(self.__dict__.keys())
 
     def iteritems(self):
-        return self.__dict__.iteritems()
+        return iter(self.__dict__.items())
 
     def __getitem__(self, k):
         return self.__dict__[k]
@@ -476,7 +476,7 @@ class args(object):
         return self.__dict__.get(k, d)
 
     def has_key(self, k):
-        return self.__dict__.has_key(k)
+        return k in self.__dict__
 
     def pop(self, k, d=None):
         return self.__dict__.pop(k, d)
@@ -613,7 +613,7 @@ class Diagnostics(object):
 
     def showWarnings(self):
         if len(self.warnings)>0:
-            print self.getWarnings()
+            print(self.getWarnings())
 
     def getWarnings(self):
         if len(self.warnings)>0:
@@ -660,7 +660,7 @@ class Diagnostics(object):
 
     def showErrors(self):
         if len(self.errors)>0:
-            print self.getErrors()
+            print(self.getErrors())
 
     def getErrors(self):
         if len(self.errors)>0:
@@ -721,7 +721,7 @@ def concatStrDict(d, order=[]):
     retstr = ''
     if d != {}:
         if order == []:
-            order = d.keys()
+            order = list(d.keys())
         for key in order:
             itemlist = d[key]
             for strlist in itemlist:
@@ -840,9 +840,9 @@ def arraymax(a1,a2,t=float64):
         for x, y in zip(a1,a2):
             o.append(max(x,y))
     except TypeError:
-        print "Problem with type of arguments in arraymax:"
-        print "Received a1 =", a1
-        print "         a2 =", a2
+        print("Problem with type of arguments in arraymax:")
+        print("Received a1 = %r" % a1)
+        print("         a2 = %r" % a2)
         raise
     return array(o,t)
 
@@ -986,7 +986,7 @@ def diff(func, x0, vars=None, axes=None, eps=None, output=None):
     if vars is None:
         if x0type == 'array':
             dim = len(x0)
-            vars = range(dim)
+            vars = list(range(dim))
         elif x0type == 'num':
             dim = 1
             vars = [0]
@@ -1015,8 +1015,8 @@ def diff(func, x0, vars=None, axes=None, eps=None, output=None):
             if sfx0[0] == 0:
                 raise TypeError("Invalid function return type")
     except AssertionError:
-        print "fx0 shape is", sfx0
-        print fx0
+        print("fx0 shape is %d" % sfx0)
+        print(fx0)
         raise ValueError("Function should return an N-vector or N x 1 matrix,"
                  " but it returned a matrix with shape %s" % str(sfx0))
     if isinstance(fx0, _float_types):
@@ -1037,7 +1037,7 @@ def diff(func, x0, vars=None, axes=None, eps=None, output=None):
     if axes is None:
         if x0type in ['array', 'num']:
             try:
-                axes = range(sfx0[0])
+                axes = list(range(sfx0[0]))
             except IndexError:
                 # then singleton (scalar) was returned
                 axes = [0]
@@ -1171,7 +1171,7 @@ def diff2(func, x0, vars=None, axes=None, dir=1, eps=None):
             try:
                 x0 = x0.astype(float)
             except:
-                print "Found type:", x0.dtype.type
+                print("Found type: %s" % x0.dtype.type)
                 raise TypeError("Only real-valued arrays valid")
     elif isinstance(x0, _real_types):
         x0type = 'num'
@@ -1189,7 +1189,7 @@ def diff2(func, x0, vars=None, axes=None, dir=1, eps=None):
     if vars is None:
         if x0type == 'array':
             dim = len(x0)
-            vars = range(dim)
+            vars = list(range(dim))
         elif x0type == 'num':
             dim = 1
             vars = [0]
@@ -1229,8 +1229,8 @@ def diff2(func, x0, vars=None, axes=None, dir=1, eps=None):
             else:
                 raise TypeError("Invalid function return type")
         except AssertionError:
-            print "fx0 shape is", sfx0
-            print fx0
+            print("fx0 shape is %d" % sfx0)
+            print(fx0)
             raise ValueError("Function should return an N-vector or N x 1 matrix,"
                      " but it returned a matrix with shape %s" % str(sfx0))
     else:
@@ -1242,7 +1242,7 @@ def diff2(func, x0, vars=None, axes=None, dir=1, eps=None):
     if axes is None:
         if x0type in ['array', 'num']:
             try:
-                axes = range(sfx0[0])
+                axes = list(range(sfx0[0]))
             except IndexError:
                 # then singleton (scalar) was returned
                 axes = [0]
@@ -1552,9 +1552,9 @@ def makeUniqueFn(fstr, tdigits=0, idstr=None):
     try:
         code = compile(fstr, 'test', 'exec')
     except:
-        print " Cannot make unique function because of a syntax (or other) error " \
-              "in supplied code:\n"
-        print fstr
+        print(" Cannot make unique function because of a syntax (or other) error " \
+              "in supplied code:\n")
+        print(fstr)
         raise
     bracepos = fstr.index("(")
     if idstr is None:
@@ -1593,8 +1593,8 @@ def object2str(x, digits=5):
     """Convert occurrences of types / classes,
     to pretty-printable strings."""
     try:
-        if type(x) in [types.InstanceType, types.TypeType]:
-            return className(x, True)
+        if type(x) in [types.InstanceType, type]:
+        return className(x, True)
         elif isinstance(x, list):
             # search through any iterable parts (that aren't strings)
             rx = "["
@@ -1615,7 +1615,7 @@ def object2str(x, digits=5):
         elif isinstance(x, dict):
             rx = "{"
             if len(x)>0:
-                for k, o in x.iteritems():
+                for k, o in x.items():
                     rx += object2str(k, digits) + ": " + object2str(o, digits) + ", "
                 return rx[:-2]+"}"
             else:
@@ -1770,12 +1770,12 @@ def invertMap(themap):
     returned."""
     if isinstance(themap, dict):
         try:
-            return dict(map(lambda (k,v): (v,k), themap.iteritems()))
+            return dict([(v, k) for k, v in themap.items()])
         except TypeError:
             # e.g., list objects are unhashable
             # try it the slow way for this case
             result = {}
-            for k, v in themap.iteritems():
+            for k, v in themap.items():
                 if isinstance(v, (list,tuple)):
                     for val in v:
                         result[val] = k
@@ -1871,13 +1871,13 @@ def sortedDictValues(d, onlykeys=None, reverse=False):
      added filtering of keys.
     """
     if onlykeys is None:
-        keys = d.keys()
+        keys = list(d.keys())
     else:
         keys = intersect(d.keys(), onlykeys)
     keys.sort()
     if reverse:
         keys.reverse()
-    return map(d.get, keys)
+    return list(map(d.get, keys))
 
 def sortedDictKeys(d, onlykeys=None, reverse=False):
     """Return sorted list of keys from a dictionary.
@@ -1885,7 +1885,7 @@ def sortedDictKeys(d, onlykeys=None, reverse=False):
     Adapted from original function by Alex Martelli:
      added filtering of keys."""
     if onlykeys is None:
-        keys = d.keys()
+        keys = list(d.keys())
     else:
         keys = intersect(d.keys(), onlykeys)
     keys.sort()
@@ -1899,7 +1899,7 @@ def sortedDictLists(d, byvalue=True, onlykeys=None, reverse=False):
     Adapted from an original function by Duncan Booth.
     """
     if onlykeys is None:
-        onlykeys = d.keys()
+        onlykeys = list(d.keys())
     if byvalue:
         i = [(val, key) for (key, val) in d.items() if key in onlykeys]
         i.sort()
@@ -1922,7 +1922,7 @@ def sortedDictItems(d, byvalue=True, onlykeys=None, reverse=False):
     sorted by value (default) or key.
     Adapted from an original function by Duncan Booth.
     """
-    return zip(*sortedDictLists(d, byvalue, onlykeys, reverse))
+    return list(zip(*sortedDictLists(d, byvalue, onlykeys, reverse)))
 
 # ----------------------------------------------------------------------
 
@@ -1930,12 +1930,12 @@ def sortedDictItems(d, byvalue=True, onlykeys=None, reverse=False):
 
 # find intersection of two lists, sequences, etc.
 def intersect(a, b):
-    return filter(lambda e : e in b, a)
+    return [e for e in a if e in b]
 
 
 # find remainder of two lists, sequences, etc., after intersection
 def remain(a, b):
-    return filter(lambda e : e not in b, a)
+    return [e for e in a if e not in b]
 
 
 # ----------------------------------------------------------------------
@@ -2348,7 +2348,7 @@ class KroghInterpolator(object):
             self.vector_valued = False
             self.yi = self.yi[:,npy.newaxis]
         elif len(self.yi.shape)>2:
-            raise ValueError, "y coordinates must be either scalars or vectors"
+            raise ValueError("y coordinates must be either scalars or vectors")
         else:
             self.vector_valued = True
 
@@ -2356,13 +2356,13 @@ class KroghInterpolator(object):
         self.n = n
         nn, r = self.yi.shape
         if nn!=n:
-            raise ValueError, "%d x values provided and %d y values; must be equal" % (n, nn)
+            raise ValueError("%d x values provided and %d y values; must be equal" % (n, nn))
         self.r = r
 
         c = npy.zeros((n+1,r))
         c[0] = yi[0]
         Vk = npy.zeros((n,r))
-        for k in xrange(1,n):
+        for k in range(1,n):
             s = 0
             while s<=k and xi[k-s]==xi[k]:
                 s += 1
@@ -2403,7 +2403,7 @@ class KroghInterpolator(object):
         pi = 1
         p = npy.zeros((m,self.r))
         p += self.c[0,npy.newaxis,:]
-        for k in xrange(1,n):
+        for k in range(1,n):
             w = x - self.xi[k-1]
             pi = w*pi
             p = p + npy.multiply.outer(pi,self.c[k])
@@ -2469,7 +2469,7 @@ class KroghInterpolator(object):
         p = npy.zeros((m,self.r))
         p += self.c[0,npy.newaxis,:]
 
-        for k in xrange(1,n):
+        for k in range(1,n):
             w[k-1] = x - self.xi[k-1]
             pi[k] = w[k-1]*pi[k-1]
             p += npy.multiply.outer(pi[k],self.c[k])
@@ -2477,8 +2477,8 @@ class KroghInterpolator(object):
         cn = npy.zeros((max(der,n+1),m,r))
         cn[:n+1,...] += self.c[:n+1,npy.newaxis,:]
         cn[0] = p
-        for k in xrange(1,n):
-            for i in xrange(1,n-k+1):
+        for k in range(1,n):
+            for i in range(1,n-k+1):
                 pi[i] = w[k+i-1]*pi[i-1]+pi[i]
                 cn[k] = cn[k]+pi[i,:,npy.newaxis]*cn[k+i]
             cn[k]*=factorial(k)
@@ -2558,11 +2558,11 @@ class BarycentricInterpolator(object):
         self.n = len(xi)
         self.xi = npy.asarray(xi)
         if yi is not None and len(yi)!=len(self.xi):
-            raise ValueError, "yi dimensions do not match xi dimensions"
+            raise ValueError("yi dimensions do not match xi dimensions")
         self.set_yi(yi)
         self.wi = npy.zeros(self.n)
         self.wi[0] = 1
-        for j in xrange(1,self.n):
+        for j in range(1,self.n):
             self.wi[:j]*=(self.xi[j]-self.xi[:j])
             self.wi[j] = npy.multiply.reduce(self.xi[:j]-self.xi[j])
         self.wi**=-1
@@ -2589,13 +2589,13 @@ class BarycentricInterpolator(object):
             self.vector_valued = False
             yi = yi[:,npy.newaxis]
         elif len(yi.shape)>2:
-            raise ValueError, "y coordinates must be either scalars or vectors"
+            raise ValueError("y coordinates must be either scalars or vectors")
         else:
             self.vector_valued = True
 
         n, r = yi.shape
         if n!=len(self.xi):
-            raise ValueError, "yi dimensions do not match xi dimensions"
+            raise ValueError("yi dimensions do not match xi dimensions")
         self.yi = yi
         self.r = r
 
@@ -2618,23 +2618,23 @@ class BarycentricInterpolator(object):
         """
         if yi is not None:
             if self.yi is None:
-                raise ValueError, "No previous yi value to update!"
+                raise ValueError("No previous yi value to update!")
             yi = npy.asarray(yi)
             if len(yi.shape)==1:
                 if self.vector_valued:
-                    raise ValueError, "Cannot extend dimension %d y vectors with scalars" % self.r
+                    raise ValueError("Cannot extend dimension %d y vectors with scalars" % self.r)
                 yi = yi[:,npy.newaxis]
             elif len(yi.shape)>2:
-                raise ValueError, "y coordinates must be either scalars or vectors"
+                raise ValueError("y coordinates must be either scalars or vectors")
             else:
                 n, r = yi.shape
                 if r!=self.r:
-                    raise ValueError, "Cannot extend dimension %d y vectors with dimension %d y vectors" % (self.r, r)
+                    raise ValueError("Cannot extend dimension %d y vectors with dimension %d y vectors" % (self.r, r))
 
             self.yi = npy.vstack((self.yi,yi))
         else:
             if self.yi is not None:
-                raise ValueError, "No update to yi provided!"
+                raise ValueError("No update to yi provided!")
         old_n = self.n
         self.xi = npy.concatenate((self.xi,xi))
         self.n = len(self.xi)
@@ -2642,7 +2642,7 @@ class BarycentricInterpolator(object):
         old_wi = self.wi
         self.wi = npy.zeros(self.n)
         self.wi[:old_n] = old_wi
-        for j in xrange(old_n,self.n):
+        for j in range(old_n,self.n):
             self.wi[:j]*=(self.xi[j]-self.xi[:j])
             self.wi[j] = npy.multiply.reduce(self.xi[:j]-self.xi[j])
         self.wi**=-1
@@ -2737,7 +2737,7 @@ class PiecewisePolynomial(interpclass):
             self.vector_valued = False
             self.r = 1
         else:
-            raise ValueError, "Each derivative must be a vector, not a higher-rank array"
+            raise ValueError("Each derivative must be a vector, not a higher-rank array")
 
         self.xi = [xi[0]]
         self.yi = [yi0]
@@ -2764,7 +2764,7 @@ class PiecewisePolynomial(interpclass):
         n2 = min(n-n1,len(y2))
         n1 = min(n-n2,len(y1))
         if n1+n2!=n:
-            raise ValueError, "Point %g has %d derivatives, point %g has %d derivatives, but order %d requested" % (x1, len(y1), x2, len(y2), order)
+            raise ValueError("Point %g has %d derivatives, point %g has %d derivatives, but order %d requested" % (x1, len(y1), x2, len(y2), order))
         assert n1<=len(y1)
         assert n2<=len(y2)
 
@@ -2797,15 +2797,15 @@ class PiecewisePolynomial(interpclass):
         yi = npy.asarray(yi)
         if self.vector_valued:
             if (len(yi.shape)!=2 or yi.shape[1]!=self.r):
-                raise ValueError, "Each derivative must be a vector of length %d" % self.r
+                raise ValueError("Each derivative must be a vector of length %d" % self.r)
         else:
             if len(yi.shape)!=1:
-                raise ValueError, "Each derivative must be a scalar"
+                raise ValueError("Each derivative must be a scalar")
 
         if self.direction is None:
             self.direction = npy.sign(xi-self.xi[-1])
         elif (xi-self.xi[-1])*self.direction < 0:
-            raise ValueError, "x coordinates must be in the %d direction: %s" % (self.direction, self.xi)
+            raise ValueError("x coordinates must be in the %d direction: %s" % (self.direction, self.xi))
 
         self.xi.append(xi)
         self.yi.append(yi)
@@ -2843,7 +2843,7 @@ class PiecewisePolynomial(interpclass):
             None indicates that it should be deduced from the first two xi
         """
 
-        for i in xrange(len(xi)):
+        for i in range(len(xi)):
             if orders is None or npy.isscalar(orders):
                 self.append(xi[i],yi[i],orders)
             else:
@@ -2871,7 +2871,7 @@ class PiecewisePolynomial(interpclass):
                 y = npy.zeros((m,self.r))
             else:
                 y = npy.zeros(m)
-            for i in xrange(self.n-1):
+            for i in range(self.n-1):
                 c = pos==i
                 y[c] = self.polynomials[i](x[c])
         return y
@@ -2924,7 +2924,7 @@ class PiecewisePolynomial(interpclass):
                 y = npy.zeros((der,m,self.r))
             else:
                 y = npy.zeros((der,m))
-            for i in xrange(self.n-1):
+            for i in range(self.n-1):
                 c = pos==i
                 y[:,c] = self.polynomials[i].derivatives(x[c],der=der)
         return y
@@ -3023,9 +3023,9 @@ class fit_function(object):
         if constraint is None:
             if self.verbose:
                 def res_fn(p):
-                    print "\n",p
+                    print("\n%r" % p)
                     r = self.fn(xs, *p) - ys
-                    print "Residual = %f"%norm(r*weight)
+                    print("Residual = %f"%norm(r*weight))
                     return r*weight
             else:
                 def res_fn(p):
@@ -3034,9 +3034,9 @@ class fit_function(object):
         else:
             if self.verbose:
                 def res_fn(p):
-                    print "\n",p
+                    print("\n%r" % p)
                     r = npy.concatenate((constraint(*p), (self.fn(xs, *p) - ys)*weight))
-                    print "Residual = %f"%norm(r)
+                    print("Residual = %f"%norm(r))
                     return r
             else:
                 def res_fn(p):
@@ -3050,10 +3050,10 @@ class fit_function(object):
                               gtol = self.algpars.gtol,
                               maxfev = self.algpars.maxfev)
         except:
-            print "Error at parameters", pars_ic
+            print("Error at parameters %r" % pars_ic)
             raise
         if self.verbose:
-            print "Result: ", res
+            print("Result: %r" % res)
         return res
 
     def fit(self, xs, ys, pars_ic=None, opts=None):
@@ -3506,7 +3506,7 @@ class Verbose(object):
         value indicates whether a message was issue.
         """
         if self.ge(level):
-            print >>self.fileo, s
+            print(s, file=self.fileo)
             return True
         return False
 
@@ -3516,7 +3516,7 @@ class Verbose(object):
         value indicates whether a message was issued
         """
         if self.ge('error'):
-            print >>self.erro, s
+            print(s, file=self.erro)
             return True
         return False
 

@@ -8,6 +8,7 @@ import numpy
 from PyDSTool.common import (
     isUniqueSeq,
     makeSeqUnique,
+    invertMap,
 )
 
 
@@ -37,3 +38,7 @@ def test_makeSeqUnique_returns_array_with_unique_items():
 
 def test_makeSeqUnique_preserves_order():
     assert makeSeqUnique('AAAABBBCCDAABBB') == ['A', 'B', 'C', 'D']
+
+
+def test_invertMap_for_dict():
+    assert {'x': 'x', 'y': 'y'} == invertMap({'x': ['x'], 'y': ['y']})

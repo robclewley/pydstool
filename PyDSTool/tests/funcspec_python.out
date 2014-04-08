@@ -8,7 +8,7 @@ Specification functions (in target language):
    which are for internal use only)
 
   def _specfn(ds, t, x, parsinps):
-    print 'code inserted at start'
+    print('code inserted at start')
     sin_t = math.sin(t)
     expmt = math.exp(-t)
     afn1call = ds._auxfn_myauxfn1(parsinps, 2+t)
@@ -17,16 +17,16 @@ Specification functions (in target language):
     xnew1 = 2*parsinps[0]+afn1call-x[0]*expmt+3*math.pow(x[1],2)+x[2] 
     xnew2 = 2*parsinps[0]+afn1call-x[0]*expmt+3*math.pow(x[2],2)+x[3] 
     xnew3 = 2*parsinps[0]+afn1call-x[0]*expmt+3*math.pow(x[3],2)+x[1] 
-    print 'code inserted at end'
+    print('code inserted at end')
     return array([xnew0, xnew1, xnew2, xnew3])
 
  def _auxspecfn(ds, t, x, parsinps):
-    print 'code inserted at start'
+    print('code inserted at start')
     sin_t = math.sin(t)
     auxvals0 = 1+ds._auxfn_if(parsinps, x[2]>0,(1e-2+x[0]), parsinps[1]+0.4)
     auxvals1 = ds._auxfn_myauxfn1(parsinps, 2*t) + ds._auxfn_initcond(parsinps, 'w')
     auxvals2 = x[0]*2 + ds._auxfn_globalindepvar(parsinps, t)-0.5*sin_t 
-    print 'code inserted at end'
+    print('code inserted at end')
     return array([auxvals0, auxvals1, auxvals2])
 
 

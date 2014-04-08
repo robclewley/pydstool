@@ -197,8 +197,8 @@ def fsargs():
                        'exp(-t)': 'expmt',
                        'sin(t)': 'sin_t',
                        'myauxfn1(2+t)': 'afn1call'},
-        'codeinsert_end': """    print 'code inserted at end'""",
-        'codeinsert_start': """    print 'code inserted at start'""",
+        'codeinsert_end': """    print('code inserted at end')""",
+        'codeinsert_start': """    print('code inserted at start')""",
         'targetlang': 'python'
     }
 
