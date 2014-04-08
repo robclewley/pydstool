@@ -45,11 +45,11 @@ User-defined auxiliary functions (in target language):
     except KeyError:
         try:
             return ds.pdomain[name][bd]
-        except KeyError, e:
-            print 'Invalid var / par name %s'%name,
-            print 'or bounds not well defined:'
-            print ds.xdomain, ds.pdomain
-            raise (RuntimeError, e)
+        except KeyError as e:
+            print('Invalid var / par name %s'%name)
+            print('or bounds not well defined:')
+            print('%r %r' % (ds.xdomain, ds.pdomain))
+            raise RuntimeError(e)
 
   def _auxfn_Jac_p(ds, t, x, parsinps):
     sin_t = math.sin(t)

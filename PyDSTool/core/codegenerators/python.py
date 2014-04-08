@@ -341,11 +341,11 @@ class Python(CodeGenerator):
              + _indentstr + "except KeyError:\n" + 2 * _indentstr
              + "try:\n" + 3 * _indentstr
              + "return ds.pdomain[name][bd]\n" + 2 * _indentstr
-             + "except KeyError, e:\n" + 3 * _indentstr
-             + "print 'Invalid var / par name %s'%name,\n"
-             + 3 * _indentstr + "print 'or bounds not well defined:'\n"
-             + 3 * _indentstr + "print ds.xdomain, ds.pdomain\n"
-             + 3 * _indentstr + "raise (RuntimeError, e)",
+             + "except KeyError as e:\n" + 3 * _indentstr
+             + "print('Invalid var / par name %s'%name)\n"
+             + 3 * _indentstr + "print('or bounds not well defined:')\n"
+             + 3 * _indentstr + "print('%r %r' % (ds.xdomain, ds.pdomain))\n"
+             + 3 * _indentstr + "raise RuntimeError(e)",
              '_auxfn_getbound')
 
         return auxfns
