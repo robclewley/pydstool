@@ -70,7 +70,7 @@ def test_mapsystem():
     assert testmap.diagnostics.hasWarnings()
     assert_array_almost_equal(testmap.tdata, traj1.indepdomain.get())
     assert_almost_equal(2.70076996547, traj1(30, 'aux_other'))
-    ps = traj1(range(10, 40))
+    ps = traj1(list(range(10, 40)))
     assert isinstance(ps, Pointset)
     assert ps._parameterized
 
