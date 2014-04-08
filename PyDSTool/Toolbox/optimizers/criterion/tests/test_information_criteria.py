@@ -8,7 +8,7 @@ from __future__ import absolute_import
 import unittest
 import numpy
 
-from criterion import AICCriterion, ModifiedAICCriterion
+from PyDSTool.Toolbox.optimizers.criterion import AICCriterion, ModifiedAICCriterion
 
 
 class test_AICCriterion(unittest.TestCase):

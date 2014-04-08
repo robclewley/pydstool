@@ -9,7 +9,7 @@ import unittest
 import numpy
 
 from numpy.testing import assert_equal
-from step import CWConjugateGradientStep, DYConjugateGradientStep, DConjugateGradientStep, FRConjugateGradientStep, PRPConjugateGradientStep, FRPRPConjugateGradientStep, HZConjugateGradientStep
+from PyDSTool.Toolbox.optimizers.step import CWConjugateGradientStep, DYConjugateGradientStep, DConjugateGradientStep, FRConjugateGradientStep, PRPConjugateGradientStep, FRPRPConjugateGradientStep, HZConjugateGradientStep
 
 class Function(object):
   def __call__(self, x):

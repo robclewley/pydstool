@@ -9,7 +9,7 @@ import unittest
 import numpy
 
 from numpy.testing import assert_equal
-from step import FRConjugateGradientStep, RestartPeriodicallyConjugateGradientStep, RestartNotOrthogonalConjugateGradientStep
+from PyDSTool.Toolbox.optimizers.step import FRConjugateGradientStep, RestartPeriodicallyConjugateGradientStep, RestartNotOrthogonalConjugateGradientStep
 
 
 class Function(object):

@@ -10,7 +10,7 @@ import numpy
 
 from numpy.testing import assert_array_equal
 
-from line_search import SimpleLineSearch, FixedLastStepModifier
+from PyDSTool.Toolbox.optimizers.line_search import SimpleLineSearch, FixedLastStepModifier
 
 
 class Function(object):

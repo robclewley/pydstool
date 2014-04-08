@@ -9,7 +9,7 @@ import unittest
 import numpy
 
 from numpy.testing import assert_equal
-from line_search import SimpleLineSearch
+from PyDSTool.Toolbox.optimizers.line_search import SimpleLineSearch
 
 
 class test_SimpleLineSearch(unittest.TestCase):

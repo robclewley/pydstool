@@ -9,7 +9,7 @@ import unittest
 import numpy
 
 from numpy.testing import assert_equal
-from step import DFPNewtonStep
+from PyDSTool.Toolbox.optimizers.step import DFPNewtonStep
 
 
 class Function(object):

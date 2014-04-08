@@ -8,7 +8,7 @@ from __future__ import absolute_import
 import unittest
 import numpy
 
-from line_search import GoldsteinRule
+from PyDSTool.Toolbox.optimizers.line_search import GoldsteinRule
 
 
 class Function(object):

@@ -13,11 +13,11 @@ import pytest
 import os.path
 
 from numpy.testing import assert_array_almost_equal
-from criterion import *
-from helpers import LMQuadratic
-from line_search import *
-from optimizer import *
-from step import *
+from PyDSTool.Toolbox.optimizers.criterion import *
+from PyDSTool.Toolbox.optimizers.helpers import LMQuadratic
+from PyDSTool.Toolbox.optimizers.line_search import *
+from PyDSTool.Toolbox.optimizers.optimizer import *
+from PyDSTool.Toolbox.optimizers.step import *
 
 
 class F1(object):

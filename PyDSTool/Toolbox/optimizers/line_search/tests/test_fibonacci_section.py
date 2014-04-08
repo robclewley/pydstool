@@ -10,7 +10,7 @@ import numpy
 
 from numpy.testing import assert_almost_equal, assert_equal
 
-from line_search import FibonacciSectionSearch
+from PyDSTool.Toolbox.optimizers.line_search import FibonacciSectionSearch
 
 
 class Function(object):

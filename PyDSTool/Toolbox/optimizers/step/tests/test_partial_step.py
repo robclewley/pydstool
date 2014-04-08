@@ -9,7 +9,7 @@ import unittest
 import numpy
 
 from numpy.testing import assert_equal
-from step import PartialStep, GradientStep
+from PyDSTool.Toolbox.optimizers.step import PartialStep, GradientStep
 
 
 class Function(object):
