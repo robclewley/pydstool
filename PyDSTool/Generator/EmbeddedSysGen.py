@@ -1,5 +1,5 @@
 # Embedded dynamical system generator
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from .baseclasses import ctsGen, theGenSpecHelper
@@ -48,7 +48,7 @@ class EmbeddedSysGen(ctsGen):
         except (KeyError, AttributeError):
             raise PyDSTool_KeyError("Model-type system must be provided")
         self.funcspec = args(**self._kw_process_dispatch(dispatch_list, kw))
-        self.funcspec.vars = kw['varspecs'].keys()
+        self.funcspec.vars = list(kw['varspecs'].keys())
         self.funcspec.auxvars = []
         # varspecs not specified by user and must be removed for checkArgs()
         del kw['varspecs']
@@ -75,7 +75,7 @@ class EmbeddedSysGen(ctsGen):
             # aux vars?
             try:
                 xinterval=Interval(x, self.xtype[x], self.xdomain[x], self._abseps)
-            except KeyError, e:
+            except KeyError as e:
                 raise PyDSTool_KeyError('Mismatch between declared variables '
                                  'and xspecs: ' + str(e))
             # placeholder variable so that this class can be
@@ -103,7 +103,7 @@ class EmbeddedSysGen(ctsGen):
         try:
             traj = self._embed_spec(self._solver)
         except:
-            print "Error in user-provided embedded system"
+            print("Error in user-provided embedded system")
             raise
         self.defined = True
         traj.name = trajname
@@ -137,7 +137,7 @@ class EmbeddedSysGen(ctsGen):
         # optional keys for this call are
         #   ['pars', 'tdomain', 'xdomain', 'pdomain']
         if 'xdomain' in kw:
-            for k_temp, v in kw['xdomain'].iteritems():
+            for k_temp, v in kw['xdomain'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.xdomain.keys():
                     if isinstance(v, _seq_types):
@@ -162,7 +162,7 @@ class EmbeddedSysGen(ctsGen):
                                       ' names -> valid interval 2-tuples or '
                                       'singletons')
         if 'pdomain' in kw:
-            for k_temp, v in kw['pdomain'].iteritems():
+            for k_temp, v in kw['pdomain'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.pars.keys():
                     if isinstance(v, _seq_types):
@@ -197,27 +197,24 @@ class EmbeddedSysGen(ctsGen):
                 self.diagnostics.warnings.append((W_UNCERTVAL,
                                                   (self.tdata[0],self.tdomain)))
             else:
-                print 'tdata cannot be specified below smallest '\
+                print('tdata cannot be specified below smallest '\
                       'value in tdomain\n (possibly due to uncertain bounding).'\
-                      ' It has been automatically adjusted from\n ', self.tdata[0], \
-                      'to', self.tdomain[0], '(difference of', \
-                      self.tdomain[0]-self.tdata[0], ')'
+                      ' It has been automatically adjusted from\n %f to %f '\
+                      '(difference of %f)' % (self.tdata[0], self.tdomain[0], self.tdomain[0]-self.tdata[0]))
             self.tdata[0] = self.tdomain[0]
         if self.tdomain[1] < self.tdata[1]:
             if self.indepvariable.indepdomain.contains(self.tdata[1]) == uncertain:
                 self.diagnostics.warnings.append((W_UNCERTVAL,
                                                   (self.tdata[1],self.tdomain)))
             else:
-                print 'tdata cannot be specified above largest '\
+                print('tdata cannot be specified above largest '\
                       'value in tdomain\n (possibly due to uncertain bounding).'\
                       ' It has been automatically adjusted from\n ', \
-                      self.tdomain[1], 'to', \
-                      self.tdomain[1], '(difference of', \
-                      self.tdata[1]-self.tdomain[1], ')'
+                      '%f to %f (difference of %f)' % (self.tdomain[1], self.tdomain[1], self.tdata[1]-self.tdomain[1]))
             self.tdata[1] = self.tdomain[1]
         self.indepvariable.depdomain.set(self.tdata)
         if 'ics' in kw:
-            for k_temp, v in kw['ics'].iteritems():
+            for k_temp, v in kw['ics'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.xdomain.keys():
                     self._xdatadict[k] = ensurefloat(v)
@@ -228,7 +225,7 @@ class EmbeddedSysGen(ctsGen):
             if not self.pars:
                 raise ValueError('No pars were declared for this object'
                                    ' at initialization.')
-            for k_temp, v in kw['pars'].iteritems():
+            for k_temp, v in kw['pars'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.pars:
                     cval = self.parameterDomains[k].contains(v)
@@ -236,7 +233,7 @@ class EmbeddedSysGen(ctsGen):
                         if cval is not notcontained:
                             self.pars[k] = ensurefloat(v)
                             if cval is uncertain and self.checklevel == 2:
-                                print 'Warning: Parameter value at bound'
+                                print('Warning: Parameter value at bound')
                         else:
                             raise PyDSTool_ValueError('Parameter value out of '
                                                       'bounds')
@@ -260,7 +257,7 @@ class EmbeddedSysGen(ctsGen):
                 assert isinstance(v, Variable)
             assert not self.inputs
         except AssertionError:
-            print 'Invalid system specification'
+            print('Invalid system specification')
             raise
 
 

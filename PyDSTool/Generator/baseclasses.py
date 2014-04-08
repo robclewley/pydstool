@@ -1,5 +1,5 @@
 # Generator base classes: Generator, ctsGen, discGen
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from PyDSTool.utils import *
@@ -89,7 +89,7 @@ class genDBClass(object):
 
     def __repr__(self):
         s = "Generator internal database class: "
-        s += str(self.database.keys())
+        s += str(list(self.database.keys()))
         return s
 
     __str__ = __repr__
@@ -142,9 +142,9 @@ class ixmap(dict):
     def __init__(self, genref):
         self.parixmap = {}
         self.pars = genref.pars
-        i = genref.inputs.keys()
+        i = list(genref.inputs.keys())
         i.sort()
-        p = genref.pars.keys()
+        p = list(genref.pars.keys())
         p.sort()
         allnames = p + i
         for pair in enumerate(allnames):
@@ -317,7 +317,7 @@ class Generator(object):
         The events are not guaranteed to be ordered by the value of the
         independent variable.
         """
-        compat_evnames = self._FScompatibleNamesInv(self.trajevents.keys())
+        compat_evnames = self._FScompatibleNamesInv(list(self.trajevents.keys()))
         if evnames is None:
             evnames = compat_evnames
         if asGlobalTime:
@@ -340,7 +340,7 @@ class Generator(object):
             assert all([ev in compat_evnames for ev in evnames]), \
                    "Invalid event name(s) provided: %s"%str(evnames)
             result = {}
-            for (evname, evptset) in self.trajevents.iteritems():
+            for (evname, evptset) in self.trajevents.items():
                 compat_evname = self._FScompatibleNamesInv(evname)
                 if compat_evname not in evnames:
                     continue
@@ -370,7 +370,7 @@ class Generator(object):
             t_offset = self.globalt0
         else:
             t_offset = 0
-        compat_evnames = self._FScompatibleNamesInv(self.trajevents.keys())
+        compat_evnames = self._FScompatibleNamesInv(list(self.trajevents.keys()))
         if evnames is None:
             evnames = compat_evnames
         if isinstance(evnames, str):
@@ -386,7 +386,7 @@ class Generator(object):
             # assume a sequence of strings
             assert all([ev in compat_evnames for ev in evnames]), \
                    "Invalid event name(s) provided: %s"%str(evnames)
-            for (evname, evptset) in self.trajevents.iteritems():
+            for (evname, evptset) in self.trajevents.items():
                 compat_evname = self._FScompatibleNamesInv(evname)
                 if compat_evname not in compat_evnames:
                     continue
@@ -407,9 +407,9 @@ class Generator(object):
         assert isinstance(querykey, str), \
                        ("Query argument must be a single string")
         if querykey not in self._querykeys:
-            print 'Valid query keys are:', self._querykeys
-            print "('events' key only queries model-level events, not those"
-            print " inside sub-models)"
+            print('Valid query keys are: %r' % (self._querykeys, ))
+            print("('events' key only queries model-level events, not those")
+            print(" inside sub-models)")
             raise ValueError('Query key '+querykey+' is not valid')
         if querykey in ['pars', 'parameters']:
             result = self._FScompatibleNamesInv(self.pars)
@@ -426,12 +426,12 @@ class Generator(object):
             result = self._FScompatibleNamesInv(self.funcspec.auxvars)
         elif querykey == 'vardomains':
             result = {}
-            for varname, var in self.variables.iteritems():
+            for varname, var in self.variables.items():
                 result[self._FScompatibleNamesInv(varname)] = \
                                var.depdomain
         elif querykey == 'pardomains':
             result = {}
-            for parname, pardom in self.parameterDomains.iteritems():
+            for parname, pardom in self.parameterDomains.items():
                 result[self._FScompatibleNamesInv(parname)] = \
                                pardom
         elif querykey == 'abseps':
@@ -456,7 +456,7 @@ class Generator(object):
 
 
     def info(self, verbose=1):
-        print self._infostr(verbose)
+        print(self._infostr(verbose))
 
 
     def _kw_process_dispatch(self, keys, kw):
@@ -480,10 +480,10 @@ class Generator(object):
         if 'varspecs' in kw:
             for varname, varspec in kw['varspecs'].items():
                 if not isinstance(varname, (str, QuantSpec, Quantity)):
-                    print "Expected string, QuantSpec, or Quantity to name variable, got type %s" %(type(varname))
+                    print("Expected string, QuantSpec, or Quantity to name variable, got type %s" %(type(varname)))
                     raise PyDSTool_TypeError("Invalid type for Variable name: %s"%str(varname))
                 if not isinstance(varspec, (str, QuantSpec, Quantity)):
-                    print "Expected string, QuantSpec, or Quantity definition for %s, got type %s" %(varname, type(varspec))
+                    print("Expected string, QuantSpec, or Quantity definition for %s, got type %s" %(varname, type(varspec)))
                     raise PyDSTool_TypeError("Invalid type for Variable %s's specification."%varname)
             self.foundKeys += 1
             fs_args['varspecs'] = \
@@ -527,8 +527,8 @@ class Generator(object):
         if 'tdomain' in kw:
             self.tdomain = kw['tdomain']
             if self.tdomain[0] >= self.tdomain[1]:
-                print "Time domain specified: [%s, %s]"%(self.tdomain[0],
-                                                         self.tdomain[1])
+                print("Time domain specified: [%s, %s]"%(self.tdomain[0],
+                                                         self.tdomain[1]))
                 raise PyDSTool_ValueError("tdomain values must be in order of "
                                 "increasing size")
             self.foundKeys += 1
@@ -608,7 +608,7 @@ class Generator(object):
             elif isinstance(inputs, dict):
                 self.inputs.update(self._FScompatibleNames(inputs))
                 # ensure values are Variables or Pointsets
-                for k, v in self.inputs.iteritems():
+                for k, v in self.inputs.items():
                     if not isinstance(v, Variable):
                         try:
                             self.inputs[k]=Variable(v)
@@ -622,14 +622,14 @@ class Generator(object):
             # defined, e.g. inputs may be formally present in the keys but in
             # fact unused
             self._extInputsChanged = (self.inputs != {})
-            fs_args['inputs'] = self.inputs.keys()
+            fs_args['inputs'] = list(self.inputs.keys())
         else:
             self._extInputsChanged = False
 
     def _kw_process_ics(self, kw, fs_args):
         if 'ics' in kw:
             self._xdatadict = {}
-            for k, v in dict(kw['ics']).iteritems():
+            for k, v in dict(kw['ics']).items():
                 self._xdatadict[self._FScompatibleNames(str(k))] = ensurefloat(v)
             self.initialconditions = self._xdatadict.copy()
             unspecd = remain(self._xdatadict.keys(), self.__all_vars)
@@ -680,7 +680,7 @@ class Generator(object):
         self.xtype = {}
         if 'xtype' in kw:
             xts = kw['xtype']
-            for name_temp, xt in dict(xts).iteritems():
+            for name_temp, xt in dict(xts).items():
                 if compareNumTypes(xt, _all_int):
                     xt_actual = int
                 elif compareNumTypes(xt, _all_float):
@@ -715,7 +715,7 @@ class Generator(object):
     def _kw_process_xdomain(self, kw, fs_args):
         if 'xdomain' in kw:
             self.xdomain = {}
-            for k, v in dict(kw['xdomain']).iteritems():
+            for k, v in dict(kw['xdomain']).items():
                 name = self._FScompatibleNames(str(k))
                 if isinstance(v, _seq_types):
                     assert len(v) == 2, \
@@ -782,9 +782,9 @@ class Generator(object):
                     except (AttributeError, TypeError):
                         raise TypeError("Invalid parameter symbolic definition")
             else:
-                for k, v in dict(kw['pars']).iteritems():
+                for k, v in dict(kw['pars']).items():
                     self.pars[self._FScompatibleNames(str(k))] = ensurefloat(v)
-            fs_args['pars'] = self.pars.keys()
+            fs_args['pars'] = list(self.pars.keys())
             self._register(self.pars)
             self.foundKeys += 1
         self.numpars = len(self.pars)
@@ -793,7 +793,7 @@ class Generator(object):
         if 'pdomain' in kw:
             if self.pars:
                 self.pdomain = {}
-                for k, v in dict(kw['pdomain']).iteritems():
+                for k, v in dict(kw['pdomain']).items():
                     assert len(v) == 2, \
                                "Invalid size of domain specification for "+k
                     self.pdomain[self._FScompatibleNames(str(k))] = v
@@ -823,9 +823,9 @@ class Generator(object):
                 if self.checklevel < 3:
                     if cval is not notcontained:
                         if cval is uncertain and self.checklevel == 2:
-                            print 'Warning: Parameter value at bound'
+                            print('Warning: Parameter value at bound')
                     else:
-                        print self.pars[pname], "not in", self.parameterDomains[pname].get()
+                        print("%r not in %r" % (self.pars[pname], self.parameterDomains[pname].get()))
                         raise PyDSTool_ValueError('Parameter %s: value out of bounds'%pname)
                 else:
                     if cval is uncertain:
@@ -842,7 +842,7 @@ class Generator(object):
         fs_args['targetlang'] = theGenSpecHelper(self).lang
         if 'compiler' in kw:
             if fs_args['targetlang'] == 'python':
-                print "Warning: redundant option 'compiler' for python target"
+                print("Warning: redundant option 'compiler' for python target")
             self._compiler = kw['compiler']
             self.foundKeys += 1
         elif fs_args['targetlang'] != 'python':
@@ -881,7 +881,7 @@ class Generator(object):
             if self.pars:
                 # automatically pass par values on to embedded system
                 # when Rhs called
-                parlist = self.pars.keys()
+                parlist = list(self.pars.keys())
                 parstr = "".join(["'%s': %s, "%(parname,parname) \
                                   for parname in parlist])
             else:
@@ -921,7 +921,7 @@ class Generator(object):
                 outputStr += '\n  ' + str(v.depdomain)
             if self.eventstruct is not None:
                 outputStr += '\nEvents defined:'
-                outputStr += '\n  ' + str(self.eventstruct.events.keys())
+                outputStr += '\n  ' + str(list(self.eventstruct.events.keys()))
         if self._modeltag is not None:
             outputStr += '\nAssociated Model: ' + self._modeltag.name
         if verbose > 0:
@@ -931,28 +931,28 @@ class Generator(object):
 
     def showEventSpec(self):
         if self.eventstruct is not None:
-            for evname, ev in self.eventstruct.events.iteritems():
-                print evname + ":\n" + ev._funcstr
-                print "\n"
+            for evname, ev in self.eventstruct.events.items():
+                print(evname + ":\n" + ev._funcstr)
+                print("\n")
 
 
     def showSpec(self):
-        print self.funcspec.spec[0]
+        print(self.funcspec.spec[0])
 
 
     def showAuxSpec(self):
-        print self.funcspec.auxspec[0]
+        print(self.funcspec.auxspec[0])
 
 
     def showAuxFnSpec(self, auxfnname=None):
         if auxfnname is None:
             retdict = {}
-            for aname, aspec in self.funcspec.auxfns.iteritems():
+            for aname, aspec in self.funcspec.auxfns.items():
                 retdict[aname] = aspec[0]
             info(retdict)
         else:
             try:
-                print self.funcspec.auxfns[auxfnname][0]
+                print(self.funcspec.auxfns[auxfnname][0])
             except KeyError:
                 raise NameError("Aux function %s not found"%auxfnname)
 
@@ -978,7 +978,7 @@ class Generator(object):
                     assert isinstance(self.pars[name], _num_types)
                     assert type(self.pars[name]) == self._registry[name]
             if self.inputs:
-                for subjectname, obj in self.inputs.iteritems():
+                for subjectname, obj in self.inputs.items():
                     # test for containment of input's interval in independent
                     # variable interval
                     # (use checklevel = 1 for this o/w could get errors)
@@ -992,7 +992,7 @@ class Generator(object):
             # check consistency with FuncSpec type of self.funcspec
             # (unnecessary for dictionary version of FuncSpec)
             if isinstance(self.funcspec, FuncSpec):
-                varnames = self.variables.keys()
+                varnames = list(self.variables.keys())
                 fsvars = self.funcspec.vars
                 if len(varnames) > 1:
                     varnames.sort()
@@ -1001,7 +1001,7 @@ class Generator(object):
                                                 'variable names')
                 else:
                     assert varnames == fsvars
-                parnames = self.pars.keys()
+                parnames = list(self.pars.keys())
                 fspars = self.funcspec.pars
                 if len(parnames) > 1:
                     parnames.sort()
@@ -1011,7 +1011,7 @@ class Generator(object):
                 else:
                     assert parnames == fspars
                 if self.inputs:
-                    inputnames = self.inputs.keys()
+                    inputnames = list(self.inputs.keys())
                     fsinputs = self.funcspec.inputs
                     if len(inputnames) > 1:
                         inputnames.sort()
@@ -1023,7 +1023,7 @@ class Generator(object):
             else:
                 assert len(self.funcspec) == self.dimension
         except:
-            print 'Invalid system specification'
+            print('Invalid system specification')
             raise
 
 
@@ -1037,10 +1037,10 @@ class Generator(object):
                 if name not in self._needKeys + self._optionalKeys:
                     raise PyDSTool_KeyError('Key name ' + name + ' is invalid')
         else:
-            print 'Keywords supplied:\n\t' + str(kw.keys())
-            print '# keywords found: ' + str(self.foundKeys)
-            print 'Needed:\n\t' + str(self._needKeys)
-            print 'Optional:\n\t' + str(self._optionalKeys)
+            print('Keywords supplied:\n\t' + str(list(kw.keys())))
+            print('# keywords found: ' + str(self.foundKeys))
+            print('Needed:\n\t' + str(self._needKeys))
+            print('Optional:\n\t' + str(self._optionalKeys))
             raise PyDSTool_KeyError('Invalid keyword arguments for this class')
         del self.foundKeys
 
@@ -1060,7 +1060,7 @@ class Generator(object):
 
         if isinstance(items, dict):
             # for parameter and variable dictionaries
-            for name, v in items.iteritems():
+            for name, v in items.items():
                 if isinstance(self.funcspec, FuncSpec):
                     assert name in self.funcspec.vars \
                        or name in self.funcspec.auxvars \
@@ -1136,7 +1136,7 @@ class Generator(object):
         allnames = self.funcspec.vars + nonEvtPars
         if activatedbounds in (None,{}):
             activatedbounds = {}.fromkeys(allnames, (False,False))
-        for xname, xdom in alldoms.iteritems():
+        for xname, xdom in alldoms.items():
             if xname not in allnames:
                 # don't make bound constraints for non-state variables
                 continue
@@ -1207,7 +1207,7 @@ class Generator(object):
         """Set initialconditions attribute of all generator's events, in
         case event uses auxiliary functions that access this information."""
         try:
-            evs = self.eventstruct.events.values()
+            evs = list(self.eventstruct.events.values())
         except AttributeError:
             # no events present
             pass
@@ -1333,7 +1333,7 @@ class Generator(object):
     # Methods for pickling protocol
     def __getstate__(self):
         d = copy(self.__dict__)
-        for fname, finfo in self._funcreg.iteritems():
+        for fname, finfo in self._funcreg.items():
             try:
                 del d[fname]
             except KeyError:
@@ -1351,7 +1351,7 @@ class Generator(object):
         # delete object-specific class methods etc. before deleting
         # to avoid crowding namespace
         try:
-            for fname, finfo in self._funcreg.iteritems():
+            for fname, finfo in self._funcreg.items():
                 try:
                     delattr(eval(finfo[0]), fname)
                 except AttributeError:
@@ -1471,18 +1471,17 @@ def _pollInputs(inputVarList, t, checklevel):
             f.diagnostics.clearWarnings()
             ilist.append(f(t, checklevel))
     except AssertionError:
-        print 'External input call has t out of range: t = ', t
-        print 'Maybe checklevel is 3 and initial time is not', \
-                    'completely inside valid time interval'
+        print('External input call has t out of range: t = %f' % (t, ))
+        print('Maybe checklevel is 3 and initial time is not', \
+                    'completely inside valid time interval')
         raise
     except ValueError:
-        print 'External input call has value out of range: t = ', t
-        print 'Check beginning and end time of integration'
+        print('External input call has value out of range: t = %f' % (t, ))
+        print('Check beginning and end time of integration')
         for f in inputVarList:
             if f.diagnostics.hasWarnings():
-                print 'External input %s out of range:' % f.name
-                print '   t = ', repr(f.diagnostics.warnings[-1][0]), ', ', \
-                      f.name, ' = ', repr(f.diagnostics.warnings[-1][1])
+                print('External input %s out of range:' % f.name)
+                print('   t = %r, %s = %r' % (f.diagnostics.warnings[-1][0], f.name, f.diagnostics.warnings[-1][1]))
         raise
     return ilist
 

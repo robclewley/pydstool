@@ -1,5 +1,5 @@
 # ADMC++ ODE system
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem
@@ -62,7 +62,7 @@ class ADMC_ODEsystem(ODEsystem):
         algparams_def = {'evtols' : 0.0001, 'vftype' : 'vfieldts'}
 
         # Remove this later
-        for k, v in algparams_def.iteritems():
+        for k, v in algparams_def.items():
             if k not in self.algparams:
                 self.algparams[k] = v
 
@@ -82,8 +82,8 @@ class ADMC_ODEsystem(ODEsystem):
                      "A file already exists with the same name"
                 os.mkdir(self._compilation_tempdir)
             except:
-                print "Could not create compilation temp directory " + \
-                      self._compilation_tempdir
+                print("Could not create compilation temp directory " + \
+                      self._compilation_tempdir)
                 raise
 
         # ADMC targets must go in their own directories with appropriate names
@@ -96,8 +96,8 @@ class ADMC_ODEsystem(ODEsystem):
                        "A file already exists with the same name"
                 os.mkdir(self._target_dir)
             except:
-                print "Could not creat target ADMC model directory " + \
-                      self._target_dir
+                print("Could not creat target ADMC model directory " + \
+                      self._target_dir)
                 raise
 
 
@@ -121,8 +121,8 @@ class ADMC_ODEsystem(ODEsystem):
         if not nobuild:
             self.makeLibSource()
         else:
-            print "Build the library using the makeLib method, or in "
-            print "stages using the makeLibSource and compileLib methods."
+            print("Build the library using the makeLib method, or in ")
+            print("stages using the makeLibSource and compileLib methods.")
 
 
     def _prepareEventSpecs(self):
@@ -184,7 +184,7 @@ class ADMC_ODEsystem(ODEsystem):
             fbody += ev._LLfuncstr
 
             if self.funcspec.auxfns:
-                fbody_parsed = addArgToCalls(fbody, self.funcspec.auxfns.keys(), "p_")
+                fbody_parsed = addArgToCalls(fbody, list(self.funcspec.auxfns.keys()), "p_")
             else:
                 fbody_parsed = fbody
 
@@ -253,11 +253,11 @@ class ADMC_ODEsystem(ODEsystem):
         pnames = self.funcspec.pars
         pnames.sort()
 
-        for i in xrange(self.numpars):
+        for i in range(self.numpars):
             p = pnames[i]
             pardefines += "\t" + p + " = p_(" + str(i+1) + ");\n"
 
-        for i in xrange(self.dimension):
+        for i in range(self.dimension):
             v = vnames[i]
             vardefines += "\t" + v + " = x_(" + str(i+1) + ");\n"
 
@@ -292,7 +292,7 @@ class ADMC_ODEsystem(ODEsystem):
                 fbody = finfo[0]
                 # subs _p into auxfn-to-auxfn calls (but not to the signature)
                 fbody_parsed = addArgToCalls(fbody,
-                                        self.funcspec.auxfns.keys(),
+                                        list(self.funcspec.auxfns.keys()),
                                         "p_", notFirst=True)
 
                 allfilestr += "\n" + fbody_parsed + "\n\n"
@@ -337,7 +337,7 @@ class ADMC_ODEsystem(ODEsystem):
 
         bodystr = "ics_ = [ ...\n"
         if self.initialconditions:
-            icnames = self.initialconditions.keys()
+            icnames = list(self.initialconditions.keys())
             icnames.sort()
 
             for i in range(len(icnames)-1):
@@ -368,7 +368,7 @@ class ADMC_ODEsystem(ODEsystem):
 
         bodystr = "pars_ = [ ...\n"
         if self.pars:
-            pnames = self.pars.keys()
+            pnames = list(self.pars.keys())
             pnames.sort()
 
             for i in range(len(pnames)-1):
@@ -403,7 +403,7 @@ class ADMC_ODEsystem(ODEsystem):
             # NEED TO CHECK WHETHER THIS IS APPROPRIATELY DEFINED
             # check for calls to user-defined functions and add hidden p_ argument
             if self.funcspec.auxfns:
-                fbody_parsed = addArgToCalls(fbody, self.funcspec.auxfns.keys(), "p_")
+                fbody_parsed = addArgToCalls(fbody, list(self.funcspec.auxfns.keys()), "p_")
                 if 'initcond' in self.funcspec.auxfns:
                     fbody_parsed = wrapArgInCall(fbody_parsed, 'initcond', ' ')
 
@@ -441,9 +441,9 @@ class ADMC_ODEsystem(ODEsystem):
             file = open(modelfile, 'w')
             file.write(allfilestr)
             file.close()
-        except IOError, e:
-            print "Error opening file "+self._model_file+" for writing"
-            raise IOError, e
+        except IOError as e:
+            print("Error opening file "+self._model_file+" for writing")
+            raise IOError(e)
 
         # Write the events.m file
         if len(self._eventNames) > 0:
@@ -453,9 +453,9 @@ class ADMC_ODEsystem(ODEsystem):
                 file = open(eventsfile, 'w')
                 file.write(allfilestr)
                 file.close()
-            except IOError, e:
-                print "Error opening file "+self._events_file+" for writing"
-                raise IOError, e
+            except IOError as e:
+                print("Error opening file "+self._events_file+" for writing")
+                raise IOError(e)
 
 
         # Write the initialconditions.m file
@@ -465,9 +465,9 @@ class ADMC_ODEsystem(ODEsystem):
             file = open(icfile, 'w')
             file.write(allfilestr)
             file.close()
-        except IOError, e:
-            print "Error opening file "+self._ic_file+" for writing"
-            raise IOError, e
+        except IOError as e:
+            print("Error opening file "+self._ic_file+" for writing")
+            raise IOError(e)
 
         # Write the pars.m file
         allfilestr = self._prepareParamContents()
@@ -476,9 +476,9 @@ class ADMC_ODEsystem(ODEsystem):
             file = open(paramfile, 'w')
             file.write(allfilestr)
             file.close()
-        except IOError, e:
-            print "Error opening file "+self._param_file+" for writing"
-            raise IOError, e
+        except IOError as e:
+            print("Error opening file "+self._param_file+" for writing")
+            raise IOError(e)
 
         # Write the get.m file
         allfilestr = self._prepareGetFileContents()
@@ -487,9 +487,9 @@ class ADMC_ODEsystem(ODEsystem):
             file = open(getfile, 'w')
             file.write(allfilestr)
             file.close()
-        except IOError, e:
-            print "Error opening file "+self._get_file+" for writing"
-            raise IOError, e
+        except IOError as e:
+            print("Error opening file "+self._get_file+" for writing")
+            raise IOError(e)
 
         # Write the set.m file
         allfilestr = self._prepareSetFileContents()
@@ -498,9 +498,9 @@ class ADMC_ODEsystem(ODEsystem):
             file = open(setfile, 'w')
             file.write(allfilestr)
             file.close()
-        except IOError, e:
-            print "Error opening file "+self._set_file+" for writing"
-            raise IOError, e
+        except IOError as e:
+            print("Error opening file "+self._set_file+" for writing")
+            raise IOError(e)
 
         # Write the vfield.m file
 #        vfdefines = self._prepareVfieldDefines()
@@ -511,9 +511,9 @@ class ADMC_ODEsystem(ODEsystem):
             file = open(vffile, 'w')
             file.write(allfilestr)
             file.close()
-        except IOError, e:
-            print "Error opening file "+self._vfield_file+" for writing"
-            raise IOError, e
+        except IOError as e:
+            print("Error opening file "+self._vfield_file+" for writing")
+            raise IOError(e)
 
 
     # We have omitted methods: RHS, compute, etc. because this
