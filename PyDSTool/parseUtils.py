@@ -8,7 +8,7 @@
 """
 
 # IMPORTS
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 from .errors import *
 from .common import *
 import re
@@ -80,10 +80,8 @@ specialfns = ['airy', 'airye', 'ai_zeros', 'bi_zeros', 'ellipj',
             'exp2', 'radian', 'cosdg', 'sindg', 'tandg', 'cotdg',
             'log1p', 'expm1', 'cosm1', 'round']
 protected_specialfns = ['special_'+s for s in specialfns]
-protected_mathnames = filter(lambda s: not s.startswith('__'), \
-                                 dir(math))
-protected_randomnames = filter(lambda s: not s.startswith('_'), \
-                                 dir(random))  # yes, just single _
+protected_mathnames = [s for s in dir(math) if not s.startswith('__')]
+protected_randomnames = [s for s in dir(random) if not s.startswith('_')]  # yes, just single _
 # We add internal default auxiliary function names for use by
 # functional specifications.
 builtin_auxnames = ['globalindepvar', 'initcond', 'heav', 'if',
@@ -152,7 +150,7 @@ __all__ = _functions + _classes + _objects + _constants + _symbfuncs + _symbcons
 name_chars_RE = re.compile('\w')
 alphanumeric_chars_RE = re.compile('[a-zA-Z0-9]')   # without the '_'
 alphabet_chars_RE = re.compile('[a-zA-Z]')
-num_chars = map(lambda i: str(i), range(10))
+num_chars = [str(i) for i in range(10)]
 
 if DO_POW:
     POW_STR = 'pow(%s,%s)'
@@ -295,8 +293,8 @@ def toPowSyntax(t):
                         # so ignore
                         return t
             except:
-                print t
-                print ast2string(t)
+                print(t)
+                print(ast2string(t))
                 raise
         elif t[0] == 'xor_expr' and t[2][0]=='CIRCUMFLEX':
             # ^ syntax has complex binding rules in python parser's AST!
@@ -419,7 +417,7 @@ def ast2shortlist(t):
 def sym2name(t):
     if type(t) is parser.ASTType: return sym2name(t.tolist())
     if not isinstance(t, list): return t
-    return [syms[t[0]]]+map(sym2name,t[1:])
+    return [syms[t[0]]]+list(map(sym2name,t[1:]))
 
 def string2ast(t):
     return sym2name(ast2shortlist(parser.expr(t)))
@@ -928,7 +926,7 @@ class symbolMapClass(object):
                 # not copyable, so no need to worry
                 res = arg
             try:
-                for k, v in arg.iteritems():
+                for k, v in arg.items():
                     new_k = self.__call__(k)
                     new_v = self.__call__(v)
                     res[new_k] = new_v
@@ -1004,26 +1002,25 @@ class symbolMapClass(object):
         return self.lookupDict.__contains__(symbol)
 
     def keys(self):
-        return self.lookupDict.keys()
+        return list(self.lookupDict.keys())
 
     def values(self):
-        return self.lookupDict.values()
+        return list(self.lookupDict.values())
 
     def items(self):
-        return self.lookupDict.items()
+        return list(self.lookupDict.items())
 
     def iterkeys(self):
-        return self.lookupDict.iterkeys()
+        return iter(self.lookupDict.keys())
 
     def itervalues(self):
-        return self.lookupDict.itervalues()
+        return iter(self.lookupDict.values())
 
     def iteritems(self):
-        return self.lookupDict.iteritems()
+        return iter(self.lookupDict.items())
 
     def inverse(self):
-        return symbolMapClass(dict(map(lambda (k,v): (v,k),
-                                self.lookupDict.iteritems())))
+        return symbolMapClass(dict([(v, k) for k, v in self.lookupDict.items()]))
 
     def update(self, amap):
         try:
@@ -1079,7 +1076,7 @@ class auxfnDBclass(object):
     def __call__(self, parserObj=None):
         if parserObj is None:
             # return all auxiliary functions known
-            return self.auxnames.values()
+            return list(self.auxnames.values())
         else:
             try:
                 return [self.auxnames[parserObj]]
@@ -1088,7 +1085,7 @@ class auxfnDBclass(object):
 
     def removeAuxFn(self, auxfnName):
         flagdelete = None
-        for k, v in self.auxnames.iteritems():
+        for k, v in self.auxnames.items():
             if v == auxfnName:
                 flagdelete = k
                 break
@@ -1129,7 +1126,7 @@ class parserObject(object):
         if type(specStr) is str:
             self.specStr = specStr
         else:
-            print "Found type", type(specStr), ": ", specStr
+            print("Found type %s: %r" % (type(specStr), specStr))
             raise TypeError("specStr must be a string")
         self.treatMultiRefs = treatMultiRefs
         # record init options in case want to reset
@@ -1335,7 +1332,7 @@ class parserObject(object):
 ##                            raise ValueError('Symbol ^ is not allowed. '
 ##                                             'Please use the pow() call')
 ##                        else:
-                        print "Problem with string '%s'"%specstr
+                        print("Problem with string '%s'"%specstr)
                         raise ValueError('Symbol %s is illegal. '%stemp)
                 elif stemp == '[':
                     # self.treatMultiRefs == False and '[' in specialtokens
@@ -1484,7 +1481,7 @@ class parserObject(object):
                         if s == 'for':
                             # check next char is '('
                             if specstr[scount] != '(':
-                                print "Next char found:", specstr[scount]
+                                print("Next char found:%s" % specstr[scount])
                                 raise ValueError("Invalid 'for' macro syntax")
                             # find next ')' (for statement should contain no
                             # braces itself)
@@ -1502,9 +1499,9 @@ class parserObject(object):
                                temp.tokenized[2] == temp.tokenized[4] == ',',
                                temp.tokenized[5] in ['+','*']]
                             if not alltrue(macrotests):
-                                print "specstr was: ", specstr
-                                print "tokens: ", temp.tokenized
-                                print "test results: ", macrotests
+                                print("specstr was: %s" % specstr)
+                                print("tokens: %r" % temp.tokenized)
+                                print("test results: %r" % macrotests)
                                 raise ValueError("Invalid sub-clause in "
                                                  "'for' macro")
                             # start next parsing iteration after the ')'
@@ -1765,7 +1762,7 @@ def mapNames(themap, target):
         return tuple(themap(target))
     elif hasattr(target, 'iteritems'):
         o = {}
-        for k, v in target.iteritems():
+        for k, v in target.items():
             o[themap(k)] = v
         return o
     elif isinstance(target, str):
@@ -1929,7 +1926,7 @@ def parseMatrixStrToDictStr(specstr, specvars, m=0):
             else:
                 splitdone = True
     except:
-        print "Error in matrix specification"
+        print("Error in matrix specification")
         raise
     return specdict
 
@@ -2029,7 +2026,7 @@ def findEndBrace(s, lbchar='(', rbchar=')'):
 
 def makeParList(objlist, prefix=''):
     """wrap objlist into a comma separated string of str(objects)"""
-    parlist = ', '.join(map(lambda i: prefix+str(i), objlist))
+    parlist = ', '.join([prefix + str(i) for i in objlist])
     return parlist
 
 
@@ -2050,7 +2047,7 @@ def wrapArgInCall(source, callfn, wrapL, wrapR=None, argnums=[0],
         # find callfn in source
         findposlist = [source[currpos:].find(callfn+'(')]
         try:
-            findpos = min(filter(lambda x:x>=0,findposlist))+currpos
+            findpos = min([x for x in findposlist if x >= 0]) + currpos
         except ValueError:
             done = True
         if not done:
@@ -2247,7 +2244,7 @@ def replaceCallsWithDummies(source, callfns, used_dummies=None, notFirst=False):
             sub_source = source[startbrace+1:endbrace]
             embedded_calls = [sub_source.find(fname+'(') for fname in callfns]
             try:
-                subpositions = filter(lambda x:x>0, embedded_calls)
+                subpositions = [x for x in embedded_calls if x > 0]
                 if subpositions == []:
                     filtered_sub_source = sub_source
                     new_d = {}
@@ -2317,7 +2314,7 @@ def addArgToCalls(source, callfns, arg, notFirst=''):
                 # remove so that findpos except clause doesn't get confused
                 findposlist_candidates.remove(candidate_pos)
         try:
-            findpos = min(filter(lambda x:x>=0,findposlist))+currpos
+            findpos = min([x for x in findposlist if x >= 0]) + currpos
         except ValueError:
             # findposlist is empty
             done = True
@@ -2338,7 +2335,7 @@ def addArgToCalls(source, callfns, arg, notFirst=''):
             sub_source = source[startbrace+1:endbrace]
             embedded_calls = [sub_source.find(fname+'(') for fname in callfns]
             try:
-                subpositions = filter(lambda x:x>0,embedded_calls)
+                subpositions = [x for x in embedded_calls if x > 0]
                 if subpositions == []:
                     filtered_sub_source = sub_source
                 else:
