@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from PyDSTool.common import invertMap, intersect, concatStrDict
 from PyDSTool.parseUtils import convertPowers, parseMatrixStrToDictStr, addArgToCalls, wrapArgInCall, splitargs, findEndBrace
@@ -14,7 +14,7 @@ from .base import _processReused, CodeGenerator
 class C(CodeGenerator):
 
     def generate_aux(self):
-        auxnames = self.fspec._auxfnspecs.keys()
+        auxnames = list(self.fspec._auxfnspecs.keys())
         auxfns = {}
         # parameter and variable definitions
         # sorted version of var and par names sorted version of par
@@ -37,21 +37,21 @@ class C(CodeGenerator):
             auxspec = self.fspec._auxfnspecs[auxname]
             assert len(auxspec) == 2, 'auxspec tuple must be of length 2'
             if not isinstance(auxspec[0], list):
-                print "Found type ", type(auxspec[0])
-                print "Containing: ", auxspec[0]
+                print("Found type " + type(auxspec[0]))
+                print("Containing: " + auxspec[0])
                 raise TypeError('aux function arguments '
                                 'must be given as a list')
             if not isinstance(auxspec[1], str):
-                print "Found type ", type(auxspec[1])
-                print "Containing: ", auxspec[1]
+                print("Found type " + type(auxspec[1]))
+                print("Containing: " + auxspec[1])
                 raise TypeError('aux function specification '
                                 'must be a string of the function code')
             # Process Jacobian functions specially, if present
             if auxname == 'Jacobian':
                 sig = "void jacobian("
                 if not compareList(auxspec[0], ['t'] + self.fspec.vars):
-                    print ['t'] + self.fspec.vars
-                    print "Auxspec =", auxspec[0]
+                    print(['t'] + self.fspec.vars)
+                    print("Auxspec =" + auxspec[0])
                     raise ValueError(
                         "Invalid argument list given in Jacobian.")
                 if any([pt in auxspec[1] for pt in ('^', '**')]):
@@ -98,8 +98,8 @@ class C(CodeGenerator):
             elif auxname == 'Jacobian_pars':
                 sig = "void jacobianParam("
                 if not compareList(auxspec[0], ['t'] + self.fspec.pars):
-                    print ['t'] + self.fspec.pars
-                    print "Auxspec =", auxspec[0]
+                    print(['t'] + self.fspec.pars)
+                    print("Auxspec =" + auxspec[0])
                     raise ValueError(
                         "Invalid argument list given in Jacobian.")
                 parlist = "unsigned n_, unsigned np_, double t, double *Y_,"
@@ -124,7 +124,7 @@ class C(CodeGenerator):
                            "'[' character invalid in Jacobian for 1D system"
                     assert ']' not in auxstr, \
                            "']' character invalid in Jacobian for 1D system"
-                    specdict_temp[self.fspec.vars.values()[0]] = auxstr
+                    specdict_temp[list(self.fspec.vars.values())[0]] = auxstr
                 else:
                     specdict_temp = parseMatrixStrToDictStr(
                         auxstr, self.fspec.vars, m)
@@ -145,8 +145,8 @@ class C(CodeGenerator):
                                 + "] = " + specdict[
                                     self.fspec.vars[row]][col] + ";\n"
                         except (IndexError, KeyError):
-                            print n, specvars
-                            print "\nFound matrix:\n"
+                            print("%d %r" % (n, specvars))
+                            print("\nFound matrix:\n")
                             info(specdict)
                             raise ValueError(
                                 "Jacobian should be %sx%s" % (m, n))
@@ -176,7 +176,7 @@ class C(CodeGenerator):
                            "'[' character invalid in mass matrix for 1D system"
                     assert ']' not in auxstr, \
                            "']' character invalid in mass matrix for 1D system"
-                    specdict_temp[specvars.values()[0]] = auxstr
+                    specdict_temp[list(specvars.values())[0]] = auxstr
                 else:
                     specdict_temp = parseMatrixStrToDictStr(
                         auxstr, specvars, m)
@@ -308,7 +308,7 @@ class C(CodeGenerator):
         # temporary placeholders for these built-ins...
         cases_ic = ""
         cases_index = ""
-        for i in xrange(len(self.fspec.vars)):
+        for i in range(len(self.fspec.vars)):
             if i == 0:
                 command = 'if'
             else:
@@ -319,7 +319,7 @@ class C(CodeGenerator):
             cases_index += "  " + command + " (strcmp(name, " + '"' + vname + '"'\
                 + ")==0)\n\treturn " + str(i) + ";\n"
         # add remaining par names for getindex
-        for i in xrange(len(self.fspec.pars)):
+        for i in range(len(self.fspec.pars)):
             pname = self.fspec.pars[i]
             cases_index += "  else if" + " (strcmp(name, " + '"' + pname + '"'\
                            + ")==0)\n\treturn " + str(
@@ -348,7 +348,7 @@ class C(CodeGenerator):
         assert self.fspec.targetlang == 'c', ('Wrong target language for this'
                                          ' call')
         assert self.fspec.varspecs != {}, 'varspecs attribute must be defined'
-        specnames_unsorted = self.fspec.varspecs.keys()
+        specnames_unsorted = list(self.fspec.varspecs.keys())
         _vbfs_inv = invertMap(self.fspec._varsbyforspec)
         # Process state variable specifications
         if len(_vbfs_inv) > 0:
@@ -383,7 +383,7 @@ class C(CodeGenerator):
         assert self.fspec.vars == specname_vars, ('Mismatch between declared '
                                              ' variable names and varspecs keys')
         valid_depTargNames = self.fspec.inputs + self.fspec.vars + self.fspec.auxvars
-        for specname, specstr in self.fspec.varspecs.iteritems():
+        for specname, specstr in self.fspec.varspecs.items():
             assert type(
                 specstr) == str, "Specification for %s was not a string" % specname
             if any([pt in specstr for pt in ('^', '**')]):
@@ -436,13 +436,13 @@ class C(CodeGenerator):
             + reusestr + "\n"
         auxdefs_parsed = {}
         # add function body
-        for i in xrange(len(specnames)):
+        for i in range(len(specnames)):
             xname = specnames[i]
             fbody = self.fspec.varspecs[xname]
             fbody_parsed = self._processSpecialC(fbody)
             if self.fspec.auxfns:
                 fbody_parsed = addArgToCalls(fbody_parsed,
-                                             self.fspec.auxfns.keys(),
+                                             list(self.fspec.auxfns.keys()),
                                              "p_, wk_, xv_")
                 if 'initcond' in self.fspec.auxfns:
                     # convert 'initcond(x)' to 'initcond("x")' for
@@ -463,7 +463,7 @@ class C(CodeGenerator):
         if self.fspec.auxfns:
             def addParToCall(s):
                 return addArgToCalls(self._processSpecialC(s),
-                                     self.fspec.auxfns.keys(), "p_, wk_, xv_")
+                                     list(self.fspec.auxfns.keys()), "p_, wk_, xv_")
             parseFunc = addParToCall
         else:
             parseFunc = self._processSpecialC
@@ -474,7 +474,7 @@ class C(CodeGenerator):
                                                                    parseFunc)
         self.fspec._protected_reusenames = new_protected
         reusedefs = {}.fromkeys(new_protected)
-        for _, deflist in reused.iteritems():
+        for _, deflist in reused.items():
             for d in deflist:
                 reusedefs[d[2]] = d
         return (concatStrDict(reusedefs, intersect(order, reusedefs.keys())),

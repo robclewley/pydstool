@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from copy import deepcopy
 
@@ -88,7 +88,7 @@ class Matlab(CodeGenerator):
             prepared = self.preprocess_hook(prepared, **kwargs)
 
         reused, processed, reuseterms, order = _processReused(
-            prepared.keys(),
+            list(prepared.keys()),
             prepared,
             self.fspec.reuseterms,
             getattr(self, '_indentstr', ''),
@@ -105,14 +105,14 @@ class Matlab(CodeGenerator):
 
     def preprocess_hook(self, specdict, **__):
         processed = deepcopy(specdict)
-        for name, spec in processed.iteritems():
+        for name, spec in processed.items():
             processed[name] = self._normalize_spec(spec)
         return processed
 
     def postprocess_hook(self, specdict, **kwargs):
         namemap = kwargs.get('namemap', {})
         processed = deepcopy(specdict)
-        for name, spec in processed.iteritems():
+        for name, spec in processed.items():
             spec = _map_names(spec, namemap)
             processed[name] = self.adjust_call(spec)
         return processed
@@ -121,7 +121,7 @@ class Matlab(CodeGenerator):
     def adjust_call(self):
         """Callable which adds parameter argument to auxiliary function calls (if any)"""
         if self.fspec.auxfns:
-            return lambda s: addArgToCalls(s, self.fspec.auxfns.keys(), 'p_')
+            return lambda s: addArgToCalls(s, list(self.fspec.auxfns.keys()), 'p_')
         return idfn
 
     def generate_spec(self, specname_vars, specs):
@@ -154,7 +154,7 @@ class Matlab(CodeGenerator):
 def _generate_reusestr(reused, reuseterms, order):
     """Build string with reused term definitions from data returned by `_processReused`"""
     reusedefs = {}.fromkeys(reuseterms)
-    for deflist in reused.itervalues():
+    for deflist in reused.values():
         for d in deflist:
             reusedefs[d[2]] = d
 
