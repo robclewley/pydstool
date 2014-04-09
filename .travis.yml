@@ -15,6 +15,11 @@ env:
     # Cutting edge
     - NUMPY_VERSION=1.8.1 SCIPY_VERSION=0.13.3
 
+branches:
+    except:
+        - NeuroDebian0
+        - 0.88.120504
+
 install:
     - pip install -q -U numpy==$NUMPY_VERSION
     - pip install -U scipy==$SCIPY_VERSION
