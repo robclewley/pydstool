@@ -1,5 +1,5 @@
 # Implicit function generator
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from .baseclasses import ctsGen, theGenSpecHelper
@@ -12,6 +12,7 @@ from numpy import Inf, NaN, isfinite, sometrue, alltrue, array, \
      transpose, shape
 import math, random
 from copy import copy, deepcopy
+import six
 try:
     # use pscyo JIT byte-compiler optimization, if available
     import psyco
@@ -76,7 +77,7 @@ class ImplicitFnGen(ctsGen):
         for x in self.funcspec.vars + self.funcspec.auxvars:
             try:
                 xinterval=Interval(x, self.xtype[x], self.xdomain[x], self._abseps)
-            except KeyError, e:
+            except KeyError as e:
                 raise PyDSTool_KeyError('Mismatch between declared variables'
                                  ' and xspecs: ' + str(e))
             # placeholder variable so that this class can be
@@ -125,9 +126,9 @@ class ImplicitFnGen(ctsGen):
         tempfs.spec = tempspec
         # test supplied code
         try:
-            exec tempspec[0] in globals()
+            six.exec_(tempspec[0], globals())
         except:
-            print 'Error in supplied functional specification code'
+            print('Error in supplied functional specification code')
             raise
         # set up implicit function: utils.makeImplicitFunction gets
         # called finally in Variable.addMethods() method.
@@ -272,7 +273,7 @@ class ImplicitFnGen(ctsGen):
             self._register(self.variables)
         #self.validateSpec()
         self.defined = True
-        return Trajectory(trajname, tempvars.values(),
+        return Trajectory(trajname, list(tempvars.values()),
                           abseps=self._abseps, globalt0=self.globalt0,
                           checklevel=self.checklevel,
                           FScompatibleNames=self._FScompatibleNames,
@@ -306,7 +307,7 @@ class ImplicitFnGen(ctsGen):
             ctsGen.set(self, abseps=kw['abseps'])
         # optional keys for this call are ['pars', 'tdomain', 'xdomain', 'pdomain']
         if 'xdomain' in kw:
-            for k_temp, v in kw['xdomain'].iteritems():
+            for k_temp, v in kw['xdomain'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.funcspec.vars+self.funcspec.auxvars:
                     if isinstance(v, _seq_types):
@@ -340,27 +341,24 @@ class ImplicitFnGen(ctsGen):
                 self.diagnostics.warnings.append((W_UNCERTVAL,
                                                   (self.tdata[0],self.tdomain)))
             else:
-                print 'tdata cannot be specified below smallest '\
+                print('tdata cannot be specified below smallest '\
                       'value in tdomain\n (possibly due to uncertain bounding).'\
-                      ' It has been automatically adjusted from\n ', self.tdata[0], \
-                      'to', self.tdomain[0], '(difference of', \
-                      self.tdomain[0]-self.tdata[0], ')'
+                      ' It has been automatically adjusted from %f to %f (difference of %f)\n' % (
+                          self.tdata[0], self.tdomain[0], self.tdomain[0]-self.tdata[0]))
             self.tdata[0] = self.tdomain[0]
         if self.tdomain[1] < self.tdata[1]:
             if self.indepvariable.indepdomain.contains(self.tdata[1]) == uncertain:
                 self.diagnostics.warnings.append((W_UNCERTVAL,
                                                   (self.tdata[1],self.tdomain)))
             else:
-                print 'tdata cannot be specified above largest '\
+                print('tdata cannot be specified above largest '\
                       'value in tdomain\n (possibly due to uncertain bounding).'\
-                      ' It has been automatically adjusted from\n ', \
-                      self.tdomain[1], 'to', \
-                      self.tdomain[1], '(difference of', \
-                      self.tdata[1]-self.tdomain[1], ')'
+                      ' It has been automatically adjusted from %f to %f (difference of %f)\n' % (
+                      self.tdomain[1], self.tdomain[1], self.tdata[1]-self.tdomain[1]))
             self.tdata[1] = self.tdomain[1]
         self.indepvariable.depdomain.set(self.tdata)
         if 'pdomain' in kw:
-            for k_temp, v in kw['pdomain'].iteritems():
+            for k_temp, v in kw['pdomain'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.funcspec.pars:
                     if isinstance(v, _seq_types):
@@ -386,7 +384,7 @@ class ImplicitFnGen(ctsGen):
                                       ' names -> valid interval 2-tuples or '
                                       'singletons')
         if 'ics' in kw:
-            for k_temp, v in kw['ics'].iteritems():
+            for k_temp, v in kw['ics'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.funcspec.vars+self.funcspec.auxvars:
                     self._xdatadict[k] = ensurefloat(v)
@@ -397,7 +395,7 @@ class ImplicitFnGen(ctsGen):
             if not self.pars:
                 raise ValueError('No pars were declared for this object'
                                    ' at initialization.')
-            for k_temp, v in kw['pars'].iteritems():
+            for k_temp, v in kw['pars'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.pars:
                     cval = self.parameterDomains[k].contains(v)
@@ -405,7 +403,7 @@ class ImplicitFnGen(ctsGen):
                         if cval is not notcontained:
                             self.pars[k] = ensurefloat(v)
                             if cval is uncertain and self.checklevel == 2:
-                                print 'Warning: Parameter value at bound'
+                                print('Warning: Parameter value at bound')
                         else:
                             raise PyDSTool_ValueError('Parameter value out of bounds')
                     else:
@@ -418,7 +416,7 @@ class ImplicitFnGen(ctsGen):
                 else:
                     raise PyDSTool_AttributeError('Illegal parameter name')
         if 'algparams' in kw:
-            for k, v in kw['algparams'].iteritems():
+            for k, v in kw['algparams'].items():
                 self.algparams[k] = v
         if 'solvemethod' in self.algparams:
             if self.algparams['solvemethod'] not in _implicitSolveMethods:
@@ -428,11 +426,11 @@ class ImplicitFnGen(ctsGen):
     def validateSpec(self):
         ctsGen.validateSpec(self)
         try:
-            for v in self.variables.values():
+            for v in list(self.variables.values()):
                 assert isinstance(v, Variable)
             assert not self.inputs
         except AssertionError:
-            print 'Invalid system specification'
+            print('Invalid system specification')
             raise
 
 
