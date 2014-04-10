@@ -1,7 +1,7 @@
 """Basic integrator interface class
    Erik Sherwood, September 2006
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from .errors import PyDSTool_InitError as InitError
 from .errors import PyDSTool_ClearError as ClearError
@@ -111,7 +111,7 @@ class integrator:
             verify_nonneg('nExtInputs', nExtInputs, _all_int)
             verify_nonneg('extraSpace', extraSpace, _all_int)
         except:
-            print sys.exc_info()[0], sys.exc_info()[1]
+            print("%s %s" % (sys.exc_info()[0], sys.exc_info()[1]))
             raise InitError('Integrator initialization failed!')
 
 
@@ -367,7 +367,7 @@ class integrator:
                 if orientation > 0:
                     for y in range(len(extInputTimes[x])-1):
                         if extInputTimes[x][y] >= extInputTimes[x][y+1]:
-                            print x, y, extInputTimes[x][y],extInputTimes[x][y+1]
+                            print("%f %f %f %f" % (x, y, extInputTimes[x][y],extInputTimes[x][y+1]))
                             raise ValueError("extInputTimes must be ordered consistently")
 
 
@@ -443,7 +443,7 @@ class integrator:
         if not isinstance(ic, list):
             raise TypeError("ic must be list")
         if len(ic) != self.phaseDim:
-            print "IC length %i didn't match phaseDim %i"%(len(ic), self.phaseDim), ic
+            print("IC length %i didn't match phaseDim %i %r"%(len(ic), self.phaseDim, ic))
             raise ValueError('ic must have length equal to phaseDim')
         for x in ic:
             if not isinstance(x, _real_types):
