@@ -1,5 +1,5 @@
 # Radau ODE system
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem
@@ -51,8 +51,8 @@ class radau(integrator):
         try:
             self._integMod = __import__(modname, globals())
         except:
-            print "Error in importing compiled vector field and integrator."
-            print "Did you compile the RHS C code?"
+            print("Error in importing compiled vector field and integrator.")
+            print("Did you compile the RHS C code?")
             raise
         # check module's directory
         assert 'Integrate' in dir(self._integMod), \
@@ -480,7 +480,7 @@ Default 0.001.""",
                         'hasJacP': 0,
                         'checkBounds': self.checklevel
                         }
-        for k, v in algparams_def.iteritems():
+        for k, v in algparams_def.items():
             if k not in self.algparams:
                 self.algparams[k] = v
         # verify that no additional keys are present in algparams, after
@@ -505,9 +505,9 @@ Default 0.001.""",
         elif thisplatform in ['Linux', 'IRIX', 'Solaris', 'SunOS', 'MacOS', 'Darwin', 'FreeBSD']:
             self._dllext = '.so'
         else:
-            print "Shared library extension not tested on this platform."
-            print "If this process fails please report the errors to the"
-            print "developers."
+            print("Shared library extension not tested on this platform.")
+            print("If this process fails please report the errors to the")
+            print("developers.")
             self._dllext = '.so'
         self._compilation_tempdir = os.path.join(os.getcwd(),
                                                       "radau5_temp")
@@ -517,8 +517,8 @@ Default 0.001.""",
                      "A file already exists with the same name"
                 os.mkdir(self._compilation_tempdir)
             except:
-                print "Could not create compilation temp directory " + \
-                      self._compilation_tempdir
+                print("Could not create compilation temp directory " + \
+                      self._compilation_tempdir)
                 raise
         self._compilation_sourcedir = os.path.join(_pydstool_path,"integrator")
         self._vf_file = self.name+"_vf.c"
@@ -532,8 +532,8 @@ Default 0.001.""",
                 self.makeLibSource()
                 self.compileLib()
             else:
-                print "Build the library using the makeLib method, or in "
-                print "stages using the makeLibSource and compileLib methods."
+                print("Build the library using the makeLib method, or in ")
+                print("stages using the makeLibSource and compileLib methods.")
         self._inputVarList = []
         self._inputTimeList = []
 
@@ -565,9 +565,9 @@ Default 0.001.""",
 ##                                 "_radau5"+self._vf_filename_ext+self._dllext)):
 ##                os.remove(os.path.join(os.getcwd(),
 ##                                 "_radau5"+self._vf_filename_ext+self._dllext))
-        print "Cannot rebuild library without restarting session. Sorry."
-        print "Try asking the Python developers to make a working module"
-        print "unimport function!"
+        print("Cannot rebuild library without restarting session. Sorry.")
+        print("Try asking the Python developers to make a working module")
+        print("unimport function!")
 ##        self.makeLibSource()
 
 
@@ -631,7 +631,7 @@ Default 0.001.""",
                       ('string.h', STDLIB), ('vfield.h', USERLIB), ('events.h', USERLIB),
                       ('signum.h', USERLIB), ('maxmin.h', USERLIB)])
         include_str = ''
-        for libstr, libtype in libinclude.iteritems():
+        for libstr, libtype in libinclude.items():
             if libtype == STDLIB:
                 quoteleft = '<'
                 quoteright = '>'
@@ -644,8 +644,8 @@ Default 0.001.""",
             for libstr in include:
                 if libstr in libinclude:
                     # don't repeat libraries
-                    print "Warning: library '" + libstr + "' already appears in list"\
-                          + " of imported libraries"
+                    print("Warning: library '%s' already appears in list" % libstr\
+                          + " of imported libraries")
                 else:
                     include_str += "#include " + '"' + libstr + '"\n'
         allfilestr = "/*  Vector field function and events for Radau integrator.\n" \
@@ -685,17 +685,17 @@ double signum(double x)
         inames = self.funcspec.inputs
         pnames.sort()
         inames.sort()
-        for i in xrange(self.numpars):
+        for i in range(self.numpars):
             p = pnames[i]
             # add to defines
             pardefines += self.funcspec._defstr+" "+p+"\tp_["+str(i)+"]\n"
-        for i in xrange(self.dimension):
+        for i in range(self.dimension):
             v = vnames[i]
             # add to defines
             vardefines += self.funcspec._defstr+" "+v+"\tY_["+str(i)+"]\n"
         for i, v in enumerate(self.funcspec.auxvars):
             auxvardefines += self.funcspec._defstr+" "+v+"\t("+self.funcspec._auxdefs_parsed[v]+")\n"
-        for i in xrange(len(self.funcspec.inputs)):
+        for i in range(len(self.funcspec.inputs)):
             inp = inames[i]
             # add to defines
             inpdefines += self.funcspec._defstr+" "+inp+"\txv_["+str(i)+"]\n"
@@ -721,7 +721,7 @@ double signum(double x)
             # and add hidden p argument
             if self.funcspec.auxfns:
                 fbody_parsed = addArgToCalls(fbody,
-                                        self.funcspec.auxfns.keys(),
+                                        list(self.funcspec.auxfns.keys()),
                                         "p_, wk_, xv_")
                 if 'initcond' in self.funcspec.auxfns:
                     # convert 'initcond(x)' to 'initcond("x")' for
@@ -760,11 +760,11 @@ void jacobianParam(unsigned, unsigned, double, double*, double*, double**, unsig
                        + ";\n\n\n"
         allfilestr += self.funcspec.spec[0] + "\n\n"
         if self.funcspec.auxfns:
-            for fname, finfo in self.funcspec.auxfns.iteritems():
+            for fname, finfo in self.funcspec.auxfns.items():
                 fbody = finfo[0]
                 # subs _p into auxfn-to-auxfn calls (but not to the signature)
                 fbody_parsed = addArgToCalls(fbody,
-                                        self.funcspec.auxfns.keys(),
+                                        list(self.funcspec.auxfns.keys()),
                                         "p_, wk_, xv_", notFirst=fname)
                 if 'initcond' in self.funcspec.auxfns:
                     # convert 'initcond(x)' to 'initcond("x")' for
@@ -798,9 +798,9 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             file = open(vffile, 'w')
             file.write(allfilestr)
             file.close()
-        except IOError, e:
-            print "Error opening file "+self._vf_file+" for writing"
-            raise IOError, e
+        except IOError as e:
+            print("Error opening file %s for writing" % self._vf_file)
+            raise IOError(e)
 
 
     def compileLib(self, libsources=[], libdirs=[]):
@@ -816,21 +816,21 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             # then DLL file already exists and we can't overwrite it at this
             # time
             proceed = False
-            print "\n"
-            print "-----------------------------------------------------------"
-            print "Present limitation of Python: Cannot rebuild library"
-            print "without exiting Python and deleting the shared library"
-            print "   " + str(os.path.join(os.getcwd(),
-                                "_radau5"+self._vf_filename_ext+self._dllext))
-            print "by hand! If you made any changes to the system you should"
-            print "not proceed with running the integrator until you quit"
-            print "and rebuild."
-            print "-----------------------------------------------------------"
-            print "\n"
+            print("\n")
+            print("-----------------------------------------------------------")
+            print("Present limitation of Python: Cannot rebuild library")
+            print("without exiting Python and deleting the shared library")
+            print("   " + str(os.path.join(os.getcwd(),
+                                "_radau5"+self._vf_filename_ext+self._dllext)))
+            print("by hand! If you made any changes to the system you should")
+            print("not proceed with running the integrator until you quit")
+            print("and rebuild.")
+            print("-----------------------------------------------------------")
+            print("\n")
         else:
             proceed = True
         if not proceed:
-            print "Did not compile shared library."
+            print("Did not compile shared library.")
             return
         if self._solver is not None:
             self.forceLibRefresh()
@@ -847,7 +847,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             ifacefile_orig.close()
             ifacefile_copy.close()
         except IOError:
-            print "radau5.i copying error in radau compilation directory"
+            print("radau5.i copying error in radau compilation directory")
             raise
         swigfile = os.path.join(self._compilation_tempdir,
                                 "radau5"+self._vf_filename_ext+".i")
@@ -919,8 +919,8 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                               'library_dirs': radlibdirs+['./']})])
         except:
             rout.stop()
-            print "\nError occurred in generating Radau system..."
-            print sys.exc_info()[0], sys.exc_info()[1]
+            print("\nError occurred in generating Radau system...")
+            print("%s %s" % (sys.exc_info()[0], sys.exc_info()[1]))
             raise RuntimeError
         rout.stop()    # restore stdout
         try:
@@ -937,8 +937,8 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                             os.path.join(os.getcwd(),
                                          "radau5"+self._vf_filename_ext+".py"))
         except:
-            print "\nError occurred in generating Radau system"
-            print "(while moving library extension modules to CWD)"
+            print("\nError occurred in generating Radau system")
+            print("(while moving library extension modules to CWD)")
             #print sys.exc_info()[0], sys.exc_info()[1]
             raise #RuntimeError
 
@@ -993,8 +993,8 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                 bounds[0].append(bds[0])
                 bounds[1].append(bds[1])
             except TypeError:
-                print v, type(bds), bds
-                print self.xdomain
+                print("%r %s %r" % (v, type(bds), bds))
+                print(self.xdomain)
                 raise
         for p in self.funcspec.pars:
             bds = self.pdomain[p]
@@ -1002,7 +1002,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                 bounds[0].append(bds[0])
                 bounds[1].append(bds[1])
             except TypeError:
-                print type(bds), bds
+                print("%s %r" % (type(bds), bds))
                 raise
         if continue_integ:
             x0 = self._solver.lastPoint
@@ -1143,7 +1143,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                     numevs = len(Evtimes[evix])
                     if self.algparams['eventTerm'][evix]:
                         if numevs > 1:
-                            print "Event info:", Evpoints, Evtimes
+                            print("Event info: %r %r" % (Evpoints, Evtimes))
                         assert numevs <= 1, ("Internal error: more than one "
                                          "terminal event of same type found")
                         # For safety, we should assert that this event
@@ -1173,9 +1173,9 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                                                  (Evtimes[evix][ev],
                                                   [evname])))
             except IndexError:
-                print "Events returned from integrator are the wrong size."
-                print "  Did you change the system and not refresh the C " \
-                      + "library using the forcelibrefresh() method?"
+                print("Events returned from integrator are the wrong size.")
+                print("  Did you change the system and not refresh the C " \
+                      + "library using the forcelibrefresh() method?")
                 raise
         termcount = 0
         for (w,i) in self.diagnostics.warnings:
@@ -1196,9 +1196,9 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
         if self.algparams['checkBounds'] > 0:
             # temp storage for repeatedly used object attributes (for lookup efficiency)
             depdomains = dict(zip(range(self.dimension),
-                            [self.variables[xn].depdomain for xn in xnames]))
+                                  [self.variables[xn].depdomain for xn in xnames]))
             offender_ix = None
-            for xi in xrange(self.dimension):
+            for xi in range(self.dimension):
                 if not any(depdomains[xi].isfinite()):
                     # no point in checking when the bounds are +/- infinity
                     continue
@@ -1215,7 +1215,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             elif last_ix >= 0 and last_ix < highest_ix:
                 # truncate data
                 last_t = alltData[last_ix]
-                print "Warning; domain bound reached (because algparams['checkBounds'] > 0)"
+                print("Warning; domain bound reached (because algparams['checkBounds'] > 0)")
                 self.diagnostics.warnings.append((W_TERMSTATEBD,
                                     (last_t, xnames[offender_ix],
                                      X[offender_ix, last_ix],
@@ -1269,9 +1269,9 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
         try:
             allxDataDict = dict(zip(xnames,X))
         except IndexError:
-            print "Integration returned variable values of unexpected dimensions."
-            print "  Did you change the system and not refresh the C library" \
-                  + " using the forcelibrefresh() method?"
+            print("Integration returned variable values of unexpected dimensions.")
+            print("  Did you change the system and not refresh the C library" \
+                  + " using the forcelibrefresh() method?")
             raise
         # storage of all auxiliary variable data
         anames = self.funcspec.auxvars
@@ -1282,12 +1282,12 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                 try:
                     allaDataDict = dict(zip(anames,A))
                 except TypeError:
-                    print "Internal error!  Type of A: ", type(A)
+                    print("Internal error!  Type of A: %s" % type(A))
                     raise
         except IndexError:
-            print "Integration returned auxiliary values of unexpected dimensions."
-            print "  Did you change the system and not refresh the C library" \
-                  + " using the forcelibrefresh() method?"
+            print("Integration returned auxiliary values of unexpected dimensions.")
+            print("  Did you change the system and not refresh the C library" \
+                  + " using the forcelibrefresh() method?")
             raise
         if int(Err) == 1 or (int(Err) == 2 and termcount == 1):
             # output OK
@@ -1322,7 +1322,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             # final checks
             #self.validateSpec()
             self.defined = True
-            return Trajectory(trajname, variables.values(),
+            return Trajectory(trajname, list(variables.values()),
                               abseps=self._abseps, globalt0=self.globalt0,
                               checklevel=self.checklevel,
                               FScompatibleNames=self._FScompatibleNames,
@@ -1335,7 +1335,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                 diagnost_info = self.diagnostics._errorcodes[int(Err)]
             except TypeError:
                 # errcode messed up from Radau
-                print "Error code: ", Err
+                print("Error code: %d" % Err)
                 diagnost_info = self.diagnostics._errorcodes[0]
             if self._solver.verbose:
                 info(self.diagnostics.outputStats, "Output statistics")
@@ -1344,8 +1344,8 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             if (len(alltData) == self.algparams['max_pts'] or \
                 self.diagnostics.outputStats['num_steps'] >= self.algparams['max_pts']) \
                    and alltData[-1] < tend:
-                print "max_pts algorithmic parameter too small: current " + \
-                      "value is %i"%self.algparams['max_pts']
+                print("max_pts algorithmic parameter too small: current " + \
+                      "value is %i"%self.algparams['max_pts'])
 #                avstep = (self.algparams['init_step']+self.diagnostics.outputStats['last_step'])/2.
                 if self.diagnostics.outputStats['last_time']-tbegin > 0:
                     ms = str(int(round(self.algparams['max_pts'] / \
@@ -1353,8 +1353,8 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                                tbegin)*(tend-tbegin))))
                 else:
                     ms = 'Inf'
-                print "(recommended value for this trajectory segment is " + \
-                      "estimated to be %s (saved in diagnostics.errors attribute))"%str(ms)
+                print("(recommended value for this trajectory segment is " + \
+                      "estimated to be %s (saved in diagnostics.errors attribute))"%str(ms))
                 diagnost_info += " -- recommended value is " + ms
             self.diagnostics.errors.append((E_COMPUTFAIL,
                                     (self._solver.lastTime, diagnost_info)))
