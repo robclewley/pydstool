@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """Create portable serialized representations of Python objects.
 
 See module cPickle for a (much) faster implementation.
@@ -30,8 +32,8 @@ Misc variables:
 __version__ = "$Revision: 1.156 $"       # Code version
 
 from types import *
-from copy_reg import dispatch_table
-from copy_reg import _extension_registry, _inverted_registry, _extension_cache
+import six
+from six.moves import copyreg
 import marshal
 import sys
 import struct
@@ -167,7 +169,6 @@ _tuplesize2code = [EMPTY_TUPLE, TUPLE1, TUPLE2, TUPLE3]
 
 
 __all__.extend([x for x in dir() if re.match("[A-Z][A-Z0-9_]+$",x)])
-del x
 
 
 # Pickling machinery
@@ -199,7 +200,7 @@ class Pickler:
 
         """
         if protocol is not None and bin is not None:
-            raise ValueError, "can't specify both 'protocol' and 'bin'"
+            raise ValueError("can't specify both 'protocol' and 'bin'")
         if bin is not None:
             warnings.warn("The 'bin' argument to Pickler() is deprecated",
                           PendingDeprecationWarning)
@@ -264,7 +265,7 @@ class Pickler:
             else:
                 return LONG_BINPUT + pack("<i", i)
 
-        return PUT + `i` + '\n'
+        return PUT + repr(i) + '\n'
 
     # Return a GET (BINGET, LONG_BINGET) opcode string, with argument i.
     def get(self, i, pack=struct.pack):
@@ -274,7 +275,7 @@ class Pickler:
             else:
                 return LONG_BINGET + pack("<i", i)
 
-        return GET + `i` + '\n'
+        return GET + repr(i) + '\n'
 
     def save(self, obj):
         # Check for persistent id (defined by a subclass)
@@ -305,8 +306,8 @@ class Pickler:
             self.save_global(obj)
             return
 
-        # Check copy_reg.dispatch_table
-        reduce = dispatch_table.get(t)
+        # Check copyreg.dispatch_table
+        reduce = copyreg.dispatch_table.get(t)
         if reduce:
             rv = reduce(obj)
         else:
@@ -317,7 +318,7 @@ class Pickler:
                 try:
                     rv = reduce(self.proto)
                 except:
-                    print "Problem with ", obj
+                    print("Problem with %r" % obj)
                     raise
             else:
                 reduce = getattr(obj, "__reduce__", None)
@@ -328,7 +329,7 @@ class Pickler:
                                         (t.__name__, obj))
 
         # Check for string returned by reduce(), meaning "save as global"
-        if type(rv) is StringType:
+        if type(rv) in six.string_types:
             self.save_global(obj, rv)
             return
 
@@ -447,7 +448,7 @@ class Pickler:
 
     def save_none(self, obj):
         self.write(NONE)
-    dispatch[NoneType] = save_none
+    dispatch[type(None)] = save_none
 
     def save_bool(self, obj):
         if self.proto >= 2:
@@ -477,27 +478,28 @@ class Pickler:
                 self.write(BININT + pack("<i", obj))
                 return
         # Text pickle, or int too big to fit in signed 4-byte format.
-        self.write(INT + `obj` + '\n')
-    dispatch[IntType] = save_int
+        self.write(INT + repr(obj) + '\n')
+    dispatch[int] = save_int
 
-    def save_long(self, obj, pack=struct.pack):
-        if self.proto >= 2:
-            bytes = encode_long(obj)
-            n = len(bytes)
-            if n < 256:
-                self.write(LONG1 + chr(n) + bytes)
-            else:
-                self.write(LONG4 + pack("<i", n) + bytes)
-            return
-        self.write(LONG + `obj` + '\n')
-    dispatch[LongType] = save_long
+    if six.PY2:
+        def save_long(self, obj, pack=struct.pack):
+            if self.proto >= 2:
+                bytes = encode_long(obj)
+                n = len(bytes)
+                if n < 256:
+                    self.write(LONG1 + chr(n) + bytes)
+                else:
+                    self.write(LONG4 + pack("<i", n) + bytes)
+                return
+            self.write(LONG + repr(obj) + '\n')
+        dispatch[LongType] = save_long
 
     def save_float(self, obj, pack=struct.pack):
         if self.bin:
             self.write(BINFLOAT + pack('>d', obj))
         else:
-            self.write(FLOAT + `obj` + '\n')
-    dispatch[FloatType] = save_float
+            self.write(FLOAT + repr(obj) + '\n')
+    dispatch[float] = save_float
 
     def save_string(self, obj, pack=struct.pack):
         if self.bin:
@@ -507,9 +509,10 @@ class Pickler:
             else:
                 self.write(BINSTRING + pack("<i", n) + obj)
         else:
-            self.write(STRING + `obj` + '\n')
+            self.write(STRING + repr(obj) + '\n')
         self.memoize(obj)
-    dispatch[StringType] = save_string
+    for t in six.string_types:
+        dispatch[t] = save_string
 
     def save_unicode(self, obj, pack=struct.pack):
         if self.bin:
@@ -523,7 +526,7 @@ class Pickler:
         self.memoize(obj)
     dispatch[UnicodeType] = save_unicode
 
-    if StringType == UnicodeType:
+    if six.PY3:
         # This is true for Jython
         def save_string(self, obj, pack=struct.pack):
             unicode = obj.isunicode()
@@ -547,9 +550,10 @@ class Pickler:
                     obj = obj.encode('raw-unicode-escape')
                     self.write(UNICODE + obj + '\n')
                 else:
-                    self.write(STRING + `obj` + '\n')
+                    self.write(STRING + repr(obj) + '\n')
             self.memoize(obj)
-        dispatch[StringType] = save_string
+        for t in six.string_types:
+            dispatch[t] = save_string
 
     def save_tuple(self, obj):
         write = self.write
@@ -602,7 +606,7 @@ class Pickler:
         self.write(TUPLE)
         self.memoize(obj)
 
-    dispatch[TupleType] = save_tuple
+    dispatch[tuple] = save_tuple
 
     # save_empty_tuple() isn't used by anything in Python 2.3.  However, I
     # found a Pickler subclass in Zope3 that calls it, so it's not harmless
@@ -621,7 +625,7 @@ class Pickler:
         self.memoize(obj)
         self._batch_appends(iter(obj))
 
-    dispatch[ListType] = save_list
+    dispatch[list] = save_list
 
     # Keep in synch with cPickle's BATCHSIZE.  Nothing will break if it gets
     # out of synch, though.
@@ -638,12 +642,12 @@ class Pickler:
                 write(APPEND)
             return
 
-        r = xrange(self._BATCHSIZE)
+        r = range(self._BATCHSIZE)
         while items is not None:
             tmp = []
             for i in r:
                 try:
-                    x = items.next()
+                    x = next(items)
                     tmp.append(x)
                 except StopIteration:
                     items = None
@@ -668,9 +672,9 @@ class Pickler:
             write(MARK + DICT)
 
         self.memoize(obj)
-        self._batch_setitems(obj.iteritems())
+        self._batch_setitems(iter(obj.items()))
 
-    dispatch[DictionaryType] = save_dict
+    dispatch[dict] = save_dict
     if not PyStringMap is None:
         dispatch[PyStringMap] = save_dict
 
@@ -686,12 +690,12 @@ class Pickler:
                 write(SETITEM)
             return
 
-        r = xrange(self._BATCHSIZE)
+        r = range(self._BATCHSIZE)
         while items is not None:
             tmp = []
             for i in r:
                 try:
-                    tmp.append(items.next())
+                    tmp.append(next(items))
                 except StopIteration:
                     items = None
                     break
@@ -747,7 +751,8 @@ class Pickler:
         save(stuff)
         write(BUILD)
 
-    dispatch[InstanceType] = save_inst
+    for t in six.class_types:
+        dispatch[t] = save_inst
 
     def save_global(self, obj, name=None, pack=struct.pack):
         write = self.write
@@ -775,7 +780,7 @@ class Pickler:
                     (obj, module, name))
 
         if self.proto >= 2:
-            code = _extension_registry.get((module, name))
+            code = copyreg._extension_registry.get((module, name))
             if code:
                 assert code > 0
                 if code <= 0xff:
@@ -789,10 +794,11 @@ class Pickler:
         write(GLOBAL + module + '\n' + name + '\n')
         self.memoize(obj)
 
-    dispatch[ClassType] = save_global
+    if six.PY2:
+        dispatch[ClassType] = save_global
     dispatch[FunctionType] = save_global
     dispatch[BuiltinFunctionType] = save_global
-    dispatch[TypeType] = save_global
+    dispatch[type] = save_global
 
 # Pickling helpers
 
@@ -878,7 +884,7 @@ class Unpickler:
             while 1:
                 key = read(1)
                 dispatch[key](self)
-        except _Stop, stopinst:
+        except _Stop as stopinst:
             return stopinst.value
 
     # Return largest index k such that self.stack[k] is self.mark.
@@ -905,7 +911,7 @@ class Unpickler:
     def load_proto(self):
         proto = ord(self.read(1))
         if not 0 <= proto <= 2:
-            raise ValueError, "unsupported pickle protocol: %d" % proto
+            raise ValueError("unsupported pickle protocol: %d" % proto)
     dispatch[PROTO] = load_proto
 
     def load_persid(self):
@@ -940,7 +946,7 @@ class Unpickler:
             try:
                 val = int(data)
             except ValueError:
-                val = long(data)
+                val = int(data)
         self.append(val)
     dispatch[INT] = load_int
 
@@ -957,7 +963,7 @@ class Unpickler:
     dispatch[BININT2] = load_binint2
 
     def load_long(self):
-        self.append(long(self.readline()[:-1], 0))
+        self.append(int(self.readline()[:-1], 0))
     dispatch[LONG] = load_long
 
     def load_long1(self):
@@ -985,7 +991,7 @@ class Unpickler:
             elif s in ["NAN","1.#QNAN","QNAN","1.#IND","IND","-1.#IND"]:
                 f = -((1e300*1e300)/(1e300*1e300))
             else:
-                raise ValueError, "Don't know what to do with "+`s`
+                raise ValueError("Don't know what to do with "+repr(s))
         self.append(f)
     dispatch[FLOAT] = load_float
 
@@ -998,11 +1004,11 @@ class Unpickler:
         for q in "\"'": # double or single quote
             if rep.startswith(q):
                 if not rep.endswith(q):
-                    raise ValueError, "insecure string pickle"
+                    raise ValueError("insecure string pickle")
                 rep = rep[len(q):-len(q)]
                 break
         else:
-            raise ValueError, "insecure string pickle"
+            raise ValueError("insecure string pickle")
         self.append(rep.decode("string-escape"))
     dispatch[STRING] = load_string
 
@@ -1012,12 +1018,12 @@ class Unpickler:
     dispatch[BINSTRING] = load_binstring
 
     def load_unicode(self):
-        self.append(unicode(self.readline()[:-1],'raw-unicode-escape'))
+        self.append(str(self.readline()[:-1],'raw-unicode-escape'))
     dispatch[UNICODE] = load_unicode
 
     def load_binunicode(self):
         len = mloads('i' + self.read(4))
-        self.append(unicode(self.read(len),'utf-8'))
+        self.append(str(self.read(len),'utf-8'))
     dispatch[BINUNICODE] = load_binunicode
 
     def load_short_binstring(self):
@@ -1093,9 +1099,9 @@ class Unpickler:
         if not instantiated:
             try:
                 value = klass(*args)
-            except TypeError, err:
-                raise TypeError, "in constructor for %s: %s" % (
-                    klass.__name__, str(err)), sys.exc_info()[2]
+            except TypeError as err:
+                raise TypeError("in constructor for %s: %s" % (
+                    klass.__name__, str(err))).with_traceback(sys.exc_info()[2])
         self.append(value)
 
     def load_inst(self):
@@ -1143,15 +1149,15 @@ class Unpickler:
 
     def get_extension(self, code):
         nil = []
-        obj = _extension_cache.get(code, nil)
+        obj = copyreg._extension_cache.get(code, nil)
         if obj is not nil:
             self.append(obj)
             return
-        key = _inverted_registry.get(code)
+        key = copyreg._inverted_registry.get(code)
         if not key:
             raise ValueError("unregistered extension code %d" % code)
         obj = self.find_class(*key)
-        _extension_cache[code] = obj
+        copyreg._extension_cache[code] = obj
         self.append(obj)
 
     def find_class(self, module, name):
@@ -1194,12 +1200,12 @@ class Unpickler:
 
     def load_binget(self):
         i = ord(self.read(1))
-        self.append(self.memo[`i`])
+        self.append(self.memo[repr(i)])
     dispatch[BINGET] = load_binget
 
     def load_long_binget(self):
         i = mloads('i' + self.read(4))
-        self.append(self.memo[`i`])
+        self.append(self.memo[repr(i)])
     dispatch[LONG_BINGET] = load_long_binget
 
     def load_put(self):
@@ -1208,12 +1214,12 @@ class Unpickler:
 
     def load_binput(self):
         i = ord(self.read(1))
-        self.memo[`i`] = self.stack[-1]
+        self.memo[repr(i)] = self.stack[-1]
     dispatch[BINPUT] = load_binput
 
     def load_long_binput(self):
         i = mloads('i' + self.read(4))
-        self.memo[`i`] = self.stack[-1]
+        self.memo[repr(i)] = self.stack[-1]
     dispatch[LONG_BINPUT] = load_long_binput
 
     def load_append(self):
@@ -1345,7 +1351,7 @@ def encode_long(x):
             # Extend to a full byte.
             nibbles += 1
         nbits = nibbles * 4
-        x += 1L << nbits
+        x += 1 << nbits
         assert x > 0
         ashex = hex(x)
         njunkchars = 2 + ashex.endswith('L')
@@ -1385,19 +1391,15 @@ def decode_long(data):
 
     nbytes = len(data)
     if nbytes == 0:
-        return 0L
+        return 0
     ashex = _binascii.hexlify(data[::-1])
-    n = long(ashex, 16) # quadratic time before Python 2.3; linear now
+    n = int(ashex, 16) # quadratic time before Python 2.3; linear now
     if data[-1] >= '\x80':
-        n -= 1L << (nbytes * 8)
+        n -= 1 << (nbytes * 8)
     return n
 
 # Shorthands
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+from six.moves import cStringIO as StringIO
 
 def dump(obj, file, protocol=None, bin=None):
     Pickler(file, protocol, bin).dump(obj)
