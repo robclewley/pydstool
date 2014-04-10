@@ -1,5 +1,5 @@
 # Interpolated lookup table with extrapolated end points
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from .baseclasses import ctsGen, theGenSpecHelper
@@ -21,7 +21,7 @@ class ExtrapolateTable(ctsGen):
         try:
             self.tdata = kw['tdata']
             self._xdatadict = {}
-            for k, v in dict(kw['ics']).iteritems():
+            for k, v in dict(kw['ics']).items():
                 self._xdatadict[str(k)] = v
             self.foundKeys = 2
             # check for other, invalid keys (but currently just ignored)
@@ -206,7 +206,7 @@ class ExtrapolateTable(ctsGen):
                 assert isinstance(v, Variable)
             assert not self.inputs
         except AssertionError:
-            print 'Invalid system specification'
+            print('Invalid system specification')
             raise
 
 
