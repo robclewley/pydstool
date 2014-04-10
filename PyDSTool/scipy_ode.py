@@ -8,6 +8,9 @@
 
 #Original Author: Pearu Peterson
 #Date:   3 Feb 2002 (Revision: 1.2)
+
+from __future__ import print_function
+
 """
 User-friendly interface to various numerical integrators for solving a
 system of first order ODEs with prescribed initial conditions:
@@ -151,7 +154,7 @@ ode  - a generic interface class to numeric integrators. It has the
 
     def set_initial_value(self,y,t=0.0):
         """Set initial conditions y(t) = y."""
-        if type(y) in [types.IntType,types.FloatType]:
+        if type(y) in [int,float]:
             y = [y]
         n_prev = len(self.y)
         self.y = asarray(y,'d')
@@ -165,8 +168,8 @@ ode  - a generic interface class to numeric integrators. It has the
         """Set integrator by name."""
         integrator = find_integrator(name)
         if integrator is None:
-            print 'No integrator name match with %s or is not available.'\
-                  %(`name`)
+            print('No integrator name match with %s or is not available.'\
+                  %(repr(name)))
         else:
             self._integrator = integrator(**integrator_params)
             if not len(self.y):
@@ -233,18 +236,17 @@ class IntegratorBase(object):
         Return 2-tuple (y1,t1) where y1 is the result and t=t1
         defines the stoppage coordinate of the result.
         """
-        raise NotImplementedError,\
-        'all integrators must define run(f,jac,t0,t1,y0,f_params,jac_params)'
+        raise NotImplementedError('all integrators must define run(f,jac,t0,t1,y0,f_params,jac_params)')
 
     def step(self,f,jac,y0,t0,t1,f_params,jac_params):
         """Make one integration step and return (y1,t1)."""
-        raise NotImplementedError,'%s does not support step() method' %\
-              (self.__class__.__name__)
+        raise NotImplementedError('%s does not support step() method' %\
+              (self.__class__.__name__))
 
     def run_relax(self,f,jac,y0,t0,t1,f_params,jac_params):
         """Integrate from t=t0 to t>=t1 and return (y1,t)."""
-        raise NotImplementedError,'%s does not support run_relax() method' %\
-              (self.__class__.__name__)
+        raise NotImplementedError('%s does not support run_relax() method' %\
+              (self.__class__.__name__))
 
     #XXX: __str__ method for getting visual state of the integrator
 
@@ -252,7 +254,7 @@ class vode(IntegratorBase):
     try:
         import scipy.integrate.vode as _vode
     except ImportError:
-        print sys.exc_value
+        print(sys.exc_info()[1])
         _vode = None
     runner = getattr(_vode,'dvode',None)
 
@@ -282,7 +284,7 @@ class vode(IntegratorBase):
 
         if re.match(method,r'adams',re.I): self.meth = 1
         elif re.match(method,r'bdf',re.I): self.meth = 2
-        else: raise ValueError,'Unknown integration method %s'%(method)
+        else: raise ValueError('Unknown integration method %s'%(method))
         self.with_jacobian = with_jacobian
         self.rtol = rtol
         self.atol = atol
@@ -336,7 +338,7 @@ class vode(IntegratorBase):
         elif mf in [24,25]:
             lrw = 22 + 11*n + (3*self.ml+2*self.mu)*n
         else:
-            raise ValueError,'Unexpected mf=%s'%(mf)
+            raise ValueError('Unexpected mf=%s'%(mf))
         if miter in [0,3]:
             liw = 30
         else:
@@ -357,7 +359,7 @@ class vode(IntegratorBase):
     def run(self,*args):
         y1,t,istate = self.runner(*(args[:5]+tuple(self.call_args)+args[5:]))
         if istate <0:
-            print 'vode:',self.messages.get(istate,'Unexpected istate=%s'%istate)
+            print('vode:%s' % self.messages.get(istate,'Unexpected istate=%s'%istate))
             self.success = 0
         else:
             self.call_args[3] = 2 # upgrade istate from 1 to 2
@@ -389,7 +391,7 @@ def test1(f):
 
     while ode_runner.successful() and ode_runner.t < 50:
         y1 = ode_runner.integrate(ode_runner.t+2)
-        print ode_runner.t,y1[:3]
+        print(ode_runner.t,y1[:3])
 
 def test2(f, jac):
     # Stiff problem. Requires analytic Jacobian.
@@ -399,11 +401,11 @@ def test2(f, jac):
                                   method='bdf',
                                   )
     r.set_initial_value([1,0,0])
-    print 'At t=%s  y=%s'%(r.t,r.y)
+    print('At t=%s  y=%s'%(r.t,r.y))
     tout = 0.4
     for i in range(12):
         r.integrate(tout)
-        print 'At t=%s  y=%s'%(r.t,r.y)
+        print('At t=%s  y=%s'%(r.t,r.y))
         tout *= 10
 
 
@@ -425,9 +427,7 @@ def jac(t,y):
 
 
 if __name__ == "__main__":
-    print 'Integrators available:',\
-          ', '.join(map(lambda c:c.__name__,
-                        IntegratorBase.integrator_classes))
+    print('Integrators available: %s' % ', '.join([c.__name__ for c in IntegratorBase.integrator_classes]))
 
     test1(f1)
     test2(f2, jac)
