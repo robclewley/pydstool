@@ -1,7 +1,7 @@
 """VODE integrator for ODE systems, imported from a mild modification of
 the scipy-wrapped VODE Fortran solver.
 """
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem
@@ -61,7 +61,7 @@ class Vode_ODEsystem(ODEsystem):
         # note: VODE only supports array atol, not rtol.
         algparams_def = {'poly_interp': False,
                          'rtol': 1e-9,
-                         'atol': [1e-12 for dimix in xrange(self.dimension)],
+                         'atol': [1e-12 for dimix in range(self.dimension)],
                          'stiff': False,
                          'max_step': 0.0,
                          'min_step': 0.0,
@@ -71,7 +71,7 @@ class Vode_ODEsystem(ODEsystem):
                          'use_special': False,
                          'specialtimes': []
                          }
-        for k, v in algparams_def.iteritems():
+        for k, v in algparams_def.items():
             if k not in self.algparams:
                 self.algparams[k] = v
 
@@ -126,11 +126,11 @@ class Vode_ODEsystem(ODEsystem):
                                  'dimension')
         else:
             atol = self.algparams['atol']
-            self.algparams['atol'] = [atol for dimix in xrange(self.dimension)]
+            self.algparams['atol'] = [atol for dimix in range(self.dimension)]
         indepdom0, indepdom1 = self.indepvariable.depdomain.get()
         if continue_integ:
             if indepdom0 > self._solver.t:
-                print "Previous end time is %f"%self._solver.t
+                print("Previous end time is %f"%self._solver.t)
                 raise ValueError("Start time not correctly updated for "
                                  "continuing orbit")
             x0 = self._solver.y
@@ -225,7 +225,7 @@ class Vode_ODEsystem(ODEsystem):
         strict = self.algparams['strictdt']
         # Make t mesh if it wasn't given as 'specialtimes'
         if not all(isfinite(self.indepvariable.depdomain.get())):
-            print "Time domain was: ", self.indepvariable.depdomain.get()
+            print("Time domain was: %f" % self.indepvariable.depdomain.get())
             raise ValueError("Ensure time domain is finite")
         if dt == indepdom1 - indepdom0:
             # single-step integration required
@@ -284,13 +284,13 @@ class Vode_ODEsystem(ODEsystem):
             try:
                 allaDataDict[aname] = [avals[aix]]
             except IndexError:
-                print "\nVODE generator: There was a problem evaluating " \
-                      + "an auxiliary variable"
-                print "Debug info: avals (length", len(avals), ") was ", avals
-                print "Index out of range was ", aix
-                print self.funcspec.auxspec[1]
-                print hasattr(self, self.funcspec.auxspec[1])
-                print "Args were:", [t0, x0, extralist]
+                print("\nVODE generator: There was a problem evaluating " \
+                      + "an auxiliary variable")
+                print("Debug info: avals (length %d) was %r" % (len(avals), avals))
+                print("Index out of range was %d" % aix)
+                print(self.funcspec.auxspec[1])
+                print(hasattr(self, self.funcspec.auxspec[1]))
+                print("Args were:%r" % [t0, x0, extralist])
                 raise
         # Initialize signs of event detection objects at IC
         self.setEventICs(self.initialconditions, self.globalt0)
@@ -370,11 +370,11 @@ class Vode_ODEsystem(ODEsystem):
             try:
                 errcode = solver.integrate(new_t)
             except:
-                print "Error calling right hand side function:"
+                print("Error calling right hand side function:")
                 self.showSpec()
-                print "Numerical traceback information (current state, " \
-                      + "parameters, etc.)"
-                print "in generator dictionary 'traceback'"
+                print("Numerical traceback information (current state, " \
+                      + "parameters, etc.)")
+                print("in generator dictionary 'traceback'")
                 self.traceback = {'vars': dict(zip(xnames,solver.y)),
                                   'pars': dict(zip(pnames,plist)),
                                   'inputs': dict(zip(inames,ilist)),
@@ -401,9 +401,8 @@ class Vode_ODEsystem(ODEsystem):
                                                             eventslist)
 ##                print new_t, evsflagged
 ##                evsflagged = [ev for ev in evsflagged if solver.t-indepdom0 > ev[1].eventinterval]
-                termevsflagged = filter(lambda e: e in evsflagged, termevents)
-                nontermevsflagged = filter(lambda e: e not in termevsflagged,
-                                           evsflagged)
+                termevsflagged = [e for e in termevents if e in evsflagged]
+                nontermevsflagged = [e for e in evsflagged if e not in termevsflagged]
                 # register any non-terminating events in the warnings
                 # list, unless they are 'precise' in which case flag
                 # them to be resolved after integration completes
@@ -560,7 +559,7 @@ class Vode_ODEsystem(ODEsystem):
                             # choose slightly smaller dt to fit trange exactly
                             dt = trangewidth/numpoints
 
-                            tmesh = [told + i*dt for i in xrange(1, numpoints+1)]
+                            tmesh = [told + i*dt for i in range(1, numpoints+1)]
                             # linspace version is *much* slower for numpoints ~ 10 and 100
                             #tmesh = list(told+linspace(dt, numpoints*dt, numpoints))
 
@@ -588,7 +587,7 @@ class Vode_ODEsystem(ODEsystem):
             # much less accurately determined)
             if not breakwhile:
                 # only here if a terminal event hasn't just flagged
-                for xi in xrange(self.dimension):
+                for xi in range(self.dimension):
                     if not self.contains(depdomains[xi],
                                      solver.y[xi],
                                      self.checklevel):
@@ -618,17 +617,16 @@ class Vode_ODEsystem(ODEsystem):
                                                          self.checklevel) \
                                                   for f in inputVarList]
                 except ValueError:
-                    print 'External input call caused value out of range error:',\
-                          't = ', solver.t
+                    print('External input call caused value out of range error:',\
+                          't = %f' % solver.t)
                     for f in inputVarList:
                         if f.diagnostics.hasWarnings():
-                            print 'External input variable %s out of range:'%f.name
-                            print '   t = ', repr(f.diagnostics.warnings[-1][0]), ', ', \
-                                  f.name, ' = ', repr(f.diagnostics.warnings[-1][1])
+                            print('External input variable %s out of range:'%f.name)
+                            print('   t = %r, %s, %r' % (repr(f.diagnostics.warnings[-1][0]),
+                                  f.name, repr(f.diagnostics.warnings[-1][1])))
                     raise
                 except AssertionError:
-                    print 'External input call caused t out of range error: t = ', \
-                          solver.t
+                    print('External input call caused t out of range error: t = %f' % solver.t)
                     raise
                 solver.set_f_params(extralist)
                 breakwhile = not solver.successful()
@@ -646,8 +644,8 @@ class Vode_ODEsystem(ODEsystem):
             try:
                 if self.diagnostics.warnings[-1][0] not in [W_TERMEVENT,
                                                             W_TERMSTATEBD]:
-                    print "t =", solver.t
-                    print "state =", dict(zip(xnames,solver.y))
+                    print("t =%f" % solver.t)
+                    print("state =%r" % dict(zip(xnames,solver.y)))
                     raise RuntimeError("Event finding code for terminal event "
                                        "failed in Generator " + self.name + \
                                        ": try decreasing eventdelay or "
@@ -655,8 +653,8 @@ class Vode_ODEsystem(ODEsystem):
                                        "atol and rtol parameters")
             except IndexError:
                 info(self.diagnostics.outputStats, "Output statistics")
-                print "t =", solver.t
-                print "x =", solver.y
+                print("t =%f" % solver.t)
+                print("x =%f" % solver.y)
                 raise RuntimeError("Event finding failed in Generator " + \
                                    self.name + ": try decreasing eventdelay "
                                    "or eventinterval below eventtol, or the "
@@ -695,18 +693,18 @@ class Vode_ODEsystem(ODEsystem):
                     interp = interp1d(alltData, xvals)
                 variables[x] = Variable(interp, 't', x, x)
             else:
-                print "Error in Generator:", self.name
-                print "t = ", alltData
-                print "x = ", allxDataDict
+                print("Error in Generator:%s" % self.name)
+                print("t = %r" % alltData)
+                print("x = %r" % allxDataDict)
                 raise PyDSTool_ValueError("Fewer than 2 data points computed")
         for a in anames:
             if len(alltData) > 1:
                 variables[a] = Variable(interp1d(alltData, allaDataDict[a]),
                                         't', a, a)
             else:
-                print "Error in Generator:", self.name
-                print "t = ", alltData
-                print "x = ", allxDataDict
+                print("Error in Generator:%s" % self.name)
+                print("t = %r" % alltData)
+                print("x = %r" % allxDataDict)
                 raise PyDSTool_ValueError("Fewer than 2 data points computed")
         # Resolve non-terminal 'precise' events that were flagged, using the
         # variables created. Then, add them to a new version of the variables.
@@ -742,17 +740,17 @@ class Vode_ODEsystem(ODEsystem):
                 else:
                     lost_evt = True
             if lost_evt:
-                print "Error: A non-terminal, 'precise' event was lost -- did you reset",
-                print "events prior to integration?"
+                print("Error: A non-terminal, 'precise' event was lost -- did you reset", end=' ')
+                print("events prior to integration?")
                 raise PyDSTool_ExistError("Internal error: A non-terminal, "
                     "'precise' event '%s' was lost after integration!"%e[0])
         # add non-terminal event points to variables
         if ntpe_tdict != {}:
             # find indices of times at which event times will be inserted
             tix = 0
-            evts = ntpe_tdict.keys()
+            evts = list(ntpe_tdict.keys())
             evts.sort()
-            for evix in xrange(len(evts)):
+            for evix in range(len(evts)):
                 evt = evts[evix]
                 evnames = ntpe_tdict[evt]
                 self.diagnostics.warnings.append((W_NONTERMEVENT, (evt, evnames)))
@@ -804,7 +802,7 @@ class Vode_ODEsystem(ODEsystem):
                             }
         if solver.successful():
             #self.validateSpec()
-            for evname, evtlist in Evtimes.iteritems():
+            for evname, evtlist in Evtimes.items():
                 try:
                     self.eventstruct.Evtimes[evname].extend([et+self.globalt0 \
                                             for et in evtlist])
@@ -825,7 +823,7 @@ class Vode_ODEsystem(ODEsystem):
                                                'indepvararray': Evtimes[evname],
                                                'indepvartype': float})
             self.defined = True
-            return Trajectory(trajname, variables.values(),
+            return Trajectory(trajname, list(variables.values()),
                               abseps=self._abseps, globalt0=self.globalt0,
                               checklevel=self.checklevel,
                               FScompatibleNames=self._FScompatibleNames,
@@ -839,7 +837,7 @@ class Vode_ODEsystem(ODEsystem):
                                     self.diagnostics._errorcodes[errcode])))
             except TypeError:
                 # e.g. when errcode has been used to return info list
-                print "Error information: ", errcode
+                print("Error information: %d" % errcode)
                 self.diagnostics.errors.append((E_COMPUTFAIL, (solver.t,
                                     self.diagnostics._errorcodes[0])))
             self.defined = False
@@ -860,7 +858,7 @@ class Vode_ODEsystem(ODEsystem):
             p = sortedDictValues(self._FScompatibleNames(pdict))
         i = _pollInputs(sortedDictValues(self.inputs),
                         t, self.checklevel)
-        return apply(getattr(self, self.funcspec.spec[1]), [t, x, p+i])
+        return getattr(self, self.funcspec.spec[1])(*[t, x, p+i])
 
 
     def Jacobian(self, t, xdict, pdict=None, asarray=True):
@@ -878,8 +876,7 @@ class Vode_ODEsystem(ODEsystem):
                 p = sortedDictValues(self._FScompatibleNames(pdict))
             i = _pollInputs(sortedDictValues(self.inputs),
                         t, self.checklevel)
-            return apply(getattr(self, self.funcspec.auxfns["Jacobian"][1]), \
-                         [t, x, p+i])
+            return getattr(self, self.funcspec.auxfns["Jacobian"][1])(*[t, x, p+i])
         else:
             raise PyDSTool_ExistError("Jacobian not defined")
 
@@ -899,8 +896,7 @@ class Vode_ODEsystem(ODEsystem):
                 p = sortedDictValues(self._FScompatibleNames(pdict))
             i = _pollInputs(sortedDictValues(self.inputs),
                         t, self.checklevel)
-            return apply(getattr(self, self.funcspec.auxfns["Jacobian_pars"][1]), \
-                        [t, x, p+i])
+            return getattr(self, self.funcspec.auxfns["Jacobian_pars"][1])(*[t, x, p+i])
         else:
             raise PyDSTool_ExistError("Jacobian w.r.t. parameters not defined")
 
@@ -919,7 +915,7 @@ class Vode_ODEsystem(ODEsystem):
             p = sortedDictValues(self._FScompatibleNames(pdict))
         i = _pollInputs(sortedDictValues(self.inputs),
                         t, self.checklevel)
-        return apply(getattr(self, self.funcspec.auxspec[1]), [t, x, p+i])
+        return getattr(self, self.funcspec.auxspec[1])(*[t, x, p+i])
 
 
     def __del__(self):
