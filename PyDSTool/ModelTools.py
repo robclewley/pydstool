@@ -33,7 +33,7 @@ Overview of steps that ModelConstructor takes:
  order to use its structure in resolving information about the relationship
  between variables.
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 # PyDSTool imports
 from .errors import *
@@ -76,14 +76,14 @@ class Descriptor(common.args):
     def __init__(self, **kw):
         self.__dict__ = filteredDict(kw, self._validKeys)
         if remain(kw.keys(), self._validKeys) != []:
-            print "Valid keys: ", self._validKeys
+            print("Valid keys: %r" % self._validKeys)
             raise ValueError("Invalid keys provided for Model Descriptor")
         done_defs = []
         for def_key in remain(self._defaults.keys(), kw.keys()):
             def_value = self._defaults[def_key]
             done_defs.append(def_key)
             self.__dict__[def_key] = def_value
-        for key in remain(self._validKeys, kw.keys()+done_defs):
+        for key in remain(self._validKeys, list(kw.keys())+done_defs):
             self.__dict__[key] = None
 
     def validate(self):
@@ -181,11 +181,11 @@ class MDescriptor(Descriptor):
                               inpname in ms.modelspec.inputs])
             if verbose:
                 if not vars_i:
-                    print ms.modelspec.name, "Some ICs missing"
+                    print(ms.modelspec.name + "Some ICs missing")
                 if not pars_i:
-                    print ms.modelspec.name, "Some param values missing"
+                    print(ms.modelspec.name + "Some param values missing")
                 if not inps_i:
-                    print ms.modelspec.name, "Some input values missing"
+                    print(ms.modelspec.name + "Some input values missing")
             vars_i_all = vars_i_all and vars_i
             pars_i_all = pars_i_all and pars_i
             inps_i_all = inps_i_all and inps_i
@@ -360,7 +360,7 @@ class GeneratorConstructor(object):
         ### Instantiate (flatten) target model structured specification
         ## Flatten ModelSpec self.mspec using indepvarname global and inputs
         # and using connectivity bindings (latter not yet implemented)
-        globalRefs = [self.indepvarname] + self.inputs.keys()
+        globalRefs = [self.indepvarname] + list(self.inputs.keys())
         self.mspec.eventPars = copy.copy(self.eventPars)
 
         if not self.preFlat:
@@ -371,8 +371,8 @@ class GeneratorConstructor(object):
             except KeyboardInterrupt:
                 raise
             except:
-                print "Problem flattening Model Spec '%s'"%self.mspec.name
-                print "Global refs: ", globalRefs
+                print("Problem flattening Model Spec '%s'"%self.mspec.name)
+                print("Global refs: %r" % globalRefs)
                 raise
         else:
             flatspec = self.mspec.flatSpec
@@ -387,17 +387,17 @@ class GeneratorConstructor(object):
                 raise ValueError("Incompatible target language between supplied"
                                  " ModelSpec and target Generator")
         else:
-            print "ModelSpec's compatible Generators:", \
-                  ", ".join(self.mspec.compatibleGens)
-            print "ModelConstructor target Generator:", self.targetGen
+            print("ModelSpec's compatible Generators:" +
+                  ", ".join(self.mspec.compatibleGens))
+            print("ModelConstructor target Generator:%s" % self.targetGen)
             raise ValueError("Target Generator mismatch during generator "
                              "construction")
         self.targetLang = gsh.lang
         ## Make Generator initialization argument dictionary
         a = args(abseps=self.abseps)
         a.pars = {}
-        parnames = flatspec['pars'].keys()
-        for p, valstr in flatspec['pars'].iteritems():
+        parnames = list(flatspec['pars'].keys())
+        for p, valstr in flatspec['pars'].items():
             if valstr == '':
                 if FScompatibleNamesInv(p) not in self.parvalues:
                     raise ValueError("Parameter %s is missing a value"%FScompatibleNamesInv(p))
@@ -414,7 +414,7 @@ class GeneratorConstructor(object):
                                          " for '%s', value: %s"%(p,valstr))
         # override any par vals set in ModelSpec with those explicitly set
         # here
-        for p, val in self.parvalues.iteritems():
+        for p, val in self.parvalues.items():
             try:
                 pr = FScompatibleNames(p)
             except KeyError:
@@ -424,7 +424,7 @@ class GeneratorConstructor(object):
             a.pars[pr] = val
         if self.icvalues != {}:
             a.ics = {}
-            for v, val in self.icvalues.iteritems():
+            for v, val in self.icvalues.items():
                 try:
                     vr = FScompatibleNames(v)
                 except KeyError:
@@ -441,7 +441,7 @@ class GeneratorConstructor(object):
         xdomain = {}
         xtype = {}
         pdomain = {}
-        for k, d in flatspec['domains'].iteritems():
+        for k, d in flatspec['domains'].items():
             # e.g. d == (float, Continuous, [-Inf, Inf])
             if k in flatspec['vars']:
                 if isinstance(d[2], _num_types):
@@ -483,8 +483,8 @@ class GeneratorConstructor(object):
                 varnames = remain(varnames, self.forcedAuxVars)
                 auxvarnames = self.forcedAuxVars
             else:
-                print "Invalid auxiliary variable names:"
-                print invalid_auxvars
+                print("Invalid auxiliary variable names:")
+                print(invalid_auxvars)
 #               raise ValueError("Forced auxiliary variable names were invalid")
         elif gsh.specType == 'ImpFuncSpec':
             assert rhs_vars == [], "Cannot use RHS-type variables"
@@ -516,7 +516,7 @@ class GeneratorConstructor(object):
 
             clash_reused = intersect(reuseTerms.keys(), self.reuseTerms.keys())
             if clash_reused != []:
-                print "Clashing terms:", clash_reused
+                print("Clashing terms: %r" % clash_reused)
                 raise ValueError("User-supplied reused terms clash with auto-"
                                  "generated terms")
             # second pass, this time to actually make the substitutions
@@ -570,7 +570,7 @@ class GeneratorConstructor(object):
 
         a.events = events
         # Add any additional special options (e.g. 'nobuild' directive)
-        for k,v in self.optDict.iteritems():
+        for k,v in self.optDict.items():
             if hasattr(a, k):
                 raise KeyError("'%s' already exists as a Generator argument"%k)
             a.k = v
@@ -591,7 +591,7 @@ class GeneratorConstructor(object):
             return gsh.genClass(args(**filteredDict(a.__dict__,
                             gsh.genClass._needKeys+gsh.genClass._optionalKeys)))
         except:
-            print "Problem initializing target Generator '%s'"%self.targetGen
+            print("Problem initializing target Generator '%s'"%self.targetGen)
             raise
 
 
@@ -742,7 +742,7 @@ class ModelConstructor(object):
         return "ModelConstructor %s"%self.name
 
     def preprocessFlatten(self):
-        globalRefs = [self.indepvarname] + self.inputs.keys()
+        globalRefs = [self.indepvarname] + list(self.inputs.keys())
         for g in self._generators:
             gspec = self._generators[g]['modelspec']
             try:
@@ -751,8 +751,8 @@ class ModelConstructor(object):
             except KeyboardInterrupt:
                 raise
             except:
-                print "Problem flattening Model Spec %s"%self.mspec.name
-                print "Global refs: ", globalRefs
+                print("Problem flattening Model Spec %s"%self.mspec.name)
+                print("Global refs: %r" % globalRefs)
                 raise
             self.preFlat[g] = True
 
@@ -802,7 +802,7 @@ class ModelConstructor(object):
 
             clash_reused = intersect(reuseTerms.keys(), self.reuseTerms.keys())
             if clash_reused != []:
-                print "Clashing terms:", clash_reused
+                print("Clashing terms:%r" % clash_reused)
                 raise ValueError("User-supplied reused terms clash with auto-"
                                  "generated terms")
 
@@ -858,7 +858,7 @@ class ModelConstructor(object):
             if makeEvts:
                 gspec = self._generators[g]['modelspec']
                 if not self.preFlat[g]:
-                    print "Flattening"
+                    print("Flattening")
                     gspec.flattenSpec()
                 fspec = gspec.flatSpec
                 # name maps
@@ -945,7 +945,7 @@ class ModelConstructor(object):
                                                                            targetlang=targetLang,
                                                                            flatspec=fspec,
                                                                            reuseterms=reuseterms)
-                                    except ValueError, errinfo:
+                                    except ValueError as errinfo:
                                         evtSuccess = False
                                         #print "Warning: Could not make standard event " + evtName + " with definition " + evtStr
                                         #print "  Original problem: ", errinfo
@@ -987,7 +987,7 @@ class ModelConstructor(object):
                         vars[vname] = gspec.flatSpec['vars'][vname]
                     elif v.specType == 'ExpFuncSpec':
                         auxvars[vname] = gspec.flatSpec['vars'][vname]
-                varnames = vars.keys()
+                varnames = list(vars.keys())
                 varnames.sort()
                 # RHS specs may contain aux vars, so need to substitute their
                 # definitions from flatSpec
@@ -1033,7 +1033,7 @@ class ModelConstructor(object):
                         vars[vname] = gspec.flatSpec['vars'][vname]
                     elif v.specType == 'ExpFuncSpec':
                         auxvars[vname] = gspec.flatSpec['vars'][vname]
-                varnames = vars.keys()
+                varnames = list(vars.keys())
                 varnames.sort()
                 # RHS specs may contain aux vars, so need to substitute their
                 # definitions from flatSpec
@@ -1058,7 +1058,7 @@ class ModelConstructor(object):
         FScompatibleNamesInv = {}
         genObjs = {}
         assert len(self._generators) > 0, "No Generator descriptions found"
-        for gname, geninfo in self._generators.iteritems():
+        for gname, geninfo in self._generators.items():
             if isinstance(geninfo, args):
                 if isinstance(geninfo.modelspec, args):
                     # assume geninfo is traditional string definition
@@ -1072,13 +1072,13 @@ class ModelConstructor(object):
                 # GDescriptor already
                 gen = self._genFromMSpec(geninfo)
             if gname != gen.name:
-                print gname, " vs.", gen.name
+                print(gname + " vs." + gen.name)
                 raise ValueError("Generator name mismatch in gen descriptor")
             genObjs[gen.name] = gen
             # assume that there won't be any name clashes (there shouldn't be)
             FScompatibleNames.update(gen._FScompatibleNames.lookupDict)
             FScompatibleNamesInv.update(gen._FScompatibleNamesInv.lookupDict)
-        return genObjs, genObjs.keys(), FScompatibleNames, FScompatibleNamesInv
+        return genObjs, list(genObjs.keys()), FScompatibleNames, FScompatibleNamesInv
 
     def _genFromStrings(self, geninfodesc):
         genStrings = geninfodesc['modelspec']
@@ -1140,14 +1140,14 @@ class ModelConstructor(object):
 
         # extract par values and ic values relevant to this generator
         genPars = {}
-        for p, val in self.parvalues.iteritems():
+        for p, val in self.parvalues.items():
             # don't bother to check that p is a valid param name
             # for this generator -- that will be checked by
             # GeneratorConstructor
             if p in genSpec._registry:
                 genPars[p] = val
         genICs = {}
-        for v, val in self.icvalues.iteritems():
+        for v, val in self.icvalues.items():
             # don't bother to check that v is a valid variable name
             # for this generator -- that will be checked by
             # GeneratorConstructor
@@ -1192,13 +1192,13 @@ class ModelConstructor(object):
         # hack to allow test trajectories for one-gen models to avoid needing
         # pre-computation in order to test a trivial condition
         test_trajs = {}
-        for genname, gen in genObjs.iteritems():
+        for genname, gen in genObjs.items():
             test_trajs[genname] = None
         if len(genObjs)==1:
             # singleton generator may need non-hybrid Model class unless
             # it contains discrete event state changes that map to itself
             useMI = False  # initial value
-            genname = genObjs.keys()[0]
+            genname = list(genObjs.keys())[0]
             if genname in self.eventmaps:
                 for emap in self.eventmaps[genname]:
                     if emap[1] != 'terminate':
@@ -1215,7 +1215,7 @@ class ModelConstructor(object):
                 test_trajs[genname] = 1
         else:
             useMI = True
-        for hostGen, genObj in genObjs.iteritems():
+        for hostGen, genObj in genObjs.items():
             if useMI:
                 m = embed(genObj,
                       tdata=genObj.indepvariable.depdomain.get())
@@ -1254,12 +1254,12 @@ class ModelConstructor(object):
                 for evname in allGenTermEvNames:
                     genMaps.append((evname, 'terminate'))
                 if not isfinite(genObj.indepvariable.depdomain[1]):
-                    print "Warning: Generator %s has no termination event"%genObj.name
-                    print "because it has an non-finite end computation time..."
+                    print("Warning: Generator %s has no termination event"%genObj.name)
+                    print("because it has an non-finite end computation time...")
                 modelInfoEntries[hostGen] = makeModelInfoEntry(DSi,
                                                            allDSnames,
                                                            genMaps)
-        modelInfoDict = makeModelInfo(modelInfoEntries.values())
+        modelInfoDict = makeModelInfo(list(modelInfoEntries.values()))
         # 3. build model
         mod_args = {'name': self.name,
                     'modelInfo': modelInfoDict,
@@ -1357,7 +1357,7 @@ class ModelConstructor(object):
         You must have declared all generators before calling this function!
         """
         allGenNames = []
-        for gname, geninfo in self._generators.iteritems():
+        for gname, geninfo in self._generators.items():
             # geninfo may be an args(dict) type or a GDescriptor
             if isinstance(geninfo, GDescriptor):
                 allGenNames.append(geninfo.modelspec.name)
@@ -1439,7 +1439,7 @@ def makeModelInfo(arg):
     for infodict in dsList:
         assert len(infodict) == 1, \
                    "Incorrect length of info dictionary"
-        dsName = infodict.keys()[0]
+        dsName = list(infodict.keys())[0]
         if dsName not in allDSNames:
             allDSNames.append(dsName)
             returnDict.update(infodict)
@@ -1447,7 +1447,7 @@ def makeModelInfo(arg):
             raise ValueError("clashing DS names in info "
                              "dictionaries")
         try:
-            assert remain(infodict.values()[0].keys(), ['dsi',
+            assert remain(list(infodict.values())[0].keys(), ['dsi',
                     'swRules', 'globalConRules', 'domainTests']) == []
         except AttributeError:
             raise TypeError("Expected dictionary in modelInfo entry")
@@ -1557,7 +1557,7 @@ class EvMapping(object):
             fnString = self.defString
         else:
             if len(self.assignDict) > 0:
-                for lhs, rhs in self.assignDict.iteritems():
+                for lhs, rhs in self.assignDict.items():
                     if not(type(lhs)==type(rhs)==str):
                         raise TypeError("Assignment dictionary for event "
                                         "mapping must consist of strings for "
@@ -1567,7 +1567,7 @@ class EvMapping(object):
             if len(self.defString) > 0:
                 fnString += "\n" + indent + ("\n"+indent).join(self.defString.split("\n"))
             if len(self.activeDict) > 0:
-                for evname, state in self.activeDict.iteritems():
+                for evname, state in self.activeDict.items():
                     if not(type(evname)==str and type(state)==bool):
                         raise TypeError("Invalid types given for setting "
                                         "active events")
@@ -1576,10 +1576,10 @@ class EvMapping(object):
                                     for evname, state in self.activeDict.items()])
             self.defString = fnString
         try:
-            exec fnString
+            exec(fnString)
         except:
-            print 'Invalid function definition for event mapping:'
-            print fnString
+            print('Invalid function definition for event mapping:')
+            print(fnString)
             raise
         setattr(self, 'evmapping', types.MethodType(locals()['evmapping'],
                                                       self, self.__class__))
@@ -1589,7 +1589,7 @@ class EvMapping(object):
         try:
             del d['evmapping']
         except KeyError:
-            print "'evmapping' local function not in self.__dict__"
+            print("'evmapping' local function not in self.__dict__")
         return d
 
     def __setstate__(self, state):
@@ -1648,7 +1648,7 @@ def makeModelInfoEntry(dsi, allModelNames=None, swmap_list=None,
             for (name, target) in swmap_list:
                 if isinstance(target, str):
                     if target != 'terminate':
-                        print name, target
+                        print("%s %s" % (name, target))
                         raise AssertionError("Generators can only be used "
                                              "directly for non-hybrid systems")
                 else:
@@ -1657,10 +1657,10 @@ def makeModelInfoEntry(dsi, allModelNames=None, swmap_list=None,
                         assert target[0] != name
                     except (TypeError, AssertionError):
                         # type error if not subscriptable
-                        print name, target
+                        print("%s %s" % (name, target))
                         raise AssertionError("Generators can only be used "
                                              "directly for non-hybrid systems")
-        for vname, var in dsi.model.variables.iteritems():
+        for vname, var in dsi.model.variables.items():
             if alltrue(var.depdomain.isfinite()):
                 doms[vname] = Model.domain_test(vname+'_domtest',
                         pars=args(coordname=vname,
@@ -1675,7 +1675,7 @@ def makeModelInfoEntry(dsi, allModelNames=None, swmap_list=None,
         raise TypeError("Invalid type for DS interface: "
                         "must be a GeneratorInterface or ModelInterface")
     # continue here only for ModelInterface
-    for vname, dom in model.query('vardomains').iteritems():
+    for vname, dom in model.query('vardomains').items():
         if alltrue(dom.isfinite()):
             #vname_compat = model._FScompatibleNames(vname)
             doms[vname] = Model.domain_test(vname+'_domtest',
@@ -1687,17 +1687,17 @@ def makeModelInfoEntry(dsi, allModelNames=None, swmap_list=None,
     validateTransitionName(model.name, special_reasons)
     try:
         # BUG !!! should only collect terminal events
-        allEndReasonNames = model.query('events').keys() \
+        allEndReasonNames = list(model.query('events').keys()) \
                             + special_reasons
     except AttributeError:
         # no events associated with the model
         allEndReasonNames = special_reasons
     if model.name not in allModelNames:
-        print model.name, allModelNames
+        print("%s %s" % (model.name, allModelNames))
         raise ValueError('Sub-model`s name not in list of all '
                                          'available names!')
     if not alltrue([name not in allEndReasonNames for name in allModelNames]):
-        print model.name, allModelNames
+        print("%s %s" % (model.name, allModelNames))
         raise ValueError('Sub-model names overlapped with event or '
                          'variable names')
     allTargNames = allModelNames + ['terminate']
@@ -1738,13 +1738,13 @@ def makeModelInfoEntry(dsi, allModelNames=None, swmap_list=None,
                                            ' once in map domain')
         seenReasons.append(reason)
         if reason not in allEndReasonNames:
-            print "Model %s:"%model.name
-            print allEndReasonNames
+            print("Model %s:"%model.name)
+            print(allEndReasonNames)
             raise ValueError("name '"+reason+"' in map "
                                             "domain is missing")
         if targetName not in allTargNames:
-            print "Model %s:"%model.name
-            print allTargNames
+            print("Model %s:"%model.name)
+            print(allTargNames)
             raise ValueError("name '"+targetName+"' in "
                                             "map range is missing")
     unseen_sr = remain(allEndReasonNames, seenReasons)
@@ -1756,11 +1756,11 @@ def makeModelInfoEntry(dsi, allModelNames=None, swmap_list=None,
             swmap_pairs.append((r, ('terminate', EvMapping())))
     if len(swmap_pairs) != len(allEndReasonNames):
         info(dict(swmap_pairs))
-        print "(%i in total), versus:"%len(swmap_pairs)
-        print allEndReasonNames, "(%i in total)"%len(allEndReasonNames)
+        print("(%i in total), versus:"%len(swmap_pairs))
+        print("%r" % allEndReasonNames + "(%i in total)"%len(allEndReasonNames))
         sw_keys = dict(swmap_pairs).keys()
-        print remain(sw_keys, allEndReasonNames)
-        print remain(allEndReasonNames, sw_keys)
+        print(remain(sw_keys, allEndReasonNames))
+        print(remain(allEndReasonNames, sw_keys))
         raise ValueError('Incorrect number of map pairs given in argument')
     return {model.name: {'dsi': dsi, 'domainTests': doms,
                 'swRules': dict(swmap_pairs), 'globalConRules': globcon_list}}
@@ -1799,7 +1799,7 @@ def processReused(sourcenames, auxvarnames, flatspec, registry,
         loopCount += 1
 #        print "Loop count: ", loopCount
         tempMap = {}
-        for auxtok, sx in u_subsMap.iteritems():
+        for auxtok, sx in u_subsMap.items():
 #            print "** ", auxtok
             if purgeDone[auxtok]:
 #                print "  Continue 1"
@@ -1819,7 +1819,7 @@ def processReused(sourcenames, auxvarnames, flatspec, registry,
         u_subsMap.update(tempMap)
     if not purgeDone and len(auxvarnames)>0:
         # then must have maxed out
-        print "Declared auxilary variables:", auxvarnames
+        print("Declared auxilary variables:%r" % auxvarnames)
         raise RuntimeError("You probably have an infinite loop of auxiliary "
                        "variable inter-dependencies: recursion depth of "
                        "more than %i encountered during model build"%loopCount)
@@ -1988,7 +1988,7 @@ class ModelManager(object):
         mc = ModelConstructor(mdesc.name,
                                 **common.filteredDict(dict(mdesc), filt_keys))
         assert len(mdesc.generatorspecs) > 0, "No Generator descriptions found"
-        for gdname, gd in mdesc.generatorspecs.iteritems():
+        for gdname, gd in mdesc.generatorspecs.items():
             if gd.userEvents is not None:
                 mc.addEvents(gdname, gd.userEvents)
             if gd.userFunctions is not None:
@@ -2026,7 +2026,7 @@ class ModelManager(object):
     __str__ = __repr__
 
     def info(self, verboselevel=1):
-        print self._infostr(verboselevel)
+        print(self._infostr(verboselevel))
 
 
 # -----------------------------------------------------------------------------
@@ -2109,7 +2109,7 @@ class ModelTransform(object):
             self.trans_model.changelog = copy.copy(self.changelog)
             return self.trans_model
         else:
-            print "Internal interface inconsistencies: ", inconsistencies
+            print("Internal interface inconsistencies: %r" % inconsistencies)
             raise PyDSTool_ValueError("New Model spec cannot be committed")
 
 
@@ -2335,7 +2335,7 @@ class GenTransform(object):
             self.trans_gen.changelog = copy.copy(self.changelog)
             return self.trans_gen
         else:
-            print "Remaining free symbols: ", freeSymbols
+            print("Remaining free symbols: %r" % freeSymbols)
             raise PyDSTool_ValueError("New Generator spec cannot be committed")
 
 
@@ -2421,17 +2421,17 @@ class MReg(object):
                        ("Query argument must be a single string")
         _keylist = ['orig_name', 'in_description']
         if querykey not in _keylist:
-            print 'Valid query keys are:', _keylist
+            print('Valid query keys are:%r' % _keylist)
             raise TypeError('Query key '+querykey+' is not valid')
         if querykey == 'orig_name':
             res = []
-            for name, regentry in self.descs.iteritems():
+            for name, regentry in self.descs.items():
                 if regentry.orig_name == value:
                     res.append(name)
             return res
         if querykey == 'in_description':
             res = []
-            for name, regentry in self.descs.iteritems():
+            for name, regentry in self.descs.items():
                 if value in regentry.description:
                     res.append(name)
             return res
