@@ -34,7 +34,7 @@ attributes (among others):
 """
 
 # ----------------------------------------------------------------------------
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 
 ## PyDSTool imports
@@ -121,8 +121,8 @@ class boundary_containment_by_event(boundary_containment):
         # verify whether event exists and was flagged in associated model
         try:
             evpts = traj.getEvents(self.pars.bd_eventname)
-        except ValueError, errinfo:
-            print errinfo
+        except ValueError as errinfo:
+            print(errinfo)
             raise RuntimeError("Could not find flagged events for this trajectory")
         try:
             evpt = evpts[self.pars.coordname]
@@ -134,8 +134,8 @@ class boundary_containment_by_event(boundary_containment):
             if self.pars.abseps > 0:
                 # would like to re-evaluate event at its threshold+abseps, but
                 # leave for now
-                print "Warning -- Boundary containment feature %s:"%self.name
-                print " Check for uncertain case using events not implemented"
+                print("Warning -- Boundary containment feature %s:"%self.name)
+                print(" Check for uncertain case using events not implemented")
                 self.results.output = None
                 self.results.uncertain = False
             else:
@@ -147,8 +147,8 @@ class boundary_containment_by_event(boundary_containment):
             if self.pars.abseps > 0:
                 # would like to re-evaluate event at its threshold+abseps, but
                 # leave for now
-                print "Warning -- Boundary containment feature %s:"%self.name
-                print " Check for uncertain case using events not implemented"
+                print("Warning -- Boundary containment feature %s:"%self.name)
+                print(" Check for uncertain case using events not implemented")
                 self.results.output = evpt[0]  # only use first event (in case not Terminal)
                 self.results.uncertain = False
             else:
@@ -170,7 +170,7 @@ class boundary_containment_by_postproc(boundary_containment):
         diffs = [p - self.pars.thresh for p in \
                  traj.sample(coords=self.pars.coordname)]
         if self.pars.verbose_level > 1:
-            print "%s diffs in coord %s ="%(self.name,self.pars.coordname), diffs
+            print("%s diffs in coord %s ="%(self.name,self.pars.coordname) + ", %s" % diffs)
         res_strict = array([sign(d) \
                      == self.pars.interior_dirn for d in diffs])
         satisfied_strict = alltrue(res_strict)
@@ -291,7 +291,7 @@ class domain_test(ModelContext.qt_feature_node):
         xlo_test = xlo_bc(traj)
         if xlo_bc.results.uncertain:
             if self.pars.verbose_level > 0:
-                print "Lo bd uncertain"
+                print("Lo bd uncertain")
             if self.isdiscrete:
                 # accept uncertain case for discrete domain
                 xlo_test = True
@@ -302,7 +302,7 @@ class domain_test(ModelContext.qt_feature_node):
         xhi_test = xhi_bc(traj)
         if xhi_bc.results.uncertain:
             if self.pars.verbose_level > 0:
-                print "Hi bd uncertain"
+                print("Hi bd uncertain")
             if self.isdiscrete:
                 # accept uncertain case for discrete domain
                 xhi_test = True
@@ -322,7 +322,7 @@ class domain_test(ModelContext.qt_feature_node):
         lowest_idx = Inf
         for sfname, sf in self.subfeatures.items():
             if self.pars.verbose_level > 0:
-                print "\n", sfname, sf.results
+                print("\n %s %r" % (sfname, sf.results))
             try:
                 res = list(self.results[sfname].output)
             except AttributeError:
@@ -331,7 +331,7 @@ class domain_test(ModelContext.qt_feature_node):
             if sf.results.satisfied:
                 continue
             if self.pars.verbose_level > 0:
-                print res
+                print(res)
             # Find first index at which value is non-zero.
             # Will not raise ValueError because test satisfaction
             # was already checked, so must have a zero crossing
@@ -406,7 +406,7 @@ class Model(object):
         # Using registry provides a shortcut for accessing a sub-model regardless
         # of whether it's a Generator or a Model class
         self.registry = {}
-        for name, infodict in self.modelInfo.iteritems():
+        for name, infodict in self.modelInfo.items():
             # set super model tag of ds object (which is either a
             # ModelInterface or Generator)
             try:
@@ -479,7 +479,7 @@ class Model(object):
 
     def sub_models(self):
         """Return a list of all sub-model instances (model interfaces or generators)"""
-        return self.registry.values()
+        return list(self.registry.values())
 
     def _makeDefaultVarNames(self):
         """Return default observable, internal, and auxiliary variable names
@@ -527,7 +527,7 @@ class Model(object):
         target language code for the specifications. 'modelspec' refers to
         the pre-compiled abstract specifications of the model."""
         if target is None:
-            print "Use showInfo() to find names of defined sub-models"
+            print("Use showInfo() to find names of defined sub-models")
             return
         else:
             showAll = type==''
@@ -636,9 +636,9 @@ class Model(object):
         assert isinstance(querykey, str), \
                        ("Query argument must be a single string")
         if querykey not in self._querykeys:
-            print 'Valid query keys are:', self._querykeys
-            print "('events' key only queries model-level events, not those"
-            print " inside sub-models)"
+            print('Valid query keys are: %r' % self._querykeys)
+            print("('events' key only queries model-level events, not those")
+            print(" inside sub-models)")
             if querykey != '':
                 raise TypeError('Query key '+querykey+' is not valid')
         if querykey in ['pars', 'parameters']:
@@ -647,7 +647,7 @@ class Model(object):
             result = copy.copy(self.icdict)
         elif querykey == 'events':
             result = {}
-            for dsName, model in self.registry.iteritems():
+            for dsName, model in self.registry.items():
                 try:
                     result.update(model.eventstruct.events)
                 except AttributeError:
@@ -665,7 +665,7 @@ class Model(object):
                 if len(result)==0:
                     result.update(vardoms)
                 else:
-                    for vname, vdom in result.iteritems():
+                    for vname, vdom in result.items():
                         if vdom.issingleton:
                             # singleton
                             vdom_lo = vdom.get()
@@ -694,7 +694,7 @@ class Model(object):
                 if len(result)==0:
                     result.update(pardoms)
                 else:
-                    for pname, pdom in result.iteritems():
+                    for pname, pdom in result.items():
                         if pdom.issingleton:
                             # singleton
                             pdom_lo = pdom.get()
@@ -894,24 +894,24 @@ class Model(object):
                     # generator doesn't support verboselevel
                     pass
         if restrictDSlist == []:
-            restrictDSlist = self.registry.keys()
+            restrictDSlist = list(self.registry.keys())
         # For the remaining keys, must propagate parameter changes to all
         # sub-models throughout modelInfo structure.
         #
         # Changed by WES 10FEB06 to handle problem of 'new' pars being
         # added if the parameter names do not exist in any generators
-        dsis = self.modelInfo.values()
+        dsis = list(self.modelInfo.values())
         numDSs = len(dsis)
         # loop over keywords
         for key, value in filteredDict(kw, ['ics', 'tdata',
                             'inputs_t0', 'restrictDSlist', 'globalt0'],
-                                neg=True).iteritems():
+                                neg=True).items():
             # keep track of the number of errors on this keyword
             if isinstance(value, dict):
                 # keep track of entry errors for this key
                 entry_err_attr = {}
                 entry_err_val = {}
-                for entrykey, entryval in value.iteritems():
+                for entrykey, entryval in value.items():
                     entry_err_attr[entrykey] = 0
                     entry_err_val[entrykey] = 0
             else:
@@ -932,7 +932,7 @@ class Model(object):
                             # only apply these keys to the restricted list
                             continue
                     if isinstance(value, dict):
-                        for entrykey, entryval in value.iteritems():
+                        for entrykey, entryval in value.items():
                             try:
                                 ds.set(**{key:{entrykey:entryval}})
                             except PyDSTool_AttributeError:
@@ -955,7 +955,7 @@ class Model(object):
             # Check that none of the entries in the dictionary caused errors
             # in each sub-model
             if isinstance(value, dict):
-                for entrykey, entryval in value.iteritems():
+                for entrykey, entryval in value.items():
                     if entry_err_attr[entrykey] == numDSs:
                         raise PyDSTool_AttributeError('Parameter does not' +\
                               ' exist in any sub-model: %s = %f'%(entrykey,
@@ -1048,8 +1048,8 @@ class Model(object):
                 xdict[endtraj._FScompatibleNamesInv(xname)] = \
                      endtraj.variables[xname](tend)
             except PyDSTool_BoundsError:
-                print "Value out of bounds in variable call:"
-                print "  variable '%s' was called at time %f"%(xname, tend)
+                print("Value out of bounds in variable call:")
+                print("  variable '%s' was called at time %f"%(xname, tend))
                 raise
         return Point({'coorddict': xdict,
               'coordnames': endtraj._FScompatibleNamesInv(endtraj.coordnames),
@@ -1139,7 +1139,7 @@ class Model(object):
 
 
     def info(self, verboselevel=1):
-        print self._infostr(verboselevel)
+        print(self._infostr(verboselevel))
 
 
     def __repr__(self):
@@ -1299,7 +1299,7 @@ class Model(object):
                 if isinstance(algpars[par], list):
                     if isinstance(val, list):
                         if len(algpars[par]) != len(val):
-                            print "Warning: par %s list len (%d) in generator %s doesn't match val list len (%d). Skipping."%(par, len(algpars[par]), dsName, len(val))
+                            print("Warning: par %s list len (%d) in generator %s doesn't match val list len (%d). Skipping."%(par, len(algpars[par]) + "%s, %d" % (dsName, len(val))))
                             continue
                         else:
                             algpars[par] = val
@@ -1309,7 +1309,7 @@ class Model(object):
                             algpars[par][x] = val
                 else:
                     if isinstance(val, list):
-                        print "Warning: par %s type (%s) in generator %s doesn't match val type (%s). Skipping."%(par, type(algpars[par]), dsName, type(val))
+                        print("Warning: par %s type (%s) in generator %s doesn't match val type (%s). Skipping."%(par, type(algpars[par]) + "%s %d" % (dsName, type(val))))
                     else:
                         algpars[par] = val
             else:
@@ -1350,7 +1350,7 @@ class Model(object):
         if dsName is None:
             result = {}
             res_str = "Sub-models defined in model %s:\n" % self.name
-            for name, infodict in self.modelInfo.iteritems():
+            for name, infodict in self.modelInfo.items():
                 result[name] = infodict['dsi'].model._infostr(verbosity)
             return res_str + pp.pprint(result)
         else:
@@ -1620,7 +1620,7 @@ class Model(object):
             raise PyDSTool_ExistError("Cannot use this function for models"
                                       " not defined through ModelSpec")
         result = {}
-        for modelName, mspecinfo in self._mspecdict.iteritems():
+        for modelName, mspecinfo in self._mspecdict.items():
             # HACK to force compatibility of mspecinfo being a dict/args vs. a GDescriptor
             if isinstance(mspecinfo, dict):
                 foundNames = searchModelSpec(mspecinfo['modelspec'], template)
@@ -1639,14 +1639,14 @@ class Model(object):
                                       " not defined through ModelSpec")
         # all sub-models must define the same variables, so need only
         # to look at one
-        a_ds_name = self._mspecdict.keys()[0]
+        a_ds_name = list(self._mspecdict.keys())[0]
         a_ds_mspec = self._mspecdict[a_ds_name]['modelspec']
         foundNames = searchModelSpec(a_ds_mspec, template)
         try:
             fspec = self.registry[a_ds_name].get('funcspec')
         except AttributeError:
             # for non-hybrid models
-            fspec = self.registry[a_ds_name].registry.values()[0].get('funcspec')
+            fspec = list(self.registry[a_ds_name].registry.values())[0].get('funcspec')
         # funcspec won't have its internal names converted to
         # hierarchical form, so do it here on the attributes we
         # need
@@ -1669,7 +1669,7 @@ class NonHybridModel(Model):
         # elements for compatibility with HybridModel._findTrajInitiator:
         # swRules, globalConRules, nextModelName, reused (True b/c always same),
         #       epochStateMaps, notDone
-        infodict = self.modelInfo.values()[0]
+        infodict = list(self.modelInfo.values())[0]
         return infodict['dsi'], infodict['swRules'], \
                infodict['globalConRules'], infodict['dsi'].model.name, \
                True, None, True
@@ -1678,17 +1678,17 @@ class NonHybridModel(Model):
         """Clean up memory usage from past runs of a solver that is interfaced through
         a dynamic link library. This will prevent the 'continue' integration option from
         being accessible and will delete other data about the last integration run."""
-        self.registry.values()[0].cleanupMemory()
+        list(self.registry.values())[0].cleanupMemory()
 
     def haveJacobian(self):
         """Returns True iff all objects in modelInfo have
         defined Jacobians."""
-        return self.registry.values()[0].haveJacobian()
+        return list(self.registry.values())[0].haveJacobian()
 
     def haveJacobian_pars(self):
         """Returns True iff all objects in modelInfo have
         defined Jacobians."""
-        return self.registry.values()[0].haveJacobian_pars()
+        return list(self.registry.values())[0].haveJacobian_pars()
 
     def Rhs(self, t, xdict, pdict=None, asarray=False):
         """Direct access to a generator's Rhs function.
@@ -1702,7 +1702,7 @@ class NonHybridModel(Model):
                    in state name alphabetical order, else a Point
         """
         # get Generator as 'ds'
-        ds = self.registry.values()[0]
+        ds = list(self.registry.values())[0]
         fscm = ds._FScompatibleNames
         fscmInv = ds._FScompatibleNamesInv
         vars = ds.get('funcspec').vars   # FS compatible
@@ -1738,7 +1738,7 @@ class NonHybridModel(Model):
           asarray  (Bool, optional, default False) If true, will return an array
                    in state name alphabetical order, else a Point
         """
-        ds = self.registry.values()[0]
+        ds = list(self.registry.values())[0]
         if not ds.haveJacobian():
             raise PyDSTool_ExistError("Jacobian not defined")
         fscm = ds._FScompatibleNames
@@ -1774,7 +1774,7 @@ class NonHybridModel(Model):
           asarray  (Bool, optional, default False) If true, will return an array
                    in state name alphabetical order, else a Point
         """
-        ds = self.registry.values()[0]
+        ds = list(self.registry.values())[0]
         if not ds.haveJacobian_pars():
             raise PyDSTool_ExistError("Jacobian w.r.t. pars not defined")
         fscm = ds._FScompatibleNames
@@ -1809,7 +1809,7 @@ class NonHybridModel(Model):
           asarray  (Bool, optional, default False) If true, will return an array
                    in state name alphabetical order, else a Point
         """
-        ds = self.registry.values()[0]
+        ds = list(self.registry.values())[0]
         if not ds.haveMass():
             raise PyDSTool_ExistError("Mass matrix not defined")
         fscm = ds._FScompatibleNames
@@ -1886,12 +1886,12 @@ class NonHybridModel(Model):
         if self.icdict == {}:
             # just get i.c. from the single generator,
             # making sure it's non-empty
-            self.icdict = self.registry.values()[0].get('initialconditions')
+            self.icdict = list(self.registry.values())[0].get('initialconditions')
             if self.icdict == {}:
                 # gen's i.c.s were empty too
                 raise PyDSTool_ExistError("No initial conditions specified")
         xdict = {}
-        for xname, value in self.icdict.iteritems():
+        for xname, value in self.icdict.items():
             #if xname not in self.obsvars+self.intvars:
             #    raise ValueError("Invalid variable name in initial "
             #                       "conditions: " + xname)
@@ -1900,7 +1900,7 @@ class NonHybridModel(Model):
         self.icdict = xdict.copy()
 
         ## compute trajectory segment until an event or t1 is reached
-        gen = self.registry.values()[0]     # sole entry, a Generator
+        gen = list(self.registry.values())[0]     # sole entry, a Generator
 #        print "N-h model before fiddling: t0_global =", t0_global, "t1_global =", t1_global
         t0_global += gen.globalt0
         t1_global += gen.globalt0
@@ -1908,7 +1908,7 @@ class NonHybridModel(Model):
         if t1_global > gen.indepvariable.indepdomain[1]+t0:
             if isfinite(gen.indepvariable.indepdomain[1]):
                 if self.verboselevel > 0:
-                    print "Warning: end time was truncated to max size of specified independent variable domain"
+                    print("Warning: end time was truncated to max size of specified independent variable domain")
                 t1 = gen.indepvariable.indepdomain[1]+t0
             else:
                 t1 = t1_global
@@ -1933,9 +1933,9 @@ class NonHybridModel(Model):
             try:
                 if gen.algparams['init_step'] > t1-t0:
                     if self.verboselevel > 0:
-                        print "Warning: time step too large for remaining time"\
+                        print("Warning: time step too large for remaining time"\
                               + " interval. Temporarily reducing time step to " \
-                              + "1/10th of its previous value"
+                              + "1/10th of its previous value")
                     setup_pars['algparams'].update({'init_step': (t1-t0)/10})
             except (AttributeError, KeyError):
                 # system does not support this integration parameter
@@ -1955,30 +1955,30 @@ class NonHybridModel(Model):
         #print "Entering generator %s at t0=%f, t1=%f"%(gen.name, t0, t1)
         try:
             traj = gen.compute(trajname+'_0')
-        except PyDSTool_ValueError, e:
-            print "\nError in Generator:", gen.name
+        except PyDSTool_ValueError as e:
+            print("\nError in Generator:%s" % gen.name)
             gen.diagnostics.showWarnings()
             gen.diagnostics.showErrors()
-            print "Are the constituent generator absolute epsilon "
-            print " tolerances too small? -- this abseps =", gen._abseps
+            print("Are the constituent generator absolute epsilon ")
+            print(" tolerances too small? -- this abseps =%f" % gen._abseps)
             raise
         except KeyboardInterrupt:
             raise
         except:
-            print "\nError in Generator:", gen.name
+            print("\nError in Generator:%s" % gen.name)
             gen.diagnostics.showWarnings()
             gen.diagnostics.showErrors()
             self.diagnostics.traceback = {}
-            for k,v in gen.diagnostics.traceback.iteritems():
+            for k,v in gen.diagnostics.traceback.items():
                 if isinstance(v, dict):
                     dentry = {}
-                    for vk, vv in v.iteritems():
+                    for vk, vv in v.items():
                         dentry[gen._FScompatibleNamesInv(vk)] = vv
                 else:
                     dentry = v
                 self.diagnostics.traceback[k] = dentry
             if self.diagnostics.traceback != {}:
-                print "Traceback dictionary copied to model"
+                print("Traceback dictionary copied to model")
             raise
         if traj is None:
             raise ValueError("Generator %s failed to create a trajectory"%gen.name)
@@ -2000,8 +2000,8 @@ class NonHybridModel(Model):
         # look at warnings etc. for any terminating events that occurred
         if gen.diagnostics.hasErrors() and self.verboselevel > 0:
             for e in gen.diagnostics.errors:
-                print 'Generator ' + gen.name + \
-                                    ' in trajectory segment had errors'
+                print('Generator ' + gen.name + \
+                                    ' in trajectory segment had errors')
                 gen.diagnostics.showErrors()
         end_reasons = ['time']
         # NB. end reason will always be 'time' for ExplicitFnGen
@@ -2016,18 +2016,18 @@ class NonHybridModel(Model):
                 if w[0] == Generator.W_TERMEVENT or \
                    w[0] == Generator.W_TERMSTATEBD:
                     if self.verboselevel > 1:
-                        print "Time:", ti_1+t0
-                        print 'Generator ' + gen.name + \
+                        print("Time:", (ti_1+t0))
+                        print('Generator ' + gen.name + \
                             ' had a terminal event. Details (in local ' + \
-                            'system time) ...\n ' + str(w[1])
+                            'system time) ...\n ' + str(w[1]))
                     # w[1] always has t as first entry, and
                     # either a state variable name
                     # or a list of terminal event names as second.
                     if isinstance(w[1][1], list):
                         if len(w[1][1]) > 1:
                             if self.verboselevel > 0:
-                                print 'Warning: More than one terminal event found.'
-                                print '  Consider altering event pars.'
+                                print('Warning: More than one terminal event found.')
+                                print('  Consider altering event pars.')
                         end_reasons = [w[1][1][ri] \
                                for ri in range(len(w[1][1]))]
                     else:
@@ -2043,8 +2043,8 @@ class NonHybridModel(Model):
         # rejected.
         global_end_reasons = {}
         global_end_ixs = []
-        dsi = self.modelInfo.values()[0]['dsi']
-        for globalDS in self.modelInfo.values()[0]['globalConRules']:
+        dsi = list(self.modelInfo.values())[0]['dsi']
+        for globalDS in list(self.modelInfo.values())[0]['globalConRules']:
             if globalDS(dsi):
                 global_end_reasons[Inf] = \
                         globalDS.conditions.collate_results('reasons',
@@ -2057,7 +2057,7 @@ class NonHybridModel(Model):
                 try:
                     final_ok_idx = globalDS.conditions._find_idx()
                 except (AttributeError, RuntimeError):
-                    print "Trajectory creation failed..."
+                    print("Trajectory creation failed...")
                     globalDS.conditions.results.info()
                     raise PyDSTool_ExistError("Global consistency checks failed for"
                             " model interface %s for trajectory %s"%(str(globalDS),
@@ -2078,15 +2078,15 @@ class NonHybridModel(Model):
             # overwrite current end reason
             end_reasons = global_end_reasons[smallest_ok_idx]
         if self.verboselevel > 1:
-            print "End reason in %s was %s"%(self.name,str(end_reasons))
+            print("End reason in %s was %s"%(self.name,str(end_reasons)))
         # DEBUG
 #        print "Nonhybrid traj info:", traj.indepdomain.get(), traj.globalt0, type(traj)
 #        print "traj vars:", traj.variables.keys(), "\n"
 
         #### Clean up
         if ti_1 > t1_global-t0:
-            print "Warning: Generator time interval exceeds prescribed limits:"
-            print " ... ", ti_1, " > ", t1_global-t0
+            print("Warning: Generator time interval exceeds prescribed limits:")
+            print(" ... %f > %f" % (ti_1, t1_global-t0))
         epochEvents = {}
         try:
             epochEvents.update(gen.getEvents(asGlobalTime=True))
@@ -2111,10 +2111,10 @@ class NonHybridModel(Model):
     def _infostr(self, verbose=1):
         if verbose > 0:
             outputStr = 'Non-Hybrid Model '+self.name+" containing components:"
-            print "Observable variables:", self.obsvars
-            print "Internal variables:", self.intvars
-            print "Auxiliary variables:", self.auxvars
-            name, infodict = self.modelInfo.items()[0]
+            print("Observable variables:%r" % self.obsvars)
+            print("Internal variables:%r" % self.intvars)
+            print("Auxiliary variables:%r" % self.auxvars)
+            name, infodict = list(self.modelInfo.items())[0]
             outputStr += "\n--- Generator: "+name
             outputStr += "\n  "+infodict['dsi'].model._infostr(verbose-1)
         else:
@@ -2169,22 +2169,22 @@ class HybridModel(Model):
                     xdict[xname] = traj.variables[xname_compat](ti_1)
                 except RuntimeError:
                     # traj is a hybrid traj
-                    print "**********"
-                    print xname, " dep domain:", traj.variables[xname_compat].depdomain.get()
-                    print traj.depdomain[xname_compat].get()
-                    print "indep domain:", traj.variables[xname_compat].indepdomain.get()
-                    print "Var val at t-eps %f = "%(ti_1-1e-4), \
-                           traj.variables[xname_compat](ti_1-1e-4)
+                    print("**********")
+                    print(xname + " dep domain:%r" % traj.variables[xname_compat].depdomain.get())
+                    print(traj.depdomain[xname_compat].get())
+                    print("indep domain:%r" % traj.variables[xname_compat].indepdomain.get())
+                    print("Var val at t-eps %f = %r" % (
+                        ti_1-1e-4, traj.variables[xname_compat](ti_1-1e-4)))
                     raise
                 except:
-                    print "**********"
-                    print xname, " dep domain:", traj.variables[xname_compat].depdomain.get()
-                    print traj.depdomain[xname_compat].get()
-                    print traj.trajSeq[-1].variables[xname_compat].depdomain.get()
+                    print("**********")
+                    print(xname + " dep domain:%r" % traj.variables[xname_compat].depdomain.get())
+                    print(traj.depdomain[xname_compat].get())
+                    print(traj.trajSeq[-1].variables[xname_compat].depdomain.get())
                     raise
             except PyDSTool_BoundsError:
-                print "Value out of bounds in variable call:"
-                print "  variable '%s' was called at time %f"%(xname, ti_1)
+                print("Value out of bounds in variable call:")
+                print("  variable '%s' was called at time %f"%(xname, ti_1))
                 raise
 
 
@@ -2215,9 +2215,9 @@ class HybridModel(Model):
                 for k in extinputs_ic:
                     extinputs_ic[k] = dsinps[k](t0)
             except PyDSTool_BoundsError:
-                print "Cannot proceed - sub-model '" + model_interface.model.name \
+                print("Cannot proceed - sub-model '" + model_interface.model.name \
                       + "' had an external input undefined " \
-                      + "at t =", t0
+                      + "at t =%f" % t0)
                 raise
         else:
             extinputs_ic = {}
@@ -2266,15 +2266,15 @@ class HybridModel(Model):
             # first time in the while loop, so set up xnames
             assert partition_num == 0, ("end_reasons was None on a "
                                         "non-initial epoch")
-            xnames = self.icdict.keys()
+            xnames = list(self.icdict.keys())
             xnames.sort()
             # only for the initial Generator of a trajectory
             try:
                 infodict = findTrajInitiator(self.modelInfo, t0, xdict,
                                         self.pars, self.intvars,
                                         self.verboselevel)
-            except PyDSTool_ValueError, errinfo:
-                print errinfo
+            except PyDSTool_ValueError as errinfo:
+                print(errinfo)
                 raise PyDSTool_ExistError('No unique eligible Model found:'
                   ' cannot continue (check active terminal event definitions'
                   ' or error message above)')
@@ -2286,13 +2286,13 @@ class HybridModel(Model):
             if missing != []:
                 raise AssertionError('Missing initial condition specifications'
                                      ' for %s' % str(missing))
-            for entry, val in xdict.iteritems():
+            for entry, val in xdict.items():
                 if not isfinite(val):
-                    print "Warning: %s initial condition for "%mi.model.name \
-                           + str(entry) + " = " + str(val)
+                    print("Warning: %s initial condition for "%mi.model.name \
+                           + str(entry) + " = " + str(val))
             if self.verboselevel > 1:
-                print "\nStarting partition 0"
-                print "Chose initiator '%s'"%mi.model.name
+                print("\nStarting partition 0")
+                print("Chose initiator '%s'"%mi.model.name)
             nextModelName = None
         else:
             # find new Generator using switching rules
@@ -2333,9 +2333,9 @@ class HybridModel(Model):
                     epochStateMaps = None   # will not be needed
             if nextModelName == 'terminate':
                 if self.verboselevel > 0:
-                    print 'Trajectory calculation for Model `'+mi.model.name\
+                    print('Trajectory calculation for Model `'+mi.model.name\
                           +'` terminated without a DS specified in switch'\
-                          +' rules with which to continue.'
+                          +' rules with which to continue.')
                 globalConRules = None
                 notDone = False   # terminates compute method
             elif nextModelName == mi.model.name:
@@ -2356,8 +2356,8 @@ class HybridModel(Model):
                 swRules = next['swRules']
                 globalConRules = next['globalConRules']
         if self.verboselevel > 1:
-            print "\nStarting partition #%i"%partition_num
-            print "Chose model '%s'"%mi.model.name
+            print("\nStarting partition #%i"%partition_num)
+            print("Chose model '%s'"%mi.model.name)
         return mi, swRules, globalConRules, nextModelName, reused, \
                epochStateMaps, notDone
 
@@ -2670,8 +2670,8 @@ class HybridModel(Model):
             return dsi.AuxVars(t, xdict, pdict, asarray=True)
         else:
             auxvarnames = dsi.get('funcspec', xdict, t).auxvars
-            return Point({'coorddict': dict(zip(auxvarnames,
-                                dsi.AuxVars(t, xdict, pdict))),
+            return Point({'coorddict': dict(list(zip(auxvarnames,
+                                dsi.AuxVars(t, xdict, pdict)))),
                       'coordtype': float,
                       'norm': self._normord})
 
@@ -2705,7 +2705,7 @@ class HybridModel(Model):
             raise PyDSTool_ExistError("No initial conditions specified")
 
         xdict = {}
-        for xname, value in self.icdict.iteritems():
+        for xname, value in self.icdict.items():
             if xname not in self.allvars:
                 raise ValueError("Invalid variable name in initial "
                                    "conditions: " + xname)
@@ -2755,7 +2755,7 @@ class HybridModel(Model):
                 pars_copy = copy.copy(self.pars)
                 self._applyStateMap(epochStateMaps, MI_prev, MI, traj, xdict, t0)
                 ## if changed last MI's event delay, then change it back.
-                for event, delay in event_delay_record.items():
+                for event, delay in list(event_delay_record.items()):
                     event.eventdelay = delay
 
                 ## temporarily set terminal events from previous in this MI to have
@@ -2785,7 +2785,7 @@ class HybridModel(Model):
             # global t0 offsets are updated in case epoch state map changed them
             if self._inputt0_par_links != {} and pars_copy != self.pars:
                 t0val_dict = {}
-                for inp, val in self._inputt0_par_links.items():
+                for inp, val in list(self._inputt0_par_links.items()):
                     t0val_dict[inp] = self.pars[val]
                 model.set(inputs_t0=t0val_dict)
 
@@ -2794,8 +2794,8 @@ class HybridModel(Model):
             if t1_global > indepvar.indepdomain[1]+t0:
                 if isfinite(indepvar.indepdomain[1]):
                     if self.verboselevel > 0:
-                        print "Warning: end time was truncated to max size " + \
-                              "of specified independent variable domain"
+                        print("Warning: end time was truncated to max size " + \
+                              "of specified independent variable domain")
                     t1 = indepvar.indepdomain[1]+t0
                 else:
                     t1 = t1_global
@@ -2821,9 +2821,9 @@ class HybridModel(Model):
             try:
                 if MI.get('algparams', xdict, t0)['init_step'] > t1-t0:
                     if self.verboselevel > 0:
-                        print "Warning: time step too large for remaining time"\
+                        print("Warning: time step too large for remaining time"\
                             + " interval. Temporarily reducing time step to " \
-                            + "1/10th of its previous value"
+                            + "1/10th of its previous value")
                     setup_pars['algparams'].update({'init_step': (t1-t0)/10})
             except (AttributeError, KeyError, ValueError):
                 # system does not support this integration parameter
@@ -2850,28 +2850,28 @@ class HybridModel(Model):
 #            print "DEBUG: Entering model %s at t0=%f, t1=%f"%(model.name, t0, t1)
             try:
                 traj = MI.get_test_traj(force=True)
-            except PyDSTool_ValueError, e:
-                print "\nError in Model:", model.name
+            except PyDSTool_ValueError as e:
+                print("\nError in Model:" + model.name)
                 model.diagnostics.showWarnings()
                 model.diagnostics.showErrors()
-                print "Are the constituent generator absolute epsilon "
-                print " tolerances too small? -- this abseps =", model._abseps
+                print("Are the constituent generator absolute epsilon ")
+                print(" tolerances too small? -- this abseps =%f" % model._abseps)
                 raise
             except KeyboardInterrupt:
                 raise
             except:
-                print "\nError in Model:", model.name
+                print("\nError in Model:" + model.name)
                 self.diagnostics.traceback = {}
-                for k,v in model.diagnostics.traceback.iteritems():
+                for k,v in model.diagnostics.traceback.items():
                     if isinstance(v, dict):
                         dentry = {}
-                        for vk, vv in v.iteritems():
+                        for vk, vv in v.items():
                             dentry[traj._FScompatibleNamesInv(vk)] = vv
                     else:
                         dentry = v
                     self.diagnostics.traceback[k] = dentry
                 if self.diagnostics.traceback != {}:
-                    print "Traceback dictionary copied to model"
+                    print("Traceback dictionary copied to model")
                 raise
             # ensure this is reset to False
             model._set_for_hybrid_DS(False)
@@ -2894,11 +2894,11 @@ class HybridModel(Model):
                 # this is a local time
                 ti_1 = time_interval[1]
                 if self.verboselevel > 1:
-                    print "\nt0=", t0, "traj.globalt0=", traj.globalt0
-                    print "traj.indepdomain = ", traj.indepdomain.get()
+                    print("\nt0=", t0, "traj.globalt0=", traj.globalt0)
+                    print("traj.indepdomain =  %r" % traj.indepdomain.get())
                     for vn, v in traj.variables.items():
-                        print vn + ":", v.trajirange, v.indepdomain.get()
-                    print "Last point of traj %s was: "%traj.name, traj(ti_1)
+                        print(vn + ": %s %s" % (v.trajirange, v.indepdomain.get()))
+                    print("Last point of traj %s was: "%traj.name, traj(ti_1))
             # update original copy of the model with new event times during
             # this trajectory, for high level event detection to be able to check
             # eventinterval for terminal events between hybrid steps
@@ -2912,8 +2912,8 @@ class HybridModel(Model):
             # look at warnings etc. for any terminating events that occurred
             if model.diagnostics.hasErrors() and self.verboselevel > 0:
                 for e in model.diagnostics.errors:
-                    print 'Model ' + model.name + \
-                                        ' in trajectory segment had errors'
+                    print('Model ' + model.name + \
+                                        ' in trajectory segment had errors')
                     model.diagnostics.showErrors()
             # default end reason is time (may be overwritten)
             end_reasons = ['time']
@@ -2928,18 +2928,18 @@ class HybridModel(Model):
                     if w[0] == Generator.W_TERMEVENT or \
                        w[0] == Generator.W_TERMSTATEBD:
                         if self.verboselevel > 1:
-                            print "Time:", ti_1+t0
-                            print 'Model ' + model.name + \
+                            print("Time:", (ti_1+t0))
+                            print('Model ' + model.name + \
                                 ' had a terminal event. Details (in local ' + \
-                                'system time) ...\n ' + str(w[1])
+                                'system time) ...\n ' + str(w[1]))
                         # w[1] always has t as first entry, and
                         # either a state variable name
                         # or a list of terminal event names as second.
                         if isinstance(w[1][1], list):
                             if len(w[1][1]) > 1:
                                 if self.verboselevel > 0:
-                                    print 'Warning: More than one terminal event found.'
-                                    print '  Consider altering event pars.'
+                                    print('Warning: More than one terminal event found.')
+                                    print('  Consider altering event pars.')
                             end_reasons = [w[1][1][ri] \
                                    for ri in range(len(w[1][1]))]
                         else:
@@ -2968,7 +2968,7 @@ class HybridModel(Model):
                     try:
                         final_ok_idx = globalDS.conditions._find_idx()
                     except (AttributeError, RuntimeError):
-                        print "Trajectory creation failed..."
+                        print("Trajectory creation failed...")
                         globalDS.conditions.results.info()
                         raise PyDSTool_ExistError("Global consistency checks failed for"
                                 " model interface %s for trajectory %s"%(str(globalDS),
@@ -2992,7 +2992,7 @@ class HybridModel(Model):
                 if new_reason != []:
                     end_reasons = new_reason
             if self.verboselevel > 1:
-                print "End reason in %s was %s"%(self.name,str(end_reasons))
+                print("End reason in %s was %s"%(self.name,str(end_reasons)))
 
             # DEBUG
 #            print "\nTraj segment %i info:"%partition_num, traj.indepdomain.get(), traj.globalt0, type(traj)
@@ -3005,8 +3005,8 @@ class HybridModel(Model):
                 notDone = False
             if ti_1 > t1_global-t0:
                 # We computed too far for the time interval
-                print "Warning: Segment time interval exceeds prescribed limits:"
-                print " ... ", ti_1, " > ", t1_global-t0
+                print("Warning: Segment time interval exceeds prescribed limits:")
+                print(" ... %f > %f" % (ti_1, t1_global-t0))
                 notDone = False
             # last Model's time == t1 should hold after successful traj computation
             # otherwise t1 needs to be updated according to last terminating
@@ -3015,22 +3015,22 @@ class HybridModel(Model):
                 if end_reasons[0] not in swRules:
                     # there's prescribed time left to compute but no
                     # eligible DS to transfer control to
-                    print 'Trajectory calculation for Model `'+model.name+'` ' \
+                    print('Trajectory calculation for Model `'+model.name+'` ' \
                           +'terminated without a DS specified in the ' \
-                          +'switching rules from which to continue.'
-                    print 'Perhaps a variable went out of bounds:'
+                          +'switching rules from which to continue.')
+                    print('Perhaps a variable went out of bounds:')
                     model.diagnostics.showWarnings()
-                    print 'Last reasons for stopping were: ', end_reasons
-                    print "Trajectory calculated: "
+                    print('Last reasons for stopping were: %s' % end_reasons)
+                    print("Trajectory calculated: ")
                     dt_sample = (ti_1-time_interval[0])/10.
-                    print traj.sample(dt=dt_sample)
+                    print(traj.sample(dt=dt_sample))
                     notDone = False
                     raise PyDSTool_ValueError("Premature termination of "
                                               "trajectory calculation")
                 elif swRules[end_reasons[0]][0] == 'terminate':
                     if self.verboselevel > 0:
-                        print 'Trajectory calculation for Model `'+model.name+'` ' \
-                              +'terminated.'
+                        print('Trajectory calculation for Model `'+model.name+'` ' \
+                              +'terminated.')
                     notDone = False
                     t1 = ti_1+t0
                 else:
@@ -3138,9 +3138,9 @@ class HybridModel(Model):
             pars_unknown = remain(infodict['dsi'].pars, pars_found.keys())
             for parname in pars_recognized:
                 if infodict['dsi'].pars[parname] != pars_found[parname]:
-                    print "Inconsistent parameter values between model objects inside model"
-                    print "probably means that they were changed during trajectory computation"
-                    print "at discrete events: you should reset the pars when calling compute()"
+                    print("Inconsistent parameter values between model objects inside model")
+                    print("probably means that they were changed during trajectory computation")
+                    print("at discrete events: you should reset the pars when calling compute()")
                     raise ValueError("Inconsistency between parameter values"
                      " of same name ('%s') in different constiutent Generator"%parname +\
                      " objects: reset during call to compute")
@@ -3155,7 +3155,7 @@ class HybridModel(Model):
             outputStr += "Observable variables: " + ",".join(self.obsvars)
             outputStr += "Internal variables: " + ",".join(self.intvars)
             outputStr += "Auxiliary variables: " + ",".join(self.auxvars)
-            for name, infodict in self.modelInfo.iteritems():
+            for name, infodict in self.modelInfo.items():
                 outputStr += "\n--- Sub-model: "+name
                 outputStr += "\n  "+infodict['dsi'].model._infostr(verbose-1)
         else:
@@ -3184,9 +3184,9 @@ def getAuxVars(dsi, t, icdict, pardict):
         auxdict = {}
     else:
         try:
-            auxdict = dict(zip(fspec.auxvars,
-                    apply(dsi.get('AuxVars', icdict, t),
-                                        (t, icdict_local, pardict)) ))
+            auxdict = dict(zip(
+                fspec.auxvars,
+                dsi.get('AuxVars', icdict, t)(*(t, icdict_local, pardict)) ))
         except (ValueError, TypeError):
             # no auxiliary variables for this model
             # e.g. ExplicitFnGen has its auxvars defined through the
@@ -3205,7 +3205,7 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
     """
     eligibleMI = []
     if len(modelInfo) == 1:
-        return modelInfo.values()[0]
+        return list(modelInfo.values())[0]
     outcome = {}
     for infodict in modelInfo.values():
         MI = infodict['dsi']
@@ -3235,7 +3235,7 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
         # don't overwrite any aux vars that are treated as regular variables
         # at this level, but fetch other aux vars and external inputs
         icdict.update(filteredDict(getAuxVars(MI, t, icdict, pardict),
-                                   icdict.keys(), neg=True))
+                                   list(icdict.keys()), neg=True))
         # override icdict with any finite-valued generator
         # initial condition (deliberately preset in generator definition)
         # for non-internal variables, and any auxiliary variables that aren't
@@ -3278,7 +3278,7 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
 #        print "Temp in findTrajInitiator for %s: x, dxdt ="%MI.model.name
 #        print icdict
 #        print dxdt
-        for xname, x in icdict.iteritems():
+        for xname, x in icdict.items():
             # don't count time 't' or any internal variables
             if xname == 't' or xname in intvars or xname not in domtests:
                 # 't' is a special value inserted into icdict, for use
@@ -3290,14 +3290,14 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
 #            print "  discrete? ", domtests[xname].isdiscrete
             newtest = domtests[xname](xtraj)
             if verboselevel >=2:
-                print "\nstate dom test for '%s' @ value %f:"%(xname, icdict[xname])
-                print "depdomain is ", MI.get('variables', xdict, t)[xname].depdomain.get()
-                print "-> test result is ", newtest
+                print("\nstate dom test for '%s' @ value %f:"%(xname, icdict[xname]))
+                print("depdomain is  %r" % MI.get('variables', xdict, t)[xname].depdomain.get())
+                print("-> test result is  %r" % newtest)
             x_test = x_test and newtest
         g_test = True  # initial value
         xdict = filteredDict(icdict, intvars, neg=True)
         MI.test_traj = numeric_to_traj(array([xdict.values()]).T, 'ic_trajpt',
-                                       xdict.keys(), t)
+                                       list(xdict.keys()), t)
         # ensure that events are cleared in case global con rules in a MI
         # check for events (for when used after trajectories computed)
         # don't use MI.get('diagnostics', xdict, t) as that will return a copy
@@ -3322,14 +3322,14 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
                 globtest = False
             else:
                 if verboselevel >= 2:
-                    print "\nglobal con test for '%s' @ value %f:"%(str(gc), icdict[xname])
-                    print "-> test result is ", globtest
+                    print("\nglobal con test for '%s' @ value %f:"%(str(gc), icdict[xname]))
+                    print("-> test result is %r" % globtest)
                 g_test = g_test and globtest
         if verboselevel >= 1:
-            print "\nModel '%s' tests..."%model.name
-            print " ...for initial time: " + str(t_test)
-            print " ...for initial state: " + str(x_test)
-            print " ...for global conditions: " + str(g_test)
+            print("\nModel '%s' tests..."%model.name)
+            print(" ...for initial time: " + str(t_test))
+            print(" ...for initial state: " + str(x_test))
+            print(" ...for global conditions: " + str(g_test))
         outcome[model.name]['time dom. test'] = t_test
         outcome[model.name]['state dom. test'] = x_test
         outcome[model.name]['global con. test'] = g_test
