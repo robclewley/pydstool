@@ -30,7 +30,7 @@ PyCont = ContClass(testDS)
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 str = """
@@ -46,7 +46,7 @@ PyCont['EQ1'].forward()
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 print 'Computing curve...'
 exec str
 
@@ -55,7 +55,7 @@ PyCont['EQ1'].info()
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 str = """
@@ -64,7 +64,7 @@ print X
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 str = """
@@ -72,7 +72,7 @@ print X.labels['LP']['data'].a
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 str = """
@@ -80,7 +80,7 @@ PyCont['EQ1'].display(axes=(1,2,1))
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 show()
 
@@ -89,7 +89,7 @@ PyCont['EQ1'].display(('q2','x'), axes=(1,2,2))
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 str = """
@@ -97,7 +97,7 @@ PyCont.plot.info()
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 str = """
@@ -105,7 +105,7 @@ PyCont.info()
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 str = """
@@ -121,7 +121,7 @@ PyCont['HO1'].forward()
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 print 'Computing curve...'
 exec str
 
@@ -131,7 +131,7 @@ PyCont.display(('q2','x'))
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 str = """
@@ -146,7 +146,7 @@ PyCont['FO1'].forward()
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 print 'Computing curve...'
 exec str
 
@@ -156,7 +156,7 @@ PyCont.display(('q2','x'))
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 str = """
@@ -164,7 +164,7 @@ PyCont['FO1'].backward()
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 print 'Computing curve...'
 exec str
 
@@ -174,7 +174,7 @@ PyCont['FO1'].display(('q2','x'))
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 str = """
@@ -182,7 +182,7 @@ PyCont.plot.toggleLabels('off')
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 str = """
@@ -193,7 +193,7 @@ PyCont.plot.fig1.axes1.HO1.toggleCurve('off')
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 str = """
@@ -203,9 +203,9 @@ PyCont.plot.fig2.toggleAll('off', bytype='P')
 """
 
 print '\n' + c*d(str) + str + c*d(str)
-dummy = raw_input()
+#dummy = raw_input()
 exec str
 
 print '\n'
 
-dummy = raw_input()
+#dummy = raw_input()

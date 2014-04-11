@@ -9,7 +9,9 @@ from PyDSTool import *
 from PyDSTool.Toolbox.neuralcomp import *
 from copy import copy
 
-targetGen = 'Dopri_ODEsystem'
+#FIXME: leads to *** Error in `python': malloc(): memory corruption: ***
+#targetGen = 'Dopri_ODEsystem'
+targetGen = 'Vode_ODEsystem'
 
 # -------------------------------------------------------------------------
 
