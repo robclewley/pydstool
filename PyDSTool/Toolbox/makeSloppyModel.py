@@ -1,7 +1,7 @@
 # makeSloppyModel: conversion from sloppy cell model description to PyDSTool
 # Robert Clewley, Oct 2005
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from PyDSTool import *
 from PyDSTool.parseUtils import symbolMapClass
@@ -25,11 +25,11 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
       dx/dt = y + (dy/dt) |  'x': 'y + _y_RHS'
     """
     if targetGen not in allODEgens:
-        print 'Valid target ODE solvers: ' + ", ".join(allODEgens)
+        print('Valid target ODE solvers: ' + ", ".join(allODEgens))
         raise ValueError('Invalid target ODE solver')
     sModelSpec = sloppyModel(modelName)
     if not silent:
-        print "Building sloppy model '%s'"%modelName
+        print("Building sloppy model '%s'"%modelName)
 
     # first pass to collect names
     varnames = []
@@ -43,7 +43,7 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
     pdomains = {}
     xdomains = {}
     if 'domains' in modelDict:
-        for name, dom in modelDict['domains'].iteritems():
+        for name, dom in modelDict['domains'].items():
             if name in parnames:
                 pdomains[name] = dom
             elif name in varnames:
@@ -53,15 +53,15 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
 
     if 'derived_params' in modelDict:
         paramMapping = {}
-        for assgnName, expr in modelDict['derived_params'].iteritems():
+        for assgnName, expr in modelDict['derived_params'].items():
             if not silent:
-                print 'Adding derived parameters: ', assgnName
+                print('Adding derived parameters: ', assgnName)
             paramMapping[assgnName] = '(%s)' % expr
         derivedParamsMap = symbolMapClass(paramMapping)
     else:
         derivedParamsMap = None
 
-    odeItems = modelDict['odes'].items()
+    odeItems = list(modelDict['odes'].items())
     if containsRHSdefs:
         # the sentinal chosen to indicate a RHS is '_var_RHS'
         _ode_map = {}
@@ -71,7 +71,7 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
 
     for odeName, expr in odeItems:
         if not silent:
-            print 'Adding ODE: ', odeName
+            print('Adding ODE: ', odeName)
         if odeName in xdomains:
             odeRHS = Var(expr, odeName, specType='RHSfuncSpec', domain=xdomains[odeName])
         else:
@@ -79,7 +79,7 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
 
         if containsRHSdefs:
             if not silent:
-                print 'Making substitutions based on potential right-hand-side usage in the ODE: ', odeName
+                print('Making substitutions based on potential right-hand-side usage in the ODE: ', odeName)
             odeRHS.mapNames(odeRHSMap)
 
         if derivedParamsMap:
@@ -88,7 +88,7 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
             # may have internal inter-dependencies. It would be better to
             # have a helper function to resolve these inter-dependencies ahead of time.
             if not silent:
-                print 'Making derived parameter substitutions in the ODE: ', odeName
+                print('Making derived parameter substitutions in the ODE: ', odeName)
             odeRHS.mapNames(derivedParamsMap)
             odeRHS.mapNames(derivedParamsMap)
 
@@ -96,40 +96,40 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
 
     auxvarnames = []
     if 'assignments' in modelDict:
-        for assgnName, expr in modelDict['assignments'].iteritems():
+        for assgnName, expr in modelDict['assignments'].items():
             if not silent:
-                print 'Adding assignment: ', assgnName
+                print('Adding assignment: ', assgnName)
             sModelSpec.add(Var(expr, assgnName, specType='ExpFuncSpec'))
             auxvarnames.append(assgnName)
 
     if 'parameters' in modelDict:
-        for parName, val in modelDict['parameters'].iteritems():
+        for parName, val in modelDict['parameters'].items():
             if not silent:
-                print 'Adding parameter: ', parName, "=", val
+                print('Adding parameter: ', parName, "=", val)
             if parName in pdomains:
                 sModelSpec.add(Par(str(val), parName, domain=pdomains[parName]))
             else:
                 sModelSpec.add(Par(str(val), parName))
 
     auxfndict = {}
-    for funSig, expr in modelDict['functions'].iteritems():
+    for funSig, expr in modelDict['functions'].items():
         assert ')' == funSig[-1]
         assert '(' in funSig
         major = funSig.replace(')','').replace(' ','').split('(')
         args = major[1].split(',')
         name = major[0]
         if not silent:
-            print 'Adding function: ', name, " of arguments:", args
+            print('Adding function: ', name, " of arguments:", args)
         sModelSpec.add(Fun(expr, args, name))
         auxfndict[name] = (args, expr)
 
     if globalRefs is None:
         globalRefs = []
     if not sModelSpec.isComplete(globalRefs):
-        print "Model retains free names: " + ", ".join(sModelSpec.freeSymbols)
-        print "These must be resolved in the specification before continuing."
-        print "If one of these is time, then include it explicitly as an"
-        print "entry in the argument list ('globalRefs' key)"
+        print("Model retains free names: " + ", ".join(sModelSpec.freeSymbols))
+        print("These must be resolved in the specification before continuing.")
+        print("If one of these is time, then include it explicitly as an")
+        print("entry in the argument list ('globalRefs' key)")
         raise ValueError('Incomplete model specification')
     targetlang = theGenSpecHelper(targetGen).lang
     # single-generator model so give both same name
@@ -141,11 +141,11 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
                                                       'target': targetGen,
                                                       'algparams': algParams}})
     if not silent:
-        print "Adding events with default tolerances..."
+        print("Adding events with default tolerances...")
     argDict={'precise': True, 'term': True}
     evcount = 0
     if 'events' in modelDict:
-        for evspec, mappingDict in modelDict['events'].iteritems():
+        for evspec, mappingDict in modelDict['events'].items():
             if evspec[:2] == 'lt':
                 dircode = -1
             elif evspec[:2] == 'gt':
@@ -167,6 +167,6 @@ def makeSloppyModel(modelName, modelDict, targetGen, globalRefs=None,
                                         'pars': parnames})
             sModel.mapEvent(genName, evname, genName, evmap)
     if not silent:
-        print "Building target model with default settings"
+        print("Building target model with default settings")
     return sModel.getModel()
 
