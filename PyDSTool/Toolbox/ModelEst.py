@@ -3,7 +3,7 @@
    Robert Clewley.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 # PyDSTool imports
 from PyDSTool.Points import Point, Pointset
@@ -62,8 +62,8 @@ class ModelEst(Utility):
         # dict of par -> sensitivity
         #sens = param_sensitivity(model, self.context, free_pars)
 
-        print "Get pre-defined tols from features somehow"
-        print "Establish parameter estimation class and run it"
+        print("Get pre-defined tols from features somehow")
+        print("Establish parameter estimation class and run it")
         #pest = LMpest(freeParams=free_pars,
         #              testModel=model,
         #              context=self.context,
