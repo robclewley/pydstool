@@ -34,7 +34,7 @@
 
 # -----------------------------------------------------------------------------------------
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from .misc import *
 from .TestFunc import *
@@ -49,8 +49,8 @@ try:
     from PyDSTool.matplotlib_import import *
 except ImportError:
     from PyDSTool.matplotlib_unavailable import *
-    print "Warning: matplotlib failed to import properly and so is not"
-    print "  providing a graphing interface"
+    print("Warning: matplotlib failed to import properly and so is not")
+    print("  providing a graphing interface")
 
 from numpy.random import random
 from numpy import dot as matrixmultiply
@@ -227,9 +227,9 @@ class Continuation(object):
                         # Assume supplied Jac w.r.t. params is for all params in the original system
                         # therefore there should be fewer free params than # system parameters
                         assert len(self.freepars) < Jquant0.dim
-                        self.parsindices = array([self.parsdict.keys().index(p) for p in self.freepars])
+                        self.parsindices = array([list(self.parsdict.keys()).index(p) for p in self.freepars])
         else:
-            self.parsindices = array([self.parsdict.keys().index(p) for p in self.freepars])
+            self.parsindices = array([list(self.parsdict.keys()).index(p) for p in self.freepars])
         self.varsdim = len(self.varslist)
         self.freeparsdim = len(self.freepars)
         self.auxparsdim = len(self.auxpars)
@@ -266,7 +266,7 @@ class Continuation(object):
 
         # Initialize vars and pars based on initpoint
         self.initpoint = self.model.query('ics')
-        for k, v in args['initpoint'].iteritems():
+        for k, v in args['initpoint'].items():
             if k in self.varslist or k in args['auxpars']:
                 self.initpoint[k] = v
             elif k in self.model.query('pars'):
@@ -353,7 +353,7 @@ class Continuation(object):
     def update(self, args):
         """Update parameters for Continuation."""
         if args is not None:
-            for k, v in args.iteritems():
+            for k, v in args.items():
                 if k in cont_args_list:
                     if k == 'LocBifPoints':
                         if isinstance(v, str):
@@ -364,7 +364,7 @@ class Continuation(object):
 
                         # Handle stopping points
                         w = []
-                        if args.has_key('StopAtPoints'):
+                        if 'StopAtPoints' in args:
                             w = args['StopAtPoints']
                             if isinstance(w, str):
                                 if w.lower() == 'all':
@@ -381,7 +381,7 @@ class Continuation(object):
                     elif k != 'StopAtPoints':
                         exec('self.' + k + ' = ' + repr(v))
                 elif k not in all_args_list:
-                    print "Warning: " + k + " is either not a valid parameter or immutable."
+                    print("Warning: " + k + " is either not a valid parameter or immutable.")
 
 
     def _preTestFunc(self, X, V):
@@ -514,7 +514,7 @@ class Continuation(object):
         # store commonly referenced values for efficiency
         V_loc = V[loc]
         curve_loc = curve[loc]
-        for bftype, bfinfo in self.BifPoints.iteritems():
+        for bftype, bfinfo in self.BifPoints.items():
             bftype = bftype.split('-')[0]
             flag_list = []
             for i, testfunc in enumerate(bfinfo.testfuncs):
@@ -674,7 +674,7 @@ class Continuation(object):
             name = self.name
             if name in self.plot[cfl][cal]:
                 num = 0
-                for k, v in self.plot[cfl][cal].iteritems():
+                for k, v in self.plot[cfl][cal].items():
                     if isinstance(v, pargs) and k.split('_')[0] == name:
                         num += 1
                 name = name + '_' + repr(num)
@@ -689,7 +689,7 @@ class Continuation(object):
                 disp_args['label'] = '_nolegend_'
                 stabdict = partition([x.labels[label]['stab'] \
                                       for x in self.sol],['S','U','N'])
-                for stabtype, stablist in stabdict.iteritems():
+                for stabtype, stablist in stabdict.items():
                     for curve in stablist:
                         self.plot[cfl][cal][name].curve.extend(plt.plot(X[0][curve[0]:curve[1]], \
                                                                           X[1][curve[0]:curve[1]], \
@@ -723,7 +723,7 @@ class Continuation(object):
                     bflist = self.sol.bylabel(bftype)
                     if bflist is not None:
                         for point in bflist:
-                            if point.labels[bftype].has_key('name'):
+                            if 'name' in point.labels[bftype]:
                                 X = zeros(2, float)
                                 for n in range(2):
                                     if coords[n] in self.sol.coordnames:
@@ -839,16 +839,16 @@ class Continuation(object):
             B = r_[A,[V]]
             R = r_[matrixmultiply(A,V),0]
             Q = r_[fun(X),0]
-            if self.curvetype == 'UD-C' and self._userdata.has_key('problem') \
+            if self.curvetype == 'UD-C' and 'problem' in self._userdata \
                and self._userdata.problem:
                 problem = 1
                 break
             if self.verbosity >= 10:
-                print "  [%d]" % k
+                print("  [%d]" % k)
                 u, s, vh = linalg.svd(B)
                 cond = s[0]/s[-1]
                 diag.cond.append(cond)
-                print "    Log(Condition #) = %lf" % log10(cond)
+                print("    Log(Condition #) = %lf" % log10(cond))
             WX = linalg.solve(B,mat([R,Q]).T)
             subtract(V, WX[:,0], V)
             divide(V, linalg.norm(V), V)
@@ -859,7 +859,7 @@ class Continuation(object):
             Vnrm = linalg.norm(WX[:,1])
             converged = Fnrm < self.FuncTol and Vnrm < self.VarTol
             if self.verbosity >= 10:
-                print '    (Fnrm, Vnrm) = (%.12f,%.12f)' % (Fnrm, Vnrm)
+                print('    (Fnrm, Vnrm) = (%.12f,%.12f)' % (Fnrm, Vnrm))
                 x0 = x1
                 x1 = linalg.norm(X-Xold)
                 Xold = X.copy()
@@ -890,16 +890,16 @@ class Continuation(object):
             A = jac(X)
             B = r_[A,[vi]]
             Q = r_[fun(X), X[ind] - xi]
-            if self.curvetype == 'UD-C' and self._userdata.has_key('problem') \
+            if self.curvetype == 'UD-C' and 'problem' in self._userdata \
                                         and self._userdata.problem:
                 problem = 1
                 break
             if self.verbosity >= 10:
-                print "  [%d]" % k
+                print("  [%d]" % k)
                 u, s, vh = linalg.svd(B)
                 cond = s[0]/s[-1]
                 diag.cond.append(cond)
-                print "    Log(Condition #) = %lf" % log10(cond)
+                print("    Log(Condition #) = %lf" % log10(cond))
             W = linalg.solve(B, Q)
             subtract(X, W, X)
 
@@ -908,7 +908,7 @@ class Continuation(object):
             Vnrm = linalg.norm(W)
             converged = Fnrm < self.FuncTol and Vnrm < self.VarTol
             if self.verbosity >= 10:
-                print '    (Fnrm, Vnrm) = (%.12f,%.12f)' % (Fnrm, Vnrm)
+                print('    (Fnrm, Vnrm) = (%.12f,%.12f)' % (Fnrm, Vnrm))
                 x0 = x1
                 x1 = linalg.norm(X-Xold)
                 Xold = X.copy()
@@ -936,16 +936,16 @@ class Continuation(object):
             B = r_[A,[V]]
             Q = r_[fun(X),
                    matrixmultiply(X-self.curve[self.loc-1],V)-self.StepSize]
-            if self.curvetype == 'UD-C' and self._userdata.has_key('problem') \
+            if self.curvetype == 'UD-C' and 'problem' in self._userdata \
                and self._userdata.problem:
                 problem = 1
                 break
             if self.verbosity >= 10:
-                print "  [%d]" % k
+                print("  [%d]" % k)
                 u, s, vh = linalg.svd(B)
                 cond = s[0]/s[-1]
                 diag.cond.append(cond)
-                print "    Log(Condition #) = %lf" % log10(cond)
+                print("    Log(Condition #) = %lf" % log10(cond))
             W = linalg.solve(B, Q)
             subtract(X, W, X)
 
@@ -954,7 +954,7 @@ class Continuation(object):
             Vnrm = linalg.norm(W)
             converged = Fnrm < self.FuncTol and Vnrm < self.VarTol
             if self.verbosity >= 10:
-                print '    (Fnrm, Vnrm) = (%.12f,%.12f)' % (Fnrm, Vnrm)
+                print('    (Fnrm, Vnrm) = (%.12f,%.12f)' % (Fnrm, Vnrm))
                 x0 = x1
                 x1 = linalg.norm(X-Xold)
                 Xold = X.copy()
@@ -1035,11 +1035,11 @@ class Continuation(object):
                     perpvec = r_[0., perpvec[0:(self.dim-1)]]
                     d += 1
                     if self.verbosity >= 10:
-                        print "%d: %lf" % (d,log10(cond(r_[c_[J_coords, J_params], [perpvec]])))
+                        print("%d: %lf" % (d,log10(cond(r_[c_[J_coords, J_params], [perpvec]]))))
                 else:
                     singular = False
                     if self.verbosity >= 10:
-                        print "%d: %lf" % (d,log10(cond(r_[c_[J_coords, J_params], [perpvec]])))
+                        print("%d: %lf" % (d,log10(cond(r_[c_[J_coords, J_params], [perpvec]]))))
                     # perpvec = r_[0., perpvec[0:(self.dim-1)]]
                     # d += 1
 
@@ -1079,7 +1079,7 @@ class Continuation(object):
                 k, converged, problem, diag = self.Corrector(curve[0], V[0])
             except:
                 converged = False
-                print "Error occurred in dynamical system computation"
+                print("Error occurred in dynamical system computation")
             else:
                 val = linalg.norm(self.CorrFunc(curve[0]))
             attempts += 1
@@ -1087,13 +1087,13 @@ class Continuation(object):
                 # Stop continuation
                 self.Corrector = self._Natural
                 if attempts > 2:
-                    print "Not converged: ", curve[0], "\n"
+                    print("Not converged: ", curve[0], "\n")
                     raise PyDSTool_ExistError("Could not find starting point on curve.  Stopping continuation.")
         # Initialize index location on curve data set
         self.loc = 0
         if self.verbosity >= 3:
-            print '    Found initial point on curve: ' + \
-                  repr(todict(self, curve[0]))
+            print('    Found initial point on curve: ' + \
+                  repr(todict(self, curve[0])))
 
         # Initialize test functions
         self._createTestFuncs()
@@ -1125,12 +1125,12 @@ class Continuation(object):
         SSC_c, SSC_C = 0.8, 1.2
 
         if self.verbosity >= 3:
-            print '    Beginning continuation...'
+            print('    Beginning continuation...')
         # Continuation loop
         closed = False
         stop = False
         problem = False
-        if self.curvetype == 'UD-C' and self._userdata.has_key('problem'):
+        if self.curvetype == 'UD-C' and 'problem' in self._userdata:
             self._userdata.problem = False
 
         # de-references to improve efficiency
@@ -1153,9 +1153,9 @@ class Continuation(object):
             #    problem = False
 
             if self.verbosity >= 10:
-                print "Step #%d:" % loc
-                print "  Corrector steps: %d/%d" % (k, self.MaxCorrIters)
-                print "  Converged: %d" % (converged and not problem)
+                print("Step #%d:" % loc)
+                print("  Corrector steps: %d/%d" % (k, self.MaxCorrIters))
+                print("  Converged: %d" % (converged and not problem))
 
             if problem:
                 stop = True
@@ -1164,11 +1164,11 @@ class Continuation(object):
                 if self.StepSize > self.MinStepSize:
                     # Reduce stepsize and try again
                     if self.verbosity >= 3:
-                        print "Trouble converging.  Reducing stepsize. (ds=%lf)" % self.StepSize
+                        print("Trouble converging.  Reducing stepsize. (ds=%lf)" % self.StepSize)
                     self.StepSize = max(self.MinStepSize, self.StepSize*SSC_c)
                 else:
                     # Stop continuation
-                    print "Did not converge.  Stopping continuation.  Reduce MinStepSize to continue."
+                    print("Did not converge.  Stopping continuation.  Reduce MinStepSize to continue.")
                     raise PyDSTool_ExistError("Did not converge. Stopping continuation. Reduce MinStepSize to continue")
             else:
                 # Increase stepsize for fast convergence
@@ -1196,7 +1196,7 @@ class Continuation(object):
                 if self.ClosedCurve < loc+1 < self.MaxNumPoints and \
                    linalg.norm(curve[loc]-curve[0]) < self.StepSize:
                     # Need to be able to copy PointInfo information
-                    print "Detected closed curve.  Stopping continuation...\n"
+                    print("Detected closed curve.  Stopping continuation...\n")
                     curve[loc+1] = curve[0]
                     V[loc+1] = V[0]
 
@@ -1212,8 +1212,8 @@ class Continuation(object):
 
                 # Print information
                 if self.verbosity >= 4:
-                    print "Loc = %4d    %s = %lf" % (loc, self.freepars[0],
-                                                     curve[loc][-1])
+                    print("Loc = %4d    %s = %lf" % (loc, self.freepars[0],
+                                                     curve[loc][-1]))
 
                 # Save information
                 self._savePointInfo(loc)
@@ -1226,7 +1226,7 @@ class Continuation(object):
             #                            V[self.loc]), ds=self.StepSize)})
             self.CurveInfo[loc] = ('MX', {'data': args(V = todict(self,
                                         V[loc]), ds=self.StepSize)})
-        elif not closed and not self.CurveInfo[loc].has_key('P'):
+        elif not closed and 'P' not in self.CurveInfo[loc]:
             self.CurveInfo[loc] = ('P', {'data': args(V = todict(self,
                                         V[loc])), 'plot': args()})
 
@@ -1252,7 +1252,7 @@ class Continuation(object):
                             pt.labels[pttype]['name'] = pttype + repr(num)
                         else:
                             pt.labels[pttype] = {'name': pttype + repr(num)}
-                        if pt.labels[pttype].has_key('cycle'):
+                        if 'cycle' in pt.labels[pttype]:
                             pt.labels[pttype]['cycle'].name = pttype + repr(num)
                         num += 1
             self.new_sol_segment = copy(self.sol)
@@ -1274,7 +1274,7 @@ class Continuation(object):
                     i -= 1
 
             # Set start point (if bif point, set to startx)
-            if sol1.labels[pt_type].has_key('startx'):
+            if 'startx' in sol1.labels[pt_type]:
                 x0 = sol1.labels[pt_type]['startx']
             else:
                 x0 = sol1
@@ -1284,7 +1284,7 @@ class Continuation(object):
             except:
                 v0 = None
 
-            if sol1.labels[self.curvetype.split('-')[0]]['data'].has_key('ds'):
+            if 'ds' in sol1.labels[self.curvetype.split('-')[0]]['data']:
                 self.StepSize = min(self.StepSize,
                           sol1.labels[self.curvetype.split('-')[0]]['data'].ds)
 
@@ -1315,7 +1315,7 @@ class Continuation(object):
                             pt.labels[pttype]['name'] = pttype + repr(num)
                         else:
                             pt.labels[pttype] = {'name': pttype + repr(num)}
-                        if pt.labels[pttype].has_key('cycle'):
+                        if 'cycle' in pt.labels[pttype]:
                             pt.labels[pttype]['cycle'].name = pttype + repr(num)
                         num += 1
 
@@ -1342,11 +1342,11 @@ class Continuation(object):
             sol0 = self.sol[0]
 
             # Type of end point
-            if sol0.labels.has_key('P'):
+            if 'P' in sol0.labels:
                 etype0 = 'P'
             else:
                 etype0 = 'MX'
-            if self.sol[-1].labels.has_key('P'):
+            if 'P' in self.sol[-1].labels:
                 etype1 = 'P'
             else:
                 etype1 = 'MX'
@@ -1354,16 +1354,16 @@ class Continuation(object):
             # Turn tangent vectors around (for non auto only)
             if not self.UseAuto:
                 # Turn tangent vectors at end point type around
-                for k, v in sol0.labels[etype0]['data'].V.iteritems():
+                for k, v in sol0.labels[etype0]['data'].V.items():
                     sol0.labels[etype0]['data'].V[k] = -1*v
 
-                for k, v in self.sol[-1].labels[etype1]['data'].V.iteritems():
+                for k, v in self.sol[-1].labels[etype1]['data'].V.items():
                     self.sol[-1].labels[etype1]['data'].V[k] = -1*v
 
                 # Turn tangent vectors at curve type around (PROBLEM AT MX POINTS)
                 ctype = self.curvetype.split('-')[0]
                 for pt in self.sol:
-                    for k, v in pt.labels[ctype]['data'].V.iteritems():
+                    for k, v in pt.labels[ctype]['data'].V.items():
                         pt.labels[ctype]['data'].V[k] = -1*v
 
             for pttype in self.LocBifPoints + other_special_points:
@@ -1375,14 +1375,14 @@ class Continuation(object):
                             pt.labels[pttype]['name'] = pttype + repr(num)
                         else:
                             pt.labels[pttype] = {'name': pttype + repr(num)}
-                        if pt.labels[pttype].has_key('cycle'):
+                        if 'cycle' in pt.labels[pttype]:
                             pt.labels[pttype]['cycle'].name = pttype + repr(num)
                         num += 1
             self.new_sol_segment = copy(self.sol)
         else:
             sol0 = self.sol[0]
             # Set start point (if bif point, set to startx)
-            if sol0.labels['P'].has_key('startx'):
+            if 'startx' in sol0.labels['P']:
                 x0 = sol0.labels['P']['startx']
             else:
                 x0 = sol0
@@ -1400,7 +1400,7 @@ class Continuation(object):
             #    self.StepSize = self.sol[0].labels[ctype]['data'].ds
             #except:
             #    pass
-            if sol0.labels[self.curvetype.split('-')[0]]['data'].has_key('ds'):
+            if 'ds' in sol0.labels[self.curvetype.split('-')[0]]['data']:
                 self.StepSize = min(self.StepSize,
                     sol0.labels[self.curvetype.split('-')[0]]['data'].ds)
 
@@ -1412,24 +1412,24 @@ class Continuation(object):
             sol0 = sol[0]
 
             # Type of end point
-            etype = sol0.labels.has_key('P') and 'P' or 'MX'
+            etype = 'P' in sol0.labels and 'P' or 'MX'
 
             if etype in sol0.labels:
                 sol0.labels[etype]['name'] = etype+'1'
             else:
                 sol0.labels[etype] = {'name': etype+'1'}
-            if sol0.labels[etype].has_key('cycle'):
+            if 'cycle' in sol0.labels[etype]:
                 sol0.labels[etype]['cycle'].name = etype+'1'
 
             # Turn tangent vectors around (for non auto only)
             if not self.UseAuto:
                 # Turn tangent vector around at point type endtype and change name
-                for k, v in sol0.labels[etype]['data'].V.iteritems():
+                for k, v in sol0.labels[etype]['data'].V.items():
                     sol0.labels[etype]['data'].V[k] = -1*v
 
                 # Turn tangent vectors at curve type around
                 for pt in sol:
-                    for k, v in pt.labels[ctype]['data'].V.iteritems():
+                    for k, v in pt.labels[ctype]['data'].V.items():
                         pt.labels[ctype]['data'].V[k] = -1*v
 
             # Fix labels
@@ -1451,7 +1451,7 @@ class Continuation(object):
                             pt.labels[pttype]['name'] = pttype + repr(num)
                         else:
                             pt.labels[pttype] = {'name': pttype + repr(num)}
-                        if pt.labels[pttype].has_key('cycle'):
+                        if 'cycle' in pt.labels[pttype]:
                             pt.labels[pttype]['cycle'].name = pttype + repr(num)
                         num += 1
 
@@ -1485,7 +1485,7 @@ class Continuation(object):
 
         if icv is None:
             # Get Jacobian information
-            print "Creating vector...\n"
+            print("Creating vector...\n")
             J_coords = self.CorrFunc.jac(x0, self.coords)
             J_params = self.CorrFunc.jac(x0, self.params)
 
@@ -1504,26 +1504,26 @@ class Continuation(object):
         #while (abs(x0[ind] - ic[ind]) < 1.0):
         out = []
         while (dy >= 1e-4):
-            print "%s = %lf" % (self.varslist[ind], x0[ind])
+            print("%s = %lf" % (self.varslist[ind], x0[ind]))
             # Get Jacobian information
             #J_coords = self.CorrFunc.jac(x0, self.coords)
             #J_params = self.CorrFunc.jac(x0, self.params)
 
             k, converged, problem, diag = self.Corrector(x0, v0)
-            print 'x0 = ', x0
+            print('x0 = ', x0)
             if not converged:
-                print "  Did not converge."
+                print("  Did not converge.")
                 if (Dy >= dy):
-                    print "  Changing stepsize."
+                    print("  Changing stepsize.")
                     Dy -= dy
                     dy *= 0.5
                 else:
-                    print "  Minimum reached.  Stopping simulation."
+                    print("  Minimum reached.  Stopping simulation.")
                     raise PyDSTool_ExistError("Failed to converge")
             else:
                 out.append((Dy, diag))
                 #print "  Converged.  Avg. cond. # = %lf" % (csum/k)
-                print "  Converged.  Avg. cond. # = %lf" % (sum(diag.cond)/len(diag.cond))
+                print("  Converged.  Avg. cond. # = %lf" % (sum(diag.cond)/len(diag.cond)))
 
                 # Takes care of "infinite" domains
                 if (Dy >= 5.0):
@@ -1566,7 +1566,7 @@ class Continuation(object):
 
         if icv is None:
             # Get Jacobian information
-            print "Creating vector...\n"
+            print("Creating vector...\n")
             J_coords = self.CorrFunc.jac(x0, self.coords)
             J_params = self.CorrFunc.jac(x0, self.params)
 
@@ -1611,7 +1611,7 @@ class Continuation(object):
                 x0[ind[0]] = xmin + j*dx
                 x0[ind[1]] = ymax - i*dy
                 ix0 = x0.copy()
-                print "(%d, %d) -- (%s, %s) = (%lf, %lf)" % (i, j, key[ind[0]], key[ind[1]], x0[ind[0]], x0[ind[1]])
+                print("(%d, %d) -- (%s, %s) = (%lf, %lf)" % (i, j, key[ind[0]], key[ind[1]], x0[ind[0]], x0[ind[1]]))
 
                 # Get Jacobian information
                 #J_coords = self.CorrFunc.jac(x0, self.coords)
@@ -1625,11 +1625,11 @@ class Continuation(object):
 
                 k, converged, problem, diag = self.Corrector(x0, v0)
 
-                print 'x0 = ', x0
+                print('x0 = ', x0)
                 if not converged:
-                    print "  Did not converge."
+                    print("  Did not converge.")
                     if len(diag.cond) > 0:
-                        print "  Avg. cond. # = %lf" % (sum(diag.cond)/len(diag.cond))
+                        print("  Avg. cond. # = %lf" % (sum(diag.cond)/len(diag.cond)))
                     if problem:
                         # Did not converge due to failure in backward integration
                         out[i].append(('XB', ix0, x0, diag))
@@ -1642,7 +1642,7 @@ class Continuation(object):
                             # Did not converge for unknown reason
                             out[i].append(('X', ix0, x0, diag))
                 else:
-                    print "  Converged.  Avg. cond. # = %lf" % (sum(diag.cond)/len(diag.cond))
+                    print("  Converged.  Avg. cond. # = %lf" % (sum(diag.cond)/len(diag.cond)))
                     # Converged
                     out[i].append(('C', ix0, x0, diag))
 
@@ -1677,7 +1677,7 @@ class Continuation(object):
 
         if icv is None:
             # Get Jacobian information
-            print "Creating vector...\n"
+            print("Creating vector...\n")
             J_coords = self.CorrFunc.jac(x0, self.coords)
             J_params = self.CorrFunc.jac(x0, self.params)
 
@@ -1695,34 +1695,34 @@ class Continuation(object):
         v1[2] = 1.0
         v1 = v1 - v0[2]*v0
         v1 = v1/linalg.norm(v1)
-        print "Checking orthonormal..."
-        print "  |v0| = %lf" % linalg.norm(v0)
-        print "  |v1| = %lf" % linalg.norm(v1)
-        print "  <v0,v1> = %lf" % matrixmultiply(v0,v1)
+        print("Checking orthonormal...")
+        print("  |v0| = %lf" % linalg.norm(v0))
+        print("  |v1| = %lf" % linalg.norm(v1))
+        print("  <v0,v1> = %lf" % matrixmultiply(v0,v1))
 
         out = []
         d0 = Dx/(2*step)
         d1 = Dy/(2*step)
 
-        print "Start x = ", x0
+        print("Start x = ", x0)
         for i in range(step, -1*(step+1), -1):
             out.append([])
             for j in range(-1*step, step+1):
                 x = x0 + j*d0*v0 + i*d1*v1
-                print "(%d, %d) -- (y, theta, a) = (%lf, %lf, %lf)" % (i, j, x[0], x[1], x[2])
+                print("(%d, %d) -- (y, theta, a) = (%lf, %lf, %lf)" % (i, j, x[0], x[1], x[2]))
 
                 ix = x.copy()
                 v = v0.copy()
 
                 k, converged, problem, diag = self.Corrector(x, v)
 
-                print 'x = ', x
+                print('x = ', x)
                 if not converged:
                     if len(diag.cond) > 0:
-                        print "  Avg. cond. # = %lf" % (sum(diag.cond)/len(diag.cond))
+                        print("  Avg. cond. # = %lf" % (sum(diag.cond)/len(diag.cond)))
                     if problem:
                         # Did not converge due to failure in backward integration
-                        print "  Did not converge (XB)."
+                        print("  Did not converge (XB).")
                         out[step-i].append(('XB', ix, x, diag))
                     elif k >= self.MaxCorrIters:
                         Fnm_flag = monotone([nm[0] for nm in diag.nrm], -3,
@@ -1732,14 +1732,14 @@ class Continuation(object):
                         cond_flag = monotone(diag.cond, -3, direc=-1)
                         if Fnm_flag and Vnm_flag and cond_flag:
                             # Did not converge but may have converged with more time steps
-                            print "  Did not converge (XC)."
+                            print("  Did not converge (XC).")
                             out[step-i].append(('XC', ix, x, diag))
                         else:
                             # Did not converge for unknown reason
-                            print "  Did not converge (X)."
+                            print("  Did not converge (X).")
                             out[step-i].append(('X', ix, x, diag))
                 else:
-                    print "  Converged.  Avg. cond. # = %lf" % (sum(diag.cond)/len(diag.cond))
+                    print("  Converged.  Avg. cond. # = %lf" % (sum(diag.cond)/len(diag.cond)))
                     # Converged
                     out[step-i].append(('C', ix, x, diag))
 
@@ -1868,42 +1868,42 @@ class Continuation(object):
                     num = 1;
                     for pt in self.sol.bylabel(pttype):
                         pt.labels[pttype]['name'] = pttype + repr(num)
-                        if pt.labels[pttype].has_key('cycle'):
+                        if 'cycle' in pt.labels[pttype]:
                             pt.labels[pttype]['cycle'].name = pttype + repr(num)
                         num += 1
 
 
     def info(self):
-        print self.__repr__()
-        print "Using model: %s\n"%self.model.name
+        print(self.__repr__())
+        print("Using model: %s\n"%self.model.name)
         if self.description is not 'None':
-            print 'Description'
-            print '----------- \n'
-            print self.description, '\n'
-        print 'Model Info'
-        print '---------- \n'
-        print "  Variables : %s"%', '.join(self.varslist)
-        print "  Parameters: %s\n"%', '.join(self.parsdict.keys())
-        print 'Continuation Parameters'
-        print '----------------------- \n'
+            print('Description')
+            print('----------- \n')
+            print(self.description, '\n')
+        print('Model Info')
+        print('---------- \n')
+        print("  Variables : %s"%', '.join(self.varslist))
+        print("  Parameters: %s\n"%', '.join(list(self.parsdict.keys())))
+        print('Continuation Parameters')
+        print('----------------------- \n')
         args_list = cont_args_list[:]
         exclude = ['description']
         args_list.insert(2, 'auxpars')
         for arg in args_list:
             if hasattr(self, arg) and arg not in exclude:
-                print arg, ' = ', eval('self.' + arg)
-        print '\n'
+                print(arg, ' = ', eval('self.' + arg))
+        print('\n')
 
         spts = ''
         if self.sol is not None:
             for pttype in all_point_types:
                 if self.sol.bylabel(pttype) is not None:
                     for pt in self.sol.bylabel(pttype):
-                        if pt.labels[pttype].has_key('name'):
+                        if 'name' in pt.labels[pttype]:
                             spts = spts + pt.labels[pttype]['name'] + ', '
-        print 'Special Points'
-        print '-------------- \n'
-        print spts[:-2]
+        print('Special Points')
+        print('-------------- \n')
+        print(spts[:-2])
 
 
     def __repr__(self):
@@ -1946,7 +1946,7 @@ class EquilibriumCurve(Continuation):
         Continuation.update(self, args)
 
         if args is not None:
-            for k, v in args.iteritems():
+            for k, v in args.items():
                 if k in equilibrium_args_list:
                     if k == 'LocBifPoints':
                         if isinstance(v, str):
@@ -1957,7 +1957,7 @@ class EquilibriumCurve(Continuation):
 
                         # Handle stopping points
                         w = []
-                        if args.has_key('StopAtPoints'):
+                        if 'StopAtPoints' in args:
                             w = args['StopAtPoints']
                             if isinstance(w, str):
                                 if w.lower() == 'all':
@@ -1969,10 +1969,10 @@ class EquilibriumCurve(Continuation):
                             if bftype not in cont_bif_points and \
                                bftype not in equilibrium_bif_points:
                                 if self.verbosity >= 1:
-                                    print "Warning: Detection of " + bftype + " points not implemented for curve EP-C."
+                                    print("Warning: Detection of " + bftype + " points not implemented for curve EP-C.")
                             elif bftype == 'H' and self.varsdim == 1:
                                 if self.verbosity >= 1:
-                                    print "Warning: Variable dimension must be larger than 1 to detect Hopf points."
+                                    print("Warning: Variable dimension must be larger than 1 to detect Hopf points.")
                             else:
                                 if bftype not in self.LocBifPoints:
                                     self.LocBifPoints.append(bftype)
@@ -2089,7 +2089,7 @@ class FoldCurve(Continuation):
         #self.LocBifPoints = []  # Temporary fix: Delete after branch point implementation for fold curve
 
         if args is not None:
-            for k, v in args.iteritems():
+            for k, v in args.items():
                 if k in fold_args_list:
                     if k == 'LocBifPoints':
                         if isinstance(v, str):
@@ -2100,7 +2100,7 @@ class FoldCurve(Continuation):
 
                         # Handle stopping points
                         w = []
-                        if args.has_key('StopAtPoints'):
+                        if 'StopAtPoints' in args:
                             w = args['StopAtPoints']
                             if isinstance(w, str):
                                 if w.lower() == 'all':
@@ -2112,7 +2112,7 @@ class FoldCurve(Continuation):
                             if bftype not in cont_bif_points \
                                and bftype not in fold_bif_points:
                                 if self.verbosity >= 1:
-                                    print "Warning: Detection of " + bftype + " points not implemented for curve LP-C."
+                                    print("Warning: Detection of " + bftype + " points not implemented for curve LP-C.")
                             else:
                                 if bftype not in self.LocBifPoints:
                                     self.LocBifPoints.append(bftype)
@@ -2222,7 +2222,7 @@ class HopfCurveOne(Continuation):
         #self.LocBifPoints = []  # Temporary fix: Delete after branch point implementation for hopf curve
 
         if args is not None:
-            for k, v in args.iteritems():
+            for k, v in args.items():
                 if k in hopf_args_list:
                     if k == 'LocBifPoints':
                         if isinstance(v, str):
@@ -2233,7 +2233,7 @@ class HopfCurveOne(Continuation):
 
                         # Handle stopping points
                         w = []
-                        if args.has_key('StopAtPoints'):
+                        if 'StopAtPoints' in args:
                             w = args['StopAtPoints']
                             if isinstance(w, str):
                                 if w.lower() == 'all':
@@ -2245,10 +2245,10 @@ class HopfCurveOne(Continuation):
                             if bftype == 'BP' or bftype not in cont_bif_points \
                                              and bftype not in hopf_bif_points:
                                 if self.verbosity >= 1:
-                                    print "Warning: Detection of " + bftype + " points not implemented for curve H-C1."
+                                    print("Warning: Detection of " + bftype + " points not implemented for curve H-C1.")
                             elif bftype == 'DH' and self.varsdim <= 3:
                                 if self.verbosity >= 1:
-                                    print "Warning: Variable dimension must be larger than 3 to detect Double Hopf points."
+                                    print("Warning: Variable dimension must be larger than 3 to detect Double Hopf points.")
                             else:
                                 if bftype not in self.LocBifPoints:
                                     self.LocBifPoints.append(bftype)
@@ -2381,7 +2381,7 @@ class HopfCurveTwo(Continuation):
         #self.LocBifPoints = []  # Temporary fix: Delete after branch point implementation for hopf curve
 
         if args is not None:
-            for k, v in args.iteritems():
+            for k, v in args.items():
                 if k in hopf_args_list:
                     if k == 'LocBifPoints':
                         if isinstance(v, str):
@@ -2392,7 +2392,7 @@ class HopfCurveTwo(Continuation):
 
                         # Handle stopping points
                         w = []
-                        if args.has_key('StopAtPoints'):
+                        if 'StopAtPoints' in args:
                             w = args['StopAtPoints']
                             if isinstance(w, str):
                                 if w.lower() == 'all':
@@ -2403,7 +2403,7 @@ class HopfCurveTwo(Continuation):
                         for bftype in v:
                             if bftype in ['BP', 'DH'] or bftype not in cont_bif_points and bftype not in hopf_bif_points:
                                 if self.verbosity >= 1:
-                                    print "Warning: Detection of " + bftype + " points not implemented for curve H-C2."
+                                    print("Warning: Detection of " + bftype + " points not implemented for curve H-C2.")
                             else:
                                 if bftype not in self.LocBifPoints:
                                     self.LocBifPoints.append(bftype)
@@ -2531,7 +2531,7 @@ class FixedPointCurve(Continuation):
         Continuation.update(self, args)
 
         if args is not None:
-            for k, v in args.iteritems():
+            for k, v in args.items():
                 if k in fixedpoint_args_list:
                     if k == 'LocBifPoints':
                         if isinstance(v, str):
@@ -2542,7 +2542,7 @@ class FixedPointCurve(Continuation):
 
                         # Handle stopping points
                         w = []
-                        if args.has_key('StopAtPoints'):
+                        if 'StopAtPoints' in args:
                             w = args['StopAtPoints']
                             if isinstance(w, str):
                                 if w.lower() == 'all':
@@ -2553,10 +2553,10 @@ class FixedPointCurve(Continuation):
                         for bftype in v:
                             if bftype not in cont_bif_points and bftype not in fixedpoint_bif_points:
                                 if self.verbosity >= 1:
-                                    print "Warning: Detection of " + bftype + " points not implemented for curve FP-C."
+                                    print("Warning: Detection of " + bftype + " points not implemented for curve FP-C.")
                             elif bftype == 'NS' and self.varsdim == 1:
                                 if self.verbosity >= 1:
-                                    print "Warning: Variable dimension must be larger than 1 to detect NS points."
+                                    print("Warning: Variable dimension must be larger than 1 to detect NS points.")
                             else:
                                 if bftype not in self.LocBifPoints:
                                     self.LocBifPoints.append(bftype)
@@ -2636,7 +2636,7 @@ class FixedPointFoldCurve(FixedPointCurve):
         Continuation.update(self, args)
 
         if args is not None:
-            for k, v in args.iteritems():
+            for k, v in args.items():
                 if k in fold_args_list:
                     if k == 'LocBifPoints':
                         if isinstance(v, str):
@@ -2647,7 +2647,7 @@ class FixedPointFoldCurve(FixedPointCurve):
 
                         # Handle stopping points
                         w = []
-                        if args.has_key('StopAtPoints'):
+                        if 'StopAtPoints' in args:
                             w = args['StopAtPoints']
                             if isinstance(w, str):
                                 if w.lower() == 'all':
@@ -2658,7 +2658,7 @@ class FixedPointFoldCurve(FixedPointCurve):
                         for bftype in v:
                             if bftype not in cont_bif_points and bftype not in fold_bif_points:
                                 if self.verbosity >= 1:
-                                    print "Warning: Detection of " + bftype + " points not implemented for curve FP-C."
+                                    print("Warning: Detection of " + bftype + " points not implemented for curve FP-C.")
                             else:
                                 if bftype not in self.LocBifPoints:
                                     self.LocBifPoints.append(bftype)
@@ -2730,7 +2730,7 @@ class FixedPointFlipCurve(FixedPointCurve):
         Continuation.update(self, args)
 
         if args is not None:
-            for k, v in args.iteritems():
+            for k, v in args.items():
                 if k in flip_args_list:
                     if k == 'LocBifPoints':
                         if isinstance(v, str):
@@ -2741,7 +2741,7 @@ class FixedPointFlipCurve(FixedPointCurve):
 
                         # Handle stopping points
                         w = []
-                        if args.has_key('StopAtPoints'):
+                        if 'StopAtPoints' in args:
                             w = args['StopAtPoints']
                             if isinstance(w, str):
                                 if w.lower() == 'all':
@@ -2752,7 +2752,7 @@ class FixedPointFlipCurve(FixedPointCurve):
                         for bftype in v:
                             if bftype not in cont_bif_points and bftype not in flip_bif_points:
                                 if self.verbosity >= 1:
-                                    print "Warning: Detection of " + bftype + " points not implemented for curve FP-C."
+                                    print("Warning: Detection of " + bftype + " points not implemented for curve FP-C.")
                             else:
                                 if bftype not in self.LocBifPoints:
                                     self.LocBifPoints.append(bftype)
@@ -2824,7 +2824,7 @@ class FixedPointNSCurve(FixedPointCurve):
         Continuation.update(self, args)
 
         if args is not None:
-            for k, v in args.iteritems():
+            for k, v in args.items():
                 if k in NS_args_list:
                     if k == 'LocBifPoints':
                         if isinstance(v, str):
@@ -2835,7 +2835,7 @@ class FixedPointNSCurve(FixedPointCurve):
 
                         # Handle stopping points
                         w = []
-                        if args.has_key('StopAtPoints'):
+                        if 'StopAtPoints' in args:
                             w = args['StopAtPoints']
                             if isinstance(w, str):
                                 if w.lower() == 'all':
@@ -2846,7 +2846,7 @@ class FixedPointNSCurve(FixedPointCurve):
                         for bftype in v:
                             if bftype not in cont_bif_points and bftype not in NS_bif_points:
                                 if self.verbosity >= 1:
-                                    print "Warning: Detection of " + bftype + " points not implemented for curve FP-C."
+                                    print("Warning: Detection of " + bftype + " points not implemented for curve FP-C.")
                             else:
                                 if bftype not in self.LocBifPoints:
                                     self.LocBifPoints.append(bftype)
@@ -2927,7 +2927,7 @@ class FixedPointCuspCurve(FixedPointCurve):
         Continuation.update(self, args)
 
         if args is not None:
-            for k, v in args.iteritems():
+            for k, v in args.items():
                 if k in fold_args_list:
                     if k == 'LocBifPoints':
                         if isinstance(v, str):
@@ -2938,7 +2938,7 @@ class FixedPointCuspCurve(FixedPointCurve):
 
                         # Handle stopping points
                         w = []
-                        if args.has_key('StopAtPoints'):
+                        if 'StopAtPoints' in args:
                             w = args['StopAtPoints']
                             if isinstance(w, str):
                                 if w.lower() == 'all':
@@ -2949,7 +2949,7 @@ class FixedPointCuspCurve(FixedPointCurve):
                         for bftype in v:
                             if bftype not in cont_bif_points and bftype not in fold_bif_points:
                                 if self.verbosity >= 1:
-                                    print "Warning: Detection of " + bftype + " points not implemented for curve FP-C."
+                                    print("Warning: Detection of " + bftype + " points not implemented for curve FP-C.")
                             else:
                                 if bftype not in self.LocBifPoints:
                                     self.LocBifPoints.append(bftype)
@@ -3008,20 +3008,20 @@ class LimitCycleCurve(Continuation):
         #self.LocBifPoints = []  # Temporary fix: Delete after branch fix for LimitCycleCurve
 
         if args is not None:
-            for k, v in args.iteritems():
+            for k, v in args.items():
                 if k in limitcycle_args_list:
                     if k == 'SolutionMeasures':
                         self.SolutionMeasures = ['max', 'min']
                         if isinstance(v, str):
                             if v.lower() == 'all':
-                                v = solution_measures.keys()
+                                v = list(solution_measures.keys())
                             else:
                                 v = [v]
 
                         for smtype in v:
                             if smtype not in solution_measures.keys():
                                 if self.verbosity >= 1:
-                                    print "Warning: Solution measure " + smtype + " is not valid."
+                                    print("Warning: Solution measure " + smtype + " is not valid.")
                             elif smtype not in self.SolutionMeasures:
                                 self.SolutionMeasures.append(smtype)
 
@@ -3037,7 +3037,7 @@ class LimitCycleCurve(Continuation):
 
                         # Handle stopping points
                         w = []
-                        if args.has_key('StopAtPoints'):
+                        if 'StopAtPoints' in args:
                             w = args['StopAtPoints']
                             if isinstance(w, str):
                                 if w.lower() == 'all':
@@ -3049,8 +3049,8 @@ class LimitCycleCurve(Continuation):
                             if bftype == 'BP' or bftype not in cont_bif_points \
                                and bftype not in limitcycle_bif_points:
                                 if self.verbosity >= 1:
-                                    print "Warning: Detection of %s"%bftype,
-                                    print " points not implemented for curve LC-C."
+                                    print("Warning: Detection of %s"%bftype, end=' ')
+                                    print(" points not implemented for curve LC-C.")
                             else:
                                 if bftype not in self.LocBifPoints:
                                     self.LocBifPoints.append(bftype)
@@ -3075,8 +3075,8 @@ class LimitCycleCurve(Continuation):
         if cycles is None:
             cycles = []
             for pt in self.sol:
-                for ptdata in pt.labels.itervalues():
-                    if ptdata.has_key('cycle'):
+                for ptdata in pt.labels.values():
+                    if 'cycle' in ptdata:
                         cycles.append(ptdata['cycle'].name)
         elif not isinstance(cycles, list):
             cycles = [cycles]
@@ -3116,7 +3116,7 @@ class LimitCycleCurve(Continuation):
             elif isinstance(cyclename, Pointset):
                 pts.append(cyclename)
             else:
-                print 'Point must be type(str) or type(Pointset).'
+                print('Point must be type(str) or type(Pointset).')
         cycles = pts
 
         # Get maximal period
@@ -3366,7 +3366,7 @@ class LimitCycleCurve(Continuation):
 
         # CHECK ME (Moved from below)
         parsdim = len(self.parsdict)
-        ipar = range(min(parsdim,10)) + [10] + range(50,parsdim+40)
+        ipar = list(range(min(parsdim,10))) + [10] + list(range(50,parsdim+40))
         parkeys = sortedDictKeys(self.parsdict)
 
         # INSERT SPOut STUFF HERE
@@ -3377,7 +3377,7 @@ class LimitCycleCurve(Continuation):
         else:
             iuz = []
             vuz = []
-            for k, v in self.SPOut.iteritems():
+            for k, v in self.SPOut.items():
                 pind = ipar[parkeys.index(k)]
                 iuz.extend(len(v)*[pind])
                 vuz.extend(v)
@@ -3427,7 +3427,7 @@ class LimitCycleCurve(Continuation):
 
             # FIX ME
             x0n = x0.copy()
-            for k, v in x0.iteritems():
+            for k, v in x0.items():
                 kn = k
                 for smtype in self.SolutionMeasures:
                     if k.rfind('_'+smtype) > 0:
@@ -3440,8 +3440,8 @@ class LimitCycleCurve(Continuation):
         elif isinstance(x0, Point):
             # Check to see if point contains a cycle.  If it does, assume
             #   we are starting at a cycle and save it in initcycle
-            for v in x0.labels.itervalues():
-                if v.has_key('cycle'):
+            for v in x0.labels.values():
+                if 'cycle' in v:
                     c0 = v   # Dictionary w/ cycle, name, and tangent information
                     try:
                         T = x0['_T']
@@ -3454,7 +3454,7 @@ class LimitCycleCurve(Continuation):
 
             # FIX ME
             x0n = x0.copy()
-            for k, v in x0.iteritems():
+            for k, v in x0.items():
                 kn = k
                 for smtype in self.SolutionMeasures:
                     if k.rfind('_'+smtype) > 0:
@@ -3650,8 +3650,8 @@ class LimitCycleCurve(Continuation):
 
             if sp_endpt < self.loc:
                 if self.verbosity > 0:
-                    print 'Warning: NaNs in solution from AUTO. ',
-                    print 'Reduce stepsize and try again.'
+                    print('Warning: NaNs in solution from AUTO. ', end=' ')
+                    print('Reduce stepsize and try again.')
                 self.loc = sp_endpt
                 self.curve = self.curve[0:self.loc+1]
                 self.CurveInfo[self.loc] = ('MX', \
@@ -3679,14 +3679,14 @@ class LimitCycleCurve(Continuation):
     def info(self):
         Continuation.info(self)
 
-        print '\nLimit Cycle Curve Parameters'
-        print '------------------------------\n'
+        print('\nLimit Cycle Curve Parameters')
+        print('------------------------------\n')
         args_list = limitcycle_args_list[:]
         args_list.remove('LocBifPoints')
         for arg in args_list:
             if hasattr(self, arg):
-                print arg, ' = ', eval('self.' + arg)
-        print '\n'
+                print(arg, ' = ', eval('self.' + arg))
+        print('\n')
 
 
 
@@ -3702,15 +3702,15 @@ class UserDefinedCurve(Continuation):
         self.parsdict = initargs['userpars'].copy()
         self._userfunc = initargs['userfunc']
         self._userdata = args()
-        if initargs.has_key('userjac'):
+        if 'userjac' in initargs:
             self._userjac = initargs['userjac']
-        if initargs.has_key('usertestfuncs'):
+        if 'usertestfuncs' in initargs:
             self._usertestfuncs = initargs['usertestfuncs']
-        if initargs.has_key('userbifpoints'):
+        if 'userbifpoints' in initargs:
             self._userbifpoints = initargs['userbifpoints']
         else:
             self._userbifpoints = []
-        if initargs.has_key('userdomain'):
+        if 'userdomain' in initargs:
             self._userdomain = initargs['userdomain']
 
         [initargs.pop(i) for i in ['uservars', 'userpars', 'userjac',
@@ -3726,7 +3726,7 @@ class UserDefinedCurve(Continuation):
 
         Continuation.update(self, args)
         if args is not None:
-            for k, v in args.iteritems():
+            for k, v in args.items():
                 if k in userdefined_args_list:
                     exec('self.' + k + ' = ' + repr(v))
 
