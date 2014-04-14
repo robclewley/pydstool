@@ -4,11 +4,12 @@ Robert Clewley, 2006, 2007.
 
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from PyDSTool import *
 from numpy import random, array, dot, zeros, transpose
 from numpy.linalg import norm, inv
+from six.moves import range
 
 _generators = ['generate_swirl', 'generate_discspiral', 'generate_hypercube',
               'generate_spiral']
@@ -42,7 +43,7 @@ def generate_swirl(N, L, zmin, zmax, cycle_rate, bias_x, bias_y, roll_num=0,
         rho = x/L*(roll_num*2*pi)
         return (r*cos(rho), r*sin(rho))
     theta = 0
-    for i in xrange(N):
+    for i in range(N):
         theta += cycle_rate
         x = r*cos(theta)+bias_x*i
         x_rolled, z_rolled = roll(x)
@@ -71,7 +72,7 @@ def generate_discspiral(N1, N2, D, radius, cycle_rate,
         X[i,2:D] = array([random.normal(0,noise)]*(D-2), float)
     # now do the spiral(s)
     theta = sqrt(radius*radius-1)
-    for i in xrange(N2):
+    for i in range(N2):
         theta += cycle_rate
         r = sqrt(theta*theta+0.8)
         X[N1+i,:] = array([r*cos(theta)+random.normal(0,noise),
@@ -97,7 +98,7 @@ def generate_spiral(N, D, radius, cycle_rate, expand_rate=1.,
     assert num_spirals in [0,1,2]
     X = zeros((num_spirals*N, D), float)
     theta = sqrt(radius*radius-1)
-    for i in xrange(N):
+    for i in range(N):
         theta += cycle_rate
         r = sqrt(theta*theta+0.8)*expand_rate
         X[i,:] = array([r*cos(theta)+random.normal(0,noise),
@@ -117,12 +118,12 @@ def generate_hypercube(N, D, length, fromcentre=True):
     """
     X = zeros((N, D), float)
     if fromcentre:
-        for i in xrange(N):
-            X[i,:] = array([random.uniform(-length/2., length/2.) for j in xrange(D)],
+        for i in range(N):
+            X[i,:] = array([random.uniform(-length/2., length/2.) for j in range(D)],
                            float)
     else:
-        for i in xrange(N):
-            X[i,:] = array([random.uniform(0, length) for j in xrange(D)],
+        for i in range(N):
+            X[i,:] = array([random.uniform(0, length) for j in range(D)],
                            float)
     return X
 
@@ -150,7 +151,7 @@ def generate_ball(N, D, radius):
             else:
                 outsidepts += 1
 ##                print x, xr, "outside"
-    print "Number of points outside ball that were discarded = ", outsidepts
+    print("Number of points outside ball that were discarded = ", outsidepts)
     return X
 
 
@@ -172,7 +173,7 @@ def maxs(p, lengths=None):
     """
     if lengths is None:
         lengths = [1.] * len(p)
-    a = array([max([p[i],lengths[i]-p[i]]) for i in xrange(len(p))])
+    a = array([max([p[i],lengths[i]-p[i]]) for i in range(len(p))])
     a.sort()
     return a
 
@@ -182,7 +183,7 @@ def mins(p, lengths=None):
     """
     if lengths is None:
         lengths = [1.] * len(p)
-    a = array([min([p[i],lengths[i]-p[i]]) for i in xrange(len(p))])
+    a = array([min([p[i],lengths[i]-p[i]]) for i in range(len(p))])
     a.sort()
     return a
 
