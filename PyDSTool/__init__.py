@@ -136,10 +136,10 @@ from .utils import *
 
 # ------ Check Python version compatibility
 major, minor1, minor2, s, tmp = sys.version_info
-_validpython = major==2 and minor1>=4
+_validpython = (major==2 and minor1>=6) or (major==3 and minor1>=3)
 
 if not _validpython:
-    raise RuntimeError("Python 2.4 or later is required to run PyDSTool")
+    raise RuntimeError("Python 2.6+ or 3.3+ is required to run PyDSTool")
 del _validpython, major, minor1, minor2, s, tmp
 
 _pyDSToolTypes = [ndarray, Generator_, Variable, Trajectory, Event,
