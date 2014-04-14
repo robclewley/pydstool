@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import numpy as npy
 from PyDSTool import Events, Variable, Pointset, Trajectory
@@ -114,7 +114,7 @@ class get_spike_model(ql_feature_leaf):
                           thi=self.pars.tlo+self.pars.width_tol)
         loc_extrema = find_internal_extrema(pts)
         if self.pars.verbose_level > 0:
-            print loc_extrema
+            print(loc_extrema)
         max_val_ix, xmax = loc_extrema['local_max']
         global_max_val_ix, global_xmax = loc_extrema['global_max']
         min_val_ix, xmin = loc_extrema['local_min']
@@ -184,7 +184,7 @@ class get_spike_data(ql_feature_leaf):
             self.pars.thi = pts.indepvararray[-1]
         loc_extrema = find_internal_extrema(pts, self.pars.noise_tol)
         if self.pars.verbose_level > 0:
-            print loc_extrema
+            print(loc_extrema)
             # from PyDSTool import plot, show
             ## plot spike and quadratic fit
             #plot(pts.indepvararray, pts[self.super_pars.burst_coord], 'go-')
@@ -214,8 +214,8 @@ class get_spike_data(ql_feature_leaf):
             thresh_pc = 0.15
         thresh = (xmin + thresh_pc*(xmax-xmin))
         if self.pars.verbose_level > 0:
-            print "xmin used =", xmin
-            print "thresh = ", thresh
+            print("xmin used =", xmin)
+            print("thresh = ", thresh)
         # Define extent of spike for purposes of quadratic fit ...
         evs_found = self.pars.ev.searchForEvents(trange=[self.pars.tlo,
                                                          self.pars.thi],
@@ -236,10 +236,10 @@ class get_spike_data(ql_feature_leaf):
         ixlo = pts.find(tmax-dt, end=0)
         ixhi = pts.find(tmax+dt, end=1)
         if self.pars.verbose_level > 0:
-            print "ixlo =", ixlo, "ixhi =", ixhi
-            print "tlo =",tmax-dt, "thi =",tmax+dt
-            print pts[ixlo], pts[ixhi]
-            print "\nget_spike tests:", test1, test2, test3
+            print("ixlo =", ixlo, "ixhi =", ixhi)
+            print("tlo =",tmax-dt, "thi =",tmax+dt)
+            print(pts[ixlo], pts[ixhi])
+            print("\nget_spike tests:", test1, test2, test3)
         self.results.ixlo = ixlo
         self.results.ixhi = ixhi
         self.results.ixmax = max_val_ix
@@ -252,7 +252,7 @@ class get_spike_data(ql_feature_leaf):
     def finish(self, traj):
         # function of traj, not target
         if self.pars.verbose_level > 0:
-            print "Finishing spike processing..."
+            print("Finishing spike processing...")
         pts = self.results.spike_pts
         coord = self.pars.coord
         xlo = pts[0][0]
@@ -481,7 +481,7 @@ class burst_feature(ql_feature_node):
         xrs = burst_pts[self.pars.burst_coord]
         trs = burst_pts.indepvararray
         if max(x)-min(x) < 5:
-            print "\n\n  Not a bursting trajectory!!"
+            print("\n\n  Not a bursting trajectory!!")
             raise ValueError("Not a bursting trajectory")
         b, a = self.pars.filt_coeffs_LP
         xf = filtfilt(b, a, xrs)
@@ -508,7 +508,7 @@ class burst_feature(ql_feature_node):
         # get_burst_spikes if done accurately
         #self.results.spike_times = self.results.burst_est.spike_ts
         if self.pars.verbose_level > 0:
-            print "Spikes found at (approx) t=", self.results.burst_est.spike_ts
+            print("Spikes found at (approx) t=", self.results.burst_est.spike_ts)
         if self.results.burst_est.spike_ts[0] < self.pars.shrink_end_time_thresh:
             # kludgy way to ensure that another burst doesn't encroach
             if not hasattr(self.pars, 'shrunk'):
@@ -578,7 +578,7 @@ class get_burst_spikes(ql_feature_node):
         satisfied = True
         for spike_num, spike_ix in enumerate(burst_est.spike_ixs):
             if self.pars.verbose_level > 0:
-                print "\n Starting spike", spike_num+1
+                print("\n Starting spike", spike_num+1)
             is_spike.super_pars.burst_coord = self.super_pars.burst_coord
             # step back 10% of estimated period
             try:
@@ -590,7 +590,7 @@ class get_burst_spikes(ql_feature_node):
             is_spike.pars.tlo = burst_est.t[spike_ix] - \
                     is_spike.pars.width_tol / 2.
             if self.pars.verbose_level > 0:
-                print "new tlo =", is_spike.pars.tlo
+                print("new tlo =", is_spike.pars.tlo)
             # would prefer to work this out self-consistently...
             #is_spike.pars.fit_width_max = ?
             new_sat = is_spike(traj)
@@ -600,7 +600,7 @@ class get_burst_spikes(ql_feature_node):
                 spike_times.append(is_spike.results.spike_time)
                 spike_vals.append(is_spike.results.spike_val)
             if self.pars.verbose_level > 0:
-                print "Spike times:", spike_times
+                print("Spike times:", spike_times)
         return spike_times, spike_vals
 
 
@@ -673,7 +673,7 @@ class get_burst_trough_env(qt_feature_leaf):
         vals = burst_pts[self.super_pars.burst_coord]
         inter_spike_ixs = [(burst_est.spike_ixs[i-1],
                             burst_est.spike_ixs[i]) \
-                           for i in xrange(1, len(burst_est.spike_ixs))]
+                           for i in range(1, len(burst_est.spike_ixs))]
         # should really use quadratic fit to get an un-biased minimum
         trough_ixs = [npy.argmin(vals[ix_lo:ix_hi])+ix_lo for ix_lo, ix_hi in \
                       inter_spike_ixs]
@@ -700,7 +700,7 @@ class get_burst_trough_env(qt_feature_leaf):
             spike_ixs.append(tix)
         inter_spike_ixs = [(spike_ixs[i-1],
                             spike_ixs[i]) \
-                           for i in xrange(1, len(ts))]
+                           for i in range(1, len(ts))]
         # min and max events in model mean that these are recorded
         # accurately in the pointsets already
         trough_ixs = [npy.argmin(vals[ix_lo:ix_hi])+ix_lo for ix_lo, ix_hi in \
@@ -734,10 +734,10 @@ class get_burst_isi_env(qt_feature_leaf):
         burst_est = self.super_pars.ref_burst_est
         # find approximate (integer) mid-point index between spikes
         mid_isi_ixs = [int(0.5*(burst_est.spike_ixs[i-1]+burst_est.spike_ixs[i])) \
-                           for i in xrange(1, len(burst_est.spike_ixs))]
+                           for i in range(1, len(burst_est.spike_ixs))]
         isi_t = [ts[i] for i in mid_isi_ixs]
         isi_vals = [ts[burst_est.spike_ixs[i]]-ts[burst_est.spike_ixs[i-1]] for \
-                    i in xrange(1, len(burst_est.spike_ixs))]
+                    i in range(1, len(burst_est.spike_ixs))]
         self.ref_traj = numeric_to_traj([isi_vals], 'isi_envelope',
                                         self.super_pars.burst_coord, isi_t,
                                         burst_pts.indepvarname, discrete=False)
@@ -750,7 +750,7 @@ class get_burst_isi_env(qt_feature_leaf):
         # ignore target
         ts = self.super_results.spike_times
         tname = self.super_pars.burst_coord_pts.indepvarname
-        isi_vals = [ts[i]-ts[i-1] for i in xrange(1, len(ts))]
+        isi_vals = [ts[i]-ts[i-1] for i in range(1, len(ts))]
         self.results.burst_isi_env = numeric_to_traj([isi_vals],
                                                         'isi_envelope',
                                         self.super_pars.burst_coord,
@@ -931,7 +931,7 @@ class estimate_spiking(object):
         self.spike_ixs = spike_ixs
         self.spike_ts = t[spike_ixs]
         self.ISIs = [self.spike_ts[i]-self.spike_ts[i-1] for \
-                     i in xrange(1, len(spike_ixs))]
+                     i in range(1, len(spike_ixs))]
         self.mean_ISI = npy.mean(self.ISIs)
         self.std_ISI = npy.std(self.ISIs)
         self.num_spikes = len(spike_ixs)
