@@ -4,7 +4,8 @@ Data analysis utilities
 Robert Clewley, August 2006
 """
 
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
+
 from PyDSTool.Points import Point, Pointset
 from PyDSTool.Interval import Interval
 from PyDSTool.utils import intersect, filteredDict
@@ -86,8 +87,7 @@ def filtfilt(b,a,x):
 
     #x must be bigger than edge
     if x.size < edge:
-        raise ValueError, \
-              "Input vector needs to be bigger than 3 * max(len(a),len(b)."
+        raise ValueError("Input vector needs to be bigger than 3 * max(len(a),len(b).")
 
     if len(a) < ntaps:
         a=r_[a,zeros(len(b)-len(a))]
@@ -132,8 +132,8 @@ def pca_dim(pca, covering, data, refpt, tol=0.8):
     if type(refpt) != int:
         refpt = refpt[0]
     pca[refpt] = doPCA(nhd(data, covering, refpt), tol)
-    print "PCA eigenvalues for nhd #%i:"%refpt
-    print pca[refpt].d
+    print("PCA eigenvalues for nhd #%i:"%refpt)
+    print(pca[refpt].d)
     return len(pca[refpt].d)
 
 
@@ -156,7 +156,7 @@ def plot_PCA_residuals(data, D=None, newfig=True, marker='o',
         spec[i] = norm(p.d[:i])
     res = transpose(sqrt(spec[-1]**2-spec**2)/spec[-1])[0]
     if not silent:
-        print "L2-norm of PCA spectrum =", spec[-1]
+        print("L2-norm of PCA spectrum =", spec[-1])
         if newfig:
             figure()
             style='k'+marker
@@ -197,7 +197,7 @@ def log_distances(m, sampleix=0, doplot=True, quiet=True, logv=None,
     assert sampleix >= 0
     d = zeros((npts-1,), 'd')
     if rank(m) == 3:
-        for i in xrange(npts):
+        for i in range(npts):
             if sampleix != i:
                 try:
                     d[i] = norm(m[sampleix,:,:]-m[i,:,:])
@@ -206,7 +206,7 @@ def log_distances(m, sampleix=0, doplot=True, quiet=True, logv=None,
                     # so use the empty i=pix position (ordering doesn't matter)
                     d[sampleix] = norm(m[sampleix,:,:]-m[i,:,:])
     elif rank(m) == 2:
-        for i in xrange(npts):
+        for i in range(npts):
             if sampleix != i:
                 try:
                     d[i] = norm(m[sampleix,:]-m[i,:])
@@ -225,11 +225,11 @@ def log_distances(m, sampleix=0, doplot=True, quiet=True, logv=None,
         # just sort
         d.sort()
     if not quiet:
-        print "Chose reference point %i"%sampleix
-        print "Min distance = %f, max distance = %f"%(d[0], d[-1])
+        print("Chose reference point %i"%sampleix)
+        print("Min distance = %f, max distance = %f"%(d[0], d[-1]))
     logd = log(d).ravel()
     if logv is None:
-        logv = log(range(1,len(d)+1))
+        logv = log(list(range(1,len(d)+1)))
     nan_ixs = isfinite(logd)  # mask, not a list of indices
     logd = extract(nan_ixs, logd)
     logv = extract(nan_ixs, logv)
@@ -268,7 +268,7 @@ def log_distances_with_D(m, sampleix, logv=None, return_ixs=False):
     # but offset second stage indices in dk so there's a total of n-1
     # this is basically a slightly unrolled loop to make it a little faster
     if rank(m) == 3:
-        for i in xrange(sampleix):
+        for i in range(sampleix):
             dk[i] = norm(m[sampleix,:,:]-m[i,:,:])
             if dk[i] in d_inv:
                 # ensure we find a unique distance for dictionary key
@@ -294,7 +294,7 @@ def log_distances_with_D(m, sampleix, logv=None, return_ixs=False):
                 d_inv[u[0]] = i
             else:
                 d_inv[dk[i]] = i
-        for i in xrange(sampleix+1, npts):
+        for i in range(sampleix+1, npts):
             ki = i-1
             dk[ki] = norm(m[sampleix,:,:]-m[i,:,:])
             if dk[ki] in d_inv:
@@ -322,7 +322,7 @@ def log_distances_with_D(m, sampleix, logv=None, return_ixs=False):
             else:
                 d_inv[dk[ki]] = i
     elif rank(m) == 2:
-        for i in xrange(sampleix):
+        for i in range(sampleix):
             dk[i] = norm(m[sampleix,:]-m[i,:])
             if dk[i] in d_inv:
                 # ensure we find a unique distance for dictionary key
@@ -348,7 +348,7 @@ def log_distances_with_D(m, sampleix, logv=None, return_ixs=False):
                 d_inv[u[0]] = i
             else:
                 d_inv[dk[i]] = i
-        for i in xrange(sampleix+1, npts):
+        for i in range(sampleix+1, npts):
             ki = i-1
             dk[ki] = norm(m[sampleix,:]-m[i,:])
             if dk[ki] in d_inv:
@@ -389,7 +389,7 @@ def log_distances_with_D(m, sampleix, logv=None, return_ixs=False):
         d.sort()
     logd = log(d).ravel()
     if logv is None:
-        logv = log(range(1,len(d)+1))
+        logv = log(list(range(1,len(d)+1)))
     nan_ixs = isfinite(logd)  # mask, not a list of indices
     logd = extract(nan_ixs, logd)
     logv = extract(nan_ixs, logv)
@@ -463,7 +463,7 @@ def fitline(x, y, lo=0, hi=1, doplot=True, quiet=True, linewidth=2):
     else:
         raise ValueError("Invalid low and high fit limits")
     if not quiet:
-        print "lo ix %d, hi ix %d, max ix %d"%(loix, hiix, lendat-1)
+        print("lo ix %d, hi ix %d, max ix %d"%(loix, hiix, lendat-1))
     pfit = polyfit(x[loix:hiix],y[loix:hiix],1)
 #    print pfit
     if doplot:
@@ -507,7 +507,7 @@ class data_bins(object):
                                 abseps=tolerance) for i in range(self.num_bins)]
         self.midpoints = (self.bin_ords[1:]+self.bin_ords[:-1])/2.
         if valuedict is not None:
-            for k, v in valuedict.iteritems():
+            for k, v in valuedict.items():
                 self[self.resolve_bin_index(k)] = v
 
     def resolve_bin_index(self, ordinate):
@@ -586,8 +586,8 @@ class data_bins(object):
 
     def to_pointset(self):
         """Convert to a pointset"""
-        bin_ixs = xrange(self.num_bins)
-        return Pointset(indepvararray=range(self.num_bins),
+        bin_ixs = range(self.num_bins)
+        return Pointset(indepvararray=list(range(self.num_bins)),
                         coorddict={self.coordinate: [self.bins[ix] \
                                                         for ix in bin_ixs],
                                    'bin_limit_lo': [self.intervals[ix][0] \
@@ -635,11 +635,11 @@ def find_nearby_ball(data, refix, r, which_norm=2, include_ref=False):
     nearby = []
     refpt = data[refix]
     if include_ref:
-        for i in xrange(size(data,0)):
+        for i in range(size(data,0)):
             if norm(refpt-data[i], which_norm) <= r:
                 nearby.append(i)
     else:
-        for i in xrange(size(data,0)):
+        for i in range(size(data,0)):
             if i != refix:
                 if norm(refpt-data[i], which_norm) <= r:
                     nearby.append(i)
@@ -651,7 +651,7 @@ def find_nearby_annulus(data, refix, rlo, rhi, which_norm=2):
     """
     assert rlo > 0 and rhi > rlo
     nearby = []
-    for i in xrange(size(data,0)):
+    for i in range(size(data,0)):
         if i != refix:
             d = norm(data[refix]-data[i], which_norm)
             if d > rlo and d < rhi:
@@ -834,11 +834,11 @@ def find_knees(data, tol=1., inlog=False, verbose=False):
             except ZeroDivisionError:
                 frac = Inf
         if verbose:
-            print i, data[i], frac
+            print(i, data[i], frac)
         if frac > tol and frac < Inf:
             knee_ixs.append((i,frac))
     if verbose:
-        print "High second derivatives at: ", knee_ixs, "\n"
+        print("High second derivatives at: ", knee_ixs, "\n")
     knees = []
     found = False  # in a contiguous segment of high second derivatives
     curr_kixs = []
@@ -847,7 +847,7 @@ def find_knees(data, tol=1., inlog=False, verbose=False):
         process = False
         kix, frac = knee_ixs[i]
         if verbose:
-            print "Processing knee at index", kix
+            print("Processing knee at index", kix)
         if kix-1 == old_kix:
             if i == len(knee_ixs)-1:
                 # this is the last index so have to process
@@ -860,13 +860,13 @@ def find_knees(data, tol=1., inlog=False, verbose=False):
         else:
             process = old_kix is not None
         if verbose:
-            print old_kix, found, curr_kixs
+            print(old_kix, found, curr_kixs)
         if process:
             if found:
                 found = False
                 if verbose:
-                    print "Current knee indices:", curr_kixs,
-                    print [knee_ixs[k] for k in curr_kixs]
+                    print("Current knee indices:", curr_kixs, end=' ')
+                    print([knee_ixs[k] for k in curr_kixs])
                 all_d2 = array([knee_ixs[k][1] for k in curr_kixs])
                 ixs_sort = argsort(all_d2)
                 max_ix = ixs_sort[-1]
@@ -874,13 +874,13 @@ def find_knees(data, tol=1., inlog=False, verbose=False):
                 curr_kixs = []
             else:
                 if verbose:
-                    print "Appending knee index", old_kix
+                    print("Appending knee index", old_kix)
                 knees.append(old_kix)
         old_kix = kix
     # add final singleton index of high derivative, if any
     if not found and old_kix not in knees:
         if verbose:
-            print "Appending knee index", old_kix
+            print("Appending knee index", old_kix)
         knees.append(old_kix)
     return knees
 
