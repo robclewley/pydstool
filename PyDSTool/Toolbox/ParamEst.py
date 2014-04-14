@@ -3,7 +3,7 @@
    Robert Clewley.
 """
 
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 
 # PyDSTool imports
 from PyDSTool.Points import Point, Pointset
@@ -103,19 +103,19 @@ def do_2Dstep(fun, p, dirn, maxsteps, stepsize, atol, i0, orig_res, orig_dirn,
     orig_dirn corresponds to direction of positive dirn, in case when
     re-calculating gradient the sign flips"""
     record = {}
-    print "Recalculating gradient"
+    print("Recalculating gradient")
     grad = fun.gradient(p)
     neut = np.array([grad[1], -grad[0]])
     neut = neut/norm(neut)
     if np.sign(dot(neut, orig_dirn)) != 1:
-        print "(neut was flipped for consistency with direction)"
+        print("(neut was flipped for consistency with direction)")
         neut = -neut
-    print "Neutral direction:", neut
+    print("Neutral direction:", neut)
     record['grad'] = grad
     record['neut'] = neut
     residuals = []
     # inner loop - assumes curvature will be low (no adaptive step size)
-    print "\n****** INNER LOOP"
+    print("\n****** INNER LOOP")
     new_pars = copy(p)
     i = 0
     while True:
@@ -135,8 +135,8 @@ def do_2Dstep(fun, p, dirn, maxsteps, stepsize, atol, i0, orig_res, orig_dirn,
             num_dirn_steps = len([k for k in all_records.keys() if \
                                   k*dirn >= abs(i0)])
             i += 1
-            print len(all_records), "total steps taken, ", num_dirn_steps, \
-                    "in since grad re-calc: pars =", new_pars, " res=", res
+            print(len(all_records), "total steps taken, ", num_dirn_steps, \
+                    "in since grad re-calc: pars =", new_pars, " res=", res)
         else:
             # re-calc gradient
             break
@@ -158,7 +158,7 @@ def do_2Ddirn(fun, p0, dirn, maxsteps, stepsize, atol, orig_res, orig_dirn,
     space, given by dirn = +1/-1 from point p0.
 
     maxsteps is *per* direction"""
-    print "\nStarting direction:", dirn
+    print("\nStarting direction:", dirn)
     dirn_rec = []
     p = p0
     if dirn == 1:
@@ -169,7 +169,7 @@ def do_2Ddirn(fun, p0, dirn, maxsteps, stepsize, atol, orig_res, orig_dirn,
         i = -1
     done = False
     while not done:
-        print "Steps from i =", i
+        print("Steps from i =", i)
         r = do_step(fun, p, dirn, maxsteps, stepsize, atol, i, orig_res,
                     orig_dirn, all_records)
         if r['n'] == 0:
@@ -227,16 +227,16 @@ class residual_fn_context(helpers.ForwardFiniteDifferencesCache):
             raise
         except:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-            print "******************************************"
-            print "Problem evaluating residual function"
-            print "  ", exceptionType, exceptionValue
+            print("******************************************")
+            print("Problem evaluating residual function")
+            print("  ", exceptionType, exceptionValue)
             for line in traceback.format_exc().splitlines()[-4:-1]:
-                print "   " + line
-            print "  originally on line:", traceback.tb_lineno(exceptionTraceback)
+                print("   " + line)
+            print("  originally on line:", traceback.tb_lineno(exceptionTraceback))
             if self.pest.verbose_level > 1:
                 raise
             else:
-                print "(Proceeding with penalty values)\n"
+                print("(Proceeding with penalty values)\n")
             return 10*ones(pest.context.res_len)
 
 class residual_fn_context_1D(helpers.ForwardFiniteDifferencesCache):
@@ -251,16 +251,16 @@ class residual_fn_context_1D(helpers.ForwardFiniteDifferencesCache):
             raise
         except:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-            print "******************************************"
-            print "Problem evaluating residual function"
-            print "  ", exceptionType, exceptionValue
+            print("******************************************")
+            print("Problem evaluating residual function")
+            print("  ", exceptionType, exceptionValue)
             for line in traceback.format_exc().splitlines()[-4:-1]:
-                print "   " + line
-            print "  originally on line:", traceback.tb_lineno(exceptionTraceback)
+                print("   " + line)
+            print("  originally on line:", traceback.tb_lineno(exceptionTraceback))
             if self.pest.verbose_level > 1:
                 raise
             else:
-                print "(Proceeding with penalty value)\n"
+                print("(Proceeding with penalty value)\n")
             return 100
 
 
@@ -303,8 +303,8 @@ def filter_feats(parname, feat_sens):
     incr = []
     decr = []
     neut = []
-    for mi, fdict in feat_sens[parname].iteritems():
-        for f, sens in fdict.iteritems():
+    for mi, fdict in feat_sens[parname].items():
+        for f, sens in fdict.items():
             sum_sens = sum(sens)
             sign_ss = np.sign(sum_sens)
             abs_ss = abs(sum_sens)
@@ -336,7 +336,7 @@ def filter_pars(mi_feat, feat_sens):
     incr = []
     decr = []
     neut = []
-    for pname, fdict in feat_sens.iteritems():
+    for pname, fdict in feat_sens.items():
         sens = fdict[mi][feat]
         sum_sens = sum(sens)
         sign_ss = np.sign(sum_sens)
@@ -413,10 +413,10 @@ def _makeUnique(L):
 
 def pp(l):
     """List pretty printer"""
-    print "[",
+    print("[", end=' ')
     for x in l:
-        print x, ","
-    print "]"
+        print(x, ",")
+    print("]")
 
 
 # ---------------------------------
@@ -433,16 +433,16 @@ def select_pars_for_features(desired_feats, feat_sens, deltas, neg_tol=0, pos_to
     try:
         solver = solver_lookup[method]
     except KeyError:
-        print "Specified solver not found. Will try recursive backtracking solver"
+        print("Specified solver not found. Will try recursive backtracking solver")
         solver = RecursiveBacktrackingSolver
     try:
         problem = Problem(solver(forwardCheck))
     except TypeError:
-        print "Install constraint package from http://labix.org/python-constraint"
+        print("Install constraint package from http://labix.org/python-constraint")
         raise ImportError("Must have constraint package installed to use this feature")
     global D, feat_name_lookup, pars, par_deltas
     par_deltas = deltas
-    pars = feat_sens.keys()
+    pars = list(feat_sens.keys())
     pars.sort()
     num_pars = len(pars)
     assert len(par_deltas) == num_pars
@@ -451,8 +451,8 @@ def select_pars_for_features(desired_feats, feat_sens, deltas, neg_tol=0, pos_to
 
     max_val = 0
     for par in pars:
-        for mi, fdict in feat_sens[par].iteritems():
-            for f, ra in fdict.iteritems():
+        for mi, fdict in feat_sens[par].items():
+            for f, ra in fdict.items():
                 val = sum(ra)
                 if norm(val) > max_val:
                     max_val = val
@@ -484,13 +484,13 @@ def select_pars_for_features(desired_feats, feat_sens, deltas, neg_tol=0, pos_to
         if verbose:
             code += "  print sum(prods)\n"
         code += "  return %s(sum(prods), %f)\n"%(op,this_tol)
-        exec code
+        exec(code)
         constraint_funcs.append(locals()['D'+f.name])
 
     for func in constraint_funcs:
         problem.addConstraint(FunctionConstraint(func), pars)
 
-    print "Use problem.getSolution() to find a solution"
+    print("Use problem.getSolution() to find a solution")
     return problem, D
 
 
@@ -518,7 +518,7 @@ def organize_feature_sens(feat_sens, discrete_feats=None):
     # between related MIs
     if discrete_feats is None:
         discrete_feats = []
-    pars = feat_sens.keys()
+    pars = list(feat_sens.keys())
     pars.sort()
 
     D_sum = {}
@@ -526,8 +526,8 @@ def organize_feature_sens(feat_sens, discrete_feats=None):
 
     max_val = 0
     for par in pars:
-        for mi, fdict in feat_sens[par].iteritems():
-            for f, ra in fdict.iteritems():
+        for mi, fdict in feat_sens[par].items():
+            for f, ra in fdict.items():
                 val = sum(ra)
                 if norm(val) > max_val:
                     max_val = val
@@ -592,7 +592,7 @@ def make_opt(pnames, resfnclass, model, context, parscales=None,
         parseps = {}.fromkeys(parnames, 1e-7)
     if parscales is None:
         parscales = parseps.copy()
-        for k, v in parscales.iteritems():
+        for k, v in parscales.items():
             parscales[k] = 10*v
     pest = ParamEst(freeParams=freepars,
                  testModel=model,
@@ -727,7 +727,7 @@ class ParamEst(Utility):
                 self.parScales = dict.fromkeys(self.freeParNames, 1)
             else:
                 self.parScales = kw['freeParams']
-                self.freeParNames = self.parScales.keys()
+                self.freeParNames = list(self.parScales.keys())
                 self.numFreePars = len(self.freeParNames)
             self.freeParNames.sort()
             self.testModel = kw['testModel']
@@ -781,7 +781,7 @@ class ParamEst(Utility):
 
     def resetParArgs(self):
         self.parTypeStr = []
-        for i in xrange(self.numFreePars):
+        for i in range(self.numFreePars):
             if self.freeParNames[i] in self.testModel.obsvars:
                 # for varying initial conditions
                 self.parTypeStr.append('ics')
@@ -889,16 +889,16 @@ class ParamEst(Utility):
             entry = self.log[i]
         except IndexError:
             raise ValueError("No such call %i recorded"%i)
-        print "\n  **** Call %i"%i, "Residual norm: %f"%entry.residual_norm
+        print("\n  **** Call %i"%i, "Residual norm: %f"%entry.residual_norm)
         if entry.ics != {}:
-            print "Ics:", entry.ics
+            print("Ics:", entry.ics)
         if entry.pars != {}:
-            print "Pars:", entry.pars
+            print("Pars:", entry.pars)
         if full:
-            print "Res:\n"
+            print("Res:\n")
             self.context.show_res_info(entry.residual_vec)
         else:
-            print "Res:", entry.residual_vec
+            print("Res:", entry.residual_vec)
 
     def pars_to_ixs(self):
         all_pars = sortedDictKeys(self.testModel.pars)
@@ -982,11 +982,11 @@ class ParamEst(Utility):
         """
         ws = self.context.feat_weights
         wfeat_sens = {}
-        for pn, sensdict in feat_sens.iteritems():
+        for pn, sensdict in feat_sens.items():
             pd = wfeat_sens[pn] = {}
-            for mi, fdict in sensdict.iteritems():
+            for mi, fdict in sensdict.items():
                 md = pd[mi] = {}
-                for f, sens in fdict.iteritems():
+                for f, sens in fdict.items():
                     md[f] = sens*ws[(mi,f)]
         return wfeat_sens
 
@@ -1070,7 +1070,7 @@ class LMpest(ParamEst):
         parsOrig = []
         self.numFreePars = len(self.freeParNames)
         self.resetParArgs()
-        for i in xrange(self.numFreePars):
+        for i in range(self.numFreePars):
             val = self.testModel.query(self.parTypeStr[i])\
                             [self.freeParNames[i]]
             self.parsOrig[self.freeParNames[i]] = val
@@ -1111,8 +1111,8 @@ class LMpest(ParamEst):
             if not verbose:
                 out = rout.stop()
                 err = rerr.stop()
-            print "Calculating residual failed for pars:", \
-                  parsOrig
+            print("Calculating residual failed for pars:", \
+                  parsOrig)
             raise
         if not verbose:
             out = rout.stop()
@@ -1144,20 +1144,20 @@ class LMpest(ParamEst):
             # because it converged.
             if success or results[3].find('at most') != -1:
                 if success:
-                    print 'Solution of ', self.freeParNames, ' = ', results[0]
+                    print('Solution of ', self.freeParNames, ' = ', results[0])
                 else:
 ##                    parvals = [self.testModel.pars[p] for p in \
 ##                               self.freeParNames]
-                    print 'Closest values of ', self.freeParNames, ' = ', \
-                          results[0]
+                    print('Closest values of ', self.freeParNames, ' = ', \
+                          results[0])
 ##                          parvals
-                print 'Original values = ', parsOrig
-                print 'Number of fn evals = ', results[2]["nfev"], \
-                             '(# iterations)'
+                print('Original values = ', parsOrig)
+                print('Number of fn evals = ', results[2]["nfev"], \
+                             '(# iterations)')
                 if not success:
-                    print 'Solution not found: '+results[3]
+                    print('Solution not found: '+results[3])
             else:
-                print 'Solution not found: '+results[3]
+                print('Solution not found: '+results[3])
         return copy(self.pestResult)
 
 
@@ -1294,13 +1294,13 @@ class BoundMin(ParamEst):
 
         if verbose:
             if success:
-                print 'Solution of ', self.freeParNames[0], ' = ', results[0]
-                print 'Original value = ', parsOrig
-                print 'Number of fn evals = ', results[3], "(# iterations)"
-                print 'Error tolerance = ', xtol
+                print('Solution of ', self.freeParNames[0], ' = ', results[0])
+                print('Original value = ', parsOrig)
+                print('Number of fn evals = ', results[3], "(# iterations)")
+                print('Error tolerance = ', xtol)
             else:
-                print 'No convergence of BoundMin'
-                print results
+                print('No convergence of BoundMin')
+                print(results)
         return copy(self.pestResult)
 
 
@@ -1335,7 +1335,7 @@ def get_slope_info(x, lookahead=1, prec=1e-3, default=1):
         s = zeros(shape(x), 'float')
     else:
         raise ValueError("Use default = 0 or 1 only")
-    for i in xrange(len(x)-lookahead):
+    for i in range(len(x)-lookahead):
         s[i,:] = [max(prec,val) for val in \
                   ravel((x[i+lookahead,:]-x[i,:]).toarray())]
     return s
@@ -1405,7 +1405,7 @@ def get_extrema(x, t, tmin, tmax, coords, per, pertol_frac,
         ival_ml = max([0, ival - lookahead])
         ival_pl = min([max_ix, ival + lookahead])
         if verbose:
-            print "*********** t =", tval, " , ival =", ival
+            print("*********** t =", tval, " , ival =", ival)
         v = slopes.coordarray[:,ival]
         for ci, c in enumerate(coords):
             for m in [0,1]:
@@ -1421,7 +1421,7 @@ def get_extrema(x, t, tmin, tmax, coords, per, pertol_frac,
                             if tval>(last_t[c][1-m]+halfper-detect_tol):
                                 detect_on[ci][m] = True
                                 if verbose:
-                                    print " + %s detect (>half per of %s) for %s now True:"%(ms[m],ms[1-m],c), last_t[c][1-m], last_t[c][1-m]+halfper-detect_tol
+                                    print(" + %s detect (>half per of %s) for %s now True:"%(ms[m],ms[1-m],c), last_t[c][1-m], last_t[c][1-m]+halfper-detect_tol)
                         # The next segment allows consecutive local extrema of the
                         # same type without an intermediate of the other type.
                         # This is generally not desirable!
@@ -1438,8 +1438,8 @@ def get_extrema(x, t, tmin, tmax, coords, per, pertol_frac,
 ##                            print " + %s detect (>half per) for %s now True:"%(ms[1-m],c), last_t[c][1-m], last_t[c][m]+halfper-detect_tol
             do_anything = detect_on[ci][0] or detect_on[ci][1]
             if verbose:
-                print "Detecting for %s? (min=%i) (max=%i)"%(c, int(detect_on[ci][0]), int(detect_on[ci][1]))
-                print "   v[ci] = %.4f, last_inc[ci] = %.4f"%(v[ci], last_inc[ci])
+                print("Detecting for %s? (min=%i) (max=%i)"%(c, int(detect_on[ci][0]), int(detect_on[ci][1])))
+                print("   v[ci] = %.4f, last_inc[ci] = %.4f"%(v[ci], last_inc[ci]))
             if do_anything and v[ci] != last_inc[ci]:
                 # extremum if changed sign
                 if v[ci]>0:
@@ -1447,8 +1447,8 @@ def get_extrema(x, t, tmin, tmax, coords, per, pertol_frac,
                     if detect_on[ci][0]:
                         min_ival = argmin(x[c][ival:ival_pl])+ival
                         if verbose:
-                            print "Possible min:"
-                            print x[c][max([0,min_ival-lookahead])], x[c][min_ival], x[c][min([max_ix,min_ival+lookahead])]
+                            print("Possible min:")
+                            print(x[c][max([0,min_ival-lookahead])], x[c][min_ival], x[c][min([max_ix,min_ival+lookahead])])
                         if x[c][min([max_ix,min_ival+lookahead])] - x[c][min_ival] > lookahead_tol and \
                            x[c][max([0,min_ival-lookahead])] - x[c][min_ival] > lookahead_tol:
                             if do_fit:
@@ -1463,7 +1463,7 @@ def get_extrema(x, t, tmin, tmax, coords, per, pertol_frac,
                                 min_tval = x['t'][min_ival]
                                 min_xval = x[c][min_ival]
                             if verbose:
-                                print "found min for %s at "%c, min_tval
+                                print("found min for %s at "%c, min_tval)
                             mins_t[c].append(min_tval)
                             mins_v[c].append(min_xval)
                             last_t[c][0]=min_tval
@@ -1477,8 +1477,8 @@ def get_extrema(x, t, tmin, tmax, coords, per, pertol_frac,
                     if detect_on[ci][1]:
                         max_ival = argmax(x[c][ival:ival_pl])+ival
                         if verbose:
-                            print "Possible max:"
-                            print x[c][max([0,max_ival-lookahead])], x[c][max_ival], x[c][min([max_ix,max_ival+lookahead])]
+                            print("Possible max:")
+                            print(x[c][max([0,max_ival-lookahead])], x[c][max_ival], x[c][min([max_ix,max_ival+lookahead])])
                         if x[c][max_ival] - x[c][min([max_ix,max_ival+lookahead])] > lookahead_tol and \
                            x[c][max_ival] - x[c][max([0,max_ival-lookahead])] > lookahead_tol:
                             if do_fit:
@@ -1493,7 +1493,7 @@ def get_extrema(x, t, tmin, tmax, coords, per, pertol_frac,
                                 max_tval = x['t'][max_ival]
                                 max_xval = x[c][max_ival]
                             if verbose:
-                                print "found max for %s at "%c, max_tval
+                                print("found max for %s at "%c, max_tval)
                             maxs_t[c].append(max_tval)
                             maxs_v[c].append(max_xval)
                             last_t[c][1]=max_tval
@@ -1550,7 +1550,7 @@ def get_extrema_from_events(gen, coords, tmin, tmax, per, pertol_frac,
         if tval < tmin or tval > tmax:
             continue
         if verbose:
-            print "******* t = ", tval
+            print("******* t = ", tval)
         for ci, c in enumerate(coords):
             for m in [0,1]:
                 if not detect_on[ci][m]:
@@ -1559,7 +1559,7 @@ def get_extrema_from_events(gen, coords, tmin, tmax, per, pertol_frac,
                             if tval>(last_t[c][1-m]+halfper-detect_tol):
                                 detect_on[ci][m] = True
                                 if verbose:
-                                    print " + %s detect (>half per of %s) for %s now True:"%(ms[m],ms[1-m],c), last_t[c][1-m], last_t[c][1-m]+halfper-detect_tol
+                                    print(" + %s detect (>half per of %s) for %s now True:"%(ms[m],ms[1-m],c), last_t[c][1-m], last_t[c][1-m]+halfper-detect_tol)
                         # The next segment allows consecutive local extrema of the
                         # same type without an intermediate of the other type.
                         # This is generally not desirable!
@@ -1573,13 +1573,13 @@ def get_extrema_from_events(gen, coords, tmin, tmax, per, pertol_frac,
 ##                            print " + %s detect (>half per) for %s now True:"%(ms[1-m],c), last_t[c][m], last_t[c][m]+halfper-detect_tol
             do_anything = detect_on[coord_ix][0] or detect_on[coord_ix][1]
             if verbose:
-                print "Detecting for %s? (min=%i) (max=%i)"%(c, int(detect_on[ci][0]), int(detect_on[ci][1]))
+                print("Detecting for %s? (min=%i) (max=%i)"%(c, int(detect_on[ci][0]), int(detect_on[ci][1])))
             if do_anything:
                 if ex_type == 'min':
                     if detect_on[coord_ix][0]:
                         min_tval = tval
                         if verbose:
-                            print "... found min for %s at "%coord, min_tval
+                            print("... found min for %s at "%coord, min_tval)
                         mins_t[coord].append(min_tval)
                         mins_v[coord].append(evdict['min_ev_'+coord][ei][coord])
                         last_t[coord][0]=min_tval
@@ -1590,7 +1590,7 @@ def get_extrema_from_events(gen, coords, tmin, tmax, per, pertol_frac,
                     if detect_on[coord_ix][1]:
                         max_tval = tval
                         if verbose:
-                            print "... found max for %s at "%coord, max_tval
+                            print("... found max for %s at "%coord, max_tval)
                         maxs_t[coord].append(max_tval)
                         maxs_v[coord].append(evdict['max_ev_'+coord][ei][coord])
                         last_t[coord][1]=max_tval
@@ -1611,11 +1611,11 @@ def compare_data_from_events(gen, coords, traj, tmesh, data_mins_t, data_maxs_t,
         num_mins = [min([len(test_mins_t[c]), len(data_mins_t[c])]) for c in coords]
         num_maxs = [min([len(test_maxs_t[c]), len(data_maxs_t[c])]) for c in coords]
     except TypeError:
-        print "Problem with mins and maxs in coords %s in generator %s"%(str(coords),gen.name)
-        print "Number of events found =", len(gen.getEvents())
-        print per, pertolfrac, tdetect
-        print type(test_mins_t), type(test_maxs_t)
-        print type(data_mins_t), type(data_maxs_t)
+        print("Problem with mins and maxs in coords %s in generator %s"%(str(coords),gen.name))
+        print("Number of events found =", len(gen.getEvents()))
+        print(per, pertolfrac, tdetect)
+        print(type(test_mins_t), type(test_maxs_t))
+        print(type(data_mins_t), type(data_maxs_t))
         raise
     res_mins_t = []
     res_maxs_t = []
@@ -1624,8 +1624,8 @@ def compare_data_from_events(gen, coords, traj, tmesh, data_mins_t, data_maxs_t,
     for ci,c in enumerate(coords):
         nmin = num_mins[ci]
         if len(data_mins_t[c]) != num_expected_mins or len(test_mins_t[c]) < num_expected_mins:
-            print "Wrong number of minima for %s (expected %i)"%(c, num_expected_mins)
-            print data_mins_t[c], test_mins_t[c]
+            print("Wrong number of minima for %s (expected %i)"%(c, num_expected_mins))
+            print(data_mins_t[c], test_mins_t[c])
             raise RuntimeError("Wrong number of minima")
         # assume 0:num_expected is good
         t1 = array(data_mins_t[c])-array(test_mins_t[c])[:num_expected_mins]
@@ -1635,8 +1635,8 @@ def compare_data_from_events(gen, coords, traj, tmesh, data_mins_t, data_maxs_t,
         # max
         nmax = num_maxs[ci]
         if len(data_maxs_t[c]) != num_expected_maxs or len(test_maxs_t[c]) < num_expected_maxs:
-            print "Wrong number of maxima for %s (expected %i)"%(c, num_expected_maxs)
-            print data_maxs_t[c], test_maxs_t[c]
+            print("Wrong number of maxima for %s (expected %i)"%(c, num_expected_maxs))
+            print(data_maxs_t[c], test_maxs_t[c])
             raise RuntimeError("Wrong number of maxima")
         # assume 0:num_expected is good
         t1 = array(data_maxs_t[c])-array(test_maxs_t[c])[:num_expected_maxs]
