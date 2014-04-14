@@ -3,7 +3,7 @@
 # Matthieu Brucher
 # Last Change : 2007-10-16 20:48
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 """
 Class defining the Powell function
@@ -34,7 +34,7 @@ class Powell:
     """
     Evaluates the gradient of the function
     """
-    print x, self(x)
+    print(x, self(x))
     return numpy.array([[2 + 120 * (x[0] - x[3]) ** 2, 20, 0, -120 * (x[0] - x[3]) ** 2], [20, 200 + 12 * (x[1] - 2 * x[2]) ** 2, -24 * (x[1] - 2 * x[2]) ** 2, 0], [0, -24 * (x[1] - 2 * x[2]) ** 2, 10 + 48 * (x[1] - 2 * x[2]) ** 2, -10], [-120 * (x[0] - x[3]) ** 2, 0, -10, -10 + 120 * (x[0] - x[3])**2]], dtype = numpy.float)
 
 def test_simple_newton():
