@@ -8,7 +8,7 @@ April 2014. *This is a beta release version.*
 * * * * *
 
 ### Requirements
-* [Python](http://www.python.org) 2.6 or 2.7;
+* [Python](http://www.python.org) 2.6+ or 3.3+;
 * [numpy](http://www.numpy.org) > 1.6;
 * [scipy](http://www.scipy.org) > 0.9.
 

@@ -12,13 +12,13 @@ env:
     - NUMPY_VERSION=1.7.1 SCIPY_VERSION=0.11.0
     # Ubuntu 13.10
     - NUMPY_VERSION=1.7.1 SCIPY_VERSION=0.12.0
-    # Cutting edge
+    # Ubuntu 14.04 / Cutting edge
     - NUMPY_VERSION=1.8.1 SCIPY_VERSION=0.13.3
 
-branches:
-    except:
-        - NeuroDebian0
-        - 0.88.120504
+matrix:
+    include:
+        - python: 3.3
+          env: NUMPY_VERSION=1.8.1 SCIPY_VERSION=0.13.3
 
 install:
     - pip install -q -U numpy==$NUMPY_VERSION
