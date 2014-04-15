@@ -13,6 +13,7 @@ from numpy import Inf, NaN, isfinite, sometrue, alltrue, array, arange, \
      transpose, shape
 import math, random, types
 from copy import copy, deepcopy
+import six
 try:
     # use pscyo JIT byte-compiler optimization, if available
     import psyco
@@ -91,9 +92,7 @@ class ExplicitFnGen(ctsGen):
                 except:
                     print('Error in supplied auxiliary function code')
                 self._funcreg[fninfo[1]] = ('self', fninfo[0])
-                setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]],
-                                                           self,
-                                                           self.__class__))
+                setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
                 # user auxiliary function interface wrapper
                 try:
                     uafi_code = self.funcspec._user_auxfn_interface[auxfnname]
@@ -103,8 +102,7 @@ class ExplicitFnGen(ctsGen):
                         print('Error in auxiliary function wrapper')
                         raise
                     setattr(self.auxfns, auxfnname,
-                            types.MethodType(locals()[auxfnname], self.auxfns,
-                                         auxfn_container))
+                            six.create_bound_method(locals()[auxfnname], self.auxfns))
                     self._funcreg[auxfnname] = ('', uafi_code)
                 except KeyError:
                     # not a user-defined aux fn
@@ -127,9 +125,7 @@ class ExplicitFnGen(ctsGen):
                 print('Error in supplied functional specification code')
                 raise
             self._funcreg[fninfo[1]] = ('self', fninfo[0])
-            setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]],
-                                                           self,
-                                                           self.__class__))
+            setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
             if HAVE_PSYCO and usePsyco:
                 psyco.bind(getattr(self, fninfo[1]))
             # Add the auxiliary spec function (if present) to this
@@ -142,9 +138,7 @@ class ExplicitFnGen(ctsGen):
                     print('Error in supplied auxiliary variable code')
                     raise
                 self._funcreg[fninfo[1]] = ('self', fninfo[0])
-                setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]],
-                                                           self,
-                                                           self.__class__))
+                setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
                 if HAVE_PSYCO and usePsyco:
                     psyco.bind(getattr(self, fninfo[1]))
 

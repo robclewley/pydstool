@@ -24,6 +24,7 @@ from . import FuncSpec
 import scipy, numpy, scipy, scipy.special
 import math, random
 import copy, types
+import six
 from six.moves import reduce
 
 __all__ = ['EventStruct', 'Event',
@@ -623,8 +624,7 @@ class Event(object):
             print(self._funcstr)
             raise
         try:
-            setattr(self, '_fn', types.MethodType(locals()[self._funcname],
-                                                    self, self.__class__))
+            setattr(self, '_fn', six.create_bound_method(locals()[self._funcname], self))
         except KeyError:
             print('Must pass objective function for event at initialization')
             raise
@@ -643,9 +643,7 @@ class Event(object):
                 print(funcpair[0])
                 raise
             try:
-                setattr(self, funcpair[1], types.MethodType(locals()[funcpair[1]],
-                                                            self,
-                                                            self.__class__))
+                setattr(self, funcpair[1], six.create_bound_method(locals()[funcpair[1]], self))
             except KeyError:
                 print('Must pass objective function for event at initialization')
                 raise
