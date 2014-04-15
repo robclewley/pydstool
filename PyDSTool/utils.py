@@ -613,7 +613,7 @@ def saveObjects(objlist, filename, force=False):
     if not force:
         if os.path.isfile(filename):
             raise ValueError("File '" + filename + "' already exists")
-    pklfile = file(filename, 'wb')
+    pklfile = open(filename, 'wb')
     # Win32 only: in call to pickle.dump ...
     # DO NOT use binary option (or HIGHESTPROTOCOL) because
     # IEE754 special values are not UNpickled correctly in Win32
@@ -664,7 +664,7 @@ def loadObjects(filename, namelist=None):
             raise TypeError("namelist must be list of strings or singleton string")
     if not isUniqueSeq(namelist):
         raise ValueError("Names must only appear once in namelist argument")
-    pklfile = file(filename, 'rb')
+    pklfile = open(filename, 'rb')
     if namelist == []:
         getall = True
     else:

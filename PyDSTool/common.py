@@ -998,7 +998,7 @@ def diff(func, x0, vars=None, axes=None, eps=None, output=None):
         assert isinstance(vars, _seq_types), \
                "vars argument must be a sequence type"
         if x0type in ['array', 'num']:
-            assert all(vars>=0), \
+            assert all(v >= 0 for v in vars), \
                     "vars argument must hold non-negative integers"
         else:
             assert all([isinstance(vars[i], str) \
@@ -1047,7 +1047,7 @@ def diff(func, x0, vars=None, axes=None, eps=None, output=None):
         assert isinstance(axes, _seq_types), \
                "axes argument must be a sequence type"
         if x0type in ['array', 'num']:
-            assert all(axes>=0), \
+            assert all(a>= 0 for a in axes), \
                    "axes argument must hold non-negative integers"
         else:
             assert all([isinstance(axes[i], str) \

@@ -401,7 +401,7 @@ def splitargs(da, lbraces=['('], rbraces=[')']):
     return ll
 
 def ast2shortlist(t):
-    if type(t) is parser.ASTType: return ast2shortlist(t.tolist())
+    if type(t) is parser.STType: return ast2shortlist(t.tolist())
     if not isinstance(t, list): return t
     if t[1] == '': return None
     if not isinstance(t[1], list): return t
@@ -415,7 +415,7 @@ def ast2shortlist(t):
     return [t[0]]+o
 
 def sym2name(t):
-    if type(t) is parser.ASTType: return sym2name(t.tolist())
+    if type(t) is parser.STType: return sym2name(t.tolist())
     if not isinstance(t, list): return t
     return [syms[t[0]]]+list(map(sym2name,t[1:]))
 
@@ -424,7 +424,7 @@ def string2ast(t):
 
 def ast2string(t):
     #if isinstance(t, str): return t
-    if type(t) is parser.ASTType: return ast2string(t.tolist())
+    if type(t) is parser.STType: return ast2string(t.tolist())
     if not isinstance(t, list): return None
     if not isinstance(t[1], list): return t[1]
     o=''
@@ -918,7 +918,7 @@ class symbolMapClass(object):
                 raise TypeError("symbolMapClass does not know how to "
                                 "process this type of argument")
             return res
-        elif hasattr(arg, 'iteritems'):
+        elif hasattr(arg, 'items'):
             # ensure return type is the same
             try:
                 res = copy(arg)
@@ -1760,7 +1760,7 @@ def mapNames(themap, target):
         return themap(target)
     elif isinstance(target, tuple):
         return tuple(themap(target))
-    elif hasattr(target, 'iteritems'):
+    elif hasattr(target, 'items'):
         o = {}
         for k, v in target.items():
             o[themap(k)] = v

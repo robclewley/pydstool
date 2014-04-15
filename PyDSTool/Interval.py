@@ -12,7 +12,7 @@ Interval objects have attributes:
    issingleton: boolean
    _intervalstr: str
 """
-from __future__ import absolute_import, print_function
+from __future__ import division, absolute_import, print_function
 
 # Note: The integer intervals will later be used as the basis for
 # supporting finitely-sampled real ranges.
@@ -229,26 +229,26 @@ class Interval(object):
         c.set((self._loval*val,self._hival*val))
         return c
 
-    def __div__(self, val):
+    def __truediv__(self, val):
         c = copy.copy(self)
         c.set((self._loval/val,self._hival/val))
         return c
 
-    def __rdiv__(self,val):
+    def __rtruediv__(self,val):
         c = copy.copy(self)
         # switch endpoint order
         if isfinite(self._hival):
             if self._hival==0:
                 new_lo = sign(val)*Inf
             else:
-                new_lo = val/self._hival
+                new_lo = self.type(val/self._hival)
         else:
             new_lo = val/self._hival
         if isfinite(self._loval):
             if self._loval==0:
                 new_hi = sign(val)*Inf
             else:
-                new_hi = val/self._loval
+                new_hi = self.type(val/self._loval)
         else:
             new_hi = val/self._loval
         if new_hi < new_lo:
@@ -329,7 +329,7 @@ class Interval(object):
                         eps = max(self._abseps, val._abseps)
                         try:
                             minexpallowed = math.ceil(-MIN_EXP - self._maxexp)
-                        except TypeError:
+                        except (TypeError, OverflowError):
                             # _maxexp is None
                             minexpallowed = Inf
                         if eps > 0 and -math.log(eps,10) > minexpallowed:

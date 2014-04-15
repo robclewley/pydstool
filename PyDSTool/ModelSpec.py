@@ -382,6 +382,9 @@ class ModelSpec(object):
             print("Type: %s %r" % (className(self), results))
         return alltrue(results)
 
+    def __hash__(self):
+        h = [hash(type(self)), hash(self.name)] + [hash(k) for k in self._registry]
+        return int(sum(h))
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -694,7 +697,7 @@ class ModelSpec(object):
 #            print "new free symbols from obj:", obj_freeSymbs
 #            print "defined:", self._registry.keys()
             self.freeSymbols.extend(remain(obj_freeSymbols,
-                                           self._registry.keys()+self.freeSymbols))
+                                           list(self._registry.keys())+self.freeSymbols))
 #            print "resulting self.free:", self.freeSymbols
         # return objname in case _register is being called recursively
         return objname

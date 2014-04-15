@@ -2490,7 +2490,7 @@ class Quantity(object):
         h = (hash(type(self)), hash(self.name), hash(str(self.spec)),
                hash(str(self.domain[0])), hash(str(self.domain[1])),
                hash(str(self.domain[2])))
-        return sum(h)
+        return int(sum(h))
 
     def __eq__(self, other, diff=False):
         results = []
@@ -2590,7 +2590,7 @@ class Fun(Quantity):
                     for name in isection:
                         # dummy arg name
                         newname = "__"+name+"__"
-                        while newname in argNameMapInv.keys() + \
+                        while newname in list(argNameMapInv.keys()) + \
                                 self.signature+self.freeSymbols:
                             # ensure unique name
                             newname += "_"

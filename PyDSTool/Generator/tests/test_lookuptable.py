@@ -4,9 +4,9 @@
 from __future__ import absolute_import, print_function
 
 from numpy import array
-from numpy.testing import assert_array_almost_equal, assert_almost_equal
 import pytest
 
+from PyDSTool import Point
 from PyDSTool.Generator import LookupTable
 
 
@@ -29,9 +29,9 @@ def test_can_build_lookup_table_and_use_it_for_known_values():
 
     # Now John can retrieve his values from table
     for i, t in enumerate(ts):
-        assert_array_almost_equal(traj(t), [x1[i], x2[i]])
-        assert_almost_equal(traj(t, 'x1'), x1[i])
-        assert_almost_equal(traj(t, 'x2'), x2[i])
+        assert traj(t) == Point({'coordnames': ['x1', 'x2'], 'coordarray': [x1[i], x2[i]]})
+        assert traj(t, 'x1') == Point({'x1': x1[i]})
+        assert traj(t, 'x2') == Point({'x2': x2[i]})
 
     # John can get only those values, that he has previously inserted
     with pytest.raises(ValueError):
