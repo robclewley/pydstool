@@ -120,8 +120,8 @@ class Matlab(CodeGenerator):
     @property
     def adjust_call(self):
         """Callable which adds parameter argument to auxiliary function calls (if any)"""
-        if self.fspec.auxfns:
-            return lambda s: addArgToCalls(s, list(self.fspec.auxfns.keys()), 'p_')
+        if self.fspec._auxfnspecs:
+            return lambda s: addArgToCalls(s, list(self.fspec._auxfnspecs.keys()), 'p_')
         return idfn
 
     def generate_spec(self, specname_vars, specs):
