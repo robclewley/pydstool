@@ -76,7 +76,7 @@ def _processReused(specnames, specdict, reuseterms, indentstr='',
                 except KeyError:
                     # new list
                     deps[rterm] = [rt]
-    order = remain(reuseterms.values(), are_dependent) + are_dependent
+    order = remain(sorted(reuseterms.values()), are_dependent) + are_dependent
     for specname in specnames:
         reused[specname] = []
         specstr = specdict[specname]

@@ -150,8 +150,8 @@ def test_python_funcspec_with_reuseterms():
     fs = FuncSpec(args)
     assert fs.spec[0].split('\n') == [
         'def _specfn(ds, t, x, parsinps):',
-        '    sx = math.sin(x[0])',
         '    cy = math.cos(x[1])',
+        '    sx = math.sin(x[0])',
         '    xnew0 = cy ',
         '    xnew1 = sx ',
         '    return array([xnew0, xnew1])',
