@@ -4,10 +4,12 @@
 from __future__ import absolute_import, print_function
 
 import platform
+import sys
 import pytest
 from numpy import array, pi, allclose
 
 from PyDSTool import args
+from PyDSTool.utils import architecture
 from PyDSTool.Generator import (
     Euler_ODEsystem,
     Vode_ODEsystem,
@@ -45,6 +47,7 @@ def test_macros_vode(fnspecs):
     _run_check_macros_3(Vode_ODEsystem, fnspecs)
 
 
+@pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
 @pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_macros_dopri(fnspecs):
 
@@ -52,6 +55,7 @@ def test_macros_dopri(fnspecs):
     _run_check_macros_2(Dopri_ODEsystem, fnspecs)
 
 
+@pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
 @pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_macros_radau(fnspecs):
 
