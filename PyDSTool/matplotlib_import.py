@@ -38,6 +38,7 @@ if failed:
     print("Warning: matplotlib failed to import properly and so is not")
     print("  providing a graphing interface")
     plt = None   # will cause an error if someone tries to access in order to plot
+    gca = None
 else:
     import os
     from .Trajectory import Trajectory

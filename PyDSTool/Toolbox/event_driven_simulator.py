@@ -1,12 +1,11 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from PyDSTool.common import *
 from PyDSTool.errors import *
 from PyDSTool.utils import remain, info
 from PyDSTool.Points import Point, Pointset
 from numpy import array, asarray, NaN, Inf, isfinite
-from PyDSTool import figure, plot
-from PyDSTool.matplotlib_import import gca
+from PyDSTool.matplotlib_import import gca, plt
 from copy import copy
 
 _classes = ['connection', 'node', 'simulator', 'composed_map1D',
@@ -215,7 +214,7 @@ class simulator(object):
         self.curr_t = 0
         self.history = {}
         self.verbosity = 0
-        self.Q = FIFOqueue_uniquenode(nodes.keys())
+        self.Q = FIFOqueue_uniquenode(list(nodes.keys()))
 
     def set_node_state(self):
         for name, n in self.nodes.items():
@@ -246,7 +245,7 @@ class simulator(object):
 
         while not done:
             last_state = self.state.copy()
-            print "\n ***", self.curr_t, self.history[self.curr_t][0], self.state
+            print("\n ***", self.curr_t, self.history[self.curr_t][0], self.state)
 
             next_t = Inf
             iters = 1
@@ -257,17 +256,17 @@ class simulator(object):
             try:
                 proj_state = self.compile_next_state(nodes)
             except PyDSTool_BoundsError:
-                print "Maps borked at", self.curr_t
+                print("Maps borked at", self.curr_t)
                 done = True
                 break
-            print "Projected:", proj_state
+            print("Projected:", proj_state)
             for node, t in proj_state.items():
                 if t > self.curr_t:
                     self.Q.push(t, node)
 #            self.state[next_node] = self.Q.next_t
 
             if self.verbosity > 0:
-                print "Took %i iterations to stabilize" % iters
+                print("Took %i iterations to stabilize" % iters)
                 self.display()
 
             t, next_node = self.Q.pop()
@@ -283,7 +282,7 @@ class simulator(object):
             self.state = next_state.copy()
 
             if self.verbosity > 0:
-                print "Next node is", next_node, "at time ", self.curr_t
+                print("Next node is", next_node, "at time ", self.curr_t)
             done = self.curr_t >= t_end
             continue
 
@@ -307,7 +306,7 @@ class simulator(object):
 ##                            min_ix = i
             if min_ix is None:
                 # no further events possible
-                print "No further events possible, stopping!"
+                print("No further events possible, stopping!")
                 break
 ##            if min_val < self.curr_t:
 ##                # clear later history
@@ -323,7 +322,7 @@ class simulator(object):
             self.state = (next_node, next_state)
 
             if self.verbosity > 0:
-                print "Next node is", next_node, "at time ", self.curr_t
+                print("Next node is", next_node, "at time ", self.curr_t)
             done = self.curr_t >= t_end
 
         ts, state_dicts = sortedDictLists(self.history, byvalue=False)
@@ -342,17 +341,17 @@ class simulator(object):
         return vals
 
     def display(self):
-        print "\n****** t =", self.curr_t
+        print("\n****** t =", self.curr_t)
         info(self.state, "known state")
-        print "\nNodes:"
+        print("\nNodes:")
         for name, n in self.nodes.items():
             #n.poll(self.state)
-            print name
+            print(name)
             for in_name, in_val in n.in_vals.items():
-                print "  Input", in_name, ": ", in_val
+                print("  Input", in_name, ": ", in_val)
 
     def extract_history_events(self):
-        node_names = self.nodes.keys()
+        node_names = list(self.nodes.keys())
         node_events = dict(zip(node_names, [None]*len(node_names)))
         ts = sortedDictKeys(self.history)
         old_node, old_state = self.history[ts[0]]
@@ -368,19 +367,19 @@ class simulator(object):
     def display_raster(self, new_figure=True):
         h = self.history
         ts = sortedDictKeys(h)
-        node_names = self.nodes.keys()
-        print "\n\nNode order in plot (bottom to top) is", node_names
+        node_names = list(self.nodes.keys())
+        print("\n\nNode order in plot (bottom to top) is", node_names)
         if new_figure:
-            figure()
+            plt.figure()
         t0 = ts[0]
         node, state = h[t0]
         # show all initial conditions
         for ni, n in enumerate(node_names):
-            plot(state[n], ni, 'ko')
+            plt.plot(state[n], ni, 'ko')
         # plot the rest
         for t in ts:
             node, state = h[t]
-            plot(t, node_names.index(node), 'ko')
+            plt.plot(t, node_names.index(node), 'ko')
         a = gca()
         a.set_ylim(-0.5, len(node_names)-0.5)
 
@@ -389,7 +388,7 @@ def sequences_to_eventlist(seq_dict):
     """seq_dict maps string symbols to increasing-ordered sequences of times.
     Returns a single list of (symbol, time) pairs ordered by time."""
     out_seq = []
-    symbs = seq_dict.keys()
+    symbs = list(seq_dict.keys())
     next_s = None
     indices = {}
     for s in symbs:
