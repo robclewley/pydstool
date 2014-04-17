@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from PyDSTool import *
 from PyDSTool.PyCont.misc import getFlowMaps, getFlowJac, getLeftEvecs
@@ -33,7 +33,7 @@ def adjointPRC(model, limit_cycle, vname, freepar, numIntervals=500,
     try:
         MDCont = ContClass(model)
     except:
-        print "Problem with model argument"
+        print("Problem with model argument")
         raise
 
     # If given an LC, use it for continuation
@@ -54,10 +54,10 @@ def adjointPRC(model, limit_cycle, vname, freepar, numIntervals=500,
         PCargs.verbosity = 2
         MDCont.newCurve(PCargs)
 
-        print 'Computing curve...'
+        print('Computing curve...')
         start = clock()
         MDCont['EQ1'].forward()
-        print 'done in %.3f seconds!' % (clock()-start)
+        print('done in %.3f seconds!' % (clock()-start))
 
         #PCargs.name = 'LC1'
         #PCargs.type = 'LC-C'
@@ -139,13 +139,13 @@ def adjointPRC(model, limit_cycle, vname, freepar, numIntervals=500,
     MDCont['LC1'].forward()
     pt = MDCont['LC1'].getSpecialPoint('RG1')
     if verbosity > 1:
-        print "\nRegular point chosen:", pt, "\n"
+        print("\nRegular point chosen:", pt, "\n")
     J = getFlowJac(pt, verbose=verbosity>1)
     # n = dimension of system
     n = J.shape[0]
 
     if verbosity > 1:
-        print "Computing flow maps..."
+        print("Computing flow maps...")
     maps, ntst = getFlowMaps(n, pt, 'RG', method=method)
 
     cycle_true = pt.labels['RG']['cycle']
@@ -160,8 +160,8 @@ def adjointPRC(model, limit_cycle, vname, freepar, numIntervals=500,
                        cycle_true[idxs]])
 
     if verbosity > 1:
-        print "Computing left eigenvetors corresponding to the unit ", \
-          "eigenvalue along flow"
+        print("Computing left eigenvetors corresponding to the unit ", \
+          "eigenvalue along flow")
     evec1 = getLeftEvecs(n, ntst, maps, flow_vecs, method=method,
                          verbose=verbosity>1)
     t = cycle_true['t'][idxs]
@@ -182,9 +182,9 @@ def adjointPRC(model, limit_cycle, vname, freepar, numIntervals=500,
         PRC = rotate_phase(PRC, phase0_ix)
         phase0_t = PRC['t'][phase0_ix]*t[-1]
         if verbosity > 1:
-            print "spike_est_ix =", spike_est_ix
-            print "phase0_ix =", phase0_ix
-            print "phase0_t =", phase0_t
+            print("spike_est_ix =", spike_est_ix)
+            print("phase0_ix =", phase0_ix)
+            print("phase0_t =", phase0_t)
         # PRC pointset used a uniform sampling of
         # cycle's time mesh points, so get ix in cycle by
         # multiplying up phase0_ix by the sampling rate
@@ -222,7 +222,7 @@ def adjointPRC(model, limit_cycle, vname, freepar, numIntervals=500,
 
             saveObjects(objlist=save_objs, filename=savefile, force=force)
         except ValueError:
-            print "File already exists -- not saving return objects"
+            print("File already exists -- not saving return objects")
 
     return_objs = save_objs
     return_objs['PyCont'] = MDCont
