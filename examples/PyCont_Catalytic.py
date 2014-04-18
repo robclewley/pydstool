@@ -37,10 +37,10 @@ PCargs.verbosity = 2
 PCargs.SaveEigen = True
 PyCont.newCurve(PCargs)
 
-print 'Computing equilibrium curve...'
+print('Computing equilibrium curve...')
 start = clock()
 PyCont['EQ1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 # Hopf curve
 PCargs.name = 'HO1'
@@ -53,10 +53,10 @@ PCargs.MaxNumPoints = 100
 
 PyCont.newCurve(PCargs)
 
-print 'Computing hopf curve...'
+print('Computing hopf curve...')
 start = clock()
 PyCont['HO1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 # Fold curve
 PCargs.name = 'FO1'
@@ -68,10 +68,10 @@ PCargs.MaxNumPoints = 110
 
 PyCont.newCurve(PCargs)
 
-print 'Computing fold curve...'
+print('Computing fold curve...')
 start = clock()
 PyCont['FO1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 # Plot
 PyCont.display(('q2','x'), axes=(3,1,1))

@@ -1,6 +1,7 @@
 """Reproduces dominant scale analysis results for Hodgkin-Huxley neuron model
 from R. Clewley, Proc. ICCS 2004."""
 
+from __future__ import print_function
 from PyDSTool import *
 from PyDSTool.Toolbox.dssrt import *
 import sys
@@ -49,7 +50,7 @@ def makeHHneuron(name, par_args, ic_args, vfn_str='(-Itot(v,m,h,n,1,1))/C',
                          'tau_h', 'inf_h']
     if aux_vars is not None:
         DSargs['varspecs'].update(aux_vars)
-        DSargs['auxvars'].extend(aux_vars.keys())
+        DSargs['auxvars'].extend(list(aux_vars.keys()))
     DSargs['pars'] = par_args
     DSargs['fnspecs'] = auxdict
     DSargs['xdomain'] = {'v': [-130, 70], 'm': [0,1], 'h': [0,1], 'n': [0,1]}
@@ -68,13 +69,13 @@ def makeHHneuron(name, par_args, ic_args, vfn_str='(-Itot(v,m,h,n,1,1))/C',
     peak_ev = Events.makeZeroCrossEvent(vfn_str, -1,
                             {'name': 'peak_ev',
                              'eventtol': 1e-5,
-                             'term': False}, ['v','m','n','h'], par_args.keys(),
+                             'term': False}, ['v','m','n','h'], list(par_args.keys()),
                             fnspecs={'Itot': auxdict['Itot']},
                             targetlang=targetlang)
     trough_ev = Events.makeZeroCrossEvent(vfn_str, 1,
                             {'name': 'trough_ev',
                              'eventtol': 1e-5,
-                             'term': False}, ['v','m','n','h'], par_args.keys(),
+                             'term': False}, ['v','m','n','h'], list(par_args.keys()),
                             fnspecs={'Itot': auxdict['Itot']},
                             targetlang=targetlang)
     DSargs['events'] = [peak_ev, trough_ev]
@@ -124,7 +125,7 @@ Dargs.taus = {}
 Dargs.infs = {}
 Dargs.psis = {}
 
-for var in ics.keys():
+for var in list(ics.keys()):
     Dargs.taus[var] = 'tau_%s' % var
     Dargs.infs[var] = 'inf_%s' % var
     Dargs.psis[var] = None
@@ -168,7 +169,7 @@ cycle = pts[ix0:ix1+1]
 plt.plot(ts, cycle['v'])
 plt.plot(ts, cycle['inf_v'])
 plt.title('v(t) and v_inf(t) for one approximate period')
-print "Graph shows **approximate** period of tonic spiking =", t1-t0
+print("Graph shows **approximate** period of tonic spiking =", t1-t0)
 
 for ep in epochs:
     ep.info()
@@ -185,9 +186,9 @@ pars.update({'dssrt_sigma': 3, 'dssrt_gamma': 3})
 
 def make_evs(evdefs, pars, evtol, targetlang):
     extra_evs = []
-    for evname, evargs in evdefs.items():
-        all_pars = pars.keys()
-        all_pars.extend(remain(evargs.pars, pars.keys()))
+    for evname, evargs in list(evdefs.items()):
+        all_pars = list(pars.keys())
+        all_pars.extend(remain(evargs.pars, list(pars.keys())))
         extra_evs.append(makeZeroCrossEvent(evargs.defn, evargs.dirn,
                        {'name': evname,
                         'eventtol': evtol, 'term': True},
@@ -221,7 +222,7 @@ class regime_feature(ql_feature_leaf):
         # and whether epoch conditions are met throughout the trajectory.
         #
         # Acquire underlying Generator from target model interface
-        gen = target.model.registry.values()[0]
+        gen = list(target.model.registry.values())[0]
         ptsFS = target.test_traj.sample()
 
         # pick up or create DSSRT assistant object for this regime
@@ -311,9 +312,9 @@ class regime_feature(ql_feature_leaf):
 
         # diagnostics
         if test1 and (not test3 or not test2):
-            print "Time scale tests failed"
-            print "Fast:", epoch_reg.fast, self.pars.fast
-            print "Slow:", epoch_reg.slow, self.pars.slow
+            print("Time scale tests failed")
+            print("Fast:", epoch_reg.fast, self.pars.fast)
+            print("Slow:", epoch_reg.slow, self.pars.slow)
         return test1 and test2 and test3
 
 
@@ -483,7 +484,7 @@ plt.plot(pts_hyb['t'], pts_hyb['v'], 'g')
 plt.title('Original (B) and hybrid (G) model voltage vs. t')
 
 ## Bifurcation-like diagram, to compare at different parameter values
-print "\nComparing bifurcations of spiking onset"
+print("\nComparing bifurcations of spiking onset")
 
 bifpar = 'Iapp'
 bifpar_range = concatenate((linspace(0.2, 0.4, 7), linspace(0.5, 3, 18)))
@@ -505,19 +506,19 @@ def find_period(traj):
         return 0
 
 # Compute long runs (100 ms) to approximate a settled periodic orbit
-print "\nOriginal model",
+print("\nOriginal model", end=' ')
 sys.stdout.flush()
 for bpval in bifpar_range:
-    print ".",
+    print(".", end=' ')
     sys.stdout.flush()
     HH.set(pars={bifpar: bpval}, tdata=[0,100])
     traj = HH.compute('orig_bif')
     period_data_orig.append(find_period(traj))
 
-print "\nHybrid model",
+print("\nHybrid model", end=' ')
 sys.stdout.flush()
 for i, bpval in enumerate(bifpar_range):
-    print ".",
+    print(".", end=' ')
     sys.stdout.flush()
     hybrid_HH.set(pars={bifpar: bpval})
     hybrid_HH.compute('hyb_bif', tdata=[0,100], ics=ics, verboselevel=0,
@@ -527,6 +528,6 @@ for i, bpval in enumerate(bifpar_range):
 plt.figure()
 plt.plot(bifpar_range, period_data_hyb, 'ko')
 plt.plot(bifpar_range, period_data_orig, 'kx')
-print "\nDepending on your platform and matplotlib configuration you may need"
-print " to execute the plt.show() command to see the plots"
+print("\nDepending on your platform and matplotlib configuration you may need")
+print(" to execute the plt.show() command to see the plots")
 # plt.show()

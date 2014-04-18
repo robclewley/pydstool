@@ -32,7 +32,7 @@ def makeModel(target1, target2):
         elif target in ['Dopri', 'Radau']:
             targetlang[i] = 'c'
         else:
-            raise "Invalid target"
+            raise ValueError("Invalid target")
 
     DSargs = args()
     DSargs.varspecs = {'x': 'in+1', 'inval': 'in', 'state': '0'}
@@ -82,7 +82,7 @@ def makeModel(target1, target2):
     return mc.getModel()
 
 def test1(m):
-    print '\nTest 1, integrating... '
+    print('\nTest 1, integrating... ')
     m.compute(trajname='test1', tdata=tdomain, ics={'x':1.1, 'state': 1},
           verboselevel=2)
     assert len(m.trajectories['test1'].trajSeq) == 9, \
@@ -100,7 +100,7 @@ def test1(m):
     return m.sample('test1')
 
 def test2(m):
-    print "\nTest 2, integrating ..."
+    print("\nTest 2, integrating ...")
     m.compute(trajname='test2', tdata=tdomain, ics={'x':5.1, 'state': 1})
     assert len(m.trajectories['test2'].trajSeq) == 8, \
        "Incorrect number of hybrid segments"
@@ -108,7 +108,7 @@ def test2(m):
            "Inaccurate hybrid computation"
 
 def doPlot(plotData):
-    print 'Preparing plot'
+    print('Preparing plot')
     plt.ylabel('x')
     plt.xlabel('t')
     xline=plot(plotData['t'], plotData['x'])
@@ -118,7 +118,7 @@ def doPlot(plotData):
 if __name__=='__main__':
     m = makeModel('Vode','Vode')
 
-    print "Testing vode integrator"
+    print("Testing vode integrator")
     plotData = test1(m)
     test2(m)
 

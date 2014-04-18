@@ -11,10 +11,10 @@ from test_hybrid_extinputs import makeModel, test1, test2, doPlot
 m1 = makeModel('Dopri','Dopri')
 m2 = makeModel('Vode','Radau')
 
-print "Testing dopri integrator"
+print("Testing dopri integrator")
 plotData1 = test1(m1)
 test2(m1)
 
-print "Testing vode + radau integrator"
+print("Testing vode + radau integrator")
 plotData2 = test1(m2)
 test2(m2)

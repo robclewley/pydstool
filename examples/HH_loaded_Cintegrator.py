@@ -7,7 +7,7 @@ from PyDSTool import *
 try:
     objs = loadObjects('temp_HH_Cintegrator.pkl')
 except:
-    print "Only run after test 'HH_model_Cintegrator.py'"
+    print("Only run after test 'HH_model_Cintegrator.py'")
     raise
 HH = objs[0]
 HHtraj1 = objs[1]

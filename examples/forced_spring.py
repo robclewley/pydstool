@@ -133,6 +133,6 @@ assert len(evts['sw_OFF']) == len(evts['sw_ON']) == 1
 assert abs(evts['sw_ON']['t'][0] - p['t_on']) < evtol, "Event detection was inaccurate"
 show()
 
-print "Red trajectory shows unforced behavior. Green trajectory shows brief forcing..."
-print "Now zoom in closely, to roughly the interval t = [%.3f, %.3f]"%(pars['t_on']-0.1,pars['t_on']+0.1)
-print "The solid trajectory switches within +/-%.5f of the intended switch time\nt_on=%.2f"%(on_event_args['eventtol'],pars['t_on'])
+print("Red trajectory shows unforced behavior. Green trajectory shows brief forcing...")
+print("Now zoom in closely, to roughly the interval t = [%.3f, %.3f]"%(pars['t_on']-0.1,pars['t_on']+0.1))
+print("The solid trajectory switches within +/-%.5f of the intended switch time\nt_on=%.2f"%(on_event_args['eventtol'],pars['t_on']))

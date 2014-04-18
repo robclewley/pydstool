@@ -81,7 +81,7 @@ PyCont['EQ1'].info()
 
 PyCont['EQ1'].display(('delta','D'), stability=True, color='green')
 
-print "Avoiding computing the Hopf curves until C code can be augmented with equivalent spline code"
+print("Avoiding computing the Hopf curves until C code can be augmented with equivalent spline code")
 plt.show()
 # STOP HERE
 1/0
@@ -135,7 +135,7 @@ PyCont['FO2'].info()
 
 
 
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 ax1=subplot(111)
 PyCont['FO1'].display(('delta','D_max'),axes=ax1, stability=True, color='green')

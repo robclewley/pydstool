@@ -3,6 +3,7 @@
 
     Robert Clewley, March 2005.
 """
+from __future__ import print_function
 
 # PyDSTool imports
 from PyDSTool import *
@@ -44,7 +45,7 @@ goaltraj = HH_goal.compute('goalHHtraj')
 
 
 HH_spike_t = HH_goal.getEventTimes()['HH_zerothresh'][0]
-print "HH spike time found at ", HH_spike_t
+print("HH spike time found at ", HH_spike_t)
 
 
 ## Set up test HH model
@@ -160,23 +161,23 @@ class int_geom_iface(intModelInterface):
 pest_context = context([ (spike_interface, int_spike_iface),
                          (geom_interface, int_geom_iface) ])
 
-print "Feature evaluation on initial set-up: ", pest_context.evaluate(HH_test_model)
-print "geom feat residual: ", norm(geom_feat.metric.results)
+print("Feature evaluation on initial set-up: ", pest_context.evaluate(HH_test_model))
+print("geom feat residual: ", norm(geom_feat.metric.results))
 pts1=geom_feat.ref_traj(tmesh,coords=['v'])
 pts2=HH_test_model('test_iface_traj', tmesh, coords=['v'])
 #plot(tmesh, pts1['v'])
 #plot(tmesh, pts2['v'])
-print "\nResidual norm before feature weighting:"
-print norm(pest_context.residual(HH_test_model))
+print("\nResidual norm before feature weighting:")
+print(norm(pest_context.residual(HH_test_model)))
 #pest_context.set_weights({geom_interface: 0.005})
 pest_context.set_weights({geom_interface: 0.005, spike_interface: 0.25})
-print "Residual norm after feature weighting:"
-print norm(pest_context.residual(HH_test_model))
+print("Residual norm after feature weighting:")
+print(norm(pest_context.residual(HH_test_model)))
 
 ## Parameter estimation
-print '\nEstimating pars gl and vl for fit'
-print 'Goal values are vl =', par_args_HH_goal['vl'], ', gl = ', \
-            par_args_HH_goal['gl'], ' ...'
+print('\nEstimating pars gl and vl for fit')
+print('Goal values are vl =', par_args_HH_goal['vl'], ', gl = ', \
+            par_args_HH_goal['gl'], ' ...')
 
 pnames = ['vl', 'gl']
 parscales = {'vl': 0.1, 'gl': 0.01}
@@ -203,15 +204,15 @@ pest2, opt = make_opt(pnames, residual_fn_context, HH_test_model, pest_context,
                       parscales=parscales, parseps=parseps)
 opt.iterate()
 
-print '... finished in %.3f seconds\n' % (clock()-start)
+print('... finished in %.3f seconds\n' % (clock()-start))
 
 
 log_ix = pest2.find_logs()[0]
 sol_pars = pest2.log[log_ix].pars
 HH_test_model.set(pars=sol_pars) #pestData_par['pars_sol'])
-print "Feature evaluation on solution set-up: ", \
-      pest_context.evaluate(HH_test_model)
-print "geom feat residual: ", norm(geom_feat.metric.results)
+print("Feature evaluation on solution set-up: ", \
+      pest_context.evaluate(HH_test_model))
+print("geom feat residual: ", norm(geom_feat.metric.results))
 
 # solution trajectory involving voltage happens to be the first of the
 # two trajectories stored in each log (one for each model interface, and
@@ -219,7 +220,7 @@ print "geom feat residual: ", norm(geom_feat.metric.results)
 sol_traj = pest2.log[log_ix].trajectories[0]
 
 ## Finish preparing plots
-print '\nPreparing plots'
+print('\nPreparing plots')
 figure()
 disp_dt = 0.05
 plotData_orig = HH_test_model.sample('orig', ['v'], disp_dt, precise=True)

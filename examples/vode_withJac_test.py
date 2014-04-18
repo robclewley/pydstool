@@ -12,6 +12,7 @@
     Robert Clewley, August 2005.
 """
 
+from __future__ import print_function
 from PyDSTool import *
 
 DSargs = args(fnspecs={'Jacobian': (['t','y0','y1','y2'],
@@ -38,8 +39,8 @@ DSargs.checklevel = 2
 DSargs.name = 'jactest'
 testODE = Vode_ODEsystem(DSargs)
 
-print "Defined the following internal Python function for Jacobian:"
-print testODE.funcspec.auxfns['Jacobian'][0], "\n"
+print("Defined the following internal Python function for Jacobian:")
+print(testODE.funcspec.auxfns['Jacobian'][0], "\n")
 
 
 tvals = [0.4*10**i for i in range(0,12)]
@@ -47,25 +48,25 @@ t0 = 0.
 
 for t1 in tvals:
     dt = t1-t0
-    print "\n============================================\nAt t=",
-    print t1, "using dt =", dt
+    print("\n============================================\nAt t=", end=' ')
+    print(t1, "using dt =", dt)
     testODE.set(tdata=[t0,t1],
                     algparams={'init_step': dt}
                    )
     if t0 >0.:
-        print testODE._solver.y
+        print(testODE._solver.y)
     traj = testODE.compute('test', 'c')  # c for continue
     testODE.diagnostics.showWarnings()
     et = testODE.getEventTimes()['thresh_ev']
     if et != []:
-        print "\n****** Event found at t =", et, "\n"
+        print("\n****** Event found at t =", et, "\n")
     t0 = t1
-    print traj(t1)
+    print(traj(t1))
 
 
-print "\nCompare results with the output directly from the scipy_ode.py test"
-print "The values from a test integration performed with scipy_ode.py " \
-      + "are listed in the comments at the end of the script"
+print("\nCompare results with the output directly from the scipy_ode.py test")
+print("The values from a test integration performed with scipy_ode.py " \
+      + "are listed in the comments at the end of the script")
 
 ##At t=0.0  y=[ 1.  0.  0.]
 ##At t=0.4  y=[ 9.85172114e-001  3.38639538e-005  1.47940221e-002]

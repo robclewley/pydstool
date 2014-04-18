@@ -4,6 +4,7 @@
 
 Robert Clewley, January 2011
 """
+from __future__ import print_function
 
 from PyDSTool import *
 from PyDSTool.Toolbox.neuralcomp import *
@@ -62,13 +63,13 @@ net = makeNeuronNetwork('HHnet', [cell1, cell2])
 
 
 ####### User demonstration stuff
-print "*** Example of hierarchical referencing to components, etc."
-print "Na vrev Par object is given by >>> net['cell2.soma.Na.vrev']  = \n  ", \
-      repr(net['cell2.soma.Na.vrev'])
-print "which is equivalent to >>> net.components['cell2'].components['soma'].components['Na'].pars['vrev']"
-print "Na vrev value is given by >>> net['cell2.soma1.Na.vrev']()  = \n  ", \
-      net['cell2.soma.Na.vrev']()
-print "Could delete this Par in place using >>> del net['cell2.soma.Na.vrev']  (not done here!)"
+print("*** Example of hierarchical referencing to components, etc.")
+print("Na vrev Par object is given by >>> net['cell2.soma.Na.vrev']  = \n  ", \
+      repr(net['cell2.soma.Na.vrev']))
+print("which is equivalent to >>> net.components['cell2'].components['soma'].components['Na'].pars['vrev']")
+print("Na vrev value is given by >>> net['cell2.soma1.Na.vrev']()  = \n  ", \
+      net['cell2.soma.Na.vrev']())
+print("Could delete this Par in place using >>> del net['cell2.soma.Na.vrev']  (not done here!)")
 
 
 

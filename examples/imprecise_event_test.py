@@ -2,6 +2,7 @@
 
    Robert Clewley, August 2005.
 """
+from __future__ import print_function
 
 from PyDSTool import *
 from time import clock
@@ -34,7 +35,7 @@ ode = Generator.Dopri_ODEsystem(DSargs)
 ode.set(tdata=[0, 80])
 traj = ode.compute('test')
 
-print 'Preparing plot'
+print('Preparing plot')
 
 plotData = traj.sample(dt=0.1)
 yaxislabelstr = 'x'
@@ -42,11 +43,11 @@ plt.ylabel(yaxislabelstr)
 plt.xlabel('t')
 vline=plot(plotData['t'], plotData['x'])
 evt=ode.getEventTimes()['thresh_ev_imprec'][0]
-print "Event at", evt, "where x has value", traj(evt)
+print("Event at", evt, "where x has value", traj(evt))
 if traj(evt,'x') != 40:
-    print "Event occurred away from precise threshold: Test PASSED"
+    print("Event occurred away from precise threshold: Test PASSED")
 else:
-    print "Event occurred precisely on threshold value: Test FAILED"
+    print("Event occurred precisely on threshold value: Test FAILED")
     raise RuntimeError
 plot(evt, traj(evt, 'x'), 'ro')
 show()

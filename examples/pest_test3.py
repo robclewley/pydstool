@@ -3,6 +3,7 @@
 
     Robert Clewley, March 2005.
 """
+from __future__ import print_function
 
 # PyDSTool imports
 from PyDSTool import *
@@ -45,9 +46,9 @@ HH_thresh_ev = Events.makePythonStateZeroCrossEvent('v', 0, 1,
 
 result = HH_thresh_ev.searchForEvents(tuple(tdata))
 HH_spike_t = result[0][0]
-print "True HH spike time based on threshold event is at ", HH_spike_t
-print "but assume the traj is real data so that we have to find the spike"
-print "directly from the noisy data"
+print("True HH spike time based on threshold event is at ", HH_spike_t)
+print("but assume the traj is real data so that we have to find the spike")
+print("directly from the noisy data")
 
 ## Set up external interface for the reference trajectory based on spike time
 
@@ -163,24 +164,24 @@ class int_geom_iface(intModelInterface):
 pest_context = context([ (spike_interface, int_spike_iface),
                          (geom_interface, int_geom_iface) ])
 
-print "Feature evaluation on initial set-up: ", pest_context.evaluate(HH_test_model)
-print "geom feat residual: ", norm(geom_feat.metric.results)
+print("Feature evaluation on initial set-up: ", pest_context.evaluate(HH_test_model))
+print("geom feat residual: ", norm(geom_feat.metric.results))
 pts1=geom_feat.ref_traj(tmesh,coords=['v'])
 pts2=HH_test_model('test_iface_traj', tmesh, coords=['v'])
 #plot(tmesh, pts1['v'])
 #plot(tmesh, pts2['v'])
-print "\nResidual norm before feature weighting:"
-print norm(pest_context.residual(HH_test_model))
+print("\nResidual norm before feature weighting:")
+print(norm(pest_context.residual(HH_test_model)))
 assert_almost_equal(norm(pest_context.residual(HH_test_model)), 284.769635808)
 pest_context.set_weights({geom_interface: 0.005, spike_interface: 0.25})
-print "Residual norm after feature weighting:"
-print norm(pest_context.residual(HH_test_model))
+print("Residual norm after feature weighting:")
+print(norm(pest_context.residual(HH_test_model)))
 assert_almost_equal(norm(pest_context.residual(HH_test_model)), 1.60832200407)
 
 ## Parameter estimation
-print '\nEstimating pars gl and vl for fit'
-print 'Goal values are vl =', par_args_HH_goal['vl'], ', gl = ', \
-            par_args_HH_goal['gl'], ' ...'
+print('\nEstimating pars gl and vl for fit')
+print('Goal values are vl =', par_args_HH_goal['vl'], ', gl = ', \
+            par_args_HH_goal['gl'], ' ...')
 
 
 # Using the built-in least squares optimizer doesn't work
@@ -213,9 +214,9 @@ log_ix = pest2.find_logs()[0]
 sol_pars = pest2.log[log_ix].pars
 HH_test_model.set(pars=sol_pars) #pestData_par['pars_sol'])
 
-print "Feature evaluation on solution set-up: ", \
-      pest_context.evaluate(HH_test_model)
-print "geom feat residual: ", norm(geom_feat.metric.results)
+print("Feature evaluation on solution set-up: ", \
+      pest_context.evaluate(HH_test_model))
+print("geom feat residual: ", norm(geom_feat.metric.results))
 
 # solution trajectory involving voltage happens to be the first of the
 # two trajectories stored in each log (one for each model interface, and
@@ -223,7 +224,7 @@ print "geom feat residual: ", norm(geom_feat.metric.results)
 sol_traj = pest2.log[log_ix].trajectories[0]
 
 ## Finish preparing plots
-print '\nPreparing plots'
+print('\nPreparing plots')
 figure()
 disp_dt = 0.05
 plotData_orig = HH_test_model.sample('orig', ['v'], disp_dt, precise=True)

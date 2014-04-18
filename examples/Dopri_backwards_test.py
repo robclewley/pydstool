@@ -21,7 +21,7 @@ DSargs.name = 'my_ode'
 ode = Generator.Dopri_ODEsystem(DSargs)
 ode.set(tdata=[0, 10])
 trajf = ode.compute('testf')
-print "======================"
+print("======================")
 DSargsB = args()
 DSargsB.varspecs = {'x': 'k*x'}
 DSargsB.pars = {'k': .1}
@@ -34,7 +34,7 @@ odeb = Generator.Dopri_ODEsystem(DSargsB)
 odeb.set(tdata=[-10, 0])
 trajb = odeb.compute('testb', 'b')
 
-print 'Preparing plot (curves should align to be a single smooth curve)'
+print('Preparing plot (curves should align to be a single smooth curve)')
 
 plotDataf = trajf.sample(dt=0.1)
 plotDatab = trajb.sample(dt=0.1)

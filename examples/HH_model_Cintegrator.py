@@ -6,6 +6,7 @@ Inclusion of additional libraries in C code is also tested.
 
    Robert Clewley, June 2005.
 """
+from __future__ import print_function
 
 # textually substitute 'Dopri' for 'Radau' in this file to use Radau
 
@@ -55,14 +56,14 @@ def makeHHneuron(name, par_args, ic_args, evs=None, extra_terms='', nobuild=Fals
 # ------------------------------------------------------------
 
 
-print '-------- Test: Hodgkin-Huxley system'
+print('-------- Test: Hodgkin-Huxley system')
 par_args = {'gna': 100, 'gk': 80, 'gl': 0.1,
             'vna': 50, 'vk': -100, 'vl': -67,
             'I': 1.75, 'C': 1.0}
 ic_args = {'v':-70.0, 'm': 0, 'h': 1, 'n': 0}
 
 # test single terminal event first
-print "Testing single terminal event and its sampling"
+print("Testing single terminal event and its sampling")
 
 thresh_ev = Events.makeZeroCrossEvent('v', 1,
                                 {'name': 'thresh_ev',
@@ -79,15 +80,15 @@ HH_term = makeHHneuron('HHtest', par_args, ic_args, [thresh_ev_term],
                        nobuild=True)
 # test inclusion of other libraries in C file (not used in this example!)
 HH_term.makeLib(include=['limits.h'])
-print "Successfully tested inclusion of additional C libraries into vector"
-print "field definition code."
+print("Successfully tested inclusion of additional C libraries into vector")
+print("field definition code.")
 HH_term.set(tdata=[0, 25])
 start = clock()
 HHtraj_term = HH_term.compute('test_term')
-print 'Computed trajectory in %.3f seconds.\n' % (clock()-start)
+print('Computed trajectory in %.3f seconds.\n' % (clock()-start))
 trajdata = HHtraj_term.sample(dt=1.0)
-print "Sampled this data at dt=1.0 up to the event", HH_term.getEventTimes(), ":"
-print trajdata['v'], "\n"
+print("Sampled this data at dt=1.0 up to the event", HH_term.getEventTimes(), ":")
+print(trajdata['v'], "\n")
 
 # HH is a "Generator" object (an ODE in this case)
 # (Generator is the new name for the DynamicalSystem class, because some
@@ -96,23 +97,23 @@ print trajdata['v'], "\n"
 HH = makeHHneuron('HH_model_test', par_args, ic_args, [thresh_ev])
 HH.set(tdata=[0, 50])
 
-print 'Integrating...'
+print('Integrating...')
 start = clock()
 HHtraj = HH.compute('test')
-print '  ... finished in %.3f seconds.\n' % (clock()-start)
+print('  ... finished in %.3f seconds.\n' % (clock()-start))
 plotData = HHtraj.sample(dt=0.1)
 evt=HH.getEventTimes()['thresh_ev']
 
-print 'Saving Model and Trajectory...'
+print('Saving Model and Trajectory...')
 saveObjects([HH, HHtraj], 'temp_HH_Cintegrator.pkl', True)
 
-print 'Testing continued integration'
+print('Testing continued integration')
 new_t0 = HHtraj.indepdomain[1]
 HH.set(tdata=[new_t0,new_t0+20])
 HHtraj2 = HH.compute('test_cont', 'c')
-print "Non-terminal events found:", HH.getEvents()
+print("Non-terminal events found:", HH.getEvents())
 
-print 'Preparing plot'
+print('Preparing plot')
 plotData2 = HHtraj2.sample(dt=0.1)
 evt2=HH.getEventTimes()['thresh_ev']
 yaxislabelstr = 'v'

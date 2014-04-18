@@ -2,6 +2,7 @@
 
     Robert Clewley, September 2005.
 """
+from __future__ import print_function
 
 from PyDSTool import *
 from numpy.linalg import norm
@@ -11,7 +12,7 @@ from numpy.testing.utils import assert_approx_equal
 assert DiffStr('x-(4*x*y)/(1+x*x)','x') == \
        '1-4*(y)/(1+x*x)+(4*x*y)*2*x*pow((1+x*x),-2)'
 
-print "Showing the variety of ways that symbolic Diff() can be used:"
+print("Showing the variety of ways that symbolic Diff() can be used:")
 
 f1 = '[-3*x**2+2*(x+y),-y/2]'
 f2 = ['-3*x**2+2*(x+y)','-y/2']
@@ -21,26 +22,26 @@ f3 = [-3*Pow(x,2)+2*(x+y),-y/2]
 f4 = ['-3*x**2.+2*(x+y)','-y/2.']
 xx = QuantSpec('dummy','x')
 
-print "The following strings should all be identical"
-print Diff(f1,'x')
-print Diff(f2,'x')
-print Diff(f3,'x')
-print Diff(f1,x)
-print Diff(f2,x)
-print Diff(f3,x)
-print Diff(f3,xx)
-print "\n"
-print Diff(f1, ['x','y'])
-print Diff(f1, [x,y])
-print Diff(f1, [xx,y])
-print Diff(f2, ['x','y'])
-print Diff(f2, [x,y])
-print Diff(f3, ['x','y'])
-print Diff(f3, [x,y])
+print("The following strings should all be identical")
+print(Diff(f1,'x'))
+print(Diff(f2,'x'))
+print(Diff(f3,'x'))
+print(Diff(f1,x))
+print(Diff(f2,x))
+print(Diff(f3,x))
+print(Diff(f3,xx))
+print("\n")
+print(Diff(f1, ['x','y']))
+print(Diff(f1, [x,y]))
+print(Diff(f1, [xx,y]))
+print(Diff(f2, ['x','y']))
+print(Diff(f2, [x,y]))
+print(Diff(f3, ['x','y']))
+print(Diff(f3, [x,y]))
 
-print "--------------------------\n"
+print("--------------------------\n")
 
-print "Now some more complex tests..."
+print("Now some more complex tests...")
 t=Var('t')
 s=Var('s')
 
@@ -49,47 +50,47 @@ assert str(Diff(Pow((t*5),2),t)) != '0'
 p=Par('3.','p')
 f = Fun(QuantSpec('f', str(2.0+s-10*(t**2)+Exp(p))), ['s','t'])
 f_0=Fun(QuantSpec('f_0', str(Diff(f(s,t),t))), ['t'])
-print 2*f.eval(s=3,t=t)
-print Diff('-10*Pow(t,2)','t')
-print Diff(2*f.eval(s=3,t=t), t)
-print Diff(3+t*f.eval(s=3,t=t),t)
-print Diff(3+t*f(s,t),t).eval(s=3,t=1,p=p)
-print Diff(3+t*f(s,t),t).eval(s=3,t=1,p=p())
+print(2*f.eval(s=3,t=t))
+print(Diff('-10*Pow(t,2)','t'))
+print(Diff(2*f.eval(s=3,t=t), t))
+print(Diff(3+t*f.eval(s=3,t=t),t))
+print(Diff(3+t*f(s,t),t).eval(s=3,t=1,p=p))
+print(Diff(3+t*f(s,t),t).eval(s=3,t=1,p=p()))
 assert Diff(str(f(s,t)),'t') == Diff(f(s,t),t)
 q1=Diff(f(s,t),t)
 q2=Diff(str(f(s,t)),t)
 assert q1 == q2
 q1.difference(q2)
 
-print "\n"
-print Diff(f(t,s),t)
-print Diff(2*f(3,t*5), t)
+print("\n")
+print(Diff(f(t,s),t))
+print(Diff(2*f(3,t*5), t))
 assert str(Diff(2*f(3,t*5), t)) != str(0)
 assert f(s,t) != f(t,s)
 
-print f(s,t).eval()
+print(f(s,t).eval())
 q=f(s,t)
-print q.eval()
+print(q.eval())
 
-print Diff('g(s)',s)
-print Diff('g(s)',s).eval()
+print(Diff('g(s)',s))
+print(Diff('g(s)',s).eval())
 dg_dt=Fun(QuantSpec('g_0', '2-Sin(t/2)'),['t'])
 assert str(Diff('g(t)',t).eval()) != 'g_0(t)'
-print "\n\n"
-print Diff('g(s)',s)
-print Diff('g(s)',s).eval()
+print("\n\n")
+print(Diff('g(s)',s))
+print(Diff('g(s)',s).eval())
 
 
 g=Fun('',[t],'g') # declare empty function
 assert str(g(t)) == 'g(t)'
-print Diff(g(s),s).eval()
+print(Diff(g(s),s).eval())
 
 assert eval(str(Diff('pow(1,2)*t','t'))) == 1
 assert eval(str(Diff(Pow(1,2)*t,t))) == 1
 assert str(Diff(Sin(Pow(t,1)),t)) == 'Cos(t)'
 
 q=QuantSpec('q','-0+3+pow(g(x)*h(y,x),1)*1')
-print Diff(q,'x')
+print(Diff(q,'x'))
 assert str(Diff(q,'x')) == '(g_0(x)*h(y,x)+g(x)*h_1(y,x))'
 # BROKEN in this version (need to move to SymPy)
 #print Diff(q,'x').eval()
@@ -99,8 +100,8 @@ p0=Var('p0')
 p1=Var('p1')
 
 pv=Var([p0,p1], 'p')
-print pv()
-print pv.eval()
+print(pv())
+print(pv.eval())
 
 u=Var('Pi/(2*Sin(Pi*t/2))','u')
 assert u.eval(t=1).tonumeric() == pi/2
@@ -155,23 +156,23 @@ if dstr2 != '-1.5*Pow(x,-2.5)':
 #------------------
 
 
-print "\nSymbolic vector tests"
+print("\nSymbolic vector tests")
 
 q0=Var(p0+3,'q0')
 q1=Var(Diff(1+Sin(Pow(p0,3)+q0),p0),'q1')
 
 qv=Var([q0,q1], 'q')
-print qv()
-print qv.eval()
+print(qv())
+print(qv.eval())
 
 v=Var('v')
 w=Var('w')
 f=Var([-3*Pow((2*v+1),3)+2*(w+v),-w/2], 'f')
 
 df = Diff(f, [v,w])
-print df
+print(df)
 dfe = df.eval(v=3,w=10).tonumeric()
-print dfe
+print(dfe)
 assert isinstance(dfe, ndarray)
 assert isinstance(df.fromvector(), list)
 
@@ -202,37 +203,37 @@ y=Var('y')
 f1 = Fun([-3*x**3+2*(x+y),-y/2], [x,y], 'f1')
 f2 = ['-3*x**3+2*(x+y)','-y/2']
 f3 = [-3*x**3.+2*(x+y),-y/2.]
-print "\n\nVector-valued function f(x,y) =", f1
-print "The function string can be passed to Diff in various ways..."
-print str(f1)
-print str(f2)
-print str(f3)
-print "\nThe following outputs are for Diff(f,'x') for each of these forms"
-print "They should all be the same (except for some may contain decimal points)"
+print("\n\nVector-valued function f(x,y) =", f1)
+print("The function string can be passed to Diff in various ways...")
+print(str(f1))
+print(str(f2))
+print(str(f3))
+print("\nThe following outputs are for Diff(f,'x') for each of these forms")
+print("They should all be the same (except for some may contain decimal points)")
 f4 = [-3*Pow((2*x+1),3)+2*(x+y),-y/2]
 xx = QuantSpec('dummy','x')
 f5=Var([-3*Pow((2*x+1),3)+2*(x+y),-y/2], 'f5')
 
 assert Diff(f1,x) == Diff(f1,'x')
-print Diff(f1,x)
-print Diff(f3,x)
-print Diff(f3,xx)
-print Diff(f4,x)
-print Diff(f4,xx)
-print "\nExamples of Jacobian Diff(f, [x,y])..."
+print(Diff(f1,x))
+print(Diff(f3,x))
+print(Diff(f3,xx))
+print(Diff(f4,x))
+print(Diff(f4,xx))
+print("\nExamples of Jacobian Diff(f, [x,y])...")
 assert Diff(f1, [x,y]) == Diff(f1, ['x','y']) == Diff(f1(x,y), [x,y])
-print Diff(f2, ['x','y'])
-print Diff(f3, ['x','y'])
-print Diff(f1, [xx,y])
-print Diff(f1, [xx,'y'])
-print Diff(f2, [x,y])
-print Diff(f3, [x,y]), "\n"
-print Diff(f4, [x,y])
+print(Diff(f2, ['x','y']))
+print(Diff(f3, ['x','y']))
+print(Diff(f1, [xx,y]))
+print(Diff(f1, [xx,'y']))
+print(Diff(f2, [x,y]))
+print(Diff(f3, [x,y]), "\n")
+print(Diff(f4, [x,y]))
 df5 = Diff(f5, [x,y])
-print df5
-print df5.eval(x=3,y=10).tonumeric()
-print df5.eval(x=3,y=10).fromvector(0)
-print df5.fromvector(0)
+print(df5)
+print(df5.eval(x=3,y=10).tonumeric())
+print(df5.eval(x=3,y=10).fromvector(0))
+print(df5.fromvector(0))
 assert isinstance(df5.fromvector(), list)
 a = df5.fromvector(0).eval(x=3,y=10).tonumeric()
 b = df5.eval(x=3,y=10).tonumeric()[0]
@@ -240,8 +241,8 @@ assert a[0]==b[0] and a[1]==b[1]
 
 
 # --
-print "\nExamples of differentiation using nested functions"
-print " - this functionality is built in to Symbolic.prepJacobian"
+print("\nExamples of differentiation using nested functions")
+print(" - this functionality is built in to Symbolic.prepJacobian")
 func_ma_spec = (['p', 'v'], '0.32*(v+54)/(1-exp(-p*(v+54)/4))')
 ma = Fun(func_ma_spec[1], func_ma_spec[0], 'ma')
 ma_1 = Fun(Diff(ma, 'v'), ['v'], 'ma_1')

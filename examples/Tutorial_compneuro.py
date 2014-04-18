@@ -163,7 +163,7 @@ HH_model.showSpec()      prints out equations for channels and state vars
 HH_model = model_HH.getModel()
 
 verboselevel = 2
-print "Computing trajectory using verbosity level %d..."%verboselevel
+print("Computing trajectory using verbosity level %d..."%verboselevel)
 ## don't extend tdata past the range given to the ModelConstructor
 HH_model.compute(trajname='test',
                  tdata=[0, 100],

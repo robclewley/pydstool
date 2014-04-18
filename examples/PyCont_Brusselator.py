@@ -42,10 +42,10 @@ PCargs.verbosity = 2
 PCargs.SaveEigen = True
 PyCont.newCurve(PCargs)
 
-print 'Computing curve...'
+print('Computing curve...')
 start = clock()
 PyCont['EQ1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 # Plot
 PyCont['EQ1'].display(('lambda','X1'), stability=True)

@@ -1,4 +1,5 @@
 """Testing auxiliary variables for a model of a stick-finger on a wheel."""
+from __future__ import print_function
 
 from PyDSTool import *
 
@@ -28,13 +29,13 @@ decay = ExplicitFnGen(decayargs)
 dtraj1 = decay.compute('testtraj1')
 decay.set(ics={'a': 0.5})
 dtraj2 = decay.compute('testtraj2')
-print "To test that separate trajectories output from generator actually"
-print " have different values we compare two traj's values"
-print "These should be different:"
+print("To test that separate trajectories output from generator actually")
+print(" have different values we compare two traj's values")
+print("These should be different:")
 result = dtraj1.variables['a'](0.2) != dtraj2.variables['a'](0.2)
-print "dtraj1.variables['a'](0.2) != dtraj2.variables['a'](0.2)? =>", \
-      result
-print "This demonstrates avoiding an insufficiently deep 'copy' of new"
-print " Variables into new trajectories whereby new Variables overwrite"
-print " old ones in other Trajectory objects"
+print("dtraj1.variables['a'](0.2) != dtraj2.variables['a'](0.2)? =>", \
+      result)
+print("This demonstrates avoiding an insufficiently deep 'copy' of new")
+print(" Variables into new trajectories whereby new Variables overwrite")
+print(" old ones in other Trajectory objects")
 assert result

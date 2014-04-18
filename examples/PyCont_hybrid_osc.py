@@ -37,7 +37,7 @@ def cont_func(C, pt, pars):
     try:
         F = get_cycle(DS)
     except PyDSTool_ExistError:
-        print 'Problem computing orbit'
+        print('Problem computing orbit')
         C._userdata.problem = True
         return array([0], float)
     else:
@@ -60,7 +60,7 @@ PCargs.verbosity = 4
 PCargs.initpoint = {'gl': PyCont.gensys.query('pars')['gl']}
 PyCont.newCurve(PCargs)
 
-print 'Computing curve...'
+print('Computing curve...')
 PyCont['UD1'].forward()
 PyCont['UD1'].backward()
 

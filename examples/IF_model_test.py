@@ -18,7 +18,7 @@ from time import clock
 
 # ---------------------------------------------------------------------------
 
-print '-------- Model test'
+print('-------- Model test')
 all_model_names = ['leak', 'spike']
 
 # 'excited' is an internal variable of the model, and is used to
@@ -76,18 +76,18 @@ modelInfoDict = makeModelInfo([DS_leak_info, DS_spike_info])
 
 IFmodel = Model.HybridModel({'name': 'IF_fit', 'modelInfo': modelInfoDict})
 
-print "Computing trajectory...\n"
+print("Computing trajectory...\n")
 start = clock()
 IFmodel.compute(trajname='onespike', tdata=[0,30], ics=ics, verboselevel=2, force=True)
-print '... finished in %.3f seconds.\n' % (clock()-start)
+print('... finished in %.3f seconds.\n' % (clock()-start))
 
-print 'Preparing plot to show non-identity mapping of epoch state transitions'
+print('Preparing plot to show non-identity mapping of epoch state transitions')
 plotData = IFmodel.sample('onespike', ['V'], 0.02)
 plt.ylabel('V')
 plt.xlabel('t')
 vline = plt.plot(plotData['t'], plotData['V'])
 
-print "\n\nInformation about Model's components:\n"
+print("\n\nInformation about Model's components:\n")
 info(IFmodel.query('submodels'))
 
 plt.show()

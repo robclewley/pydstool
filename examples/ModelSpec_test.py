@@ -20,7 +20,7 @@ else:
 
 # -------------------------------------------------------------------------
 
-print "ModelSpec and neural computation toolbox tests..."
+print("ModelSpec and neural computation toolbox tests...")
 
 def make_noise_signal(dt, t_end, mean, stddev, num_cells, seed=None):
     """Helper function: Gaussian white noise at sample rate = dt for 1 or more cells,
@@ -251,4 +251,4 @@ v1line = plt.plot(v_dat['t'], v_dat['cell1.V'])
 v2line = plt.plot(v_dat['t'], v_dat['cell2.V'])
 plt.show()
 
-print "   ... passed"
+print("   ... passed")

@@ -37,8 +37,9 @@ def make_finger_massmatrix(name, par_args, ic_args, evs=None, nobuild=False):
     a55 = convertPowers('1/4*m3*l3^2+I3')
     #
     M = "["
+    env = locals()
     for r in range(6):
-        M += "[" + ", ".join([eval("a"+str(r)+str(c)) for c in range(6)]) +"]"
+        M += "[" + ", ".join([eval("a"+str(r)+str(c), env) for c in range(6)]) +"]"
         if r < 5:
             M += ", "
     M += "]"
@@ -78,7 +79,7 @@ def make_finger_massmatrix(name, par_args, ic_args, evs=None, nobuild=False):
 
 
 if __name__=='__main__':
-    print '-------- Finger Test'
+    print('-------- Finger Test')
     # spatial units in mm, angular units in radians
     # Ix = 1/12 * mx * lx^2
     # radii were 10mm, 8mm, 7mm
@@ -116,21 +117,21 @@ if __name__=='__main__':
         pars['m2'] = m2
         pars['m3'] = m3
 
-    print "Making Radau finger model using mass matrix"
+    print("Making Radau finger model using mass matrix")
     finger = make_finger_massmatrix('freefinger_noforce_massmatrix', par_args, ic_args)
     finger.set(tdata=[0, 3])
 #    saveObjects(finger, 'fingergen', force=True)
 
-    print 'Integrating...'
+    print('Integrating...')
     start = clock()
     ftraj = finger.compute('test')
-    print 'Computed trajectory in %.3f seconds.\n' % (clock()-start)
+    print('Computed trajectory in %.3f seconds.\n' % (clock()-start))
     plotData = ftraj.sample(dt=.001)
 
     exportPointset(plotData, {'varvals': ['phi1','phi2','phi3'], 'tvals':'t'},
                    ext='dat')
 
-    print 'Preparing plot'
+    print('Preparing plot')
 
     yaxislabelstr = 'angles'
     plt.ylabel(yaxislabelstr)

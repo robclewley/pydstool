@@ -51,4 +51,4 @@ vals6 = traj.sample(tlo=1.8, thi=5.8, dt=2.1)  # skips some b/c not precise
 assert all(vals6['t'] == array([2.7, 3.7, 5.7]))
 assert vals6[0] == 0.2
 
-print "\nAll trajectory sampling tests passed"
+print("\nAll trajectory sampling tests passed")

@@ -150,20 +150,20 @@ def test(flist, whichpy=None, infostr=""):
     failure = False
     for f in flist:
         fname = f+'.py'
-        print "\n***** Testing script %s ****************************\n"%fname
+        print("\n***** Testing script %s ****************************\n"%fname)
         try:
             e=os.system(whichpy + ' ' + fname)
         except:
-            print "\n      Testing failed on test file %s"%fname
+            print("\n      Testing failed on test file %s"%fname)
             failed.append(fname)
             if not failure:
                 res.append("%s: appears to be broken on your system"%infostr)
                 failure = True
         else:
             if e in [0,3]:
-                print "\n      Testing passed on test file %s"%fname
+                print("\n      Testing passed on test file %s"%fname)
             else:
-                print "\n      Testing failed on test file %s"%fname
+                print("\n      Testing failed on test file %s"%fname)
                 failed.append(fname)
                 failure = True
         time.sleep(2)
@@ -174,79 +174,79 @@ def test(flist, whichpy=None, infostr=""):
 
 # ---------------------------------------------------------------------------
 
-print "***** Running all tests in order...\n"
-print "Note: Depending on your settings, you may have to close matplotlib windows by hand in order to continue to the next test script\n"
+print("***** Running all tests in order...\n")
+print("Note: Depending on your settings, you may have to close matplotlib windows by hand in order to continue to the next test script\n")
 
 if test_general:
-    print "Testing general PyDSTool functions...\n"
+    print("Testing general PyDSTool functions...\n")
     test(general_list, pythonprogram, "Basic PyDSTool functions")
 else:
     res.append("Tests of basic PyDSTool functions: SKIPPED")
 
 if test_maps:
-    print "Testing map modules...\n"
+    print("Testing map modules...\n")
     test(map_list, pythonprogram, "Map related modules")
 else:
     res.append("Tests of map related modules: SKIPPED")
 
 if test_vode:
-    print "Testing modules using VODE integrator...\n"
+    print("Testing modules using VODE integrator...\n")
     test(vode_list, pythonprogram, "VODE related modules")
 else:
     res.append("Tests of VODE related modules: SKIPPED")
 
 if test_symbolic:
-    print "Testing symbolic differentiation module...\n"
+    print("Testing symbolic differentiation module...\n")
     test(symbolic_list, pythonprogram, "Symbolic differentiation module")
 else:
     res.append("Tests of symbolic differentiation module: SKIPPED")
 
 if test_param_est:
-    print "Testing parameter estimation module, no C compiler dependence...\n"
+    print("Testing parameter estimation module, no C compiler dependence...\n")
     test(param_est_list, pythonprogram, "Parameter estimation module")
 else:
     res.append("Tests of parameter estimation module: SKIPPED")
 
 if test_pycont:
-    print "Testing PyCont module, no external compiler dependence...\n"
+    print("Testing PyCont module, no external compiler dependence...\n")
     test(pycont_list, pythonprogram, "PyCont")
 else:
     res.append("Tests of PyCont with no external compiler dependence: SKIPPED")
 
 if do_external:
-    print "\n***** Now running tests that use external compilers...\n"
+    print("\n***** Now running tests that use external compilers...\n")
 
 if test_dopri:
-    print "Testing dopri integration; external C compiler dependence...\n"
+    print("Testing dopri integration; external C compiler dependence...\n")
     test(dopri_list, pythonprogram, "Dopri ODE systems")
 else:
     res.append("Tests of Dopri ODE systems: SKIPPED")
 
 if test_radau:
-    print "Testing radau integration; external C, fortran compiler dependence...\n"
+    print("Testing radau integration; external C, fortran compiler dependence...\n")
     test(radau_list, pythonprogram, "Radau ODE systems")
 else:
     res.append("Tests of Radau ODE systems: SKIPPED")
 
 if test_param_est_C:
-    print "Testing parameter estimation module; with C compiler dependence...\n"
+    print("Testing parameter estimation module; with C compiler dependence...\n")
     test(param_est_C_list, pythonprogram, "Parameter estimation module with external compilers")
 else:
     res.append("Tests of parameter estimation module with external compilers: SKIPPED")
 
 if test_pycont_auto:
-    print "Testing PyCont continuation with AUTO...\n"
+    print("Testing PyCont continuation with AUTO...\n")
     test(pycont_auto_list, pythonprogram, "PyCont interface to AUTO")
 else:
     res.append("Tests of PyCont interface to AUTO: SKIPPED")
 
 if len(failed) == 0:
-    print "No test scripts failed"
+    print("No test scripts failed")
 else:
-    print "Test scripts that failed:"
+    print("Test scripts that failed:")
     for fname in failed:
-        print "\t%s"%fname
+        print("\t%s"%fname)
 
-print "Summary:"
+print("Summary:")
 for r in res:
-    print r
+    print(r)

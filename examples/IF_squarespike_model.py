@@ -3,6 +3,7 @@ spike, as a hybrid system.
 
    Robert Clewley, March 2005.
 """
+from __future__ import print_function
 
 from PyDSTool import *
 from time import clock
@@ -99,7 +100,7 @@ def makeIFneuron(name, par_args_linear, par_args_spike, rhs=None, inputs={},
 if __name__=='__main__':
     # need the __main__ to use above functions as imports for other
     # scripts without running this part
-    print '-------- IF model test 1'
+    print('-------- IF model test 1')
 
     par_args_linear = {'Iapp': 1.3, 'gl': 0.1, 'vl': -67,
                        'threshval': -65, 'C': 1}
@@ -109,21 +110,21 @@ if __name__=='__main__':
     icdict = {'v': -80, 'excited': 0}
 
     start = clock()
-    print 'Computing trajectory...'
+    print('Computing trajectory...')
     IFmodel.compute(trajname='onespike',
                         tdata=[0, 60],
                         ics=icdict,
                         verboselevel=0)
-    print '\n... finished in %.3f seconds.\n' % (clock()-start)
+    print('\n... finished in %.3f seconds.\n' % (clock()-start))
 
     IFmodel.set(pars={'Iapp': 1.0, 'threshval': -60})
-    print 'Recomputing trajectory with new params...'
+    print('Recomputing trajectory with new params...')
     IFmodel.compute(trajname='twospike',
                         tdata=[0, 60],
                         ics=icdict)
 
 
-    print 'Preparing plot'
+    print('Preparing plot')
     plotData = IFmodel.sample('onespike', dt=0.05)
     plotData2 = IFmodel.sample('twospike', ['v', 'testaux'], 0.05)
     plt.ylabel('v, testaux')
@@ -132,26 +133,26 @@ if __name__=='__main__':
     vline2 = plt.plot(plotData2['t'], plotData2['v'])
     aline = plt.plot(plotData['t'], plotData['testaux'])
 
-    print "\nLast point of hybrid trajectory: "
-    print "IFmodel.getEndPoint('onespike') -->\n", \
-             IFmodel.getEndPoint('onespike')
+    print("\nLast point of hybrid trajectory: ")
+    print("IFmodel.getEndPoint('onespike') -->\n", end='')
+    print(IFmodel.getEndPoint('onespike'))
 
-    print "\nFirst point of hybrid trajectory: "
-    print "IFmodel.getEndPoint('onespike', 0) -->\n", \
-             IFmodel.getEndPoint('onespike', 0)
+    print("\nFirst point of hybrid trajectory: ")
+    print("IFmodel.getEndPoint('onespike', 0) -->\n", end='')
+    print(IFmodel.getEndPoint('onespike', 0))
 
-    print "Testing IF hybrid model as mapping ..."
+    print("Testing IF hybrid model as mapping ...")
     num_parts = len(IFmodel.getTrajTimePartitions('twospike'))
     #eventvals = IFmodel('onespike', range(0, num_parts+1), asmap=True)
-    eventvals = IFmodel('twospike', range(0, num_parts+1), asmap=True)
+    eventvals = IFmodel('twospike', list(range(0, num_parts+1)), asmap=True)
     for i in range(0,num_parts+1):
-        print "(v, t) at event(%i) = (%.4f, %.4f)" % (i, eventvals(i)('v'),
-                                              eventvals(i)('t'))
-    print "\nAlternative access to explicit event info using " + \
-          "getTrajEvents(trajname) method:\n"
+        print("(v, t) at event(%i) = (%.4f, %.4f)" % (i, eventvals(i)('v'),
+                                              eventvals(i)('t')))
+    print("\nAlternative access to explicit event info using " + \
+          "getTrajEvents(trajname) method:\n")
     evs = IFmodel.getTrajEvents('twospike')
     evtimes = IFmodel.getTrajEventTimes('onespike')
-    print evs
+    print(evs)
     assert len(evs['threshold']) == 2, "Problem with hybrid events"
     assert len(evtimes['threshold']) == 4, "Problem with hybrid events"
     assert allclose(evtimes['threshold'][3], 54.009, 1e-3), \
@@ -159,6 +160,6 @@ if __name__=='__main__':
     assert allclose(evs['threshold'][1]['v'], -60, 1e-3), \
              "Problem with hybrid events"
 
-    print "\nDepending on your platform and matplotlib configuration you may need"
-    print " to execute the plt.show() command to see the plots"
+    print("\nDepending on your platform and matplotlib configuration you may need")
+    print(" to execute the plt.show() command to see the plots")
     # plt.show()

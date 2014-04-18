@@ -53,7 +53,7 @@ def makeHHneuron(name, dt, par_args, ic_args, evs=None, extra_terms='',
         ev, ev_helper=make_flow_normal_event('v', 'm', vfn_str, mfn_str,
                           targetlang='c',
                           fnspec={'vars': ['v', 'm', 'h', 'n'],
-                                  'pars': par_args.keys(),
+                                  'pars': list(par_args.keys()),
                                   'inputs': [],
                                   'auxfns': auxdict},
                           evtArgs={'eventtol': 1e-8,
@@ -80,7 +80,7 @@ def makeHHneuron(name, dt, par_args, ic_args, evs=None, extra_terms='',
 
 
 
-print 'Phase Plane test using Hodgkin-Huxley system during action potential'
+print('Phase Plane test using Hodgkin-Huxley system during action potential')
 par_args = {'gna': 100, 'gk': 80, 'gl': 0.1,
             'vna': 50, 'vk': -100, 'vl': -67,
             'I': 1.75, 'C': 1.0}
@@ -93,7 +93,7 @@ ic_args = {'v_bd0': -130.0, 'v_bd1': 70.0, 'h': 0.99599864212873856,
 HH, ev_helper = makeHHneuron('HH_PP_test', 0.1, par_args, ic_args)
 HH.set(tdata=[0, 100], ics={'h':0.7, 'n': 0.2})
 
-print "Finding analytic Jacobian w.r.t. phase-plane variables v, m..."
+print("Finding analytic Jacobian w.r.t. phase-plane variables v, m...")
 jac, new_fnspecs = prepJacobian(HH.funcspec._initargs['varspecs'], ['m', 'v'],
                                 HH.funcspec._initargs['fnspecs'])
 
@@ -102,8 +102,8 @@ scope.update({'n': HH.initialconditions['n'], 'h': HH.initialconditions['h']})
 scope.update(new_fnspecs)
 jac_fn = expr2fun(jac, ensure_args=['t'], **scope)
 
-print "Use of Jacobian speeds up finding of nullclines and fixed points by"
-print "nearly a factor of two (not including time to plot results)..."
+print("Use of Jacobian speeds up finding of nullclines and fixed points by")
+print("nearly a factor of two (not including time to plot results)...")
 fp_coords = find_fixedpoints(HH, n=4, jac=jac_fn, eps=1e-8,
                              subdomain={'v':HH.xdomain['v'],'m':HH.xdomain['m'],
                              'h': HH.initialconditions['h'], 'n': HH.initialconditions['n']})
@@ -116,8 +116,8 @@ N_x = nullcline('v', 'm', nulls_x)
 N_y = nullcline('v', 'm', nulls_y)
 
 
-print "Fixed points for (v,m) phase plane sub-system when h=%.2f and n=%.2f: " % (HH.initialconditions['h'], HH.initialconditions['n'])
-print "For classification and stability, we use the fixedpoint class..."
+print("Fixed points for (v,m) phase plane sub-system when h=%.2f and n=%.2f: " % (HH.initialconditions['h'], HH.initialconditions['n']))
+print("For classification and stability, we use the fixedpoint class...")
 
 fps=[]
 fps.append(fixedpoint_2D(HH, Point(fp_coords[0]), coords=['v', 'm'],
@@ -128,8 +128,8 @@ fps.append(fixedpoint_2D(HH, Point(fp_coords[2]), coords=['v', 'm'],
                          jac=jac_fn, description='top', eps=1e-8))
 
 for fp in fps:
-    print "F.p. at (%.5f, %.5f) is a %s and has stability %s" % (fp.point['v'],
-                            fp.point['m'], fp.classification, fp.stability)
+    print("F.p. at (%.5f, %.5f) is a %s and has stability %s" % (fp.point['v'],
+                            fp.point['m'], fp.classification, fp.stability))
 
 plotter.fig_directory = {'PP_large': 1,
                          'PP_small': 2}

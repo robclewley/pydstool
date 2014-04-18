@@ -56,5 +56,5 @@ def SLIP_plot(SLIP, trajname, plottype=['plane'], legs=True, verboselevel=0):
                     z3 = pt2('z')
                     if verboselevel > 0:
                         delta = math.asin(z3)
-                        print "|delta - beta| =", abs(delta - beta)
+                        print("|delta - beta| =", abs(delta - beta))
                     plot([y2,y3],[z2,z3],'r-',linewidth=3)

@@ -8,8 +8,8 @@
 from PyDSTool import *
 
 
-print 'Test InterpolateTable comparing piecewise-constant and piecewise-'
-print 'linear interpolation of sine function'
+print('Test InterpolateTable comparing piecewise-constant and piecewise-')
+print('linear interpolation of sine function')
 
 timeData = linspace(0, 10, 30)
 sindata = sin(timeData)
@@ -41,4 +41,4 @@ assert numpy.allclose(pcwl_interp(5.68)['sinx'], -0.559, atol=0.001)
 # plot(x, sin(x))
 # show()
 
-print "   ...passed"
+print("   ...passed")

@@ -5,6 +5,8 @@ a spinal cord neural model or commisural interneurons.
 Robert Clewley, Erik Sherwood, Oct 2005
 """
 
+from __future__ import print_function
+
 from PyDSTool import *
 from PyDSTool.Toolbox.neuralcomp import *
 from time import clock
@@ -24,9 +26,9 @@ celltypes=[RGNcell, MNcell, CINcell]
 
 # test of inherited sub-components
 c=MNcell('c')
-print "Inherited compatible sub-components of an MN cell are:"
+print("Inherited compatible sub-components of an MN cell are:")
 allcompats = [className(csub) for csub in c._allSubcomponentTypes]
-print allcompats, "\n"
+print(allcompats, "\n")
 assert allcompats==['channel', 'Par', 'Var', 'Input', 'Fun', 'Component']
 
 def gaussianICs(varnames, mu, sigma):
@@ -47,7 +49,7 @@ defICs_soma = {
 def defaultICs(cell):
     defICs = defICs_soma[type(cell)]
     ics = {}
-    for k, v in defICs.iteritems():
+    for k, v in defICs.items():
         ics[cell.name+'.'+k] = v
     return ics
 
@@ -66,13 +68,13 @@ def Beta(vo, theta, k, c):
 noauxs = True
 auxwarning_part="Building model with auxiliary variables"
 if noauxs:
-    print "Not "+auxwarning_part.lower()
+    print("Not "+auxwarning_part.lower())
 else:
-    print auxwarning_part
+    print(auxwarning_part)
 
 targetGen = 'Dopri_ODEsystem'
-print "Target integrator is "+targetGen
-print "------------------------------------"
+print("Target integrator is "+targetGen)
+print("------------------------------------")
 
 # measure time to build model
 t0 = clock()
@@ -165,7 +167,7 @@ synRGN_MN.add([Tmax,Vp,Kp])
 HHnet = makePointNeuronNetwork('HHnet', [RGNcell1, MNcell1, synRGN_MN])
 
 t1=clock()
-print "Compiled network specification in %f seconds"%(t1-t0)
+print("Compiled network specification in %f seconds"%(t1-t0))
 
 ## uncomment for easy interactive reference at prompt
 #flatspec = HHnet.flattenSpec()
@@ -188,8 +190,7 @@ CB = modelC_net.getModel()
 CB.set(ics=ic_args_net, checklevel=0)
 
 t1=clock()
-print "Instantiated model for target ODE solver %s in %f seconds"%(targetGen,
-                                                                   t1-t0)
+print("Instantiated model for target ODE solver %s in %f seconds"%(targetGen, t1-t0))
 
 def getTraj(dt_plot=0.25, tend=1000):
     # dt_plot only controls resolution of plot data, not integration
@@ -199,16 +200,16 @@ def getTraj(dt_plot=0.25, tend=1000):
     return CB.sample('test')#, dt=dt_plot)
 
 
-print "\nParameters defined: check using who(Par)"
+print("\nParameters defined: check using who(Par)")
 who(Par)
 
-print "\nCells defined: check using who(soma, deepSearch=True)"
+print("\nCells defined: check using who(soma, deepSearch=True)")
 who(soma, deepSearch=True)
 
 # try out conversion of expression to a function of the free names
 RGNtaun_fun = expr2fun(RGNtaun, theta_n=-52, k_n=-5, taun_bar=10)
-print "\nRGNtaun_fun is a Python function created from the ModelSpecs using expr2fun()"
-print "RGNtaun_fun(-10.) =", RGNtaun_fun(-10.)
+print("\nRGNtaun_fun is a Python function created from the ModelSpecs using expr2fun()")
+print("RGNtaun_fun(-10.) =", RGNtaun_fun(-10.))
 
 # --------------------------------------------------------------------
 
@@ -243,26 +244,26 @@ def plotCurrents(cell_name, dataset):
 
 # --------------------------------------------------------------------
 
-print "\n\nComputing trajectory and getting plot data..."
+print("\n\nComputing trajectory and getting plot data...")
 t0=clock()
 v_dat = getTraj()
 t1=clock()
-print "... finished in %f seconds\n"%(t1-t0)
+print("... finished in %f seconds\n"%(t1-t0))
 
 #plotActivation(MNtaun, [-100,30], [MNtheta_n, MNk_n, MNtaun_bar])
 
 plotVoltages(v_dat)
 plt.figure()
-print "Plotting synaptic facilitation variable, sRM.d ..."
+print("Plotting synaptic facilitation variable, sRM.d ...")
 plot(v_dat['t'], v_dat['sRM.d'])
 
-print "Setting other terminal events ..."
+print("Setting other terminal events ...")
 CB.setDSEventActive(target='HHnet', eventTarget='RGNcell1_K_n_stat_dec_evt',
                     flagVal=True)
 CB.setDSEventTerm(target='HHnet', eventTarget='RGNcell1_K_n_stat_dec_evt',
                   flagVal=True)
 CB.compute(trajname='test2', tdata=[0,300])
-print "Computed additional trajectory."
+print("Computed additional trajectory.")
 
 ###### Other useful operations with CIN
 

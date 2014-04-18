@@ -49,7 +49,7 @@ def makeMLneuron(name, dt, par_args, ic_args, evs=None,
 # ------------------------------------------------------------
 
 
-print '-------- Test: PRC on Morris-Lecar system'
+print('-------- Test: PRC on Morris-Lecar system')
 par_args = {'gca': 4, 'gk': 8, 'gl': 2,
             'vca': 120, 'vk': -80, 'vl': -60,
             'v1': -1.2, 'v2': 18, 'v3': 4, 'v4': 17.4,
@@ -65,11 +65,11 @@ thresh_ev = Events.makeZeroCrossEvent('v+50', 1,  # increasing direction only
                                     'term': False}, ['v'],
                                       targetlang='c')
 
-print "Making ML neuron"
+print("Making ML neuron")
 ML = makeMLneuron('ML_PRCtest', 0.01, par_args, ic_args, [thresh_ev])
 ML.set(tdata=[0, 500])
 
-print "Computing long orbit to converge to limit cycle"
+print("Computing long orbit to converge to limit cycle")
 MLtraj = ML.compute('test')
 evt=ML.getEventTimes()['thresh_ev']
 MLpts = MLtraj.sample()
@@ -93,6 +93,6 @@ po.indepvararray -= MLpts['t'][ix_lo]
 plot(po['t'],po['v'])
 show()
 
-print "Calling adjoint PRC calculator"
+print("Calling adjoint PRC calculator")
 PRCdata = adjointPRC(ML, po, 'v', 'I', numIntervals=200, numCollocation=5,
                      spike_est=50, doPlot=True, saveData=False, verbosity=1)

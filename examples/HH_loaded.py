@@ -6,7 +6,7 @@ from PyDSTool import *
 try:
     objs = loadObjects('temp_HH.pkl')
 except:
-    print "Only run after test 'HH_model.py'"
+    print("Only run after test 'HH_model.py'")
     raise
 HH = objs[0]
 HHtraj1 = objs[1]
