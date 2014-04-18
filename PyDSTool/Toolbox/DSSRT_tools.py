@@ -10,11 +10,11 @@ Partial templates for the graphical specs are created.
 
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from PyDSTool import *
 from PyDSTool.parseUtils import symbolMapClass
-from FR import *
+from PyDSTool.Toolbox.FR import *
 import os
 from copy import copy
 from random import uniform, gauss
@@ -73,7 +73,7 @@ class DSSRT_info(object):
                     inputs[mi].append(mo)
                 except AttributeError:
                     inputs[mi] = [mo]
-        for k, v in inputs.iteritems():
+        for k, v in inputs.items():
             if v is None:
                 inputs[k] = []
         self.inputs = inputs
@@ -90,7 +90,7 @@ class DSSRT_info(object):
         if remain(self.varsext, vars) != []:
             raise NotImplementedError("Can only make network graph with all "
                                       "external variables at this time")
-        print "Finding graph layout for network..."
+        print("Finding graph layout for network...")
         V = {}
         E = {}
         # prepare vertices
@@ -136,7 +136,7 @@ class DSSRT_info(object):
         for v in vars:
             if in_d[v] + out_d[v] == 0:
                 info(in_d, 'in-degrees')
-                print "\n"
+                print("\n")
                 info(out_d, 'out-degrees')
                 raise ValueError("Variable %s had no associated edges"%v)
         self._V = V
@@ -217,8 +217,8 @@ class DSSRT_info(object):
                     bd0 = 0
                     bd1 = 1
                 else:
-                    print "Warning: variable %s has not been given bounds"%var
-                    print " (assuming +/- 'infty_val' attribute)"
+                    print("Warning: variable %s has not been given bounds"%var)
+                    print(" (assuming +/- 'infty_val' attribute)")
                     bd0 = -self._infty_val
                     bd1 = self._infty_val
             magopt = int(bd0 == 0 and bd1 == 1)
@@ -234,8 +234,8 @@ class DSSRT_info(object):
                     bd0 = 0
                     bd1 = 1
                 else:
-                    print "Warning: variable %s has not been given bounds"%var
-                    print " (assuming +/- 'infty_val' attribute)"
+                    print("Warning: variable %s has not been given bounds"%var)
+                    print(" (assuming +/- 'infty_val' attribute)")
                     bd0 = -self._infty_val
                     bd1 = self._infty_val
             # these variables still need vbars
@@ -319,7 +319,7 @@ class DSSRT_info(object):
             try:
                 voltname = model._FScompatibleNames(model.searchForVars(parts[0]+'.'+'V')[0])
             except:
-                print "Problem finding membrane voltage name in model spec"
+                print("Problem finding membrane voltage name in model spec")
                 raise
             self.cfac[voltname] = model._FScompatibleNames(fullname)
         # need to take out function-specific parameters from depars --
@@ -337,7 +337,7 @@ class DSSRT_info(object):
         # work out gam1terms and gam2terms
         # validate CFG
         self.prepCFG()
-        print "Finished preparing CFG information. Call outputCFG(filename) to output .cfg file"
+        print("Finished preparing CFG information. Call outputCFG(filename) to output .cfg file")
 
 
     def prepCFG(self):
@@ -345,10 +345,10 @@ class DSSRT_info(object):
         # Set remaining bounds to default limits
         bd_overlap = intersect(self.bounds.keys(), self.unitbounds)
         if bd_overlap != []:
-            print bd_overlap
+            print(bd_overlap)
             raise ValueError("Clash between variables with explicitly declared"
                              "bounds and those with unit bounds")
-        for v in remain(self.varsall, self.bounds.keys()+self.unitbounds):
+        for v in remain(self.varsall, list(self.bounds.keys())+self.unitbounds):
             self.bounds[v] = [-self._infty_val, self._infty_val]
         self._CFG['VARSEXT'] = [" ".join(self.varsext)]
         self._CFG['VARSINT'] = [" ".join(self.varsint)]
@@ -358,12 +358,12 @@ class DSSRT_info(object):
         self._CFG['DEQNS'] = [" ".join(self.deqns)]
         self._CFG['CFAC'] = [vname + " " + cname for (vname, cname) in self.cfac.items()]
         self._CFG['GAM1TERM'] = []
-        for vname, termlists in self.gam1terms.iteritems():
+        for vname, termlists in self.gam1terms.items():
             self._CFG['GAM1TERM'].extend([vname + " " + " ".join(termlist) for termlist in termlists])
         self._CFG['GAM2TERM'] = []
-        for vname, termlists in self.gam2terms.iteritems():
+        for vname, termlists in self.gam2terms.items():
             self._CFG['GAM2TERM'].extend([vname + " " + " ".join(termlist) for termlist in termlists])
-        deparnames = self.depars.keys()
+        deparnames = list(self.depars.keys())
         deparnames.sort()
         self._CFG['DEPAR'] = []
         for parname in deparnames:
@@ -417,13 +417,13 @@ class DSSRT_info(object):
 
     def prepDEpars(self):
         updates = {}
-        for par, parval in self.depars.iteritems():
+        for par, parval in self.depars.items():
             try:
                 if par[-3:]=="tau":
                     updates[par] = (par+"_recip", 1/parval)
             except IndexError:
                 pass
-        for par, (newpar, newval) in updates.iteritems():
+        for par, (newpar, newval) in updates.items():
             del self.depars[par]
             self.depars[newpar] = newval
 
@@ -438,8 +438,8 @@ class DSSRT_info(object):
         subsFnDef=[]
         not_depars=[]
         mfiles = {}
-        allpars = pardict.keys()
-        for fname, (fsig, fdef) in auxfndict.iteritems():
+        allpars = list(pardict.keys())
+        for fname, (fsig, fdef) in auxfndict.items():
             if len(fsig) == 1 and fname[-3:] in ['tau', 'inf']:
                 fdefQS = QuantSpec("__fdefQS__", fdef)
                 # fpars are the parameters used in the function -- we fetch
@@ -459,7 +459,7 @@ class DSSRT_info(object):
                 subsFnDef.append(fname)
         # make m files if nofiles==False
         if makeMfiles:
-            for fname, finfo in mfiles.iteritems():
+            for fname, finfo in mfiles.items():
                 makeMfileFunction(fname, finfo[0], finfo[1])
         return subsFnDef, not_depars
 
@@ -483,9 +483,9 @@ def plotNetworkGraph(dssrt_obj):
     except AttributeError:
         raise TypeError("Invalid DSSRT_info object for plotNetworkGraph")
     plt.figure()
-    for v in V.itervalues():
+    for v in V.values():
         plt.plot([v.pos[0]],[v.pos[1]],'ko')
-    for elist in E.itervalues():
+    for elist in E.values():
         for e in elist:
             plt.plot([e.u.pos[0],e.v.pos[0]],
                        [e.u.pos[1],e.v.pos[1]],
