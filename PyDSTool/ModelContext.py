@@ -795,6 +795,9 @@ class dsInterface(object):
     def __ge__(self, other):
         return self.name >= other.name
 
+    def __hash__(self):
+        return hash(self.name)
+
 
 class GeneratorInterface(dsInterface):
     """Wrapper for Generator (for non-hybrid models) that shares similar API

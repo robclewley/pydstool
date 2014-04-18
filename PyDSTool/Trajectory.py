@@ -467,7 +467,7 @@ class Trajectory(object):
             except:
                 if checklevel > 1:
                     print("\nProblem calling with coords: %r" % coordlist)
-                    print("Indepdendent variable values: %f" % t)
+                    print("Indepdendent variable values:", t)
                     print("Containment: %s" % self.indepdomain.contains(t))
                     try:
                         print(self.variables[coordlist[0]].indepdomain.get())

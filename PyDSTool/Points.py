@@ -2340,9 +2340,9 @@ def exportPointset(thepointset, infodict, separator='   ',
     if append:
         assert varvaldir == 'col', ("append mode not supported for row"
                                      "format of data ordering")
-        modestr = 'a'
+        modestr = 'ab'
     else:
-        modestr = 'w'
+        modestr = 'wb'
     totlen = len(thepointset)
     if totlen == 0:
         raise ValueError("Pointset is empty")

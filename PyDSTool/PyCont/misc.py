@@ -489,7 +489,7 @@ def getFlowMaps(n, pt, pttype, method='standard'):
         flow = pt.labels[pttype]['flow']  # flow maps (matrices)
     except:
         raise RuntimeError("Malformed point -- no flow map information.")
-    ntst = len(flow)/2
+    ntst = len(flow)//2
     maps = []
     if method=='standard':
         for i in range(ntst):

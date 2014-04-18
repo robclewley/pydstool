@@ -3292,11 +3292,11 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
             if verboselevel >=2:
                 print("\nstate dom test for '%s' @ value %f:"%(xname, icdict[xname]))
                 print("depdomain is  %r" % MI.get('variables', xdict, t)[xname].depdomain.get())
-                print("-> test result is  %r" % newtest)
+                print("-> test result is ", newtest)
             x_test = x_test and newtest
         g_test = True  # initial value
         xdict = filteredDict(icdict, intvars, neg=True)
-        MI.test_traj = numeric_to_traj(array([xdict.values()]).T, 'ic_trajpt',
+        MI.test_traj = numeric_to_traj(array([list(xdict.values())]).T, 'ic_trajpt',
                                        list(xdict.keys()), t)
         # ensure that events are cleared in case global con rules in a MI
         # check for events (for when used after trajectories computed)
@@ -3323,7 +3323,7 @@ def findTrajInitiator(modelInfo, t, vardict, pardict, intvars,
             else:
                 if verboselevel >= 2:
                     print("\nglobal con test for '%s' @ value %f:"%(str(gc), icdict[xname]))
-                    print("-> test result is %r" % globtest)
+                    print("-> test result is ", globtest)
                 g_test = g_test and globtest
         if verboselevel >= 1:
             print("\nModel '%s' tests..."%model.name)

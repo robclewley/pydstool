@@ -821,7 +821,7 @@ class domscales(object):
         all_modulatory = {}
         ep_start = 0
         complete_epoch = False
-        for i in xrange(self.num_pts):
+        for i in range(self.num_pts):
             # ignore_change is used to avoid single time-point epochs:
             # it ensures 'old' actives and time scale sets don't get updated for
             # the single time-point change
@@ -954,8 +954,8 @@ class domscales(object):
         focus_taus = taus[self.focus_var]
         rel_taus = taus/focus_taus
         cs = taus.coordnames
-        ixs = xrange(len(cs))
-        n = xrange(len(taus))
+        ixs = list(range(len(cs)))
+        n = list(range(len(taus)))
         # these tests can never select focus_var which has
         # been normalized to tau = 1
         slow_test = rel_taus/gamma > 1

@@ -91,7 +91,8 @@ class ScaledLineSearch(object):
 #        stepSize = 0.0005
         init_step = stepSize
         while not_done:
-            print("\nLinestep: i =", i, "step size =", stepSize, "direction =\n", direction)
+            print("\nLinestep: i =", i, "step size =", stepSize, "direction =\n", end='')
+            print(direction)
             p = origin + i * stepSize * direction
             print("Testing p = ", p)
             new_value = fun(p)

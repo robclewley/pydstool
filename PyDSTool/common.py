@@ -53,6 +53,7 @@ if os.name == 'nt':
     import fixedpickle as pickle
 else:
     from six.moves import cPickle as pickle
+import six
 
 # ----------------------------------------------------------------------------
 ### EXPORTS
@@ -1593,8 +1594,8 @@ def object2str(x, digits=5):
     """Convert occurrences of types / classes,
     to pretty-printable strings."""
     try:
-        if type(x) in [types.InstanceType, type]:
-        return className(x, True)
+        if type(x) in six.class_types + (type, ):
+            return className(x, True)
         elif isinstance(x, list):
             # search through any iterable parts (that aren't strings)
             rx = "["
@@ -2368,7 +2369,7 @@ class KroghInterpolator(object):
                 s += 1
             s -= 1
             Vk[0] = yi[k]/float(factorial(s))
-            for i in xrange(k-s):
+            for i in range(k-s):
                 assert xi[i]!=xi[k]
                 if s==0:
                     Vk[i+1] = (c[i]-Vk[i])/(xi[i]-xi[k])

@@ -51,6 +51,7 @@ import sys, types, copy
 from . import common
 from . import parseUtils
 import copy
+import six
 
 # Exports
 __all__ = ['GeneratorConstructor', 'ModelConstructor',
@@ -1581,8 +1582,7 @@ class EvMapping(object):
             print('Invalid function definition for event mapping:')
             print(fnString)
             raise
-        setattr(self, 'evmapping', types.MethodType(locals()['evmapping'],
-                                                      self, self.__class__))
+        setattr(self, 'evmapping', six.create_bound_method(locals()['evmapping'], self))
 
     def __getstate__(self):
         d = copy.copy(self.__dict__)

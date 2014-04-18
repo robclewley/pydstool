@@ -76,7 +76,7 @@ def info(x, specName="Contents", offset=1, recurseDepth=1,
         print(specName + ":", end=' ')
     if x.__class__ is type:
         return
-    if hasattr(x, 'iteritems'):
+    if hasattr(x, 'items'):
         x_keys = sortedDictKeys(x)
         if len(x_keys) == 0:
             print("< empty >")
@@ -86,7 +86,7 @@ def info(x, specName="Contents", offset=1, recurseDepth=1,
             v = x[k]
             kstr = object2str(k)
             basestr = " "*(offset-1) + kstr
-            if hasattr(v, 'iteritems'):
+            if hasattr(v, 'items'):
                 info(v, basestr, offset+4, recurseDepth+1,
                              recurseDepthLimit)
             else:
