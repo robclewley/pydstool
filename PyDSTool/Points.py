@@ -522,7 +522,9 @@ class Point(object):
 
     def _infostr(self, verbose=0):
         precision = 8
-        if verbose == 0:
+        if verbose < 0:
+            outputStr = "Point"
+        elif verbose == 0:
             outputStr = "Point with coords:\n"
             for c in self.coordnames:
                 outputStr += c
@@ -1619,7 +1621,11 @@ class Pointset(Point):
             outputStr += " (parameterized)"
         else:
             outputStr += " (non-parameterized)"
-        if verbose > 0:
+        ## The following if statement implicitly passes for
+        # the verbose < 0 case
+        if verbose == 0:
+            outputStr += "Coordinates: %s" % str(self.coordnames)
+        elif verbose > 0:
             precision = 8
             lenv = len(self)
             if lenv > 8:
