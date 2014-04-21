@@ -99,7 +99,7 @@ targetLangs = ['c', 'python', 'matlab'] #, 'xpp', 'dstool'
 
 _num_types = (float, int, floating, integer) # complex, complexfloating
 
-_int_types = (int, integer)
+_int_types = (int, integer, long)
 _float_types = (float, floating)
 _complex_types = (complex, complexfloating)
 _real_types = (int, integer, float, floating)
@@ -2353,6 +2353,11 @@ class KroghInterpolator(object):
             raise ValueError, "%d x values provided and %d y values; must be equal" % (n, nn)
         self.r = r
 
+        try:
+            from scipy.misc import factorial
+        except ImportError:
+            # retain backward compatibility to older scipy versions
+            from scipy import factorial
         c = npy.zeros((n+1,r))
         c[0] = yi[0]
         Vk = npy.zeros((n,r))
@@ -2361,7 +2366,7 @@ class KroghInterpolator(object):
             while s<=k and xi[k-s]==xi[k]:
                 s += 1
             s -= 1
-            Vk[0] = yi[k]/float(spy.misc.factorial(s))
+            Vk[0] = yi[k]/float(factorial(s))
             for i in xrange(k-s):
                 assert xi[i]!=xi[k]
                 if s==0:
