@@ -4,7 +4,7 @@ Copyright (C) 2007-2012 Georgia State University
 
 print PyDSTool.__LICENSE__    for the terms of use.
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 
 __LICENSE__ = """\
@@ -79,6 +79,8 @@ del digits, vernums, temp_str
 import math, random
 import types, time
 
+import six
+
 # PyDSTool imports
 from .Events import *
 from .Interval import *
@@ -134,10 +136,10 @@ from .utils import *
 
 # ------ Check Python version compatibility
 major, minor1, minor2, s, tmp = sys.version_info
-_validpython = major==2 and minor1>=4
+_validpython = (major==2 and minor1>=6) or (major==3 and minor1>=3)
 
 if not _validpython:
-    raise RuntimeError("Python 2.4 or later is required to run PyDSTool")
+    raise RuntimeError("Python 2.6+ or 3.3+ is required to run PyDSTool")
 del _validpython, major, minor1, minor2, s, tmp
 
 _pyDSToolTypes = [ndarray, Generator_, Variable, Trajectory, Event,
@@ -213,8 +215,8 @@ def who(typelist=None, objdict=None, verboselevel=0, returnlevel=0,
         #    typelist_actual = [typelist]
         #else:
         #    raise TypeError("Invalid PyDSTool object types passed")
-    for objname, obj in objdict.iteritems():
-        if type(obj) not in [type, types.ClassType, types.ModuleType]:
+    for objname, obj in objdict.items():
+        if not isinstance(obj, six.class_types + (types.ModuleType, )):
             if compareClassAndBases(obj, typelist_actual):
                 if isinstance(obj, QuantSpec) and objname in protected_allnames:
                     # don't display internally-created QuantSpecs (i.e. all
@@ -232,25 +234,24 @@ def who(typelist=None, objdict=None, verboselevel=0, returnlevel=0,
                         objdict_out[objname] = obj
     if returnlevel == 1:
         # silent mode -- just return the objects
-        return objdict_out.values()
+        return list(objdict_out.values())
     elif returnlevel == 2:
         # silent mode -- return the objects mapped by their names
         return objdict_out
     else:
-        for objname, obj in objdict_out.iteritems():
+        for objname, obj in objdict_out.items():
             # make appropriate separation between output items
             if verboselevel > 0:
-                print "\n"*(verboselevel-1)
+                print("\n"*(verboselevel-1))
             if hasattr(obj, '_infostr') and not isinstance(obj, type):
                 try:
-                    print objname + ": " + obj._infostr(verboselevel)
+                    print(objname + ": " + obj._infostr(verboselevel))
                 except:
-                    print "Problem with: ", objname, className(obj), \
-                          obj.info
+                    print("Problem with: %s, %s, %s" %(objname, className(obj), obj.info))
                     raise
             else:
-                print objname + " (Class " + className(obj) + ")" \
-                      + (verboselevel > 0)*":"
+                print(objname + " (Class " + className(obj) + ")" \
+                      + (verboselevel > 0)*":")
                 if verboselevel > 0:
                     info(obj, objname, recurseDepthLimit=verboselevel-1)
 
@@ -269,10 +270,10 @@ def saveSession(sessionName=None, force=False, silent=False, deepSearch=False):
     objlist.append(objnamelist)
     saveObjects(objlist, sessionName+'.'+__session_ext, force)
     if not silent:
-        print "Important!"
-        print "If you used any user-defined classes for ModelSpec, these need to "
-        print "be recreated by running their definition scripts when you restore "
-        print "the session. saveSession only saves class _instances_."
+        print("Important!")
+        print("If you used any user-defined classes for ModelSpec, these need to ")
+        print("be recreated by running their definition scripts when you restore ")
+        print("the session. saveSession only saves class _instances_.")
     #Symbolic.saveDiffs(sessionName+'.'+__symbolic_ext)
 
 
@@ -287,11 +288,11 @@ def loadSession(sessionName, tolocals=False):
     try:
         loadlist = loadObjects(sessionName)
     except:
-        print "Problem loading session " + sessionName
+        print("Problem loading session " + sessionName)
         raise
     numobjs = len(loadlist) - 1   # last entry is obj name list
     if len(loadlist) <= 0:
-        raise ValueError, "Session was empty!"
+        raise ValueError("Session was empty!")
     objnamelist = loadlist[-1]
     objlist = loadlist[:-1]
     frame = sys._getframe().f_back
@@ -301,11 +302,11 @@ def loadSession(sessionName, tolocals=False):
         nspace = frame.f_globals
     # bind the original session names for the objects to the objects
     try:
-        for i in xrange(numobjs):
+        for i in range(numobjs):
             nspace[objnamelist[i]] = objlist[i]
     except:
-        print "Problem recreating objects"
-        print "Debug info: ", len(objnamelist), len(objlist), numobjs
+        print("Problem recreating objects")
+        print("Debug info: %d, %d, %d" % (len(objnamelist), len(objlist), numobjs))
         raise
     # load any symbolic derivatives previously auto-saved
     #symbolic.loadDiffs(sessionName+'.'+__symbolic_ext)
@@ -329,7 +330,7 @@ def restart(delall=0):
         objdict = who(returnlevel=2, _localCall=True, deepSearch=deep)
         frame = sys._getframe().f_back
         nspace = frame.f_globals
-        for objname, obj in objdict.iteritems():
+        for objname, obj in objdict.items():
             if objname not in ['nameResolver', 'protected_auxnamesDB'] and \
                (not isinstance(obj, ndarray) or delall==2):
                 # don't delete those types of global objects

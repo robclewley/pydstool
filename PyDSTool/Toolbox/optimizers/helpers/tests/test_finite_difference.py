@@ -12,11 +12,11 @@ import numpy.random
 import os.path
 
 from numpy.testing import assert_almost_equal
-from criterion import *
-from helpers import ForwardFiniteDifferences, CenteredFiniteDifferences
-from line_search import *
-from optimizer import *
-from step import *
+from PyDSTool.Toolbox.optimizers.criterion import *
+from PyDSTool.Toolbox.optimizers.helpers import ForwardFiniteDifferences, CenteredFiniteDifferences
+from PyDSTool.Toolbox.optimizers.line_search import *
+from PyDSTool.Toolbox.optimizers.optimizer import *
+from PyDSTool.Toolbox.optimizers.step import *
 
 
 class Function(ForwardFiniteDifferences):

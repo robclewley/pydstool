@@ -36,10 +36,10 @@ PCargs.SaveEigen = True
 PCargs.SPOut = {'r': [0.1919191, 1.5353535]}
 PyCont.newCurve(PCargs)
 
-print 'Computing curve...'
+print('Computing curve...')
 start = clock()
 PyCont['FP1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 s = PyCont['FP1'].sol
 assert len(s.bylabel('SP-r-0')) == 1
@@ -52,10 +52,10 @@ PCargs.MaxNumPoints=50
 PCargs.LocBifPoints = ['PD', 'B']
 PyCont.newCurve(PCargs)
 
-print 'Computing second branch...'
+print('Computing second branch...')
 start = clock()
 PyCont['FP2'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 PCargs.name = 'FP3'
 PCargs.initpoint = 'FP2:PD1'
@@ -65,12 +65,12 @@ PCargs.LocBifPoints = ['PD', 'B']
 PCargs.period = 2
 PyCont.newCurve(PCargs)
 
-print 'Computing 2-cycle branch...'
+print('Computing 2-cycle branch...')
 start = clock()
 PyCont['FP3'].forward()
 PyCont['FP3'].backward()
 PyCont['FP3'].cleanLabels()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 PCargs.name='FP4'
 PCargs.initpoint = 'FP3:PD1'
@@ -78,24 +78,24 @@ PCargs.initdirec = PyCont['FP3'].getSpecialPoint('PD1').labels['PD']['data'].bra
 PCargs.period = 4
 PyCont.newCurve(PCargs)
 
-print 'Computing 1st 4-cycle branch...'
+print('Computing 1st 4-cycle branch...')
 start = clock()
 PyCont['FP4'].forward()
 PyCont['FP4'].backward()
 PyCont['FP4'].cleanLabels()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 PCargs.name = 'FP5'
 PCargs.initpoint = 'FP3:PD2'
 PCargs.initdirec = PyCont['FP3'].getSpecialPoint('PD2').labels['PD']['data'].branch
 PyCont.newCurve(PCargs)
 
-print 'Computing 2nd 4-cycle branch...'
+print('Computing 2nd 4-cycle branch...')
 start = clock()
 PyCont['FP5'].forward()
 PyCont['FP5'].backward()
 PyCont['FP5'].cleanLabels()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 # Plot
 PyCont.display(stability=True)

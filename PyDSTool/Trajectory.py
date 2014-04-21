@@ -4,7 +4,7 @@
 """
 
 # ----------------------------------------------------------------------------
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 # PyDSTool imports
 from .Variable import *
@@ -54,11 +54,11 @@ def numeric_to_traj(vals, trajname, coordnames, indepvar=None, indepvarname='t',
     vars = numeric_to_vars(vals, coordnames, indepvar, indepvarname,
                            indepdomain, all_types_float, discrete)
     if event_times is not None:
-        return Trajectory(trajname, vars.values(),
+        return Trajectory(trajname, list(vars.values()),
                       parameterized=indepvar is not None,
                       eventTimes=event_times, events=event_vals)
     else:
-        return Trajectory(trajname, vars.values(),
+        return Trajectory(trajname, list(vars.values()),
                       parameterized=indepvar is not None)
 
 def convert_ptlabel_events(pts, return_vals_dict=False):
@@ -103,7 +103,7 @@ def pointset_to_traj(pts, events=None):
     events found in the pointset and place them in the resulting Trajectory.
     """
     if events is not None:
-        all_ev_names = events.keys()
+        all_ev_names = list(events.keys())
         ev_times, ev_vals = convert_ptlabel_events(pts, True)
         unused_keys = remain(all_ev_names, ev_times.keys())
         for k in unused_keys:
@@ -281,7 +281,7 @@ class Trajectory(object):
         eventTimes = {}
         # if events was provided then fill in with that -- most
         # commonly used by Generators that only pass events object
-        for evname, evpts in self.events.iteritems():
+        for evname, evpts in self.events.items():
             if evpts is None:
                 eventTimes[evname] = []
             else:
@@ -327,7 +327,7 @@ class Trajectory(object):
         """Truncate trajectory according to a last coordinate specified by idx
         argument, provided trajectory is defined by an underlying mesh."""
         t_vals = None
-        for vname, v in self.variables.iteritems():
+        for vname, v in self.variables.items():
             # vmesh is an array with two rows, the first = indep var, the second = dep var
             vmesh = v.underlyingMesh()
             if vmesh is not None:
@@ -387,7 +387,7 @@ class Trajectory(object):
                 else:
                     test_names = copy.copy(self.coordnames)
                 if remain(coords, test_names) != []:
-                    print "Valid coordinate names:", self.coordnames
+                    print("Valid coordinate names:%r" % self.coordnames)
                     raise ValueError("Invalid coordinate names passed")
             elif any([isinstance(c, str) for c in coords]):
                 raise TypeError("Cannot mix string and numeric values in "
@@ -423,15 +423,15 @@ class Trajectory(object):
                         for v in [self.variables[vn] for vn in coordlist]]
             except:
                 if checklevel > 1:
-                    print "\nProblem calling with coords:", coordlist
-                    print "Indepdendent variable values:", indepvals
-                    print "Containment:", self.indepdomain.contains(t)
+                    print("\nProblem calling with coords: %r" % coordlist)
+                    print("Indepdendent variable values: %r" % indepvals)
+                    print("Containment:" + self.indepdomain.contains(t))
                     try:
-                        print self.variables[coordlist[0]].indepdomain.get()
-                        print self.variables[coordlist[0]].depdomain.get()
+                        print(self.variables[coordlist[0]].indepdomain.get())
+                        print(self.variables[coordlist[0]].depdomain.get())
                     except AttributeError:
                         # domains may be discrete
-                        print "Discrete variable domain and/or range"
+                        print("Discrete variable domain and/or range")
 #                print self.variables[coordlist[0]].initialconditions
                 raise
 #                raise ValueError("Problem calling at these independent variable values")
@@ -466,15 +466,15 @@ class Trajectory(object):
                                  [self.variables[vn] for vn in coordlist]]
             except:
                 if checklevel > 1:
-                    print "\nProblem calling with coords:", coordlist
-                    print "Indepdendent variable values:", t
-                    print "Containment:", self.indepdomain.contains(t)
+                    print("\nProblem calling with coords: %r" % coordlist)
+                    print("Indepdendent variable values:", t)
+                    print("Containment: %s" % self.indepdomain.contains(t))
                     try:
-                        print self.variables[coordlist[0]].indepdomain.get()
-                        print self.variables[coordlist[0]].depdomain.get()
+                        print(self.variables[coordlist[0]].indepdomain.get())
+                        print(self.variables[coordlist[0]].depdomain.get())
                     except AttributeError:
                         # domains may be discrete
-                        print "Discrete variable domain and/or range"
+                        print("Discrete variable domain and/or range")
                 raise
             if asmap:
                 coordlist.append(self.indepvarname)
@@ -602,7 +602,7 @@ class Trajectory(object):
             assert tlo < thi, 't start point must be less than t endpoint'
             if dt is not None and dt >= abs(thi-tlo):
                 if precise:
-                    print "dt = %f for interval [%f,%f]"%(dt,tlo,thi)
+                    print("dt = %f for interval [%f,%f]"%(dt,tlo,thi))
                     raise ValueError('dt must be smaller than time interval')
                 else:
                     dt = (thi-tlo)/10.
@@ -723,8 +723,8 @@ class Trajectory(object):
                     lastins = len(tmesh_glob)
                     lenstart = len(start_ins)
                     tmesh_glob = concatenate((start_ins, tmesh_glob, end_ins))
-                    ins_ixs = range(lenstart) + [i+lenstart for i in ins_ixs] + \
-                            range(lastins+lenstart, lastins+lenstart+len(end_ins))
+                    ins_ixs = list(range(lenstart)) + [i+lenstart for i in ins_ixs] + \
+                            list(range(lastins+lenstart, lastins+lenstart+len(end_ins)))
             tmesh_list = tmesh_glob.tolist()
             for i, (t, evname) in enumerate(evtlist):
                 try:
@@ -758,7 +758,7 @@ class Trajectory(object):
                     # insert var values at events (SLOW!)
                     # can only insert to lists, so have to convert coorddict
                     # arrays to lists first.
-                    for tpos in xrange(len(ins_ixs)):
+                    for tpos in range(len(ins_ixs)):
                         tix = ins_ixs[tpos]
                         t = ev_ts[tpos]
                         x = self._FScompatibleNames(ev_pts_list[tpos])
@@ -804,7 +804,7 @@ class Trajectory(object):
                         # insert var values at events (SLOW!)
                         # can only insert to lists, so have to convert coorddict
                         # arrays to lists first.
-                        for tpos in xrange(len(ins_ixs)):
+                        for tpos in range(len(ins_ixs)):
                             tix = ins_ixs[tpos]
                             t = ev_ts[tpos]
                             x = self._FScompatibleNames(ev_pts_list[tpos])
@@ -909,7 +909,7 @@ class Trajectory(object):
             outputStr = "Trajectory " + self.name
         elif verbose >= 1:
             outputStr = "Trajectory " + self.name + "\n  of variables: " + \
-                    str(self._FScompatibleNamesInv(self.variables.keys()))
+                    str(self._FScompatibleNamesInv(list(self.variables.keys())))
             outputStr += "\n  over domains: " + str(self.depdomain)
             if verbose == 2:
                 outputStr += joinStrs(["\n"+v._infostr(1) for v in \
@@ -917,7 +917,7 @@ class Trajectory(object):
         return outputStr
 
     def info(self, verboselevel=1):
-        print self._infostr(verboselevel)
+        print(self._infostr(verboselevel))
 
 
     def getEvents(self, evnames=None, asGlobalTime=True):
@@ -927,7 +927,7 @@ class Trajectory(object):
         """
         # self.events is a dict of pointsets keyed by event name
         if evnames is None:
-            evnames = self.events.keys()
+            evnames = list(self.events.keys())
         if isinstance(evnames, str):
             # singleton
             assert evnames in self.events, "Invalid event name provided: %s"%evnames
@@ -962,7 +962,7 @@ class Trajectory(object):
         """
         result = {}
         if evnames is None:
-            evnames = self.events.keys()
+            evnames = list(self.events.keys())
         # self.eventTimes is a dict of lists keyed by event name
         if isinstance(evnames, str):
             # singleton
@@ -1108,7 +1108,7 @@ class HybridTrajectory(Trajectory):
     def showRegimes(self):
         parts = [p[1] for p in self.timePartitions]
         for g, p in zip(self.modelNames, parts):
-            print "Regime: %s, from t = %.5f"%(g,p)
+            print("Regime: %s, from t = %.5f"%(g,p))
 
     def info(self):
         return info(self, "Hybrid Trajectory")
@@ -1239,8 +1239,8 @@ class HybridTrajectory(Trajectory):
                 trel_part = []
                 tval = t[tix]
                 if time_interval.contains(tval) is notcontained:
-                    print "\n** Debugging info for Hybrid Traj %s: t value, interval, tolerance ="%self.name
-                    print tval, time_interval.get(), time_interval._abseps
+                    print("\n** Debugging info for Hybrid Traj %s: t value, interval, tolerance ="%self.name)
+                    print("%f %r %f" % (tval, time_interval.get(), time_interval._abseps))
                     raise PyDSTool_BoundsError('time value outside of '
                         'trajectory`s time interval '
                         'of validity (if checklevel was >=2 then endpoints '
@@ -1345,10 +1345,9 @@ class HybridTrajectory(Trajectory):
                         retvals.append(val)
                 else:
                     tinterval = self.indepdomain
-                    print "valid t interval:", \
-                          tinterval.get()
-                    print "t in interval? -->", tinterval.contains(tval)
-                    print "interval abs eps = ", tinterval._abseps
+                    print("valid t interval:" + tinterval.get())
+                    print("t in interval? -->" + tinterval.contains(tval))
+                    print("interval abs eps = " + tinterval._abseps)
                     raise ValueError('t = '+str(tval)+' is either not in any '
                                        'time interval defined for this '
                                        'trajectory, or there was an out-of-range'
@@ -1418,7 +1417,7 @@ class HybridTrajectory(Trajectory):
             pset = self.__call__([t], coords)
             pset.name = self.name + "_sample"
             if doEvents:
-                for evname, ev_ts in self.eventTimes.items():
+                for evname, ev_ts in list(self.eventTimes.items()):
                     if t in ev_ts:
                         pset.addlabel(0, 'Event:'+evname, {'t': t})
             return pset
@@ -1460,7 +1459,7 @@ class HybridTrajectory(Trajectory):
                     try:
                         pset = traj.sample(coords, dt, tlo, thi, doEvents,
                                            False)
-                    except ValueError, e:
+                    except ValueError as e:
                         if e.message[:7] in ('tlo too', 'thi too'):
                             # tlo or thi out of range
                             pass
@@ -1470,7 +1469,7 @@ class HybridTrajectory(Trajectory):
                     try:
                         pset_new = traj.sample(coords, dt, tlo, thi,
                                                 doEvents, False)
-                    except ValueError, e:
+                    except ValueError as e:
                         if e.message[:7] in ('tlo too', 'thi too'):
                             # tlo or thi out of range
                             pass
@@ -1509,8 +1508,7 @@ def findApproxPeriod(traj, t0, t1_guess=None, T_guess=None, coordname=None,
         #except (PyDSTool_BoundsError, ValueError):
         #    r = 1000.*(t-t0)
         except:
-            print "Error at t=%f: "%t, sys.exc_info()[0], \
-                        sys.exc_info()[1]
+            print("Error at t=%f: "%t + sys.exc_info()[0] + sys.exc_info()[1])
             raise
     try:
         result = bisect(f, t1_guess-guess_tol*(t1_guess-t0),
@@ -1530,9 +1528,9 @@ def findApproxPeriod(traj, t0, t1_guess=None, T_guess=None, coordname=None,
     if max_rval<rtol:
         return abs(result-t0)
     else:
-        print "Did not converge. The endpoint difference at t=%f was:\n"%result, \
-          repr(val), \
-          "\nwith infinity-norm %f > %f tolerance.\n"%(max_rval,rtol), \
-          "Try a different starting point,", \
-          "a different test variable, or reduce relative tolerance."
+        print("Did not converge. The endpoint difference at t=%f was:\n"%result +
+          repr(val) +
+          "\nwith infinity-norm %f > %f tolerance.\n"%(max_rval,rtol) +
+          "Try a different starting point," +
+          "a different test variable, or reduce relative tolerance.")
         raise ValueError("Did not converge")

@@ -41,11 +41,11 @@ def create_fast_diagram(HR_fast):
     PCargs.verbosity = 2
     HR_fast.newCurve(PCargs)
 
-    print 'Computing curve...'
+    print('Computing curve...')
     start = clock()
     HR_fast['EQ1'].forward()
     HR_fast['EQ1'].backward()
-    print 'done in %.3f seconds!' % (clock()-start)
+    print('done in %.3f seconds!' % (clock()-start))
 
     PCargs.name = 'LC1'
     PCargs.type = 'LC-C'
@@ -63,10 +63,10 @@ def create_fast_diagram(HR_fast):
     PCargs.SaveEigen = True
     HR_fast.newCurve(PCargs)
 
-    print 'Computing LC-C from H1...'
+    print('Computing LC-C from H1...')
     start = clock()
     HR_fast['LC1'].forward()
-    print 'done in %.3f seconds!' % (clock()-start)
+    print('done in %.3f seconds!' % (clock()-start))
 
 def plot_fast_subsystem(HR_fast):
     HR_fast['EQ1'].display(figure='new', coords=('z', 'x'), stability=True)
@@ -122,11 +122,11 @@ def create_diagram(HR, cycle=None, EQ=True, LC=True, initpoint='H1'):
     HR.newCurve(PCargs)
 
     if EQ:
-        print 'Computing curve...'
+        print('Computing curve...')
         start = clock()
         HR['EQ1'].forward()
         HR['EQ1'].backward()
-        print 'done in %.3f seconds!' % (clock()-start)
+        print('done in %.3f seconds!' % (clock()-start))
 
     PCargs.name = 'LC1'
     PCargs.type = 'LC-C'
@@ -150,10 +150,10 @@ def create_diagram(HR, cycle=None, EQ=True, LC=True, initpoint='H1'):
     HR.newCurve(PCargs)
 
     if LC:
-        print 'Computing LC-C from H1...'
+        print('Computing LC-C from H1...')
         start = clock()
         HR['LC1'].forward()
-        print 'done in %.3f seconds!' % (clock()-start)
+        print('done in %.3f seconds!' % (clock()-start))
 
 def create_HR_cycle(HR, t1=3000):
     DS = HR.gensys

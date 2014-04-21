@@ -1,7 +1,7 @@
 # Fruchterman-Reingold graph drawing algorithm in Python
 # R. Clewley, November 2005
 
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 from numpy import array, alltrue, arange, sign
 from numpy.linalg import norm
 import math
@@ -60,7 +60,7 @@ tarray = array([0.98, 0.92, 0.86, 0.78, 0.72,
 def itercool(t, t0, n=30):
     cooler = cool(t0, tarray)
     for i in range(n+1):
-        print t
+        print(t)
         t=cooler(t)
 
 
@@ -75,7 +75,7 @@ def out_degree(V, E):
 
 def in_degree(V, E):
     ind = {}
-    for vn, vv in V.iteritems():
+    for vn, vv in V.items():
         count = 0
         for vert in V.keys():
             try:
@@ -104,7 +104,7 @@ def FR(V, E, W=[0, 1], L=[0, 1], num_its=30, fixed=[]):
         return k*k/x
 
     od = out_degree(V, E)
-    fixedverts = fixed.values()
+    fixedverts = list(fixed.values())
 
     # initial temperature
     t = t0 = max([W[1]-W[0], L[1]-L[0]])/3.5
@@ -115,12 +115,12 @@ def FR(V, E, W=[0, 1], L=[0, 1], num_its=30, fixed=[]):
     for i in range(num_its):
 #        print "t = %.4f"%t
         # calculate repulsive forces (with weak Gaussian noise)
-        for vname, v in V.iteritems():
+        for vname, v in V.items():
             # each vertex has two vectors: .pos and .disp
             v.disp = array([0., 0.])
             if vname in fixed:
                 continue
-            for uname, u in V.iteritems():
+            for uname, u in V.items():
                 if u != v:
                     D = v.pos - u.pos
                     aD = norm(D)
@@ -141,7 +141,7 @@ def FR(V, E, W=[0, 1], L=[0, 1], num_its=30, fixed=[]):
                         aD = norm(D)
                         v.disp = v.disp + (D/aD) * fr(aD) \
                              + array([normal(0, t), normal(0, t)])
-        for vname, v in V.iteritems():
+        for vname, v in V.items():
             # penalize edges from common vertex that are very close to
             # eachother in angle
             if od[vname] > 2:
@@ -188,7 +188,7 @@ def FR(V, E, W=[0, 1], L=[0, 1], num_its=30, fixed=[]):
                         # angles are close enough that use same direction for other vertex
                         angles_sorted[ni].u.disp = angles_sorted[ni].u.disp - c*vd
         # calculate attractive forces along edges
-        for vname, elist in E.iteritems():
+        for vname, elist in E.items():
             if od[vname] > 3:
                 att_scale = 1.75
             else:
@@ -205,7 +205,7 @@ def FR(V, E, W=[0, 1], L=[0, 1], num_its=30, fixed=[]):
 
         # limit the maximum displacement to the temperature t
         # and then prevent vertex being displaced outside frame
-        for v in V.itervalues():
+        for v in V.values():
             if v in fixedverts:
                 continue
             v.pos = v.pos + (v.disp/norm(v.disp)) * min([norm(v.disp), t])

@@ -3,6 +3,7 @@
 
     Robert Clewley, March 2005.
 """
+from __future__ import print_function
 
 # PyDSTool imports
 from PyDSTool import *
@@ -30,7 +31,7 @@ HH_sampleData['v'] = []
 sample_dt = 0.06
 count = 0
 countlim = 5
-print "Generating non-uniform samples from HH orbit..."
+print("Generating non-uniform samples from HH orbit...")
 tsamples = arange(0, 14, sample_dt)
 vsamples = HH_traj(tsamples, ['v']).toarray()
 for i in range(len(tsamples)):
@@ -46,7 +47,7 @@ for i in range(len(tsamples)):
             HH_sampleData['t'].append(t)
             HH_sampleData['v'].append(v)
             count = 0
-print "... done"
+print("... done")
 
 
 tableArgs = {'tdata': HH_sampleData['t'],
@@ -80,7 +81,7 @@ HH_thresh_ev = Events.makePythonStateZeroCrossEvent('v', 0, 1, HH_event_args,
 
 result = HH_thresh_ev.searchForEvents((0, 15))
 HH_spike_t = result[0][0]
-print "HH spike time found at ", HH_spike_t
+print("HH spike time found at ", HH_spike_t)
 
 class IF_spike_feat(qt_feature_leaf):
     def _local_init(self):
@@ -128,7 +129,7 @@ pestData_thr = pest_thr.run(parConstraints=[-65,-57],
 
 
 ## Parameter estimation for spike length
-print "\nParam est. for spike length ..."
+print("\nParam est. for spike length ...")
 if not pestData_thr['success']:
     raise RuntimeError("Failure: will not continue")
 
@@ -162,7 +163,7 @@ IFmodel_splen.compute(trajname='test', tdata=[0, t_ic])
 IF_ic = IFmodel_splen('test', t_ic, ['v'])
 IFmodel_splen.set(tdata=[t_ic, 12])
 
-print "\n----------------------"
+print("\n----------------------")
 IFmodel_splen.set(ics={'v': IF_ic})
 
 splen_feat = L2_feature_1D('splen', pars=args(t_samples=tmesh_ic,
@@ -192,7 +193,7 @@ IFmodel_splen.compute(trajname='disp',
                       ics={'v':-70, 'excited':0})
 
 ## Plot data
-print "Acquiring plot data"
+print("Acquiring plot data")
 origline=plot(orig_pdata['t'], orig_pdata['v'])
 origleg = "Un-fitted IF orbit"
 IF_sampleData = []

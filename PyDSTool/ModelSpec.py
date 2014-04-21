@@ -12,7 +12,7 @@ Robert Clewley, October 2005.
 
 # ----------------------------------------------------------------------------
 
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 from .common import *
 from .utils import info as utils_info
 from .parseUtils import *
@@ -139,7 +139,7 @@ class ModelSpec(object):
 ##            if globalRefs is None:
 ##                print "Unresolved symbols:",  self.freeSymbols
 ##            else:
-            print "Unresolved symbols:", remain(self.freeSymbols, globalRefs)
+            print("Unresolved symbols:%r" % remain(self.freeSymbols, globalRefs))
             raise ValueError("Cannot flatten incomplete functional "
                              "specification")
         if self.funcSpecDict == {} or force:
@@ -148,7 +148,7 @@ class ModelSpec(object):
             except KeyboardInterrupt:
                 raise
             except:
-                print "compileFuncSpec() failed"
+                print("compileFuncSpec() failed")
                 raise
         fs = self.funcSpecDict
         # name mappings to be compatible with FuncSpec.py and python variable
@@ -237,7 +237,7 @@ class ModelSpec(object):
         if multiDefUnravel:
             # reconstruct list of full names for mrefs, e.g. 'z[i]' from 'z'
             # otherwise just leave the dict empty
-            for k, v in self.multiDefRefs.iteritems():
+            for k, v in self.multiDefRefs.items():
                 try:
                     ksubs = FScompatibleNames[k]
                 except KeyError:
@@ -252,14 +252,14 @@ class ModelSpec(object):
                         FScompatibleNamesInv[ksubs+str(ix)] = k+str(ix)
                 full_mref_names[ksubs+"["+v[0]+","+str(v[1])+","+str(v[2])+"]"]\
                                = ksubs
-        for k, v in fs.iteritems():
+        for k, v in fs.items():
             if k in quants:
                 for c in v:
                     if c.name in full_mref_names.keys():
                         # unravel defs given by pairs p in unravelDict
                         root = full_mref_names[c.name]
                         for p in unravelDict[root]:
-                            for i in xrange(p[0],p[1]+1):
+                            for i in range(p[0],p[1]+1):
                                 name = root + str(i)
                                 try:
                                     if name not in outfs[k]:
@@ -292,36 +292,36 @@ class ModelSpec(object):
         defined = True  # initial value
         if len(self.compatibleGens) == 0:
             if verbose:
-                print "'%s' ill defined: empty compatibleGens"%self.name
+                print("'%s' ill defined: empty compatibleGens"%self.name)
             return False
         if len(self.targetLangs) == 0:
             if verbose:
-                print "'%s' ill defined: empty targetLangs"%self.name
+                print("'%s' ill defined: empty targetLangs"%self.name)
             return False
         if self.isEmpty():
             if verbose:
-                print "'%s' ill defined: empty contents"%self.name
+                print("'%s' ill defined: empty contents"%self.name)
             return False
         for v in self.variables.values():
             if not v.isDefined(verbose):
                 if verbose:
-                    print "... in '%s' (type %s)"%(self.name,str(self.__class__))
+                    print("... in '%s' (type %s)"%(self.name,str(self.__class__)))
                 return False
         for p in self.pars.values():
             if not p.isDefined(verbose):
                 if verbose:
-                    print "... in '%s' (type %s)"%(self.name,str(self.__class__))
+                    print("... in '%s' (type %s)"%(self.name,str(self.__class__)))
                 return False
         if not ignoreInputs:
             for i in self.inputs.values():
                 if not i.isDefined(verbose):
                     if verbose:
-                        print "... in '%s' (type %s)"%(self.name,str(self.__class__))
+                        print("... in '%s' (type %s)"%(self.name,str(self.__class__)))
                         return False
         for a in self.auxfns.values():
             if not a.isDefined(verbose):
                 if verbose:
-                    print "... in '%s' (type %s)"%(self.name,str(self.__class__))
+                    print("... in '%s' (type %s)"%(self.name,str(self.__class__)))
                 return False
         return defined
 
@@ -373,15 +373,18 @@ class ModelSpec(object):
             results.append(type(self) == type(other))
             results.append(self.name == other.name)
             results.append(self._registry == other._registry)
-        except AttributeError, e:
+        except AttributeError as e:
             if diff:
-                print "Type:", className(self), results
-                print "  " + e
+                print("Type: %s %r" % (className(self), results))
+                print("  " + e)
             return False
         if diff:
-            print "Type:", className(self), results
+            print("Type: %s %r" % (className(self), results))
         return alltrue(results)
 
+    def __hash__(self):
+        h = [hash(type(self)), hash(self.name)] + [hash(k) for k in self._registry]
+        return int(sum(h))
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -402,22 +405,22 @@ class ModelSpec(object):
                 assert c in self._componentNameMap, "Component name map incomplete"
 #                assert remain(self._componentNameMap[c],
 #                              self._registry.keys()) == []
-        for v in self.flatSpec['FScompatibleNamesInv'](self.variables.values()):
+        for v in self.flatSpec['FScompatibleNamesInv'](list(self.variables.values())):
             assert v in self._componentNameMap, "Variable name map incomplete"
-        for p in self.flatSpec['FScompatibleNamesInv'](self.pars.values()):
+        for p in self.flatSpec['FScompatibleNamesInv'](list(self.pars.values())):
             if p not in self._componentNameMap and p.name not in self.eventPars:
-                print "\n", self.name, self
-                print "Pars:", p
-                print p.name in self.flatSpec['FScompatibleNames']
-                print p.name in self.flatSpec['FScompatibleNamesInv']
-                print self.eventPars
-                print self.flatSpec['FScompatibleNamesInv'](p)
-                print "Component name map:", self._componentNameMap
+                print("\n %s %r" % (self.name, self))
+                print("Pars:%r" % p)
+                print(p.name in self.flatSpec['FScompatibleNames'])
+                print(p.name in self.flatSpec['FScompatibleNamesInv'])
+                print(self.eventPars)
+                print(self.flatSpec['FScompatibleNamesInv'](p))
+                print("Component name map:%r" % self._componentNameMap)
                 raise AssertionError("Parameter name map incomplete")
         i = None
-        for i in self.flatSpec['FScompatibleNamesInv'](self.inputs.values()):
+        for i in self.flatSpec['FScompatibleNamesInv'](list(self.inputs.values())):
             assert i in self._componentNameMap, "External input name map incomplete"
-        for a in self.flatSpec['FScompatibleNamesInv'](self.auxfns.values()):
+        for a in self.flatSpec['FScompatibleNamesInv'](list(self.auxfns.values())):
             assert a in self._componentNameMap, "Auxiliary function name map incomplete"
         # !! check that compatibleGens point to known Generator types !!
         # if get this far without raising exception, then valid
@@ -462,11 +465,11 @@ class ModelSpec(object):
                 self.auxfns[objname] = obj
             elif isinstance(obj, ModelSpec):
                 if not issubclass(self.__class__, obj.compatibleContainers):
-                    print "Component " + self.name + ": " + self.__class__.__name__
-                    print "Invalid sub-component " + objname \
-                          + " (type " + className(obj) + ") to add,"
-                    print "  with compatible container types:", obj.compatibleContainers
-                    print "Compatible sub-component types: ", self._allSubcomponentTypes
+                    print("Component " + self.name + ": " + self.__class__.__name__)
+                    print("Invalid sub-component " + objname \
+                          + " (type " + className(obj) + ") to add,")
+                    print("  with compatible container types:%r" % obj.compatibleContainers)
+                    print("Compatible sub-component types: %r" % self._allSubcomponentTypes)
                     raise ValueError("Incompatible sub-component type"
                                      " for object '" + objname + "'")
                 else:
@@ -487,21 +490,21 @@ class ModelSpec(object):
             # object inherits self's
             obj.compatibleGens = self.compatibleGens
         elif len(remain(obj.compatibleGens, self.compatibleGens)) > 0:
-            print remain(obj.compatibleGens, self.compatibleGens)
+            print(remain(obj.compatibleGens, self.compatibleGens))
             raise ValueError("Incompatible generators found in component"
                              " '" + obj.name + "'")
         if len(obj.targetLangs) == 0:
             # object inherits self's
             obj.targetLangs = self.targetLangs
         elif len(remain(obj.targetLangs, self.targetLangs)) > 0:
-            print remain(obj.targetLangs, self.targetLangs)
+            print(remain(obj.targetLangs, self.targetLangs))
             raise ValueError("Incompatible target language in component"
                              " '" + obj.name + "'")
         if obj.name in protected_allnames:
             raise ValueError("Name '" + obj.name + "' is a protected name")
         if not compareClassAndBases(obj, self._allSubcomponentTypes):
-            print "Valid sub-component types that have been declared:", \
-                  self._allSubcomponentTypes
+            print("Valid sub-component types that have been declared:%r" % \
+                  self._allSubcomponentTypes)
             raise TypeError("Invalid type for object '" + obj.name + \
                             "' in component '" + self.name + "'")
         if parent_obj is None:
@@ -547,7 +550,7 @@ class ModelSpec(object):
             # First, take out symbols defined by obj (i.e. those appearing in
             # its registry) from self.freeSymbols
             mapper = symbolMapClass(namemap)
-            globalized_newdefs = mapper(obj._registry.keys())
+            globalized_newdefs = mapper(list(obj._registry.keys()))
             self.freeSymbols = remain(self.freeSymbols,
                                       globalized_newdefs)
             obj_freeSymbols = mapper(obj.freeSymbols)
@@ -559,7 +562,7 @@ class ModelSpec(object):
 #            print "Obj free (orig):", obj.freeSymbols, "(mapped)", obj_freeSymbols
             # the following never executes!
             if obj_freeSymbols != obj.freeSymbols:
-                print "mapped object free symbols not same as originals"
+                print("mapped object free symbols not same as originals")
                 # Test code introspection for HH_spectest.py
 #            if self.name == 'cell1' and obj.name == 'chan_s21':
 #                # this is None, so comment out namemap[s] = snew below!
@@ -694,7 +697,7 @@ class ModelSpec(object):
 #            print "new free symbols from obj:", obj_freeSymbs
 #            print "defined:", self._registry.keys()
             self.freeSymbols.extend(remain(obj_freeSymbols,
-                                           self._registry.keys()+self.freeSymbols))
+                                           list(self._registry.keys())+self.freeSymbols))
 #            print "resulting self.free:", self.freeSymbols
         # return objname in case _register is being called recursively
         return objname
@@ -754,8 +757,8 @@ class ModelSpec(object):
             parentname = tempname[0]
             try:
                 self.components[parentname].remove("".join(tempname[1:]))
-            except ValueError, e:
-                print e
+            except ValueError as e:
+                print(e)
                 raise ValueError("Error recognizing parent object '%s' in "
                                  "sub-component '%s'"%(parentname,objname))
         else:
@@ -796,7 +799,7 @@ class ModelSpec(object):
                 self._register(c)
         try:
             self.validate()
-        except AssertionError, e:
+        except AssertionError as e:
             raise RuntimeError("Model spec structure inconsistent: "+str(e))
 
 
@@ -821,7 +824,7 @@ class ModelSpec(object):
             utils_info(self.__dict__, "ModelSpec " + self.name,
                        recurseDepthLimit=1+verboselevel)
         else:
-            print self.__repr__()
+            print(self.__repr__())
 
 
     def __repr__(self):
@@ -885,7 +888,7 @@ class Component(ModelSpec):
         fsdict['vars'] = []
         fsdict['pars'] = []
         fsdict['auxfns'] = []
-        for objname, regObj in self._registry.iteritems():
+        for objname, regObj in self._registry.items():
             objtype = regObj.obj.typestr+'s'
             add_obj = regObj.obj.renderForCode()
             if regObj.namemap != {}:
@@ -897,11 +900,11 @@ class Component(ModelSpec):
                         mappedName = regObj.namemap[name]
                         if mappedName in add_obj.freeSymbols and not \
                            isinstance(self._registry[mappedName].obj, (Par, Fun)):
-                            print "Problem with registry object:", \
-                                  self._registry[mappedName].obj
-                            print "in auxiliary function:", add_obj.name
-                            print "   that has free symbols:", \
-                                  add_obj.freeSymbols
+                            print("Problem with registry object:%r" % \
+                                  self._registry[mappedName].obj)
+                            print("in auxiliary function:" + add_obj.name)
+                            print("   that has free symbols:%r" % \
+                                  add_obj.freeSymbols)
                             raise TypeError("Fun '" + add_obj.name + "' "
                                             "cannot bind symbols to non-"
                                             "pars (info printed above)")
@@ -932,7 +935,7 @@ class LeafComponent(ModelSpec):
 
     def _register(self, obj, depth=0, parent_obj=None):
         if not compareBaseClass(obj, Quantity):
-            print "Bad argument %s (type %s) to register"%(str(obj), type(obj))
+            print("Bad argument %s (type %s) to register"%(str(obj), type(obj)))
             raise TypeError("Not a valid Quantity type")
         return ModelSpec._register(self, obj, 0, parent_obj)
 
@@ -1126,7 +1129,7 @@ def processMacro(c, mspec, forSubs=False):
         elif len(sourceList) == 0:
             sourceName = ""
         else:
-            print "Found: ", sourceList
+            print("Found: %r" % sourceList)
             raise ValueError("source list for macro resolution should have no "
                              "more than one entry")
         targList_new, ctStr, opStr = resolveMacroTargets(qtemp.parser.tokenized,
@@ -1210,7 +1213,7 @@ class regObject(object):
             try:
                 return self.namemap[self.objLocalName]
             except KeyError:
-                print "Namemap for '%s' is: "%self.__repr__(), self.namemap
+                print("Namemap for '%s' is: %r"%(self.__repr__(), self.namemap))
                 raise ValueError("Namemap for registry object didn't "
                                  "contain object's name "
                                  "'%s'"%self.objLocalName)

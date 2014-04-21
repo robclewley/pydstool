@@ -98,7 +98,7 @@ for eps in np.power(10, np.linspace(-2, 1.25, 6)):
     traj = vdp.compute('eps_%.4f'%eps)
     pts = traj.sample()
     event_dict = pts.labels.by_label['Event:event_x_a']
-    indices = np.sort(event_dict.keys())
+    indices = np.sort(list(event_dict.keys()))
     # assume there are at least 3 indices!
     # pick the last two that go through the same point
     ix1, ix2, ix3 = indices[-3:]

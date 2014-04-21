@@ -1,7 +1,7 @@
 """
     User utilities.
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 
 from .errors import *
@@ -54,7 +54,7 @@ def makeMfileFunction(name, argname, defs):
     # writeout file <name>.m
     mfile = open(name+".m", 'w')
     mfile.write("function %s = %s(%s)\n"%(name,name,argname))
-    for k, v in defs.iteritems():
+    for k, v in defs.items():
         if k != name:
             mfile.write("%s = %s;\n"%(k,v))
     # now the final definition of tau_recip or inf
@@ -71,22 +71,22 @@ def info(x, specName="Contents", offset=1, recurseDepth=1,
     if recurseDepth == 1:
         if not _repeatFirstTime:
             # first time through
-            print "Information for " + specName + "\n"
+            print("Information for " + specName + "\n")
     else:
-        print specName + ":",
+        print(specName + ":", end=' ')
     if x.__class__ is type:
         return
-    if hasattr(x, 'iteritems'):
+    if hasattr(x, 'items'):
         x_keys = sortedDictKeys(x)
         if len(x_keys) == 0:
-            print "< empty >"
+            print("< empty >")
         elif recurseDepth != 1:
-            print ""
+            print("")
         for k in x_keys:
             v = x[k]
             kstr = object2str(k)
             basestr = " "*(offset-1) + kstr
-            if hasattr(v, 'iteritems'):
+            if hasattr(v, 'items'):
                 info(v, basestr, offset+4, recurseDepth+1,
                              recurseDepthLimit)
             else:
@@ -114,9 +114,9 @@ def info(x, specName="Contents", offset=1, recurseDepth=1,
                 if recurseDepth==1 and len(outStrList)>1:
                     # print an extra space between topmost level entries
                     # provided those entries occupy more than one line.
-                    print "\n"
+                    print("\n")
                 for s in outStrList:
-                    print s
+                    print(s)
     elif hasattr(x, '__dict__') and recurseDepth <= recurseDepthLimit:
         info(x.__dict__, specName, offset, recurseDepth,
                      recurseDepthLimit, True)
@@ -124,7 +124,7 @@ def info(x, specName="Contents", offset=1, recurseDepth=1,
         xstr = repr(x)
         if xstr == '':
             xstr = '< no information >'
-        print xstr
+        print(xstr)
 
 
 _implicitSolveMethods = ['newton', 'bisect', 'steffe', 'fsolve']
@@ -246,7 +246,7 @@ def makeImplicitFunc(f, x0, fprime=None, extrafargs=(), xtolval=1e-8,
 ##                rerr.stop()
                 return res
 
-    except TypeError, e:
+    except TypeError as e:
         if solmethod == 'bisect':
             infostr = " (did you specify a pair for x0?)"
         else:
@@ -257,11 +257,11 @@ def makeImplicitFunc(f, x0, fprime=None, extrafargs=(), xtolval=1e-8,
         return newton_fn
     elif solmethod == 'bisect':
         if fprime is not None:
-            print "Warning: fprime argument unused for bisection method"
+            print("Warning: fprime argument unused for bisection method")
         return bisect_fn
     elif solmethod == 'steffe':
         if fprime is not None:
-            print "Warning: fprime argument unused for aitken method"
+            print("Warning: fprime argument unused for aitken method")
         return steffe_fn
     elif solmethod == 'fsolve':
         return fsolve_fn
@@ -314,7 +314,7 @@ def findClosestPointIndex(pt, target, tol=Inf, in_order=True):
             ins_off = 0
 
         pta = array([pt]) # extra [] to get compatible shape for concat
-        dim_range = range(target.shape[1])
+        dim_range = list(range(target.shape[1]))
         # neighborhood
         nhood = target[index-lo_off:index+hi_off]
         if all(ismonotonic(nhood[:,d]) for d in dim_range):
@@ -372,7 +372,7 @@ def findClosestArray(input_array, target_array, tol):
     curr_tol = [tol] * len(target_array)
 
     est_tol = 0.0
-    for i in xrange(len(target_array)):
+    for i in range(len(target_array)):
         best_off = 0          # used to adjust closest_indices[i] for best approximating element in input_array
 
         if closest_indices[i] >= input_array_len:
@@ -466,7 +466,7 @@ def orderEventData(edict, evnames=None, nonames=False, bytime=False):
     """
 
     if evnames is None:
-        evnames = edict.keys()
+        evnames = list(edict.keys())
     else:
         assert remain(evnames, edict.keys()) == [], "Invalid event names passed"
     # put times as first tuple entry of etuplelist
@@ -613,7 +613,7 @@ def saveObjects(objlist, filename, force=False):
     if not force:
         if os.path.isfile(filename):
             raise ValueError("File '" + filename + "' already exists")
-    pklfile = file(filename, 'wb')
+    pklfile = open(filename, 'wb')
     # Win32 only: in call to pickle.dump ...
     # DO NOT use binary option (or HIGHESTPROTOCOL) because
     # IEE754 special values are not UNpickled correctly in Win32
@@ -630,9 +630,9 @@ def saveObjects(objlist, filename, force=False):
             pickle.dump(obj, pklfile, opt)
         except:
             if hasattr(obj, 'name'):
-                print "Failed to save '%s'"%obj.name
+                print("Failed to save '%s'"%obj.name)
             else:
-                print "Failed to save object '%s'"%str(obj)
+                print("Failed to save object '%s'"%str(obj))
             raise
     pklfile.close()
 
@@ -664,7 +664,7 @@ def loadObjects(filename, namelist=None):
             raise TypeError("namelist must be list of strings or singleton string")
     if not isUniqueSeq(namelist):
         raise ValueError("Names must only appear once in namelist argument")
-    pklfile = file(filename, 'rb')
+    pklfile = open(filename, 'rb')
     if namelist == []:
         getall = True
     else:
@@ -683,16 +683,16 @@ def loadObjects(filename, namelist=None):
         except EOFError:
             notDone = False
         except:
-            print "Error in un-pickling:"
-            print "Was the object created with an old version of PyDSTool?"
+            print("Error in un-pickling:")
+            print("Was the object created with an old version of PyDSTool?")
             pklfile.close()
             raise
     pklfile.close()
     if objlist == []:
         if getall:
-            print "No objects found in file"
+            print("No objects found in file")
         else:
-            print "No named objects found in file"
+            print("No named objects found in file")
     if was_singleton_name:
         return objlist[0]
     else:
@@ -702,7 +702,7 @@ def loadObjects(filename, namelist=None):
 def intersect(a, b):
     """Find intersection of two lists, sequences, etc.
     Returns a list that includes repetitions if they occur in the inputs."""
-    return filter(lambda e : e in b, a)
+    return [e for e in a if e in b]
 
 def union(a, b):
     """Find union of two lists, sequences, etc.
@@ -713,7 +713,7 @@ def union(a, b):
 def remain(a, b):
     """Find remainder of two lists, sequences, etc., after intersection.
     Returns a list that includes repetitions if they occur in the inputs."""
-    return filter(lambda e : e not in b, a)
+    return [e for e in a if e not in b]
 
 def compareList(a, b):
     """Compare elements of lists, ignoring order (like sets)."""

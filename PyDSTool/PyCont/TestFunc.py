@@ -22,7 +22,7 @@
 #
 # ----------------------------------------------------------------------------
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from .misc import *
 from PyDSTool.common import args, copy
@@ -54,7 +54,8 @@ class Function(object):
     the function as acting on a 1 dimensional array, i.e. reference x[0] NOT x.  This is so numjac works
     without having to test cases (most generality)."""
 
-    def __init__(self, (n, m), func=None, save=False, numpoints=None):
+    def __init__(self, dims, func=None, save=False, numpoints=None):
+        (n, m) = dims
         if not hasattr(self, 'data'):
             self.data = None
 
@@ -95,7 +96,7 @@ class Function(object):
             n = len(ind)
         except:
             n = self.n
-            ind = range(n)
+            ind = list(range(n))
 
         J = zeros((self.m, n), float)
         for i in range(n):
@@ -116,13 +117,13 @@ class Function(object):
             n1 = len(ind1)
         except:
             n1 = self.n
-            ind1 = range(n1)
+            ind1 = list(range(n1))
 
         try:
             n2 = len(ind2)
         except:
             n2 = self.n
-            ind2 = range(n2)
+            ind2 = list(range(n2))
 
         H = zeros((self.m,n1,n2), float)
         for i in range(n1):
@@ -142,8 +143,8 @@ class Function(object):
 
 class TestFunc(Function):
     """You need to define the function yourself within an inherited class."""
-    def __init__(self, (n, m), F, C, save=False, numpoints=None):
-        Function.__init__(self, (n, m), func=None, save=save, numpoints=numpoints)
+    def __init__(self, dims, F, C, save=False, numpoints=None):
+        Function.__init__(self, dims, func=None, save=save, numpoints=numpoints)
 
         if not hasattr(self, "F"):
             self.F = F
@@ -193,7 +194,7 @@ class TestFunc(Function):
             if abs(T) < self.C.TestTol and min(linalg.norm(X-X1),linalg.norm(X-X2)) < self.C.VarTol:
                 break
             elif abs(T) > Tmax:
-                print 'Test function going crazy: ', self, '\n'
+                print('Test function going crazy: ', self, '\n')
                 break
             else:
                 if sign(T) == sign(T2):
@@ -208,7 +209,7 @@ class TestFunc(Function):
                     p = 0.98
 
         if self.C.verbosity >= 2 and i == self.C.MaxTestIters-1:
-            print 'Maximum test function iterations reached.\n'
+            print('Maximum test function iterations reached.\n')
 
         return X, V
 
@@ -221,7 +222,7 @@ class TestFunc(Function):
             n = len(ind)
         except:
             n = self.n
-            ind = range(n)
+            ind = list(range(n))
 
         J = zeros((self.m, n), float)
         for i in range(n):
@@ -278,14 +279,14 @@ class BorderMethod(TestFunc):
 
     """
 
-    def __init__(self, (a,b), (n,m), F, C, r=1, update=False, corr=False, save=False, numpoints=None):
+    def __init__(self, dims1, dims2, F, C, r=1, update=False, corr=False, save=False, numpoints=None):
         """F: R^a --> R^b
 
         Note: I did not assign b automatically (although I could - it would just be b = p*q) since
         you may not want to use all of the entries of S.  Some bordering methods are not
         minimally augmented systems and thus only require certain entries of S."""
-
-        TestFunc.__init__(self, (a,b), F, C, save=save, numpoints=numpoints)
+        (n,m) = dims2
+        TestFunc.__init__(self, dims1, F, C, save=save, numpoints=numpoints)
 
         self.update = update
         self.corr = corr
@@ -336,7 +337,7 @@ class BorderMethod(TestFunc):
                     B = BC[:,0:self.data.p]
                 except:
                     if self.C.verbosity >= 1:
-                        print 'Warning: Problem updating border vectors.  Using svd...'
+                        print('Warning: Problem updating border vectors.  Using svd...')
                     U, S, Vh = linalg.svd(A)
                     B = U[:,-1*self.data.p:]
                     C = transpose(Vh)[:,-1*self.data.q:]
@@ -370,8 +371,9 @@ class BorderMethod(TestFunc):
         return V, W
 
 class BiAltMethod(TestFunc):
-    def __init__(self, (n,m), F, C, save=False, numpoints=None):
-        TestFunc.__init__(self, (n,m), F, C, save=save, numpoints=numpoints)
+    def __init__(self, dims, F, C, save=False, numpoints=None):
+        (n,m) = dims
+        TestFunc.__init__(self, dims, F, C, save=save, numpoints=numpoints)
 
         if self.data is None:
             self.data = args()
@@ -474,7 +476,7 @@ class DiscreteMap(Function):
             n = len(ind)
         except:
             n = self.n
-            ind = range(n)
+            ind = list(range(n))
 
         F_n = zeros((self.period, self.n), float)
         F_n[0] = X
@@ -506,7 +508,7 @@ class FixedPointMap(Function):
             n = len(ind)
         except:
             n = self.n
-            ind = range(n)
+            ind = list(range(n))
 
         return self.F.jac(X, ind) - eye(self.F.m, self.F.n)[:,ind[0]:ind[-1]+1]
 
@@ -541,7 +543,7 @@ class AddTestFunction_FixedPoint(FixedPointMap):
             n = len(ind)
         except:
             n = self.n
-            ind = range(n)
+            ind = list(range(n))
 
         return r_[self.F.jac(X, ind) - eye(self.F.m, self.F.n)[:,ind[0]:ind[-1]+1], self.testfunc.jac(X, ind)]
 
@@ -583,7 +585,7 @@ class AddTestFunction_FixedPoint_Mult(FixedPointMap):
             n = len(ind)
         except:
             n = self.n
-            ind = range(n)
+            ind = list(range(n))
 
         tf_jacs = self.testfunc[0].jac(X,ind)[0]
         for tf in self.testfunc[1:]:
@@ -694,7 +696,7 @@ class Fold_Bor(BorderMethod):
             n = len(ind)
         except:
             n = self.n
-            ind = range(n)
+            ind = list(range(n))
 
         V, W = self.getVW(self.F.jac(X, self.F.coords))
         H = self.F.hess(X, self.F.coords, ind)
@@ -730,7 +732,7 @@ class Hopf_Bor(BorderMethod, BiAltMethod):
             n = len(ind)
         except:
             n = self.n
-            ind = range(n)
+            ind = list(range(n))
 
         self.bialtprodeye(2*self.F.jac(X, self.F.coords))
         V, W = self.getVW(self.data.P)
@@ -808,7 +810,7 @@ class Hopf_Double_Bor_One(BorderMethod, BiAltMethod):
             B = BC[:,:1]
         except:
             if self.C.verbosity >= 1:
-                print 'Warning: Problem updating border vectors.  Using svd...'
+                print('Warning: Problem updating border vectors.  Using svd...')
             U, S, Vh = linalg.svd(A)
             B = U[:,-1:]
             C = transpose(Vh)[:,-1:]
@@ -1022,7 +1024,7 @@ class LPC_Bor(BorderMethod):
             n = len(ind)
         except:
             n = self.n
-            ind = range(n)
+            ind = list(range(n))
 
         V, W = self.getVW(self.F.jac(X, self.F.coords)-eye(self.F.m, self.F.m))
         H = self.F.hess(X, self.F.coords, ind)
@@ -1051,7 +1053,7 @@ class PD_Bor(BorderMethod):
             n = len(ind)
         except:
             n = self.n
-            ind = range(n)
+            ind = list(range(n))
 
         V, W = self.getVW(self.F.jac(X, self.F.coords)+eye(self.F.m, self.F.m))
         H = self.F.hess(X, self.F.coords, ind)
@@ -1088,7 +1090,7 @@ class NS_Bor(BorderMethod, BiAltMethod):
             n = len(ind)
         except:
             n = self.F.m*(self.F.m-1)/2
-            ind = range(n)
+            ind = list(range(n))
 
         self.F.J_coords = self.F.jac(X, self.F.coords)
         self.bialtprod(self.F.J_coords,self.F.J_coords)
@@ -1112,8 +1114,8 @@ class ParTestFunc(TestFunc):
 # Test function for UserDefinedCurve
 
 class UserDefinedTestFunc(TestFunc):
-    def __init__(self, (n, m), C, tfunc, save=False, numpoints=None):
-        TestFunc.__init__(self, (n, m), C.sysfunc, C, save=save, numpoints=numpoints)
+    def __init__(self, dims, C, tfunc, save=False, numpoints=None):
+        TestFunc.__init__(self, dims, C.sysfunc, C, save=save, numpoints=numpoints)
 
         self.tfunc = tfunc
 

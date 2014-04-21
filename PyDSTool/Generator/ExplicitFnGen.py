@@ -1,5 +1,5 @@
 # Explicit function generator
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from .baseclasses import ctsGen, theGenSpecHelper, \
@@ -13,6 +13,7 @@ from numpy import Inf, NaN, isfinite, sometrue, alltrue, array, arange, \
      transpose, shape
 import math, random, types
 from copy import copy, deepcopy
+import six
 try:
     # use pscyo JIT byte-compiler optimization, if available
     import psyco
@@ -65,7 +66,7 @@ class ExplicitFnGen(ctsGen):
         for x in self.funcspec.vars + self.funcspec.auxvars:
             try:
                 xinterval=Interval(x, self.xtype[x], self.xdomain[x], self._abseps)
-            except KeyError, e:
+            except KeyError as e:
                 raise PyDSTool_KeyError('Mismatch between declared variables '
                                  'and xspecs: ' + str(e))
             # placeholder variable so that this class can be
@@ -87,24 +88,21 @@ class ExplicitFnGen(ctsGen):
                 # user-defined auxiliary functions
                 # (built-ins are provided explicitly)
                 try:
-                    exec fninfo[0]
+                    exec(fninfo[0])
                 except:
-                    print 'Error in supplied auxiliary function code'
+                    print('Error in supplied auxiliary function code')
                 self._funcreg[fninfo[1]] = ('self', fninfo[0])
-                setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]],
-                                                           self,
-                                                           self.__class__))
+                setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
                 # user auxiliary function interface wrapper
                 try:
                     uafi_code = self.funcspec._user_auxfn_interface[auxfnname]
                     try:
-                        exec uafi_code
+                        exec(uafi_code)
                     except:
-                        print 'Error in auxiliary function wrapper'
+                        print('Error in auxiliary function wrapper')
                         raise
                     setattr(self.auxfns, auxfnname,
-                            types.MethodType(locals()[auxfnname], self.auxfns,
-                                         auxfn_container))
+                            six.create_bound_method(locals()[auxfnname], self.auxfns))
                     self._funcreg[auxfnname] = ('', uafi_code)
                 except KeyError:
                     # not a user-defined aux fn
@@ -122,14 +120,12 @@ class ExplicitFnGen(ctsGen):
         if self.funcspec.targetlang == 'python':
             fninfo = self.funcspec.spec
             try:
-                exec fninfo[0]
+                exec(fninfo[0])
             except:
-                print 'Error in supplied functional specification code'
+                print('Error in supplied functional specification code')
                 raise
             self._funcreg[fninfo[1]] = ('self', fninfo[0])
-            setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]],
-                                                           self,
-                                                           self.__class__))
+            setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
             if HAVE_PSYCO and usePsyco:
                 psyco.bind(getattr(self, fninfo[1]))
             # Add the auxiliary spec function (if present) to this
@@ -137,14 +133,12 @@ class ExplicitFnGen(ctsGen):
             if self.funcspec.auxspec != '':
                 fninfo = self.funcspec.auxspec
                 try:
-                    exec fninfo[0]
+                    exec(fninfo[0])
                 except:
-                    print 'Error in supplied auxiliary variable code'
+                    print('Error in supplied auxiliary variable code')
                     raise
                 self._funcreg[fninfo[1]] = ('self', fninfo[0])
-                setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]],
-                                                           self,
-                                                           self.__class__))
+                setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
                 if HAVE_PSYCO and usePsyco:
                     psyco.bind(getattr(self, fninfo[1]))
 
@@ -271,7 +265,7 @@ class ExplicitFnGen(ctsGen):
                     continue
                 if ev.activeFlag:
                     if numevs > 1:
-                        print "Event info:", Evtimes[evname]
+                        print("Event info: %r" % Evtimes[evname])
                     assert numevs <= 1, ("Internal error: more than one "
                                      "terminal event of same type found")
                     # For safety, we should assert that this event
@@ -338,7 +332,7 @@ class ExplicitFnGen(ctsGen):
             self._register(self.variables)
         self.validateSpec()
         self.defined = True
-        return Trajectory(trajname, tempvars.values(),
+        return Trajectory(trajname, list(tempvars.values()),
                           abseps=self._abseps, globalt0=self.globalt0,
                           checklevel=self.checklevel,
                           FScompatibleNames=self._FScompatibleNames,
@@ -361,7 +355,7 @@ class ExplicitFnGen(ctsGen):
         else:
             p = sortedDictValues(self._FScompatibleNames(pdict))
         i = _pollInputs(sortedDictValues(self.inputs), t, self.checklevel)
-        return apply(getattr(self, self.funcspec.auxspec[1]), [t, x, p+i])
+        return getattr(self, self.funcspec.auxspec[1])(*[t, x, p+i])
 
     def haveJacobian_pars(self):
         """Report whether generator has an explicit user-specified Jacobian
@@ -390,7 +384,7 @@ class ExplicitFnGen(ctsGen):
         # optional keys for this call are
         #   ['pars', 'tdomain', 'xdomain', 'pdomain']
         if 'xdomain' in kw:
-            for k_temp, v in kw['xdomain'].iteritems():
+            for k_temp, v in kw['xdomain'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.funcspec.vars+self.funcspec.auxvars:
                     if isinstance(v, _seq_types):
@@ -417,7 +411,7 @@ class ExplicitFnGen(ctsGen):
                 for ev in self.eventstruct.events.values():
                     ev.xdomain[k] = v
         if 'pdomain' in kw:
-            for k_temp, v in kw['pdomain'].iteritems():
+            for k_temp, v in kw['pdomain'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.funcspec.pars:
                     if isinstance(v, _seq_types):
@@ -454,27 +448,24 @@ class ExplicitFnGen(ctsGen):
                 self.diagnostics.warnings.append((W_UNCERTVAL,
                                                   (self.tdata[0],self.tdomain)))
             else:
-                print 'tdata cannot be specified below smallest '\
+                print('tdata cannot be specified below smallest '\
                       'value in tdomain\n (possibly due to uncertain bounding).'\
-                      ' It has been automatically adjusted from\n ', self.tdata[0], \
-                      'to', self.tdomain[0], '(difference of', \
-                      self.tdomain[0]-self.tdata[0], ')'
+                      ' It has been automatically adjusted from %f to %f (difference of %f)\n' % (
+                          self.tdata[0], self.tdomain[0], self.tdomain[0]-self.tdata[0]))
             self.tdata[0] = self.tdomain[0]
         if self.tdomain[1] < self.tdata[1]:
             if self.indepvariable.indepdomain.contains(self.tdata[1]) == uncertain:
                 self.diagnostics.warnings.append((W_UNCERTVAL,
                                                   (self.tdata[1],self.tdomain)))
             else:
-                print 'tdata cannot be specified above largest '\
+                print('tdata cannot be specified above largest '\
                       'value in tdomain\n (possibly due to uncertain bounding).'\
-                      ' It has been automatically adjusted from\n ', \
-                      self.tdomain[1], 'to', \
-                      self.tdomain[1], '(difference of', \
-                      self.tdata[1]-self.tdomain[1], ')'
+                      ' It has been automatically adjusted from %f to %f (difference of %f)\n' % (
+                      self.tdomain[1], self.tdomain[1], self.tdata[1]-self.tdomain[1]))
             self.tdata[1] = self.tdomain[1]
         self.indepvariable.depdomain.set(self.tdata)
         if 'ics' in kw:
-            for k_temp, v in kw['ics'].iteritems():
+            for k_temp, v in kw['ics'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.funcspec.vars+self.funcspec.auxvars:
                     self._xdatadict[k] = ensurefloat(v)
@@ -485,7 +476,7 @@ class ExplicitFnGen(ctsGen):
             if not self.pars:
                 raise ValueError('No pars were declared for this object'
                                    ' at initialization.')
-            for k_temp, v in kw['pars'].iteritems():
+            for k_temp, v in kw['pars'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.pars:
                     cval = self.parameterDomains[k].contains(v)
@@ -493,7 +484,7 @@ class ExplicitFnGen(ctsGen):
                         if cval is not notcontained:
                             self.pars[k] = ensurefloat(v)
                             if cval is uncertain and self.checklevel == 2:
-                                print 'Warning: Parameter value at bound'
+                                print('Warning: Parameter value at bound')
                         else:
                             raise PyDSTool_ValueError('Parameter value out of '
                                                       'bounds')
@@ -517,7 +508,7 @@ class ExplicitFnGen(ctsGen):
                 assert isinstance(v, Variable)
             assert not self.inputs
         except AssertionError:
-            print 'Invalid system specification'
+            print('Invalid system specification')
             raise
 
 

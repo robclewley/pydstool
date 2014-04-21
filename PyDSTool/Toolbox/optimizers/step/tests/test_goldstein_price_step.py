@@ -9,7 +9,7 @@ import unittest
 import numpy
 
 from numpy.testing import assert_almost_equal
-from step import GoldsteinPriceStep
+from PyDSTool.Toolbox.optimizers.step import GoldsteinPriceStep
 
 
 class Function(object):

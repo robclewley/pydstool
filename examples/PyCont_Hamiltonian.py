@@ -35,19 +35,19 @@ PCargs.LocBifPoints = 'H'
 PCargs.verbosity = 2
 PyCont.newCurve(PCargs)
 
-print 'Computing equilibrium curve...'
+print('Computing equilibrium curve...')
 start = clock()
 PyCont['EQ1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 PCargs.initpoint = {'x': 1, 'y': 0}
 PCargs.name = 'EQ2'
 PyCont.newCurve(PCargs)
 
-print 'Computing equilibrium curve...'
+print('Computing equilibrium curve...')
 start = clock()
 PyCont['EQ2'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 PCargs.name = 'LC1'
 PCargs.type = 'LC-C'
@@ -60,19 +60,19 @@ PCargs.NumSPOut = 10
 PCargs.SaveEigen = False
 PyCont.newCurve(PCargs)
 
-print 'Computing curve...'
+print('Computing curve...')
 start = clock()
 PyCont['LC1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 PCargs.name = 'LC2'
 PCargs.initpoint = 'EQ2:H1'
 PyCont.newCurve(PCargs)
 
-print 'Computing curve...'
+print('Computing curve...')
 start = clock()
 PyCont['LC2'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 # Plot
 PyCont.display(curves=['EQ1', 'EQ2'], coords=('x','y'),stability=True)

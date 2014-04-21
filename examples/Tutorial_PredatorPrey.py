@@ -5,6 +5,8 @@ For details, see
 "Predator migration in response to prey density: What are the consequences?"
 by Y. Huang et al, J. Math Biol, Vol. 43, pp. 561-581, (2001)
 """
+from __future__ import print_function
+
 from PyDSTool import *
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
@@ -62,10 +64,10 @@ PCargs.SaveEigen = True
 PCargs.verbosity = 2
 PC.newCurve(PCargs)
 
-print 'Computing curve...'
+print('Computing curve...')
 start = clock()
 PC['EQ1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 PCargs.name = 'HO1'
 PCargs.type = 'H-C2'
@@ -77,10 +79,10 @@ PCargs.LocBifPoints = ['ZH']
 PCargs.SaveEigen = True
 PC.newCurve(PCargs)
 
-print 'Computing Hopf curve...'
+print('Computing Hopf curve...')
 start = clock()
 PC['HO1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 PCargs = args(name = 'FO1', type = 'LP-C')
 PCargs.initpoint = 'HO1:ZH1'
@@ -101,14 +103,14 @@ hopfs_unparam = PC['HO1'].sol[['D','v1','v2','p1','p2']]
 hopfs = Pointset(indepvararray=PC['HO1'].sol['k'], indepvarname='k',
                  coorddict=hopfs_unparam.todict())
 ix0, ix1 = hopfs.find(9)
-print "k values found around 9.0 are %.3f, %.3f" % ( hopfs['k'][ix0], hopfs['k'][ix1] )
+print("k values found around 9.0 are %.3f, %.3f" % ( hopfs['k'][ix0], hopfs['k'][ix1] ))
 
 # Arbitrarily choose closest lower index to check stability
-print "Hopf point found for k = %.3f is stable?" % hopfs['k'][ix0],
+print("Hopf point found for k = %.3f is stable?" % hopfs['k'][ix0], end=' ')
 if PC['HO1'].sol[ix0].labels['H']['stab'] == 'N':
-    print "No"
+    print("No")
 else:
-    print "Yes"
+    print("Yes")
 
 # Create interpolatable curve from the pointset
 hopfs_curve = pointset_to_traj(hopfs)

@@ -3,6 +3,7 @@ function. Example is an ellipse.
 
 Robert Clewley, August 2008.
 """
+from __future__ import print_function
 
 from PyDSTool import *
 from numpy.linalg import norm
@@ -49,23 +50,23 @@ P['test'].forward()
 
 sol = P['test'].sol
 
-print "There were %i points computed" % len(sol)
+print("There were %i points computed" % len(sol))
 # solution points:
-print sol
+print(sol)
 
-print "\nLabels for each point in sol pointset give diagnostic information about"
-print "first derivative of the point along the curve ('V' entry) and the arc "
-print "length parameter shows distance along the curve so far ('ds' entry)."
+print("\nLabels for each point in sol pointset give diagnostic information about")
+print("first derivative of the point along the curve ('V' entry) and the arc ")
+print("length parameter shows distance along the curve so far ('ds' entry).")
 
-print "\nVelocity around curve is always 1, e.g. look at 100th point"
-print "norm(Point(sol[100].labels['EP']['data'].V)) =", \
-      norm(Point(sol[100].labels['EP']['data'].V))
+print("\nVelocity around curve is always 1, e.g. look at 100th point")
+print("norm(Point(sol[100].labels['EP']['data'].V)) =", \
+      norm(Point(sol[100].labels['EP']['data'].V)))
 
-print "... at which we have travelled distance ds =", \
-      sol[100].labels['EP']['data'].ds
+print("... at which we have travelled distance ds =", \
+      sol[100].labels['EP']['data'].ds)
 
-print "\nThis distance is equal to 100 * the max step size (0.01) which PyCont"
-print "deemed sufficient for the desired accuracy."
+print("\nThis distance is equal to 100 * the max step size (0.01) which PyCont")
+print("deemed sufficient for the desired accuracy.")
 
 # easy way to plot the result
 P.display(curves=['test'], coords=('x','y'))

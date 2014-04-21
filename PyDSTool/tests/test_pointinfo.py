@@ -62,11 +62,11 @@ def test_point_info_creating(pi):
 def test_access(pi):
 
     # by label
-    assert pi['a'].keys() == [3, 5, 7]
-    assert pi['b'].keys() == [1]
+    assert list(pi['a'].keys()) == [3, 5, 7]
+    assert list(pi['b'].keys()) == [1]
 
     # by index
-    assert pi[3].keys() == ['a']
+    assert list(pi[3].keys()) == ['a']
 
     # by list
     assert pi[[1, 3]] == PointInfo({
@@ -113,7 +113,7 @@ def test_sorting(pi):
 def test_updating(pi):
     pi.update(3, 'c', {'foo': 'bar'})
     pi.update(3, 'h')
-    assert pi[3].keys() == ['a', 'h', 'c']
+    assert all(k in pi[3].keys() for k in ['a', 'h', 'c'])
 
 
 def test_access_out_of_range(pi):

@@ -6,14 +6,18 @@ IEEE Transactions on BioMedical Engineering, 2008.
 (c) 2005, 2006. Robert Clewley, John Guckenheimer.
 """
 
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 from PyDSTool import *
 from PyDSTool.common import _seq_types
 from PyDSTool.Toolbox.data_analysis import *
 from numpy import extract, mean, std, ndarray
 from scipy.linalg import norm
 from PyDSTool.matplotlib_import import *
-from matplotlib import cm
+try:
+    from matplotlib import cm
+    DEFAULT_CMAP = cm.hot
+except ImportError:
+    DEFAULT_CMAP = None
 from time import localtime
 from copy import copy
 
@@ -34,8 +38,8 @@ def corr_dim(data, which_norm=2):
     npts = size(data,0)
     d = zeros((npts*(npts-1)/2,), 'd')  # size of upper triangle (no diagonal) of m vs. m matrix
     # max ix for each i in expression for d is (i-1)*(i-2)/2 + (i-2)
-    for i in xrange(1,npts):
-        for j in xrange(i-1):
+    for i in range(1,npts):
+        for j in range(i-1):
             d[(i-1)*(i-2)/2+j] = norm(data[i]-data[j], which_norm)
     d.sort()
     logd = log(d).ravel()
@@ -55,8 +59,8 @@ def corr_dim_with_progress(data, inforate=10000, which_norm=2):
     dsize = npts*(npts-1)/2
     d = zeros((dsize,), 'd')  # size of upper triangle (no diagonal) of m vs. m matrix
     # max ix for each i in expression for d is (i-1)*(i-2)/2 + (i-2)
-    for i in xrange(1,npts):
-        for j in xrange(i-1):
+    for i in range(1,npts):
+        for j in range(i-1):
             ix = (i-1)*(i-2)/2+j
             if mod(ix,inforate) == 0:
                 dump_progress(ix, dsize)
@@ -73,7 +77,7 @@ def corr_dim_with_progress(data, inforate=10000, which_norm=2):
 def timeseq(time, covering, refpt):
     """Extract time sequence from a covering"""
     ts = time.take(covering[refpt][3], 0)
-    print "time sequence min = %f, max = %f"%(min(ts),max(ts))
+    print("time sequence min = %f, max = %f"%(min(ts),max(ts)))
     return ts
 
 
@@ -95,7 +99,7 @@ def find_cover(data, remain_tol=5,
     """
     covering = {}
     covered = {}.fromkeys(range(len(data)),None)
-    not_covered = covered.keys()
+    not_covered = list(covered.keys())
     if remain_tol > len(data):
         remain_tol = 0
     makerefpt_ixs = []
@@ -105,7 +109,7 @@ def find_cover(data, remain_tol=5,
         refptix = 0   # initial value
     N = size(data,0)
     start_ix = int(round(sqrt(N)))
-    print "N = ", N, "start ix = ", start_ix
+    print("N = ", N, "start ix = ", start_ix)
     logv_raw = log(range(1,N+1))
     done = False
     unsuccessful = []
@@ -116,21 +120,21 @@ def find_cover(data, remain_tol=5,
             # treat as %age of # data points
             ixstep = int(math.ceil(len(d)*step))
             if not quiet:
-                print "Using index step %i out of %i points"%(ixstep, len(d))
+                print("Using index step %i out of %i points"%(ixstep, len(d)))
         else:
             ixstep = step
     else:
         raise ValueError("Invalid step argument")
     while not done:
         if not quiet:
-            print "\n*************\nCalculating distances and point-wise dimension around pt %i ..."%refptix
+            print("\n*************\nCalculating distances and point-wise dimension around pt %i ..."%refptix)
         logv, logd, d, d_inv_dict = log_distances_with_D(data, refptix, logv_raw)
         d_inv_keys = sortedDictKeys(d_inv_dict)
         d_inv_vals = sortedDictValues(d_inv_dict)
         d_inv = Pointset(indepvararray=d_inv_keys, indepvartype=Float,
                          coordarray=d_inv_vals, coordtype=Int, tolerance=5e-5)
         if not quiet:
-            print "Finding self-consistent neighbourhood",
+            print("Finding self-consistent neighbourhood", end=' ')
         # search from min_ix -> end, increasing hiix from loix+1 until dimensionality
         # (slope) stabilizes to within an absolute tolerance and does not grow larger
         # than a different tolerance
@@ -139,7 +143,7 @@ def find_cover(data, remain_tol=5,
         old_dim = None
         hiix = start_ix
         if not quiet:
-            print "Start ix = ", start_ix
+            print("Start ix = ", start_ix)
         loix=start_ix-2
         nhd_too_small = False
         ref_dim = -1
@@ -154,7 +158,7 @@ def find_cover(data, remain_tol=5,
                                                       weight='')
             all_res.append(residual)
             if not quiet and mod(hiix,50) == 0:
-                print ".",
+                print(".", end=' ')
             if old_dim is not None:
                 sd = std(all_res)
 ##                if residual > max_res:
@@ -174,10 +178,10 @@ def find_cover(data, remain_tol=5,
                                                       weight='lo', w=wlo)
             all_res.append(residual)
             if not quiet:
-                print "(%i,%i)"%(loix,hiix),
-                print "dim=%.4f, residual = %.4f"%(dim,residual)
+                print("(%i,%i)"%(loix,hiix), end=' ')
+                print("dim=%.4f, residual = %.4f"%(dim,residual))
             if not quiet and mod(hiix,50) == 0:
-                print ".",
+                print(".", end=' ')
             try:
                 sd = std(all_res)
             except:
@@ -188,20 +192,20 @@ def find_cover(data, remain_tol=5,
 ##                not_done = False
             if sd > max_std:
                 if not quiet:
-                    print "residuals s.d. > max_std"
+                    print("residuals s.d. > max_std")
                 not_done = False
             old_dim = dim
         nhd_too_small = hiix-loix < min_nhd_size
         if not quiet:
-            print "nhd_too_small = ", nhd_too_small
+            print("nhd_too_small = ", nhd_too_small)
         if nhd_too_small:
             if not quiet:
-                print "Neighbourhood too small. Moving to a different reference point..."
+                print("Neighbourhood too small. Moving to a different reference point...")
             unsuccessful.append(refptix)
         else:
             if not quiet:
-                print "\nDimension = %f"%dim
-                print "Found best fit line from relative ix %i to %i (radius %f)"%(loix, hiix, d[hiix])
+                print("\nDimension = %f"%dim)
+                print("Found best fit line from relative ix %i to %i (radius %f)"%(loix, hiix, d[hiix]))
             # consolidate results in terms of global index positions in data
             covered_ixs = [d_inv(d[ix])[0] for ix in range(loix, hiix+1)]
             covered_ixs.append(refptix)
@@ -225,7 +229,7 @@ def find_cover(data, remain_tol=5,
         # find new ref pt in not_covered and repeat
         num_uncovered = len(not_covered)
 ##        if not quiet:
-        print "%i points left to cover"%(num_uncovered+len(makerefpt_ixs))
+        print("%i points left to cover"%(num_uncovered+len(makerefpt_ixs)))
         if num_uncovered < remain_tol:
             if len(makerefpt_ixs) == 0:
                 done = True
@@ -259,7 +263,7 @@ def find_nhd(data, tol_up=.2, tol_down=0.05, quiet=True, max_res=0.2, max_std=0.
         refptix = 0   # initial value
     logv_raw = log(range(1,size(data,0)+1))
     if not quiet:
-        print "\n*************\nCalculating distances and point-wise dimension around pt %i ..."%refptix
+        print("\n*************\nCalculating distances and point-wise dimension around pt %i ..."%refptix)
         doplot = 1
     else:
         doplot = 0
@@ -269,7 +273,7 @@ def find_nhd(data, tol_up=.2, tol_down=0.05, quiet=True, max_res=0.2, max_std=0.
     d_inv = Pointset(indepvararray=d_inv_keys, indepvartype=Float,
                      coordarray=d_inv_vals, coordtype=Int, tolerance=5e-5)
     if not quiet:
-        print "Finding self-consistent neighbourhood",
+        print("Finding self-consistent neighbourhood", end=' ')
     # search from min_ix -> end, increasing hiix from loix+1 until dimensionality
     # (slope) stabilizes to within an absolute tolerance and does not grow larger
     # than a different tolerance
@@ -286,7 +290,7 @@ def find_nhd(data, tol_up=.2, tol_down=0.05, quiet=True, max_res=0.2, max_std=0.
             # treat as %age of # data points
             ixstep = int(math.ceil(len(d)*step))
             if not quiet:
-                print "Using index step %i out of %i points"%(ixstep, len(d))
+                print("Using index step %i out of %i points"%(ixstep, len(d)))
         else:
             ixstep = step
     else:
@@ -307,7 +311,7 @@ def find_nhd(data, tol_up=.2, tol_down=0.05, quiet=True, max_res=0.2, max_std=0.
 ##        if hiix - loix > min_nhd_size:
         all_res.append(residual)
         if not quiet:
-            print "Dim = %.3f in [%i,%i], Residual = %.4f "%(dim,loix,hiix,residual),
+            print("Dim = %.3f in [%i,%i], Residual = %.4f "%(dim,loix,hiix,residual), end=' ')
             plot([logd[loix],logd[hiix]],[logd[loix]*pfit[0]+pfit[1],logd[hiix]*pfit[0]+pfit[1]])
 ##            if mod(hiix,50) == 0:
 ##                print ".",
@@ -315,12 +319,12 @@ def find_nhd(data, tol_up=.2, tol_down=0.05, quiet=True, max_res=0.2, max_std=0.
 ##            err = abs(dim-old_dim)/dim
             sd = std(all_res)
             if not quiet:
-                print "S.d. = %.4f "%sd
+                print("S.d. = %.4f "%sd)
             if residual > max_res:
-                print "residual > max_res"
+                print("residual > max_res")
                 not_done = False
             if sd > max_std:
-                print "residuals s.d. > max_std"
+                print("residuals s.d. > max_std")
                 not_done = False
 ##            if err > max_err and hiix-loix > min_nhd_size/4:
 ##                if not quiet:
@@ -345,13 +349,13 @@ def find_nhd(data, tol_up=.2, tol_down=0.05, quiet=True, max_res=0.2, max_std=0.
         old_dim = dim
     nhd_too_small = nhd_too_small or hiix-loix < min_nhd_size
     if nhd_too_small:
-        print "Neighbourhood too small. Try a different starting index or a new reference point ..."
-        print "Dim found over ixs [%i, %i] = %.4f"%(loix,hiix,dim)
+        print("Neighbourhood too small. Try a different starting index or a new reference point ...")
+        print("Dim found over ixs [%i, %i] = %.4f"%(loix,hiix,dim))
         raise RuntimeError
     else:
         if not quiet:
-            print "\nDimension = %f"%dim
-            print "Found best fit line from relative ix %i to %i (radius %f)"%(loix, hiix, d[hiix])
+            print("\nDimension = %f"%dim)
+            print("Found best fit line from relative ix %i to %i (radius %f)"%(loix, hiix, d[hiix]))
         # consolidate results in terms of global index positions in data
         covered_ixs = [d_inv(d[ix])[0] for ix in range(loix, hiix+1)]
         covered_ixs.append(refptix)
@@ -454,7 +458,7 @@ def do_stats(covering, covered, maxD, bin_width=1,
     integral = 0
     largest = 0
     try:
-        for p, (d, rlo, rhi, l) in covering.iteritems():
+        for p, (d, rlo, rhi, l) in covering.items():
             dx[ix] = d
             rloy[ix] = rlo
             rhiy[ix] = rhi
@@ -471,7 +475,7 @@ def do_stats(covering, covered, maxD, bin_width=1,
     except ValueError:
         # No max radius information available!
         # compatible with old version of covering that does not return rhi
-        for p, (d, rlo, l) in covering.iteritems():
+        for p, (d, rlo, l) in covering.items():
             dx[ix] = d
             rloy[ix] = rlo
             rhiy[ix] = 0
@@ -485,19 +489,19 @@ def do_stats(covering, covered, maxD, bin_width=1,
             ly[ix] = lenl
             integral += lenl
             ix += 1
-    print "\nNeighbourhood statistics:"
-    print "There are %i neighbourhoods to this covering"%len(covering)
-    print "Largest neighbourhood has %i points"%largest
-    cover_by_size = [di for di in cover_by_size_dict.iteritems() if di[1] is not None]
+    print("\nNeighbourhood statistics:")
+    print("There are %i neighbourhoods to this covering"%len(covering))
+    print("Largest neighbourhood has %i points"%largest)
+    cover_by_size = [di for di in cover_by_size_dict.items() if di[1] is not None]
     cover_by_size.sort()
     csizes = [c[0] for c in cover_by_size]
     if nhd_size_thresh is None:
         s = std(csizes)
         sm = s_frac*s
         m = mean(csizes)
-        print "Std. dev. of cover_by_size =", s
-        print "Max size found =", max(csizes)
-        print "Mean size found =", m
+        print("Std. dev. of cover_by_size =", s)
+        print("Max size found =", max(csizes))
+        print("Mean size found =", m)
 ##        # find largest index of set of covering nhds such that its size
 ##        # is smaller than s_frac% of the std deviation of the sizes
 ##        for i in range(len(cover_by_size)):
@@ -510,11 +514,11 @@ def do_stats(covering, covered, maxD, bin_width=1,
 ##        print "N'hood size threshold used = mean(cover_by_sizes restricted to %.3f of 1st std. dev.)"%s_frac
 ##        print "                           =", nhd_size_thresh
         nhd_size_thresh = m-sm
-        print "N'hood size threshold used = mean - %.3f of std. dev."%s_frac
-        print "                           =", nhd_size_thresh
+        print("N'hood size threshold used = mean - %.3f of std. dev."%s_frac)
+        print("                           =", nhd_size_thresh)
     else:
         if nhd_size_thresh > 0:
-            print "N'hood size threshold set by user =", nhd_size_thresh
+            print("N'hood size threshold set by user =", nhd_size_thresh)
     if nhd_max_plot_size is None:
 ##        # 2 * original set sizes mean
 ##        try:
@@ -523,14 +527,14 @@ def do_stats(covering, covered, maxD, bin_width=1,
 ##            nhd_max_plot_size = largest
 ##        print "Using max plot nhd size = 2*mean(cover_by_sizes) =", nhd_max_plot_size
         nhd_max_plot_size = largest
-        print "Using max plot nhd size of largest neighbourhood found =", nhd_max_plot_size
+        print("Using max plot nhd size of largest neighbourhood found =", nhd_max_plot_size)
     else:
-        print "Using max plot nhd size set by user =", nhd_max_plot_size
+        print("Using max plot nhd size set by user =", nhd_max_plot_size)
     # reverse so that largest first for returning to user
     cover_by_size.reverse()
     filtered_ixs = []
     try:
-        for p, (d, rlo, rhi, l) in covering.iteritems():
+        for p, (d, rlo, rhi, l) in covering.items():
             if d <= maxD:
                 dix = dbins.resolve_bin_index(d)
                 if len(l) > nhd_size_thresh:
@@ -543,7 +547,7 @@ def do_stats(covering, covered, maxD, bin_width=1,
                 cover_by_dimix[dix].append(p)
     except ValueError:
         # compatible with old version of covering that does not return rhi
-        for p, (d, rlo, l) in covering.iteritems():
+        for p, (d, rlo, l) in covering.items():
             if d <= maxD:
                 dix = dbins.resolve_bin_index(d)
                 if len(l) > nhd_size_thresh:
@@ -595,7 +599,7 @@ def do_stats(covering, covered, maxD, bin_width=1,
         fontmath = args(fontsize=22,fontname='Times')
         fonttext = args(fontsize=18,fontname='Times')
         # make plot
-        print "Plotting histograms to figure", fignum
+        print("Plotting histograms to figure", fignum)
         assert num_panels in [2,4], "num_panels argument must be 2 or 4"
         figure(fignum)
         if num_panels == 4:
@@ -637,7 +641,7 @@ def do_stats(covering, covered, maxD, bin_width=1,
         else:
             subplot(2,1,2)
         dbx = dbins.midpoints.tolist()
-        dby = dbins.values()
+        dby = list(dbins.values())
         bar(dbx, dby, color='b', width=dbx[1]-dbx[0])
         for panel in range(num_panels):
             figure(fignum).axes[panel].set_xlim([dmin,dmax])
@@ -649,7 +653,7 @@ def do_stats(covering, covered, maxD, bin_width=1,
     # assumes will not be more than 100 times!
     cbins = zeros((100,),'i')
     max_used = 0
-    for clist in covered.itervalues():
+    for clist in covered.values():
         try:
             n = len(clist)
         except TypeError:
@@ -698,13 +702,13 @@ def do_stats(covering, covered, maxD, bin_width=1,
         m = dbins[:tail_ix].mean()
         s = dbins[:tail_ix].std()
     except:
-        print "Tail found at index %i and D = %.3f"%(tail_ix,d_est)
-        print " -- problem computing mean and std dev for this mode"
-        print " so calculating for whole data set"
+        print("Tail found at index %i and D = %.3f"%(tail_ix,d_est))
+        print(" -- problem computing mean and std dev for this mode")
+        print(" so calculating for whole data set")
         m = dbins.mean()
         s = dbins.std()
-    print "Estimate dimension to be (to resolution of histogram bin width):", d_est
-    print "  with histogram mean D = %.5f and std dev D = %.5f"%(m, s)
+    print("Estimate dimension to be (to resolution of histogram bin width):", d_est)
+    print("  with histogram mean D = %.5f and std dev D = %.5f"%(m, s))
     return {"D_tail": d_est, "D_mean": m, "D_std": s}, \
            dbins, cover_by_dimix, cover_by_size, cbu, filtered_ixs, integral
 
@@ -713,7 +717,7 @@ def get_filtered_ixs(cover_by_dimix):
     """Returns the list of indices in covering for which the neighbourhood
     size was larger than the threshold for dimension binning."""
     fixs=[]
-    for p, ixlist in cover_by_dimix.iteritems():
+    for p, ixlist in cover_by_dimix.items():
         fixs.extend(ixlist)
     fixs.sort()
     return fixs
@@ -743,7 +747,7 @@ def find_outliers(data, plotdata, cluster_dim, cluster_width, max_central=50):
     for i, cdata in enumerate(central_data):
         dc[i]=norm(c_mean-cdata)
     ds = []
-    for i in xrange(len(data)):
+    for i in range(len(data)):
         if i not in outliers:
             ds.append(norm(data[i]-data[outliers[0]]))
     ds = array(ds)
@@ -765,10 +769,10 @@ def get_cover_radii(covering, ixs=None, method='divide'):
         rfun = lambda rh, rl: rh-rl
     radii = {}
     if ixs is None:
-        for p, (d, rlo, rhi, l) in covering.iteritems():
+        for p, (d, rlo, rhi, l) in covering.items():
             radii[p] = rfun(rhi,rlo)
     else:
-        for p, (d, rlo, rhi, l) in covering.iteritems():
+        for p, (d, rlo, rhi, l) in covering.items():
             if p in ixs:
                 radii[p] = rfun(rhi,rlo)
     return radii
@@ -785,7 +789,7 @@ def filter_by_radius(covering, radii, rlo=None, rhi=None):
             test = lambda r: r < rhi
         else:
             test = lambda r: r > rlo and r < rhi
-    rfilt = [(ix,r) for (ix, r) in radii.iteritems() if test(r)]
+    rfilt = [(ix,r) for (ix, r) in radii.items() if test(r)]
     return rfilt, [covering[rinfo[0]][0] for rinfo in rfilt]
 
 
@@ -1088,7 +1092,7 @@ def slope_range(data, refptix, step=2, Delta=10, startix=10, stopix=None,
 
 
 def scatterplot_slopes(data, num_samples=None, startix=10, stopix=None,
-                       Delta=10, marker='o', marker_size=40, cmap=cm.hot,
+                       Delta=10, marker='o', marker_size=40, cmap=DEFAULT_CMAP,
                        color_source=None, step=5, fignum=None, maxD=Inf):
     """fignum = 0 switches off plotting (just return statistics)"""
     if num_samples is None:
@@ -1116,10 +1120,10 @@ def scatterplot_slopes(data, num_samples=None, startix=10, stopix=None,
         col = array([0.3,0.3,0.3])
     else:
         raise ValueError("invalid color source")
-    print "Expect %i dots when finished:"%int(num_refpts/50)
+    print("Expect %i dots when finished:"%int(num_refpts/50))
     for i in range(num_refpts):
         if mod(i,50) == 49:
-            print ".",
+            print(".", end=' ')
         slope_by_loix, lo, loix, hi, hiix, logv, logd = slope_range(data,
                             refpts[i], startix=startix, stopix=stopix,
                             Delta=Delta, step=step, maxD=maxD)
@@ -1163,19 +1167,19 @@ def scatterplot_slopes(data, num_samples=None, startix=10, stopix=None,
     stats['max_slope']['min']=min(plotdata[:,1])
     stats['min_slope']['max']=max(plotdata[:,0])
     stats['max_slope']['max']=max(plotdata[:,1])
-    print "\n"
+    print("\n")
     return (plotdata, s, colors, c, ixdata, stats, handle)
 
 
 def sorted_by_slope(plotdata, select=0):
     """select: 0 = rmin, 1 = rmax"""
     ixs = argsort(plotdata, 0)[:,select]
-    return zip(take(plotdata, ixs, 0)[:,select], ixs)
+    return list(zip(take(plotdata, ixs, 0)[:,select], ixs))
 
 def sorted_by_radius(colors, select=0):
     """select: 0 = rmin, 1 = rmax"""
     ixs = argsort(colors, 0)[:,select]
-    return zip(take(colors, ixs, 0)[:,select], ixs)
+    return list(zip(take(colors, ixs, 0)[:,select], ixs))
 
 def find_from_sorted(x, v, next_largest=1, indices=None):
     if isinstance(v, _seq_types):
@@ -1187,7 +1191,7 @@ def find_from_sorted(x, v, next_largest=1, indices=None):
 
 
 def rescatter(plotdata, colors, color_source=None, marker='o', marker_size=40,
-              cmap=cm.hot, newfigure=True):
+              cmap=DEFAULT_CMAP, newfigure=True):
     if color_source == 'lo':
         cix=0
         title_str = 'min'
@@ -1269,7 +1273,7 @@ def PD_E(a, secfig=5, verbose=False, saveplot=True, force=False):
             raise ValueError
         data, pde_args, plotdata, ssorted, colors, \
               csorted, ixdata, sstats = loadObjects(pde_name)
-        print "Loaded data set and stats for %s"%a.name
+        print("Loaded data set and stats for %s"%a.name)
         # don't check the data field
         if filteredDict(a, ['data','bin_width'], neg=True) != \
                  filteredDict(pde_args, ['data','bin_width'], neg=True):
@@ -1283,10 +1287,10 @@ def PD_E(a, secfig=5, verbose=False, saveplot=True, force=False):
             try:
                 data = eval(a.data_gen_str, globals(), a.data_gen_fun)
             except:
-                print "Problem re-calculating data from given information"
+                print("Problem re-calculating data from given information")
         else:
             data = a.data
-        print "Recalculating PD-E for %s"%a.name
+        print("Recalculating PD-E for %s"%a.name)
         try:
             csource=a.color_source
         except AttributeError:

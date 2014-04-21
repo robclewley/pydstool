@@ -10,7 +10,7 @@ import numpy
 
 from numpy.testing import assert_array_less
 
-from line_search import BacktrackingSearch
+from PyDSTool.Toolbox.optimizers.line_search import BacktrackingSearch
 
 class Function(object):
   def __call__(self, x):

@@ -6,7 +6,7 @@ R. Clewley, 2012
 from PyDSTool import *
 from PyDSTool.Toolbox.PySCes_SBML import *
 
-print "Modify the path variable to indicate where your PySCes models are..."
+print("Modify the path variable to indicate where your PySCes models are...")
 path = '/pysces/pscmodels/'
 #fname = 'pysces_test_linear1.psc'
 fname = 'pysces_test_branch1.psc'

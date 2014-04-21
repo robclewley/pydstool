@@ -9,7 +9,7 @@ import unittest
 import numpy
 
 from numpy.testing import assert_equal, assert_almost_equal
-from line_search import GoldenSectionSearch
+from PyDSTool.Toolbox.optimizers.line_search import GoldenSectionSearch
 
 
 class Function(object):

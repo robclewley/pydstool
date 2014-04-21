@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from PyDSTool.common import idfn, invertMap, remain
 from PyDSTool.parseUtils import proper_match, convertPowers
@@ -25,8 +25,8 @@ class CodeGenerator(object):
         except AttributeError:
             raise ValueError('code insert must be a string')
 
-        if kwargs.keys():
-            raise KeyError("CodeGenerator: keywords %r unsupported" % kwargs.keys())
+        if list(kwargs.keys()):
+            raise KeyError("CodeGenerator: keywords %r unsupported" % list(kwargs.keys()))
 
         return opts
 
@@ -66,8 +66,8 @@ def _processReused(specnames, specdict, reuseterms, indentstr='',
     # establish order for reusable terms, in case of inter-dependencies
     are_dependent = []
     deps = {}
-    for origterm, rterm in reuseterms.iteritems():
-        for _, rt in reuseterms.iteritems():
+    for origterm, rterm in reuseterms.items():
+        for _, rt in reuseterms.items():
             if proper_match(origterm, rt):
                 if rterm not in are_dependent:
                     are_dependent.append(rterm)
@@ -76,12 +76,12 @@ def _processReused(specnames, specdict, reuseterms, indentstr='',
                 except KeyError:
                     # new list
                     deps[rterm] = [rt]
-    order = remain(reuseterms.values(), are_dependent) + are_dependent
+    order = remain(sorted(reuseterms.values()), are_dependent) + are_dependent
     for specname in specnames:
         reused[specname] = []
         specstr = specdict[specname]
         repeatkeys = []
-        for origterm, repterm in reuseterms.iteritems():
+        for origterm, repterm in reuseterms.items():
             # only add definitions if string found
             if proper_match(specstr, origterm):
                 specstr = specstr.replace(origterm, repterm)
@@ -116,7 +116,7 @@ def _processReused(specnames, specdict, reuseterms, indentstr='',
         # just log the definitions that will be needed without replacing
         # any strings.
         if reused[specname] == [] and len(reuseterms) > 0:
-            for origterm, repterm in reuseterms.iteritems():
+            for origterm, repterm in reuseterms.items():
                 # add definition if *replacement* string found in specs
                 if proper_match(specstr, repterm) and repterm not in seenrepterms:
                     reused[specname].append([indentstr,
@@ -145,7 +145,7 @@ def _processReused(specnames, specdict, reuseterms, indentstr='',
     # that may or may not contain instances, and it's too inefficient to
     # check in advance, so we'll not cause an error here if none show up.
     # if len(seenrepterms) == 0 and len(reuseterms) > 0:
-    #     print "Reuse terms expected:", reuseterms
+    #     print("Reuse terms expected:%r" % reuseterms)
     #     info(specdict)
     #     raise RuntimeError("Declared reusable term definitions did not match"
     #                        " any occurrences in the specifications")

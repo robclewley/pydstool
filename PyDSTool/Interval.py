@@ -12,7 +12,7 @@ Interval objects have attributes:
    issingleton: boolean
    _intervalstr: str
 """
-from __future__ import absolute_import
+from __future__ import division, absolute_import, print_function
 
 # Note: The integer intervals will later be used as the basis for
 # supporting finitely-sampled real ranges.
@@ -142,7 +142,7 @@ class Interval(object):
             info(self.__dict__, "Interval " + self.name,
                  recurseDepthLimit=1+verboselevel)
         else:
-            print self.__repr__()
+            print(self.__repr__())
 
 
     # Return all the interval's relevant data in a tuple
@@ -229,26 +229,26 @@ class Interval(object):
         c.set((self._loval*val,self._hival*val))
         return c
 
-    def __div__(self, val):
+    def __truediv__(self, val):
         c = copy.copy(self)
         c.set((self._loval/val,self._hival/val))
         return c
 
-    def __rdiv__(self,val):
+    def __rtruediv__(self,val):
         c = copy.copy(self)
         # switch endpoint order
         if isfinite(self._hival):
             if self._hival==0:
                 new_lo = sign(val)*Inf
             else:
-                new_lo = val/self._hival
+                new_lo = self.type(val/self._hival)
         else:
             new_lo = val/self._hival
         if isfinite(self._loval):
             if self._loval==0:
                 new_hi = sign(val)*Inf
             else:
-                new_hi = val/self._loval
+                new_hi = self.type(val/self._loval)
         else:
             new_hi = val/self._loval
         if new_hi < new_lo:
@@ -329,7 +329,7 @@ class Interval(object):
                         eps = max(self._abseps, val._abseps)
                         try:
                             minexpallowed = math.ceil(-MIN_EXP - self._maxexp)
-                        except TypeError:
+                        except (TypeError, OverflowError):
                             # _maxexp is None
                             minexpallowed = Inf
                         if eps > 0 and -math.log(eps,10) > minexpallowed:
@@ -504,7 +504,7 @@ class Interval(object):
         intervalsize = self._hival - self._loval
         assert isfinite(intervalsize), "Interval must be finite"
         if dt > intervalsize:
-            print "Interval size = %f, dt = %f"%(intervalsize, dt)
+            print("Interval size = %f, dt = %f"%(intervalsize, dt))
             raise ValueError('dt must be smaller than size of interval')
         if dt <= 0:
             raise ValueError('Must pass dt >= 0')
@@ -527,8 +527,8 @@ class Interval(object):
                 raise ValueError("dt must be an integer for integer "
                                         "intervals")
             if strict:
-                print "Warning: 'strict' option is invalid for integer " + \
-                      "interval types"
+                print("Warning: 'strict' option is invalid for integer " + \
+                      "interval types")
             if avoidendpoints:
                 loval = self._loval+1
                 hival = self._hival-1
@@ -537,7 +537,7 @@ class Interval(object):
             else:
                 loval = self._loval
                 hival = self._hival
-            samplelist = range(loval, hival+1, dt)
+            samplelist = list(range(loval, hival+1, dt))
             # extra +1 on hival because of python range() policy!
         else:
             raise TypeError("Unsupported value type")
@@ -561,8 +561,8 @@ class Interval(object):
                 #assert not isnan(loval) and not isnan(hival), \
                 #       "Cannot specify NaN as interval endpoint"
                 if not loval < hival:
-                    print "set() was passed loval = ", loval, \
-                          " and hival = ", hival
+                    print("set() was passed loval = ", loval, \
+                          " and hival = ", hival)
                     raise PyDSTool_ValueError('Interval endpoints must be '
                                     'given in order of increasing size')
                 self._intervalstr = '['+str(loval)+',' \
@@ -601,7 +601,7 @@ class Interval(object):
             self._hival = arg
             self.defined = True
         else:
-            print "Error in argument: ", arg, "of type", type(arg)
+            print("Error in argument: %r of type %s" % (arg, type(arg)))
             raise PyDSTool_TypeError('Interval spec must be a numeric or '
                                      'a length-2 sequence type')
 
@@ -677,7 +677,7 @@ class Interval(object):
 
 
     def info(self, verboselevel=1):
-        print self._infostr(verboselevel)
+        print(self._infostr(verboselevel))
 
 
     def __copy__(self):

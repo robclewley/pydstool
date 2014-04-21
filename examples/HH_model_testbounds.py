@@ -56,14 +56,14 @@ def makeHHneuron(name, par_args, ic_args, evs=None, extra_terms='',
 
 
 if __name__=='__main__':
-    print '-------- Test: Hodgkin-Huxley system'
+    print('-------- Test: Hodgkin-Huxley system')
     par_args = {'gna': 100, 'gk': 80, 'gl': 0.1,
                 'vna': 50, 'vk': -100, 'vl': -67,
                 'I': 1.75, 'C': 1.0}
     ic_args = {'v':-70.0, 'm': 0, 'h': 1, 'n': 0}
 
     # test single terminal event first
-    print "Testing bounds terminal event and its sampling"
+    print("Testing bounds terminal event and its sampling")
 
     HH = makeHHneuron('HHtest_bdev', par_args, ic_args, [],
                       enforce_bds=True)
@@ -74,19 +74,19 @@ if __name__=='__main__':
     assert trajdata['v_bd1'][0]==50
     assert trajdata['v_bd0'][0]==-90
     assert len(HH.getEventTimes()['v_domlo']) > 0
-    print "Voltage hit low domain bound defined by event v_domlo:"
-    print HH.getEventTimes()['v_domlo']
+    print("Voltage hit low domain bound defined by event v_domlo:")
+    print(HH.getEventTimes()['v_domlo'])
 
-    print 'Testing continued integration, having now set voltage domain to be [-100,20]'
+    print('Testing continued integration, having now set voltage domain to be [-100,20]')
     HH.set(xdomain={'v':[-100,20]}, tdata=[HHtraj.indepdomain[1],50])
     HHtraj2 = HH.compute('test_cont', 'c')
     assert len(HH.getEventTimes()['v_domhi']) > 0
-    print "Sampled this data up until the event v_domhi:"
-    print HH.getEventTimes()['v_domhi']
+    print("Sampled this data up until the event v_domhi:")
+    print(HH.getEventTimes()['v_domhi'])
 
-    print "Plotting continued orbit..."
+    print("Plotting continued orbit...")
     plotData = HHtraj2.sample(dt=0.1)
-    evt=HH.getEventTimes().values()[0]
+    evt=list(HH.getEventTimes().values())[0]
     yaxislabelstr = 'v'
     plt.ylabel(yaxislabelstr)
     plt.xlabel('t')

@@ -4,7 +4,7 @@
     Robert Clewley, March 2006.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from numpy import Inf, NaN, isfinite, int, int8, int16, int32, int64, float, float32, float64
 try:
@@ -16,7 +16,7 @@ try:
     else:
         import matplotlib.pyplot as plt
         from matplotlib.pyplot import *
-except RuntimeError, err:
+except RuntimeError as err:
     if str(err) == 'could not open display':
         failed=True
     else:
@@ -30,14 +30,15 @@ if failed:
     # Dummy plot overrides for PyDSTool when matplotlib fails to import
 
     def plot(*args, **kw):
-        print "Warning: plot does not work!"
+        print("Warning: plot does not work!")
 
     def save_fig(fignum, fname, formats=[]):
-        print "Warning: plot does not work!"
+        print("Warning: plot does not work!")
 
-    print "Warning: matplotlib failed to import properly and so is not"
-    print "  providing a graphing interface"
+    print("Warning: matplotlib failed to import properly and so is not")
+    print("  providing a graphing interface")
     plt = None   # will cause an error if someone tries to access in order to plot
+    gca = None
 else:
     import os
     from .Trajectory import Trajectory

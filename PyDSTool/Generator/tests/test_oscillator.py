@@ -19,8 +19,10 @@ from __future__ import absolute_import, print_function
 
 from numpy import linspace, allclose, array, cos, sin, sqrt
 import platform
+import sys
 import pytest
 
+from PyDSTool.utils import architecture
 from PyDSTool.Generator import (
     Euler_ODEsystem,
     Vode_ODEsystem,
@@ -67,11 +69,13 @@ def test_vode():
     _check_generator(Vode_ODEsystem)
 
 
+@pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
 @pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_radau():
     _check_generator(Radau_ODEsystem)
 
 
+@pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
 @pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_dopri():
     _check_generator(Dopri_ODEsystem)

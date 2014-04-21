@@ -6,6 +6,7 @@
 
     Robert Clewley, March 2005.
 """
+from __future__ import print_function
 
 # PyDSTool imports
 from PyDSTool import *
@@ -44,9 +45,9 @@ HH_thresh_ev = Events.makePythonStateZeroCrossEvent('v', 0, 1,
 
 result = HH_thresh_ev.searchForEvents(tuple(tdata))
 HH_spike_t = result[0][0]
-print "True HH spike time based on threshold event is at ", HH_spike_t
-print "but assume the traj is real data so that we have to find the spike"
-print "directly from the noisy data"
+print("True HH spike time based on threshold event is at ", HH_spike_t)
+print("but assume the traj is real data so that we have to find the spike")
+print("directly from the noisy data")
 
 ## Set up external interface for the reference trajectory based on spike time
 
@@ -170,9 +171,9 @@ pest_context = context([ (spike_interface, int_spike_iface),
                          (geom_interface, int_geom_iface) ])
 
 ## Parameter estimation
-print 'Estimating pars gna and vl for fit to non-identical HH cell'
-print 'Goal values are gna =', par_args_HH_goal['gna'], ', gl =', \
-            par_args_HH_goal['gl'], ' ...'
+print('Estimating pars gna and vl for fit to non-identical HH cell')
+print('Goal values are gna =', par_args_HH_goal['gna'], ', gl =', \
+            par_args_HH_goal['gl'], ' ...')
 
 
 pest_pars = LMpest(freeParams=['gna', 'gl'],
@@ -203,11 +204,11 @@ pestData_par = pest_pars.run(parDict={'ftol':1e-5,
                                       },
                              verbose=True)
 
-print '... finished in %.4f seconds\n'%(clock()-t0)
+print('... finished in %.4f seconds\n'%(clock()-t0))
 
 
 ## Finish preparing plots
-print '\nPreparing plots'
+print('\nPreparing plots')
 figure()
 disp_dt = 0.05
 plotData_orig = HH_test_model.sample('orig', ['v'], disp_dt, precise=True)

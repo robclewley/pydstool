@@ -4,6 +4,7 @@
 from __future__ import absolute_import, print_function
 
 import platform
+import sys
 import pytest
 
 from numpy import linspace, sin
@@ -12,6 +13,7 @@ from PyDSTool import (
     args,
     Events
 )
+from PyDSTool.utils import architecture
 from PyDSTool.Generator import (
     Dopri_ODEsystem,
     Euler_ODEsystem,
@@ -95,6 +97,7 @@ def dsargs():
     return DSargs
 
 
+@pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
 @pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_dopri_event(dsargs):
     """
@@ -106,6 +109,7 @@ def test_dopri_event(dsargs):
     _run_checks(Dopri_ODEsystem(dsargs))
 
 
+@pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
 @pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_radau_event(dsargs):
     """

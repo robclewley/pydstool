@@ -7,7 +7,7 @@
 
     Robert Clewley, September 2005.
 """
-
+from __future__ import print_function
 from PyDSTool import *
 
 # declarations of symbolic objects
@@ -52,37 +52,37 @@ DSargs.events = makeZeroCrossEvent(y0-0.001, -1, {'name': 'thresh_ev',
                        'term': True}, [y0])
 testODE = Vode_ODEsystem(DSargs)
 
-print "Defined the following internal Python function for Jacobian:"
-print testODE.funcspec.auxfns['Jacobian'][0]
+print("Defined the following internal Python function for Jacobian:")
+print(testODE.funcspec.auxfns['Jacobian'][0])
 
-print "\nOutput at exponentially larger subsequent time steps (with event detection!):\n"
+print("\nOutput at exponentially larger subsequent time steps (with event detection!):\n")
 tvals = [0.4*10**i for i in range(0,12)]
 t0 = 0.
 
 for t1 in tvals:
     dt = t1-t0
-    print "\n===============================================\nAt t=",
-    print t1, "using dt =", dt
+    print("\n===============================================\nAt t=", end=' ')
+    print(t1, "using dt =", dt)
     testODE.set(tdata=[t0,t1], algparams={'init_step': dt})
     if t0 >0.:
-        print testODE._solver.y
+        print(testODE._solver.y)
     traj = testODE.compute('test', 'c')  # c for continue (acts as f first time)
     try:
-        print traj(t1)
+        print(traj(t1))
     except ValueError:
-        print "\n----------"
+        print("\n----------")
         testODE.diagnostics.showWarnings()
-        print traj(traj.indepdomain[1])
-        print "----------\n"
+        print(traj(traj.indepdomain[1]))
+        print("----------\n")
         t0 = traj.indepdomain[1]
     else:
         t0 = t1
 
 
-print "\nCompare results with the output directly from the scipy_ode.py test"
-print "(up to the point where the terminal event was found)."
-print "The values from a test integration performed with scipy_ode.py " \
-      + "are listed in the comments at the end of this script"
+print("\nCompare results with the output directly from the scipy_ode.py test")
+print("(up to the point where the terminal event was found).")
+print("The values from a test integration performed with scipy_ode.py " \
+      + "are listed in the comments at the end of this script")
 
 ## At t=0.0  y=[ 1.  0.  0.]
 ## At t=0.4  y=[ 9.85172114e-001  3.38639538e-005  1.47940221e-002]

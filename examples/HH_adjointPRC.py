@@ -60,7 +60,7 @@ def makeHHneuron(name, dt, par_args, ic_args, evs=None,
 # ------------------------------------------------------------
 
 
-print '-------- Test: PRC on Hodgkin-Huxley system'
+print('-------- Test: PRC on Hodgkin-Huxley system')
 par_args = {'gna': 120, 'gk': 36, 'gl': 0.3,
             'vna': 115, 'vk': -12, 'vl': 10.559,
             'T': 6.3, 'I': 12, 'C': 1.0}
@@ -76,12 +76,12 @@ thresh_ev = Events.makeZeroCrossEvent('v+8', 1,  # increasing direction only
                                     'term': False}, ['v'],
                                       targetlang='c')
 
-print "Making HH neuron"
+print("Making HH neuron")
 HH = makeHHneuron('HH_PRCtest', 0.01, par_args, ic_args, [thresh_ev],
                   special=linspace(0,100,100/0.001))
 HH.set(tdata=[0, 100])
 
-print "Computing long orbit to converge to limit cycle"
+print("Computing long orbit to converge to limit cycle")
 HHtraj = HH.compute('test')
 evt=HH.getEventTimes()['thresh_ev']
 HHpts = HHtraj.sample()
@@ -105,6 +105,6 @@ po.indepvararray -= HHpts['t'][ix_lo]
 plot(po['t'],po['v'])
 show()
 
-print "Calling adjoint PRC calculator"
+print("Calling adjoint PRC calculator")
 PRCdata = adjointPRC(HH, po, 'v', 'I', numIntervals=300, numCollocation=5,
                      spike_est=10, doPlot=True, saveData=False, verbosity=1)

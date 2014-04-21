@@ -108,9 +108,9 @@ except IndexError:
 
 # -------------------------------------------------------------------------
 
-print '-------- IF network test with delayed pulse coupling'
+print('-------- IF network test with delayed pulse coupling')
 
-print "Building coupled IF model\n"
+print("Building coupled IF model\n")
 
 delay = Par('9', 'delay')
 vreset = Par('-90', 'Vreset')
@@ -142,7 +142,7 @@ IFmodel=IFmodelC.getModel()
 
 # -------------------------------------------------------------------------
 
-print "Computing trajectory...\n"
+print("Computing trajectory...\n")
 icdict = {'IF1.V': -75, 'IF2.V': -85}
 def test():
     IFmodel.compute(trajname='test',
@@ -151,7 +151,7 @@ def test():
                     verboselevel=0)
 start = clock()
 test()
-print '... finished in %.3f seconds.\n' % (clock()-start)
+print('... finished in %.3f seconds.\n' % (clock()-start))
 
 # -------------------------------------------------------------------------
 

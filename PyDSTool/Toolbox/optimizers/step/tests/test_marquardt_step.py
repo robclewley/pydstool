@@ -8,7 +8,7 @@ from __future__ import absolute_import
 import unittest
 import numpy
 
-from step import MarquardtStep
+from PyDSTool.Toolbox.optimizers.step import MarquardtStep
 
 
 class Function(object):

@@ -1,5 +1,5 @@
 # ODEsystem base class
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from .allimports import *
 from .baseclasses import ctsGen, theGenSpecHelper, auxfn_container
@@ -16,6 +16,7 @@ from numpy import Inf, NaN, isfinite, sometrue, alltrue, array, arange, \
 import math, random
 import types
 from copy import copy, deepcopy
+import six
 try:
     # use pscyo JIT byte-compiler optimization, if available
     import psyco
@@ -110,24 +111,21 @@ class ODEsystem(ctsGen):
                 # user-defined auxiliary functions
                 # (built-ins are provided explicitly)
                 try:
-                    exec fninfo[0]
+                    exec(fninfo[0])
                 except:
-                    print 'Error in supplied auxiliary function code'
+                    print('Error in supplied auxiliary function code')
                 self._funcreg[fninfo[1]] = ('self', fninfo[0])
-                setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]],
-                                                           self,
-                                                           self.__class__))
+                setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
                 # user auxiliary function interface wrapper
                 try:
                     uafi_code = self.funcspec._user_auxfn_interface[auxfnname]
                     try:
-                        exec uafi_code
+                        exec(uafi_code)
                     except:
-                        print 'Error in auxiliary function wrapper'
+                        print('Error in auxiliary function wrapper')
                         raise
                     setattr(self.auxfns, auxfnname,
-                            types.MethodType(locals()[auxfnname], self.auxfns,
-                                         auxfn_container))
+                            six.create_bound_method(locals()[auxfnname], self.auxfns))
                     self._funcreg[auxfnname] = ('', uafi_code)
                 except KeyError:
                     # not a user-defined aux fn
@@ -145,14 +143,12 @@ class ODEsystem(ctsGen):
         if self.funcspec.targetlang == 'python':
             fninfo = self.funcspec.spec
             try:
-                exec fninfo[0]
+                exec(fninfo[0])
             except:
-                print 'Error in supplied functional specification code'
+                print('Error in supplied functional specification code')
                 raise
             self._funcreg[fninfo[1]] = ('self', fninfo[0])
-            setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]],
-                                                           self,
-                                                           self.__class__))
+            setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
             if HAVE_PSYCO and usePsyco:
                 psyco.bind(getattr(self, fninfo[1]))
             # Add the auxiliary spec function (if present) to this
@@ -160,14 +156,12 @@ class ODEsystem(ctsGen):
             if self.funcspec.auxspec != '':
                 fninfo = self.funcspec.auxspec
                 try:
-                    exec fninfo[0]
+                    exec(fninfo[0])
                 except:
-                    print 'Error in supplied auxiliary variable code'
+                    print('Error in supplied auxiliary variable code')
                     raise
                 self._funcreg[fninfo[1]] = ('self', fninfo[0])
-                setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]],
-                                                           self,
-                                                           self.__class__))
+                setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
                 if HAVE_PSYCO and usePsyco:
                     psyco.bind(getattr(self, fninfo[1]))
 
@@ -191,7 +185,7 @@ class ODEsystem(ctsGen):
 
 
     def checkInitialConditions(self, checkauxvars=False):
-        for xname, val in self.initialconditions.iteritems():
+        for xname, val in self.initialconditions.items():
             if xname not in self.funcspec.vars and not checkauxvars:
                 # auxvars do not need initial conditions unless
                 # explicitly requested (e.g. for user call to RHS
@@ -203,14 +197,14 @@ class ODEsystem(ctsGen):
                     raise ValueError("Initial condition for "+xname+" has been "
                                     "incorrectly initialized")
             except TypeError:
-                print "Found: ", val
-                print "of type: ", type(val)
+                print("Found: %r" % val)
+                print("of type: %s" % type(val))
                 raise TypeError("Invalid type for %s`s initial"%xname \
                                 + "condition value")
             if not self.contains(self.variables[xname].depdomain,
                                  val, self.checklevel):
-                print "Bounds: ", self.variables[xname].depdomain.get()
-                print "Variable value: ", val
+                print("Bounds: %r" % self.variables[xname].depdomain.get())
+                print("Variable value: %s" % val)
                 raise ValueError("Initial condition for "+xname+" has been "
                                    "set outside of prescribed bounds")
 
@@ -234,7 +228,7 @@ class ODEsystem(ctsGen):
         # optional keys for this call are ['pars', 'tdomain', 'ics',
         #   'algparams', 'tdata', 'xdomain', 'pdomain', 'inputs']
         if 'ics' in kw:
-            for k_temp, v in kw['ics'].iteritems():
+            for k_temp, v in kw['ics'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.funcspec.vars+self.funcspec.auxvars:
                     self._xdatadict[k] = ensurefloat(v)
@@ -255,31 +249,28 @@ class ODEsystem(ctsGen):
                     self.diagnostics.warnings.append((W_UNCERTVAL,
                                                       (self.tdata[0],self.tdomain)))
                 else:
-                    print 'tdata cannot be specified below smallest '\
+                    print('tdata cannot be specified below smallest '\
                           'value in tdomain\n (possibly due to uncertain bounding).'\
-                          ' It has been automatically adjusted from\n ', \
-                          self.tdata[0], 'to', self.tdomain[0], '(difference of', \
-                          self.tdomain[0]-self.tdata[0], ')'
+                          ' It has been automatically adjusted from %f to %f (difference of %f)\n' % (
+                          self.tdata[0], self.tdomain[0], self.tdomain[0]-self.tdata[0]))
                     if self._modeltag:
-                        print 'Try reducing step size in model.'
+                        print('Try reducing step size in model.')
                 self.tdata[0] = self.tdomain[0]
             if self.tdomain[1] < self.tdata[1]:
                 if self.indepvariable.indepdomain.contains(self.tdata[1]) == uncertain:
                     self.diagnostics.warnings.append((W_UNCERTVAL,
                                                       (self.tdata[1],self.tdomain)))
                 else:
-                    print 'tdata cannot be specified above largest '\
+                    print('tdata cannot be specified above largest '\
                           'value in tdomain\n (possibly due to uncertain bounding).'\
-                          ' It has been automatically adjusted from\n ', \
-                          self.tdomain[1], 'to', \
-                          self.tdomain[1], '(difference of', \
-                          self.tdata[1]-self.tdomain[1], ')'
+                          ' It has been automatically adjusted from %f to %f (difference of %f)\n' % (
+                          self.tdomain[1], self.tdomain[1], self.tdata[1]-self.tdomain[1]))
                     if self._modeltag:
-                        print 'Try reducing step size in model.'
+                        print('Try reducing step size in model.')
                 self.tdata[1] = self.tdomain[1]
             self.indepvariable.depdomain.set(self.tdata)
         if 'xdomain' in kw:
-            for k_temp, v in kw['xdomain'].iteritems():
+            for k_temp, v in kw['xdomain'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.funcspec.vars+self.funcspec.auxvars:
                     if isinstance(v, _seq_types):
@@ -311,7 +302,7 @@ class ODEsystem(ctsGen):
                 for ev in evs:
                     ev.xdomain[k] = self.xdomain[k]
         if 'pdomain' in kw:
-            for k_temp, v in kw['pdomain'].iteritems():
+            for k_temp, v in kw['pdomain'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.funcspec.pars:
                     if isinstance(v, _seq_types):
@@ -343,7 +334,7 @@ class ODEsystem(ctsGen):
                 for ev in evs:
                     ev.pdomain[k] = self.pdomain[k]
         if 'pars' in kw:
-            for k_temp, v in kw['pars'].iteritems():
+            for k_temp, v in kw['pars'].items():
                 k = self._FScompatibleNames(k_temp)
                 if k in self.pars:
                     cval = self.parameterDomains[k].contains(v)
@@ -351,7 +342,7 @@ class ODEsystem(ctsGen):
                         if cval is not notcontained:
                             self.pars[k] = ensurefloat(v)
                             if cval is uncertain and self.checklevel == 2:
-                                print 'Warning: Parameter %s: value at bound'%str(k)
+                                print('Warning: Parameter %s: value at bound'%str(k))
                         else:
                             raise PyDSTool_ValueError('Parameter %s: value out of bounds'%str(k))
                     else:
@@ -364,7 +355,7 @@ class ODEsystem(ctsGen):
                 else:
                     raise PyDSTool_ValueError('Illegal parameter name '+str(k))
         if 'algparams' in kw:
-            for k, v in kw['algparams'].iteritems():
+            for k, v in kw['algparams'].items():
                 self.algparams[k] = v
                 if k in ('eventActive', 'eventTol', 'eventDelay', 'eventDir', 'eventInt', 'eventTerm',
                          'maxbisect'):
@@ -446,8 +437,8 @@ class ODEsystem(ctsGen):
         assert hasattr(self, 'initialconditions')
         if remain(self.initialconditions.keys(),
                       self.variables.keys()) != []:
-            print "IC names defined:", self.initialconditions.keys()
-            print "Varnames defined:", self.variables.keys()
+            print("IC names defined: %r" % list(self.initialconditions.keys()))
+            print("Varnames defined: %r" % list(self.variables.keys()))
             raise ValueError("Mismatch between initial condition and variable "
                              "names")
         for v in self.funcspec.vars:
@@ -502,7 +493,7 @@ class ODEsystem(ctsGen):
     # Methods for pickling protocol
     def __getstate__(self):
         d = copy(self.__dict__)
-        for fname, finfo in self._funcreg.iteritems():
+        for fname, finfo in self._funcreg.items():
             try:
                 del d[fname]
             except KeyError:

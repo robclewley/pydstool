@@ -4,6 +4,7 @@
 
     Robert Clewley, August 2006.
 """
+from __future__ import print_function
 
 from PyDSTool import *
 from copy import copy, deepcopy
@@ -84,7 +85,7 @@ map = MapSystem(map_args)
 map.showSpec()
 
 test_traj = map.compute('test', map_ics)
-print test_traj.sample(), "\n"
+print(test_traj.sample(), "\n")
 
 def return_map(ic):
     return map.compute('pdc_shoot', ic)(1)
@@ -96,26 +97,26 @@ def fp_residual(ic):
 ##    print "\nfp_residual: y0 = ", y0
     v = return_map({'y': y0})
 ##    plot(0, y0, 'k.')
-    print v
+    print(v)
     return v-ic[0]
 
 
-print "Finding fixed point of return map as function of initial condition"
+print("Finding fixed point of return map as function of initial condition")
 
 # Equally efficient alternatives to shoot for f.p. solution
 y0_guess = map_ics['y']
 sol_pdc = minpack.fsolve(fp_residual, array([y0_guess]), xtol=1e-6)
-print "sol_pdc = ", sol_pdc
+print("sol_pdc = ", sol_pdc)
 
-print "Plotting (x,y) limit cycle of oscillator with Poincare section"
-print " given by x=0"
+print("Plotting (x,y) limit cycle of oscillator with Poincare section")
+print(" given by x=0")
 traj, pts = getTraj({'x':0, 'y':-sol_pdc}, {'m':1}, t1=10, termFlag=False)
 traj, pts = getTraj({'x':0, 'y':-sol_pdc}, {'m':14}, t1=10, termFlag=False)
 
 
 map.set(ics={'y':sol_pdc})
 
-print "Initializing PyCont to follow x=0 crossing as parameter m varied:"
+print("Initializing PyCont to follow x=0 crossing as parameter m varied:")
 
 pc=ContClass(map)
 pcargs=args(name='FPu', type='FP-C',
@@ -128,13 +129,14 @@ pcargs=args(name='FPu', type='FP-C',
  )
 pc.newCurve(pcargs)
 
-print "\nRunning PyCont forward"
+print("\nRunning PyCont forward")
 
 pc['FPu'].forward()
 
-print "\n\nSolution is:\n", repr(pc['FPu'].sol)
+print("\n\nSolution is:\n", end='')
+print(repr(pc['FPu'].sol))
 s=pc['FPu'].sol
-print "Plotting line of fixed points of x vs parameter m ..."
+print("Plotting line of fixed points of x vs parameter m ...")
 figure()
 plot(s['m'],s['y'])
 

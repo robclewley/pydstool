@@ -69,7 +69,7 @@ def makeModel3(parDict, dt=0.1):
                              'eventdelay': 1e-6,
                              'starttime': 0,
                              'term': True,
-                             'name': 'deriv'}, ['a'], pd.keys())
+                             'name': 'deriv'}, ['a'], list(pd.keys()))
     DSargs = {'varspecs': specdict_contact,
               'fnspecs': fnspecs,
               'xdomain': {'a': [0, 2*pi], 'incontact': 1},
@@ -83,7 +83,7 @@ def makeModel3(parDict, dt=0.1):
               'events': [tang_ev, d_ev],
               }
     ode = embed(Generator.Vode_ODEsystem(DSargs), tdata=[0,200])
-    print ode.query('ics')
+    print(ode.query('ics'))
 
     ode_MI = intModelInterface(ode)
 
@@ -156,15 +156,15 @@ compute_alphas(pars)   # changes pars
 
 fullmodel = makeModel3(pars, dt=0.01)
 
-print "Computing trajectory"
-print "Using verboselevel=2 for debug-level info ..."
+print("Computing trajectory")
+print("Using verboselevel=2 for debug-level info ...")
 fullmodel.compute(trajname='run1',
                       tdata=[0, 3.0],
                       ics={'a': pars['alpha0'],
                                  'incontact': 1},
                       verboselevel=2)
 
-print "\nPlotting output"
+print("\nPlotting output")
 plotData = fullmodel.sample('run1', coords=['a','ad'],
                                            dt=0.01)
 afig = plt.figure()

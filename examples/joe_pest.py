@@ -13,6 +13,7 @@
 
    Robert Clewley, March 2005, updated 2008 for ModelInterface classes.
 """
+from __future__ import print_function
 
 from PyDSTool import *
 from PyDSTool.Toolbox.ParamEst import LMpest, L2_feature
@@ -71,7 +72,7 @@ pars_ref.update(est_pars_ref)
 
 allValDict = importPointset('xtraj_prebotfast.dat',
                             t='ttraj_prebotfast.dat')
-xDataDict = dict(zip(['v', 'n'], allValDict['vararray']))
+xDataDict = dict(list(zip(['v', 'n'], allValDict['vararray'])))
 tmesh = allValDict['t'].tolist()
 tdomain = [tmesh[0], tmesh[-1]]
 refDS = Generator.LookupTable({'tdata': tmesh,
@@ -122,8 +123,8 @@ c = context([ (pest_data_interface, int_iface) ])
 est_parnames = ['gl', 'vl']
 
 # parameter estimation
-print 'Starting Least Squares parameter estimation'
-print 'Goal pars are gl = ', est_pars_ref['gl'], ' vl = ', est_pars_ref['vl']
+print('Starting Least Squares parameter estimation')
+print('Goal pars are gl = ', est_pars_ref['gl'], ' vl = ', est_pars_ref['vl'])
 pest_pars = LMpest(freeParams=est_parnames,
                  testModel=testModel,
                  context=c
@@ -135,10 +136,10 @@ pestData_par = pest_pars.run(parDict={'ftol':ftol,
                                       'xtol':1e-3},
                              verbose=True
                              )
-print '  ... finished in %.3f seconds.\n' % (clock()-start)
+print('  ... finished in %.3f seconds.\n' % (clock()-start))
 
 # Prepare plots
-print '\nPreparing plots'
+print('\nPreparing plots')
 disp_dt = 0.05
 ##plotData_goal = reftraj.sample(['v'], disp_dt)
 goalleg = "v original"

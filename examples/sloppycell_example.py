@@ -1,3 +1,9 @@
+from __future__ import print_function
+import sys
+# FIXME: broken on Python 3
+if sys.version[0] > '2':
+    raise RuntimeError('This example is broken on Python 3')
+
 from PyDSTool import *
 from PyDSTool.Toolbox.makeSloppyModel import *
 from time import clock
@@ -313,7 +319,7 @@ all_ics_pars = {'BCK2_1': 0.0,
 
 # change genTarget to 'Vode_ODEsystem' if your external C compiler doesn't work
 
-print "Making model"
+print("Making model")
 genTarget = 'Radau_ODEsystem'
 algparams = {'init_step': 0.1}
 
@@ -322,23 +328,23 @@ if genTarget == 'Vode_ODEsystem':
 sModel = makeSloppyModel('cplx_eg', sloppyModelEg, genTarget,
                      algParams=algparams, silent=True)
 
-print "\nAux spec:\n",
+print("\nAux spec:\n", end=' ')
 sModel.showDef('cplx_eg', 'auxspec')
 
 # make some random i.c.s
 def uniformICs(varnames, a, b):
-    return dict(zip(varnames, [random.uniform(a, b) for v in varnames]))
+    return dict(list(zip(varnames, [random.uniform(a, b) for v in varnames])))
 
 #ics = uniformICs(sModel.allvars, 0, 1)
 
 ics = {}
-for name, val in all_ics_pars.iteritems():
+for name, val in all_ics_pars.items():
     if name in sModel.allvars:
         ics[name] = val
 
 
 def compute(trajname='fig2', thi=205, dt=0.1, verboselevel=0):
-    print "Computing trajectory"
+    print("Computing trajectory")
     sModel.set(algparams={'init_step': dt})
     t0=clock()
     sModel.compute(trajname=trajname,
@@ -347,7 +353,7 @@ def compute(trajname='fig2', thi=205, dt=0.1, verboselevel=0):
                    tdata=[0,thi],  # time in minutes
                    verboselevel=verboselevel
                   )
-    print "Finished in %f seconds using initial step size of %f"%(clock()-t0,dt)
+    print("Finished in %f seconds using initial step size of %f"%(clock()-t0,dt))
 
 
 def doPlots(trajname='test', coords=None, dt=0.1, tlo=None, thi=None):
@@ -356,7 +362,7 @@ def doPlots(trajname='test', coords=None, dt=0.1, tlo=None, thi=None):
     for v in coords:
         plot(plotdata['t'], plotdata[v])
 
-print "\nComputing trajectory"
+print("\nComputing trajectory")
 compute()
 
 # these plots correspond to the sub-plots of Chen 2004 paper
@@ -371,6 +377,6 @@ doPlots('fig2', ['SBF_49', 'SWI5_54', 'MCM1_38'])
 # Event2: v['CLB2_20']+v['CLB5_22']-p['KEZ2_172']
 # Event3: v['SPN_53']-1
 evs=sModel.getTrajEvents('fig2')
-print orderEventData(sModel.getTrajEventTimes('fig2'))
+print(orderEventData(sModel.getTrajEventTimes('fig2')))
 
 show()

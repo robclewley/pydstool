@@ -8,7 +8,7 @@ from __future__ import absolute_import
 import unittest
 import numpy
 
-from criterion import IterationCriterion, MonotonyCriterion, RelativeValueCriterion, AbsoluteValueCriterion, RelativeParametersCriterion, AbsoluteParametersCriterion
+from PyDSTool.Toolbox.optimizers.criterion import IterationCriterion, MonotonyCriterion, RelativeValueCriterion, AbsoluteValueCriterion, RelativeParametersCriterion, AbsoluteParametersCriterion
 
 
 class test_IterationCriterion(unittest.TestCase):

@@ -7,7 +7,7 @@ may include its own event determination implementation.)
 
     Robert Clewley, October 2005.
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 # PyDSTool imports
 from .Variable import *
@@ -24,6 +24,8 @@ from . import FuncSpec
 import scipy, numpy, scipy, scipy.special
 import math, random
 import copy, types
+import six
+from six.moves import reduce
 
 __all__ = ['EventStruct', 'Event',
             'HighLevelEvent', 'LowLevelEvent', 'MatlabEvent',
@@ -111,7 +113,7 @@ class EventStruct(object):
             if ev.name not in self.events:
                 self.events[ev.name] = ev
             else:
-                print self
+                print(self)
                 raise ValueError("Event name '"+ev.name+"' already present "
                                     "in database")
         elif isinstance(ev,list):
@@ -153,7 +155,7 @@ class EventStruct(object):
         return llList
 
     def getAllEvents(self):
-        return self.events.items()
+        return list(self.events.items())
 
     def getTermEvents(self):
         teList = []
@@ -217,11 +219,11 @@ class EventStruct(object):
             if self.events == {}:
                 return []
             else:
-                eventlist = self.events.items()
+                eventlist = list(self.events.items())
         if filterFuncs == []:
             return []
         for f in filterFuncs:
-            eventlist = filter(f, eventlist)
+            eventlist = list(filter(f, eventlist))
         return eventlist
 
 
@@ -236,7 +238,7 @@ class EventStruct(object):
             utils_info(self.__dict__, "EventStruct",
                         recurseDepthLimit=1+verboselevel)
         else:
-            print self.__repr__()
+            print(self.__repr__())
 
 
     def __contains__(self, evname):
@@ -251,8 +253,7 @@ class EventStruct(object):
                             eventlist=None):
         if eventlist is None:
             eventlist = self.query(['highlevel', 'active', 'notvarlinked'])
-        return filter(lambda (n,e): e(t=tval, varDict=varDict,
-                                        parDict=parDict), eventlist)
+        return [(n, e) for n, e in eventlist if e(t=tval, varDict=varDict, parDict=parDict)]
 
 
     def resetHighLevelEvents(self, t0, eventlist=None, state=None):
@@ -273,10 +274,9 @@ class EventStruct(object):
         assert eventlist != [], 'Empty event list passed to validateEvents'
         for ev in eventlist:
             if isinstance(ev[1], HighLevelEvent):
-                if not reduce(bool.__and__, [key in database for key in \
-                                            ev[1].vars.keys()]):
-                    ek = ev[1].vars.keys()
-                    print "Missing keys: ", remain(ek, database)
+                if not all(key in database for key in ev[1].vars.keys()):
+                    ek = list(ev[1].vars.keys())
+                    print("Missing keys: %r" % (remain(ek, database), ))
                     raise RuntimeError("Invalid keys in event '%s'" % ev[0])
             #else:
             #    print "Warning: Low level events should not be passed to " \
@@ -464,7 +464,7 @@ class Event(object):
             self.dircode = kw['dircode']
             assert self.dircode in [-1, 0, 1]  # direction codes
         except AssertionError:
-            print 'invalid value for direction code -- must be -1, 0, or 1'
+            print('invalid value for direction code -- must be -1, 0, or 1')
             raise
         except KeyError:
             self.dircode = 0
@@ -492,8 +492,7 @@ class Event(object):
         if 'vars' in kw:
             self.vars = kw['vars']
             assert len(self.vars) > 0, 'vars dictionary must be non-empty'
-            if reduce(bool.__and__, [isinstance(var, Variable) for \
-                                        var in self.vars.itervalues()]):
+            if all(isinstance(var, Variable) for var in self.vars.values()):
                 self.varlinked = True
                 # doesn't check that only argument is spec'd for _fn method
             else:
@@ -606,7 +605,7 @@ class Event(object):
 
 
     def info(self, verboselevel=1):
-        print self._infostr(verboselevel)
+        print(self._infostr(verboselevel))
 
 
     def __repr__(self):
@@ -619,16 +618,15 @@ class Event(object):
         # clean up FuncSpec usage of parsinps and x for pars/inputs and
         # variables
         try:
-            exec self._funcstr
+            exec(self._funcstr)
         except:
-            print 'Invalid event function definition:'
-            print self._funcstr
+            print('Invalid event function definition:')
+            print(self._funcstr)
             raise
         try:
-            setattr(self, '_fn', types.MethodType(locals()[self._funcname],
-                                                    self, self.__class__))
+            setattr(self, '_fn', six.create_bound_method(locals()[self._funcname], self))
         except KeyError:
-            print 'Must pass objective function for event at initialization'
+            print('Must pass objective function for event at initialization')
             raise
         if '_fn' not in self._funcreg:
             self._funcreg.append('_fn')
@@ -639,17 +637,15 @@ class Event(object):
             # clean up FuncSpec usage of parsinps and x for pars/inputs and
             # variables
             try:
-                exec funcpair[0]
+                exec(funcpair[0])
             except:
-                print 'Invalid auxiliary function definition:'
-                print funcpair[0]
+                print('Invalid auxiliary function definition:')
+                print(funcpair[0])
                 raise
             try:
-                setattr(self, funcpair[1], types.MethodType(locals()[funcpair[1]],
-                                                            self,
-                                                            self.__class__))
+                setattr(self, funcpair[1], six.create_bound_method(locals()[funcpair[1]], self))
             except KeyError:
-                print 'Must pass objective function for event at initialization'
+                print('Must pass objective function for event at initialization')
                 raise
             if funcpair[1] not in self._funcreg:
                 self._funcreg.append(funcpair[1])
@@ -691,7 +687,7 @@ class Event(object):
                 try:
                     self.fval = self._fn(t, parDict)
                 except:
-                    print "Error in event", self.name
+                    print("Error in event %s" % (self.name, ))
                     info(parDict, "Parameters")
                     raise
                 self.prevsign = scipy.sign(self.fval)
@@ -701,7 +697,7 @@ class Event(object):
                 try:
                     self.fval = self._fn(t, parDict)
                 except:
-                    print "Error in event", self.name
+                    print("Error in event %s" % (self.name, ))
                     info(parDict, "Parameters")
                     raise
                 sval = scipy.sign(self.fval)
@@ -730,9 +726,9 @@ class Event(object):
                 try:
                     self.fval = self._fn(varDict_temp, parDict)
                 except:
-                    print "Error in event", self.name
+                    print("Error in event %s" % (self.name, ))
                     info(parDict, "Parameters")
-                    print "\n"
+                    print("\n")
                     info(varDict_temp, "Variables")
                     raise
                 self.prevsign = scipy.sign(self.fval)
@@ -742,9 +738,9 @@ class Event(object):
                 try:
                     self.fval = self._fn(varDict_temp, parDict)
                 except:
-                    print "Error in event", self.name
+                    print("Error in event %s" % (self.name, ))
                     info(parDict, "Parameters")
-                    print "\n"
+                    print("\n")
                     info(varDict_temp, "Variables")
                     raise
                 sval = scipy.sign(self.fval)
@@ -791,7 +787,7 @@ class Event(object):
             varDict = vars
         precise = self.preciseFlag
         try:
-            for var in varDict.itervalues():
+            for var in varDict.values():
                 if isdiscrete(var):
                     discretevars = True
                 elif iscontinuous(var):
@@ -799,23 +795,23 @@ class Event(object):
                 else:
                     raise TypeError('varDict must consist of Variable objects')
         except AttributeError:
-            print 'event must contain a dictionary of vars'
+            print('event must contain a dictionary of vars')
             raise
         if discretevars and continuousvars:
             raise TypeError('Cannot mix discrete and continuous Variable types')
         if discretevars:
             if precise:
-                print 'argument precise cannot be used for discrete Variable objects'
+                print('argument precise cannot be used for discrete Variable objects')
                 precise = False
-            varnames = varDict.keys()
+            varnames = list(varDict.keys())
             if dt is not None:
-                print 'argument dt is unused for discrete Variable objects'
+                print('argument dt is unused for discrete Variable objects')
             if trange is not None:
                 # trange had better be contained in all var.indepdomain ranges
                 assert len(varDict) > 0, 'varDict was empty!'
                 if not reduce(bool.__and__, [trange[0] in var.indepdomain \
                                 and trange[1] in var.indepdomain for var \
-                                in varDict.itervalues()]):
+                                in varDict.values()]):
                     raise ValueError('trange not contained in all var ranges')
             else:
                 raise ValueError('trange must be defined for discrete'
@@ -825,7 +821,7 @@ class Event(object):
         elif continuousvars:
             # trange had better be contained in all var.indepdomain ranges
             tlimits = None  # initial value
-            for var in varDict.itervalues():
+            for var in varDict.values():
                 if tlimits is None:
                     tlimits = var.indepdomain.get()
                 else:
@@ -864,7 +860,7 @@ class Event(object):
                     pidict = copy.copy(ps)
                 try:
                     for t in ts:
-                        idict = dict([(n,i(t+globalt0)) for n,i in inputs.iteritems()])
+                        idict = dict([(n,i(t+globalt0)) for n,i in inputs.items()])
                         pidict.update(idict)
                         fvals.append(self._fn(t, pidict))
                 except TypeError:
@@ -873,18 +869,18 @@ class Event(object):
                     try:
                         tvals = array(ts)+globalt0
                     except:
-                        print "\n Found type", type(ts)
+                        print("\n Found type %s" % (type(ts), ))
                         raise TypeError("t values invalid")
-                    idict = dict([(n,i(tvals)) for n,i in inputs.iteritems()])
+                    idict = dict([(n,i(tvals)) for n,i in inputs.items()])
                     pidict.update(idict)
                     fvals = self._fn(ts, pidict)
                 return fvals
             def self_caller(t=None, varDict=None, parDict=None):
                 if parDict is None:
-                    pidict = dict([(n,i(t+globalt0)) for n,i in inputs.iteritems()])
+                    pidict = dict([(n,i(t+globalt0)) for n,i in inputs.items()])
                 else:
                     pidict = copy.copy(parDict)
-                    pidict.update(dict([(n,i(t+globalt0)) for n,i in inputs.iteritems()]))
+                    pidict.update(dict([(n,i(t+globalt0)) for n,i in inputs.items()]))
                 return self(t, varDict=varDict, parDict=pidict)
         # before search, check that start after 'eventdelay', if option set
         if eventdelay:
@@ -929,7 +925,7 @@ class Event(object):
                     restore_val = self.eventdelay
                     self.eventdelay = 0.
                 boollist = []
-                for tix in xrange(len(tlist)):
+                for tix in range(len(tlist)):
                     boollist.append(self_caller(t=tlist[tix],
                                             varDict=dict(zip(varnames,
                                                             [vallist[i][tix] for\
@@ -943,12 +939,12 @@ class Event(object):
                 if not eventdelay:
                     # restore value for future use
                     self.eventdelay = restore_val
-        except KeyError, e:
+        except KeyError as e:
             # for discretevars if not all var.indepdomains equal over trange
             if discretevars:
-                print 'Note: All discrete Variables must have identical ' \
-                        'independent variable domains over trange'
-            print "Check that all variable references in events are legitimate"
+                print('Note: All discrete Variables must have identical ' \
+                        'independent variable domains over trange')
+            print("Check that all variable references in events are legitimate")
             raise
         # loop through boollist and find all events unless terminating at tpos!
         tpos = -1
@@ -1046,7 +1042,7 @@ class LowLevelEvent(Event):
     necessary temporary variable declarations and a return statement."""
     def __init__(self, kw):
         if 'vars' in kw:
-            for v in kw['vars'].itervalues():
+            for v in kw['vars'].values():
                 if v is not None:
                     raise TypeError("Low level events cannot be linked to a"
                                     " variable")
@@ -1057,8 +1053,8 @@ class LowLevelEvent(Event):
         dummyQ = QuantSpec('dummy', LLfuncstr, preserveSpace=True)
         dummyQ.mapNames({'abs': 'fabs', 'sign': 'signum', 'mod': 'fmod'})
         if dummyQ[0] != 'return':
-            print "Found: ", dummyQ[0]
-            print "in event specification: ", dummyQ()
+            print("Found: %s" % (dummyQ[0], ))
+            print("in event specification: %s" % (dummyQ(), ))
             raise ValueError("'return' must be first token in low level "
                                 "event specification")
         # take out 'return' from tokenized because whitespace will be lost
@@ -1077,7 +1073,7 @@ class MatlabEvent(LowLevelEvent):
     necessary temporary variable declarations."""
     def __init__(self, kw):
         if 'vars' in kw:
-            for v in kw['vars'].itervalues():
+            for v in kw['vars'].values():
                 if v is not None:
                     raise TypeError("Low level events cannot be linked to a variable")
         kw['noHighLevel'] = True
@@ -1087,8 +1083,8 @@ class MatlabEvent(LowLevelEvent):
         LLfuncstr = kw['Matlabfuncspec']
         dummyQ = QuantSpec('dummy', LLfuncstr, preserveSpace=True)
         if dummyQ[0] != 'return':
-            print "Found: ", dummyQ[0]
-            print "in event specification: ", dummyQ()
+            print("Found: %s" % (dummyQ[0], ))
+            print("in event specification: %s" % (dummyQ(), ))
             raise ValueError("'return' must be first token in low level "
                                 "event specification")
         # take out 'return' from tokenized because whitespace will be lost
@@ -1338,8 +1334,8 @@ def makeZeroCrossEvent(expr, dircode, argDict, varnames=[], parnames=[],
         expr = dummyfuncspec._processSpecialC(expr)
     for arg in newargs:
         if arg in argDict:
-            print 'Warning: `' + arg + '` already appears in argDict!'
-            print '  This value will be overwritten.'
+            print('Warning: `' + arg + '` already appears in argDict!')
+            print('  This value will be overwritten.')
     argDict_out = copy.copy(argDict)
     funcname = "_f_"+exprname+"_ud"
     if parnames == []:
@@ -1403,8 +1399,8 @@ def makePythonStateZeroCrossEvent(varname, targetvalue, dircode, argDict,
     newargs = ['dircode', 'funcspec', 'vars']
     for arg in newargs:
         if arg in argDict:
-            print 'Warning: `' + arg + '` already appears in argDict!'
-            print '  This value will be overwritten.'
+            print('Warning: `' + arg + '` already appears in argDict!')
+            print('  This value will be overwritten.')
     if isinstance(varname, Var):
         # supporting a Variable object
         varname = varname.name
@@ -1492,7 +1488,7 @@ def processReusedPy(specnames, specdict, reuseterms, fspec, specials=[],
                                     dopars=dopars, doinps=doinps,
                                                 illegal=illegal)
     reusedefs = {}.fromkeys(new_protected)
-    for vname, deflist in reusedParsed.iteritems():
+    for vname, deflist in reusedParsed.items():
         for d in deflist:
             reusedefs[d[2]] = d
     return (concatStrDict(reusedefs, intersect(order,reusedefs.keys())),
@@ -1508,7 +1504,7 @@ def processReusedC(specnames, specdict, reuseterms):
                                                     reuseterms,
                                                     '', 'double', ';')
     reusedefs = {}.fromkeys(new_protected)
-    for vname, deflist in reused.iteritems():
+    for vname, deflist in reused.items():
         for d in deflist:
             reusedefs[d[2]] = d
     return (concatStrDict(reusedefs, intersect(order, reusedefs.keys())),
@@ -1524,7 +1520,7 @@ def processReusedMatlab(specnames, specdict, reuseterms):
                                                     reuseterms,
                                                     '', '', ';')
     reusedefs = {}.fromkeys(new_protected)
-    for vname, deflist in reused.iteritems():
+    for vname, deflist in reused.items():
         for d in deflist:
             reusedefs[d[2]] = d
     return (concatStrDict(reusedefs, intersect(order, reusedefs.keys())),
@@ -1569,10 +1565,10 @@ def findpreciseroot(ev, tlo, thi, parDict=None, vars=None, inputs=None,
             else:
                 def test_fn(x, p):
                     if p is None:
-                        pidict = dict([(n,i(t+globalt0)) for n,i in inputs.iteritems()])
+                        pidict = dict([(n,i(t+globalt0)) for n,i in inputs.items()])
                     else:
                         pidict = copy.copy(p)
-                        pidict.update(dict([(n,i(t+globalt0)) for n,i in inputs.iteritems()]))
+                        pidict.update(dict([(n,i(t+globalt0)) for n,i in inputs.items()]))
                     return ev._fn(t, pidict)
         else:
             if quadratic_interp is not None:
@@ -1580,16 +1576,16 @@ def findpreciseroot(ev, tlo, thi, parDict=None, vars=None, inputs=None,
             else:
                 def test_fn(x, p):
                     if p is None:
-                        pidict = dict([(n,i(x['t']+globalt0)) for n,i in inputs.iteritems()])
+                        pidict = dict([(n,i(x['t']+globalt0)) for n,i in inputs.items()])
                     else:
                         pidict = copy.copy(p)
-                        pidict.update(dict([(n,i(x['t']+globalt0)) for n,i in inputs.iteritems()]))
+                        pidict.update(dict([(n,i(x['t']+globalt0)) for n,i in inputs.items()]))
                     return ev._fn(x, pidict)
     if ev.varlinked:
         assert vars is None, ("Only pass vars argument when event is not "
                                 "linked to a variable")
         assert reduce(bool.__and__, [iscontinuous(var) \
-                                    for var in ev.vars.itervalues()]), \
+                                    for var in ev.vars.values()]), \
                             'Only pass continously-defined Variables in event'
         elo = test_fn(tlo, parDict)
         ehi = test_fn(thi, parDict)
@@ -1625,7 +1621,7 @@ def findpreciseroot(ev, tlo, thi, parDict=None, vars=None, inputs=None,
         assert vars is not None, ("vars argument is required when event is not"
                                     " linked to a variable")
         assert reduce(bool.__and__, [iscontinuous(var) \
-                                    for var in vars.itervalues()]), \
+                                    for var in vars.values()]), \
                             'Only pass continously-defined Variables'
         varnames = sortedDictKeys(vars)+['t']
         dlo = dict(zip(varnames, [v(tlo) for v in sortedDictValues(vars)]+[tlo]))

@@ -4,6 +4,7 @@ and dynamic update of bounds between integration runs.
 
    Robert Clewley, September 2006.
 """
+from __future__ import print_function
 
 # textually substitute 'Dopri' for 'Radau' in this file to use Radau
 
@@ -58,14 +59,14 @@ def makeHHneuron(name, par_args, ic_args, evs=None, extra_terms='', nobuild=Fals
 
 
 if __name__=='__main__':
-    print '-------- Test: Hodgkin-Huxley system'
+    print('-------- Test: Hodgkin-Huxley system')
     par_args = {'gna': 100, 'gk': 80, 'gl': 0.1,
                 'vna': 50, 'vk': -100, 'vl': -67,
                 'I': 1.75, 'C': 1.0}
     ic_args = {'v':-70.0, 'm': 0, 'h': 1, 'n': 0}
 
     # test single terminal event first
-    print "Testing bounds terminal event and its sampling"
+    print("Testing bounds terminal event and its sampling")
 
     bd_event = Events.makeZeroCrossEvent('v-getbound("v",1)', 1,
                                          {'name': 'bd_ev',
@@ -82,11 +83,11 @@ if __name__=='__main__':
     assert trajdata['v_bd1'][0]==50
     assert trajdata['v_bd0'][0]==-100
 
-    print 'Testing continued integration from t=25, having now set'
-    print 'voltage domain to be [-100,20]'
+    print('Testing continued integration from t=25, having now set')
+    print('voltage domain to be [-100,20]')
     HH.set(xdomain={'v':[-100,20]}, tdata=[0,50])
     HHtraj2 = HH.compute('test_cont', 'c')
-    print "Sampled this data up until the event", HH.getEventTimes(), ":"
+    print("Sampled this data up until the event", HH.getEventTimes(), ":")
 
     plotData = HHtraj2.sample(dt=0.1)
     evt=HH.getEventTimes()['bd_ev']

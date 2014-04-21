@@ -31,7 +31,7 @@ class OrComposition(object):
     """
     Collects the different criteria
     """
-    self.criteria = kwargs.values() + list(args)
+    self.criteria = list(kwargs.values()) + list(args)
 
   def __call__(self, state, **kwargs):
     """
@@ -48,7 +48,7 @@ class AndComposition(object):
     """
     Collects the different criteria
     """
-    self.criteria = kwargs.values() + list(args)
+    self.criteria = list(kwargs.values()) + list(args)
 
   def __call__(self, state, **kwargs):
     """

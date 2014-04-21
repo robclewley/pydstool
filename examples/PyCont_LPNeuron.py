@@ -116,10 +116,10 @@ PCargs.LocBifPoints = 'all'
 PCargs.verbosity = 2
 PyCont.newCurve(PCargs)
 
-print 'Computing curve...'
+print('Computing curve...')
 start = clock()
 PyCont['EQ1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 PyCont['EQ1'].display(('Iext','v'), figure='new')
 PyCont.plot.toggleAll('off', bytype='P')
@@ -138,10 +138,10 @@ PCargs.VarTol = 1e-10
 PCargs.TestTol = 1e-8
 PyCont.newCurve(PCargs)
 
-print 'Computing limit-cycle curve...'
+print('Computing limit-cycle curve...')
 start = clock()
 PyCont['LC1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 PyCont['LC1'].display(('Iext','v'), stability=True)
 

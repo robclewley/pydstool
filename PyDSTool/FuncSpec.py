@@ -8,7 +8,7 @@ and for manipulation of abstraction digraphs.
 """
 
 # PyDSTool imports
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 from .utils import *
 from .common import *
 from .parseUtils import *
@@ -138,9 +138,9 @@ class FuncSpec(object):
                 num_varspecs = numaux + len(self.vars)
             if len(kw['varspecs']) != len(self._varsbyforspec) and \
                len(kw['varspecs']) != num_varspecs:
-                print "# state variables: ", len(self.vars)
-                print "# auxiliary variables: ", numaux
-                print "# of variable specs: ", len(kw['varspecs'])
+                print("# state variables: %d" % len(self.vars))
+                print("# auxiliary variables: %d" % numaux)
+                print("# of variable specs: %d" % len(kw['varspecs']))
                 raise ValueError('Incorrect size of varspecs')
             self.varspecs = deepcopy(kw['varspecs'])
         else:
@@ -167,7 +167,7 @@ class FuncSpec(object):
             self.spec = {}
             self.auxspec = {}
         self.defined = False  # initial value
-        self.validateDef(self.vars, self.pars, self.inputs, self.auxvars, self._auxfnspecs.keys())
+        self.validateDef(self.vars, self.pars, self.inputs, self.auxvars, list(self._auxfnspecs.keys()))
         # ... exception if not valid
         # pre-process specification string for built-in macros (like `for`,
         # i.e. that are not also auxiliary functions, like the in-line `if`)
@@ -228,7 +228,7 @@ class FuncSpec(object):
         if not hasattr(self, '_dependencies'):
             deps = set()
             valid_targets = self.inputs + self.vars
-            for name, spec in self.varspecs.iteritems():
+            for name, spec in self.varspecs.items():
                 specQ = QuantSpec('__spectemp__', spec)
                 [deps.add((name, s)) for s in specQ if s in valid_targets]
 
@@ -246,7 +246,7 @@ class FuncSpec(object):
             raise ValueError('reuseterms must be a dictionary of strings ->'
                                ' replacement strings')
         self._reuseterms = dict(
-            (t, rt) for t, rt in terms.iteritems()
+            (t, rt) for t, rt in terms.items()
             if self.__term_valid(t) and self.__repterm_valid(rt)
         )
 
@@ -258,35 +258,35 @@ class FuncSpec(object):
             return False
 
         if term[0] in '+/*':
-            print "Error in term:", term
+            print("Error in term:%s" % term)
             raise ValueError('terms to be substituted must not begin '
                                 'with arithmetic operators')
         if term[0] == '-':
             term = '(' + term + ')'
         if term[-1] in '+-/*':
-            print "Error in term:", term
+            print("Error in term:%s" % term)
             raise ValueError('terms to be substituted must not end with '
                                 'arithmetic operators')
         for s in term:
             if self.targetlang == 'python':
                 if s in '[]{}~@#$%&\|?^': # <>! now OK, e.g. for "if" statements
-                    print "Error in term:", term
+                    print("Error in term:%s" % term)
                     raise ValueError('terms to be substituted must be '
                         'alphanumeric or contain arithmetic operators '
                         '+ - / *')
             else:
                 if s in '[]{}~!@#$%&\|?><': # removed ^ from this list
-                    print "Error in term:", term
+                    print("Error in term:%s" % term)
                     raise ValueError('terms to be substituted must be alphanumeric or contain arithmetic operators + - / *')
         return True
 
     def __repterm_valid(self, repterm):
         if repterm[0] in num_chars:
-            print "Error in replacement term:", repterm
+            print("Error in replacement term:%s" % repterm)
             raise ValueError('replacement terms must not begin with numbers')
         for s in repterm:
             if s in '+-/*.()[]{}~!@#$%^&\|?><,':
-                print "Error in replacement term:", repterm
+                print("Error in replacement term:%s" % repterm)
                 raise ValueError('replacement terms must be alphanumeric')
 
         return True
@@ -311,10 +311,10 @@ class FuncSpec(object):
         new_args = deepcopy(self._initargs)
         if self.codeinserts['start'] != '':
             del new_args['codeinsert_start']
-            print "Warning: code insert (start) ignored for new target"
+            print("Warning: code insert (start) ignored for new target")
         if self.codeinserts['end'] != '':
             del new_args['codeinsert_end']
-            print "Warning: code insert (end) ignored for new target"
+            print("Warning: code insert (end) ignored for new target")
         new_args['targetlang'] = targetlang
         fs.__init__(new_args)
         return fs
@@ -382,13 +382,13 @@ class FuncSpec(object):
         first_char_check = [alphabet_chars_RE.match(n[0]) \
                                      is not None for n in allnames]
         if not all(first_char_check):
-            print "Offending names:", [n for i, n in enumerate(allnames) \
-                                       if not first_char_check[i]]
+            print("Offending names:%r" % [n for i, n in enumerate(allnames) \
+                                       if not first_char_check[i]])
             raise ValueError('Variable, parameter, and input names must not '
                          'begin with non-alphabetic chars')
         protected_overlap = intersect(allnames, allprotectednames)
         if protected_overlap != []:
-            print "Overlapping names:", protected_overlap
+            print("Overlapping names:%r" % protected_overlap)
             raise ValueError('Variable, parameter, and input names must not '
                          'overlap with protected math / aux function names')
         ## Not yet implemented ?
@@ -429,7 +429,7 @@ class FuncSpec(object):
         if self.targetlang != 'matlab':
             self.auxfns = self.codegen.generate_aux()
         else:
-            for name, spec in self._auxfnspecs.iteritems():
+            for name, spec in self._auxfnspecs.items():
                 self.__validate_aux_spec(name, spec)
                 if name in ['Jacobian', 'Jacobian_pars', 'massMatrix']:
                     code, signature = self.codegen.generate_special(name, spec)
@@ -456,7 +456,7 @@ class FuncSpec(object):
         else:
             assert self.varspecs != {}, 'varspecs attribute must be defined'
             assert set(self.vars) - set(self.varspecs.keys()) == set([]), 'Mismatch between declared variable names and varspecs keys'
-            for name, spec in self.varspecs.iteritems():
+            for name, spec in self.varspecs.items():
                 assert type(spec) == str, "Specification for %s was not a string" % name
             self.spec = self.codegen.generate_spec(self.vars, self.varspecs)
 
@@ -464,7 +464,7 @@ class FuncSpec(object):
         """Pre-process any macro spec definitions (e.g. `for` loops)."""
 
         assert self.varspecs != {}, 'varspecs attribute must be defined'
-        specnames_unsorted = self.varspecs.keys()
+        specnames_unsorted = list(self.varspecs.keys())
         _vbfs_inv = invertMap(self._varsbyforspec)
         # Process state variable specifications
         if len(_vbfs_inv) > 0:
@@ -538,7 +538,7 @@ class FuncSpec(object):
                 expr = arglist[3]
                 # add macro text
                 varspecs = self._macroFor(rootstr, istr, ilo, ihi, expr)
-                specnames_gen = varspecs.keys()
+                specnames_gen = list(varspecs.keys())
                 # now we update the dictionary of specnames with the
                 # processed, expanded versions
                 specnames.remove(specname)
@@ -584,7 +584,7 @@ class FuncSpec(object):
                     eval_pieces[ix] = eval_str
                 # otherwise may be a different, embedded temp index for another
                 # sum, etc., so don't touch it
-        keys = eval_pieces.keys()
+        keys = list(eval_pieces.keys())
         keys.sort()
         ranges = remove_indices_from_range(keys, len(q.parser.tokenized)-1)
         # By virtue of this syntax, the first [] cannot be before some other text
@@ -659,8 +659,7 @@ class FuncSpec(object):
                     # adding allnames catches var names etc. that are valid
                     # in auxiliary functions but are not special tokens
                     # and must be left alone
-                    print "Error in specification `" + specname + \
-                          "` with token `"+s+"` :\n", specstr
+                    print("Error in specification `%s` with token `%s` :\n" % (specname, specstr))
                     raise ValueError('Undeclared or illegal token `'+s+'` in'
                                        ' spec string `'+specname+'`')
                 if stemp == '^' and self.targetlang == 'python':
@@ -727,9 +726,9 @@ class FuncSpec(object):
                             returnstr += "'"+s+"'"
                             strname_arg_imminent = False
                         else:
-                            print "Spec name:", specname
-                            print "Spec string:", specstr
-                            print "Problem symbol:", s
+                            print("Spec name:%s" % specname)
+                            print("Spec string:%s" % specstr)
+                            print("Problem symbol:%s" % s)
                             raise NameError('auxiliary variables cannot '
                                          'appear on any right-hand side '
                                          'except their initial value')
@@ -781,8 +780,8 @@ class FuncSpec(object):
                             returnstr += 'scipy.'+s
                     elif s in self._protected_specialfns:
                         if self.targetlang != 'python':
-                            print "Function %s is currently not supported "%s, \
-                                "outside of python target language definitions"
+                            print("Function %s is currently not supported "%s +
+                                "outside of python target language definitions")
                             raise ValueError("Invalid special function for "
                                              "non-python target definition")
                         # replace the underscore in the name with a dot
@@ -798,8 +797,8 @@ class FuncSpec(object):
                                 # remove vars, auxs, inputs
                                 to_remove = self.vars + self.auxvars + self.inputs
                                 filtfunc = lambda n: n not in to_remove
-                                specialtokens_temp = filter(filtfunc,
-                                                        specialtokens+self._ignorespecial)
+                                specialtokens_temp = list(filter(filtfunc,
+                                                        specialtokens+self._ignorespecial))
                             else:
                                 specialtokens_temp = specialtokens+self._ignorespecial
                             if s == 'if':
@@ -940,7 +939,7 @@ class FuncSpec(object):
         return outputStr
 
     def info(self, verbose=0):
-        print self._infostr(verbose)
+        print(self._infostr(verbose))
 
     def __repr__(self):
         return self._infostr(verbose=0)
@@ -1055,10 +1054,10 @@ def resolveClashingAuxFnPars(fnspecs, varspecs, parnames):
     """
     changed_fns = []
     new_fnspecs = {}
-    for fname, (fargs, fspec) in fnspecs.iteritems():
+    for fname, (fargs, fspec) in fnspecs.items():
         common_names = intersect(fargs, parnames)
         if fname in parnames:
-            print "Problem with function definition", fname
+            print("Problem with function definition %s" % fname)
             raise ValueError("Unrecoverable clash between parameter names and aux fn name")
         if common_names == []:
             new_fnspecs[fname] = (fargs, fspec)
@@ -1067,7 +1066,7 @@ def resolveClashingAuxFnPars(fnspecs, varspecs, parnames):
             new_fnspecs[fname] = (remain(fargs, parnames), fspec)
 
     new_varspecs = {}
-    for vname, vspec in varspecs.iteritems():
+    for vname, vspec in varspecs.items():
         q = QuantSpec('__temp__', vspec)
         # only update use of functions both changed and used in the varspecs
         used_fns = intersect(q.parser.tokenized, changed_fns)
@@ -1091,7 +1090,7 @@ def resolveClashingAuxFnPars(fnspecs, varspecs, parnames):
                     if any([p in qarg for p in parnames]):
                         # do not put raw parameter name arguments into new arg list
                         #raise ValueError("Cannot process argument to aux fn %s"%f)
-                        print "Warning: some auxiliary function parameters clash in function %s" %f
+                        print("Warning: some auxiliary function parameters clash in function %s" %f)
                     new_args_list.append(arg)
                 elif arg not in parnames:
                     # do not put raw parameter name arguments into new arg list
@@ -1110,8 +1109,8 @@ def getSpecFromFile(specfilename):
     try:
         f = open(specfilename, 'r')
         s = f.read()
-    except IOError, e:
-        print 'File error:', str(e)
+    except IOError as e:
+        print('File error: %s' % str(e))
         raise
     f.close()
     return s

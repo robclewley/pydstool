@@ -10,7 +10,7 @@ import numpy
 
 from numpy.testing import assert_equal, assert_array_less, assert_almost_equal
 
-from line_search import CubicInterpolationSearch
+from PyDSTool.Toolbox.optimizers.line_search import CubicInterpolationSearch
 
 class Function(object):
   def __call__(self, x):

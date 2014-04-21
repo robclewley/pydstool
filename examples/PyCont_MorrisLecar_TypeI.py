@@ -52,10 +52,10 @@ PCargs.verbosity = 2
 PCargs.SaveEigen = True
 PyCont.newCurve(PCargs)
 
-print 'Computing curve...'
+print('Computing curve...')
 start = clock()
 PyCont['EQ1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 PCargs.name = 'LC1'
 PCargs.type = 'LC-C'
@@ -70,10 +70,10 @@ PCargs.SolutionMeasures = 'all'
 PCargs.SaveEigen = True
 PyCont.newCurve(PCargs)
 
-print 'Computing curve...'
+print('Computing curve...')
 start = clock()
 PyCont['LC1'].forward()
-print 'done in %.3f seconds!' % (clock()-start)
+print('done in %.3f seconds!' % (clock()-start))
 
 # Plot
 PyCont.display(('Iapp','v'),stability=True)

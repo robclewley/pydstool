@@ -2,7 +2,7 @@
 # Matthieu Brucher
 # Last Change : 2007-08-10 23:13
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 """
 A standard optimizer
@@ -62,7 +62,7 @@ class StandardOptimizer(optimizer.Optimizer):
     else:
       # this would include self.optimalPoint if the lowest was found by the linesearch
       new_pars = pest.pars_dict_to_array(pest.log[pest._lowest_res_log_ix].pars)
-      print "*** CHOSE pars with residual %.8f" % pest.log[pest._lowest_res_log_ix].residual_norm
+      print("*** CHOSE pars with residual %.8f" % pest.log[pest._lowest_res_log_ix].residual_norm)
     self.state['new_parameters'] = new_pars
 
     self.state['new_value'] = self.function(new_pars)

@@ -3,7 +3,7 @@
     Drew LaMar, March 2006
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from .Continuation import (
     EquilibriumCurve, FoldCurve, HopfCurveOne, HopfCurveTwo,
@@ -79,7 +79,7 @@ class ContClass(Utility):
     def __init__(self, model):
         if isinstance(model, Generator):
             self.model = embed(model, make_copy=False)
-            self.gensys = self.model.registry.values()[0]
+            self.gensys = list(self.model.registry.values())[0]
         else:
             self.model = model
             mi, swRules, globalConRules, nextModelName, reused, \
@@ -132,7 +132,7 @@ class ContClass(Utility):
 
         # Check parameters
         if (curvetype != 'UD-C' and self.model.pars == {}) or \
-           (curvetype == 'UD-C' and not initargs.has_key('userpars')):
+           (curvetype == 'UD-C' and 'userpars' not in initargs):
             raise ValueError('No parameters defined for this system!')
 
         # Process initial point
@@ -141,7 +141,7 @@ class ContClass(Utility):
             # Default to initial conditions for model
             if self.model.icdict == {}:
                 raise ValueError('No initial point defined for this system!')
-            elif initargs.has_key('uservars'):
+            elif 'uservars' in initargs:
                 if remain(initargs['uservars'], self.model.icdict.keys()) == []:
                     # uservars just used to select a subset of system's regular state vars
                     initargs['initpoint'] = filteredDict(self.model.icdict,
@@ -161,7 +161,7 @@ class ContClass(Utility):
             elif isinstance(initargs['initpoint'], str):
                 curvename, pointname = initargs['initpoint'].split(':')
                 pointtype = pointname.strip('0123456789')
-                if not self.curves.has_key(curvename):
+                if curvename not in self.curves:
                     raise KeyError('No curve of name ' + curvename + ' exists.')
                 else:
                     point = self.curves[curvename].getSpecialPoint(pointtype, pointname)
@@ -174,8 +174,8 @@ class ContClass(Utility):
             if isinstance(initargs['initpoint'], Point):
                 # Check to see if point contains a cycle.  If it does, assume
                 #   we are starting at a cycle and save it in initcycle
-                for v in initargs['initpoint'].labels.itervalues():
-                    if v.has_key('cycle'):
+                for v in initargs['initpoint'].labels.values():
+                    if 'cycle' in v:
                         initargs['initcycle'] = v   # Dictionary w/ cycle, name, and tangent information
 
                 # Save initial point information
@@ -218,11 +218,11 @@ class ContClass(Utility):
 
         savedict = {}
 
-        print self.__dict__['curves'].keys()
+        print(list(self.__dict__['curves'].keys()))
         # Save data for each curve with different prefix
         for name in self.__dict__['curves'].keys():
             if self[name].curvetype not in ['EP-C', 'LC-C']:
-                print "Can't save curve type", self[name].curvetype, "yet. (", name, ")"
+                print("Can't save curve type", self[name].curvetype, "yet. (", name, ")")
                 continue
             # Can save equilibrium curves
             else:
@@ -297,13 +297,13 @@ class ContClass(Utility):
     def exportGeomview(self, coords=None, filename="geom.dat"):
         if coords is not None and len(coords) == 3:
             GeomviewOutput = "(progn (geometry " + self.model.name + " { LIST {: axes_" + self.model.name + "}"
-            for cname, curve in self.curves.iteritems():
+            for cname, curve in self.curves.items():
                 GeomviewOutput += " {: " + cname + "}"
             GeomviewOutput += "}))\n\n"
 
             # Get axes limits
             alim = [[Inf,-Inf],[Inf,-Inf],[Inf,-Inf]]
-            for cname, curve in self.curves.iteritems():
+            for cname, curve in self.curves.items():
                 for n in range(len(coords)):
                     alim[n][0] = min(alim[n][0], min(curve.sol[coords[n]].toarray()))
                     alim[n][1] = max(alim[n][1], max(curve.sol[coords[n]].toarray()))
@@ -312,7 +312,7 @@ class ContClass(Utility):
                 "0 0 0 1 0 0 0 1 0 0 0 1 " + \
                 "2 0 1 1 0 0 1 2 0 2 0 1 0 1 2 0 3 0 0 1 1})\n\n"
 
-            for cname, curve in self.curves.iteritems():
+            for cname, curve in self.curves.items():
                 GeomviewOutput += "(hdefine geometry " + cname + " { LIST {: curve_" + cname + "} {: specpts_" + cname + "}})\n\n"
 
                 GeomviewOutput += "(hdefine geometry curve_" + cname + " { appearance { linewidth 2 } SKEL " + \
@@ -352,10 +352,10 @@ class ContClass(Utility):
 
         plot_curves = []
         for curve in curves:
-            if self.curves.has_key(curve):
+            if curve in self.curves:
                 plot_curves.append(curve)
             else:
-                print "Warning: Curve " + curve + " does not exist."
+                print("Warning: Curve " + curve + " does not exist.")
 
         if len(plot_curves) > 0:
             initializeDisplay(self.plot, figure=figure, axes=axes)
@@ -364,16 +364,16 @@ class ContClass(Utility):
             self.curves[curve].display(coords, figure=figure, axes=axes, stability=stability, domain=domain, init_display=False, **plot_args)
 
     def computeEigen(self):
-        for curve in self.curves.itervalues():
+        for curve in self.curves.values():
             curve.computeEigen()
 
     def info(self):
-        print self.__repr__()
+        print(self.__repr__())
         #print "  Variables : %s"%', '.join(self.model.allvars)
         #print "  Parameters: %s\n"%', '.join(self.model.pars.keys())
-        print "Containing curves: "
+        print("Containing curves: ")
         for c in self.curves:
-            print "  " + c + " (type " + self.curves[c].curvetype + ")"
+            print("  " + c + " (type " + self.curves[c].curvetype + ")")
 
     def update(self, args):
         """Update parameters for all curves."""
@@ -391,9 +391,9 @@ class ContClass(Utility):
         elif thisplatform in ['Linux', 'IRIX', 'Solaris', 'SunOS', 'Darwin', 'FreeBSD']:
             self._dllext = '.so'
         else:
-            print "Shared library extension not tested on this platform."
-            print "If this process fails please report the errors to the"
-            print "developers."
+            print("Shared library extension not tested on this platform.")
+            print("If this process fails please report the errors to the")
+            print("developers.")
             self._dllext = '.so'
 
         self._compilation_tempdir = os.path.join(os.getcwd(),
@@ -404,8 +404,8 @@ class ContClass(Utility):
                      "A file already exists with the same name"
                 os.mkdir(self._compilation_tempdir)
             except:
-                print "Could not create compilation temp directory " + \
-                      self._compilation_tempdir
+                print("Could not create compilation temp directory " + \
+                      self._compilation_tempdir)
                 raise
         self._compilation_sourcedir = os.path.join(_pydstool_path,"PyCont/auto/module")
         self._vf_file = self.gensys.name+"_vf.c"
@@ -419,13 +419,13 @@ class ContClass(Utility):
                 self.makeAutoLibSource()
                 self.compileAutoLib()
             else:
-                print "Build the library using the makeLib method, or in "
-                print "stages using the makeLibSource and compileLib methods."
+                print("Build the library using the makeLib method, or in ")
+                print("stages using the makeLibSource and compileLib methods.")
 
         try:
             self._autoMod = __import__("auto"+self._vf_filename_ext, globals())
         except:
-            print "Error loading auto module."
+            print("Error loading auto module.")
             raise
 
     def forceAutoLibRefresh(self):
@@ -445,9 +445,9 @@ class ContClass(Utility):
         if delfiles:
             gc.collect()
             # still not able to delete these files!!!!! Argh!
-        print "Cannot rebuild library without restarting session. Sorry."
-        print "Try asking the Python developers to make a working module"
-        print "unimport function!"
+        print("Cannot rebuild library without restarting session. Sorry.")
+        print("Try asking the Python developers to make a working module")
+        print("unimport function!")
 
     def makeAutoLib(self, libsources=[], libdirs=[], include=[]):
         """makeAutoLib calls makeAutoLibSource and then the compileAutoLib method.
@@ -469,7 +469,7 @@ class ContClass(Utility):
                       ('string.h', STDLIB), ('autovfield.h', USERLIB),
                       ('auto_c.h', USERLIB)])
         include_str = '#include "auto_f2c.h"\n' # This must come first
-        for libstr, libtype in libinclude.iteritems():
+        for libstr, libtype in libinclude.items():
             if libtype == STDLIB:
                 quoteleft = '<'
                 quoteright = '>'
@@ -482,8 +482,8 @@ class ContClass(Utility):
             for libstr in include:
                 if libstr in libinclude:
                     # don't repeat libraries
-                    print "Warning: library '" + libstr + "' already appears in list"\
-                          + " of imported libraries"
+                    print("Warning: library '" + libstr + "' already appears in list"\
+                          + " of imported libraries")
                 else:
                     include_str += "#include " + '"' + libstr + '"\n'
 
@@ -513,7 +513,7 @@ static double pi = 3.1415926535897931;
         inames = self.funcspec.inputs
         pnames.sort()
         inames.sort()
-        for i in xrange(self.gensys.numpars):
+        for i in range(self.gensys.numpars):
             p = pnames[i]
             # add to defines (WATCH OUT FOR PERIOD _T!!!)
             if (i < 10):
@@ -522,13 +522,13 @@ static double pi = 3.1415926535897931;
                 pardefines += self.funcspec._defstr+" "+p+"\tp_["+str(i+40)+"]\n"
         # add period _T
         pardefines += self.funcspec._defstr+" _T\tp_[10]\n"
-        for i in xrange(self.gensys.dimension):
+        for i in range(self.gensys.dimension):
             v = vnames[i]
             # add to defines
             vardefines += self.funcspec._defstr+" "+v+"\tY_["+str(i)+"]\n"
 ##            # add to undefines
 ##            varundefines += self.funcspec._undefstr+" "+v+"\n"
-        for i in xrange(len(self.funcspec.inputs)):
+        for i in range(len(self.funcspec.inputs)):
             inp = inames[i]
             # add to defines
             inpdefines += self.funcspec._defstr+" "+inp+"\txv_["+str(i)+"]\n"
@@ -554,11 +554,11 @@ void jacobianParam(unsigned, unsigned, double, double*, double*, double**, unsig
         allfilestr += self.funcspec.spec[0] + "\n\n"
 
         if self.funcspec.auxfns:
-            for fname, finfo in self.funcspec.auxfns.iteritems():
+            for fname, finfo in self.funcspec.auxfns.items():
                 fbody = finfo[0]
                 # subs _p into auxfn-to-auxfn calls (but not to the signature)
                 fbody_parsed = addArgToCalls(fbody,
-                                        self.funcspec.auxfns.keys(),
+                                        list(self.funcspec.auxfns.keys()),
                                         "p_, wk_, xv_", notFirst=fname)
                 if 'initcond' in self.funcspec.auxfns:
                     # convert 'initcond(x)' to 'initcond("x")' for
@@ -590,9 +590,9 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             #allfilestr = allfilestr.replace("double**","doublereal **")
             file.write(allfilestr)
             file.close()
-        except IOError, e:
-            print "Error opening file "+self._vf_file+" for writing"
-            raise IOError, e
+        except IOError as e:
+            print("Error opening file "+self._vf_file+" for writing")
+            raise IOError(e)
 
     def compileAutoLib(self, libsources=[], libdirs=[]):
         """compileAutoLib generates a python extension DLL with continuer and vector
@@ -607,21 +607,21 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             # then DLL file already exists and we can't overwrite it at this
             # time
             proceed = False
-            print "\n"
-            print "-----------------------------------------------------------"
-            print "Present limitation of Python: Cannot rebuild library"
-            print "without exiting Python and deleting the shared library"
-            print "   " + str(os.path.join(os.getcwd(),
-                                "_auto"+self._vf_filename_ext+self._dllext))
-            print "by hand! If you made any changes to the system you should"
-            print "not proceed with running the integrator until you quit"
-            print "and rebuild."
-            print "-----------------------------------------------------------"
-            print "\n"
+            print("\n")
+            print("-----------------------------------------------------------")
+            print("Present limitation of Python: Cannot rebuild library")
+            print("without exiting Python and deleting the shared library")
+            print("   " + str(os.path.join(os.getcwd(),
+                                "_auto"+self._vf_filename_ext+self._dllext)))
+            print("by hand! If you made any changes to the system you should")
+            print("not proceed with running the integrator until you quit")
+            print("and rebuild.")
+            print("-----------------------------------------------------------")
+            print("\n")
         else:
             proceed = True
         if not proceed:
-            print "Did not compile shared library."
+            print("Did not compile shared library.")
             return
         if self._autoMod is not None:
             self.forceAutoLibRefresh()
@@ -638,7 +638,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             ifacefile_orig.close()
             ifacefile_copy.close()
         except IOError:
-            print "automod.i copying error in auto compilation directory"
+            print("automod.i copying error in auto compilation directory")
             raise
 
         swigfile = os.path.join(self._compilation_tempdir,
@@ -700,8 +700,8 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                                  library_dirs=libdirs+['./'],
                                  libraries=libsources)])
         except:
-            print "\nError occurred in generating Auto system..."
-            print sys.exc_info()[0], sys.exc_info()[1]
+            print("\nError occurred in generating Auto system...")
+            print(sys.exc_info()[0], sys.exc_info()[1])
             raise RuntimeError
         rout.stop()    # restore stdout
         try:
@@ -717,9 +717,9 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                             os.path.join(os.getcwd(),
                                  "auto"+self._vf_filename_ext+".py"))
         except:
-            print "\nError occurred in generating Auto system"
-            print "(while moving library extension modules to CWD)"
-            print sys.exc_info()[0], sys.exc_info()[1]
+            print("\nError occurred in generating Auto system")
+            print("(while moving library extension modules to CWD)")
+            print(sys.exc_info()[0], sys.exc_info()[1])
             raise RuntimeError
 
     def __repr__(self):

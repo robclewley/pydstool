@@ -133,7 +133,7 @@ def test_HH():
     plt.title('Hodgkin-Huxley membrane potential')
 
     ev_info = pts.labels.by_label['Event:spikeoutput']
-    for ev_ix, ev_tdata in ev_info.items():
+    for ev_ix, ev_tdata in list(ev_info.items()):
         plt.plot(ev_tdata['t'], pts[ev_ix]['V'], 'ko')
 
     plt.xlabel('t')

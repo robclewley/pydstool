@@ -8,7 +8,7 @@ from __future__ import absolute_import
 import unittest
 import numpy
 
-from criterion import criterion
+from PyDSTool.Toolbox.optimizers.criterion import criterion
 
 
 class Function(object):

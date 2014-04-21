@@ -6,7 +6,7 @@
     Drew LaMar, March 2006
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from .misc import *
 from PyDSTool.common import args
@@ -71,29 +71,29 @@ class BifPoint(object):
 
     def info(self, C, ind=None, strlist=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
         if C.verbosity >= 1:
-            print self.label + ' Point found '
+            print(self.label + ' Point found ')
         if C.verbosity >= 2:
-            print '========================== '
+            print('========================== ')
             for n, i in enumerate(ind):
-                print n, ': '
+                print(n, ': ')
                 Xd = self.found[i].X
-                for k, j in Xd.iteritems():
-                    print k, ' = ', j
-                print ''
+                for k, j in Xd.items():
+                    print(k, ' = ', j)
+                print('')
                 if hasattr(self.found[i], 'eigs'):
-                    print 'Eigenvalues = \n'
+                    print('Eigenvalues = \n')
                     for x in self.found[i].eigs:
-                        print '     (%f,%f)' % (x.real, x.imag)
-                    print '\n'
+                        print('     (%f,%f)' % (x.real, x.imag))
+                    print('\n')
                 if strlist is not None:
                     for string in strlist:
-                        print string
-                    print ''
+                        print(string)
+                    print('')
 
 
 class SPoint(BifPoint):
@@ -137,7 +137,7 @@ class BPoint(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -237,7 +237,7 @@ class BranchPoint(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -279,21 +279,21 @@ class FoldPoint(BifPoint):
         numzero = len([eig for eig in W if abs(eig) < 1e-4])
         if numzero > 1:
             if C.verbosity >= 2:
-                print 'Fold-Fold!\n'
+                print('Fold-Fold!\n')
             del self.found[-1]
             return False
         elif numzero == 0:
             if C.verbosity >= 2:
-                print 'False positive!\n'
+                print('False positive!\n')
             del self.found[-1]
             return False
 
         if C.verbosity >= 2:
-            print '\nChecking...'
-            print '  |q| = %f' % linalg.norm(q)
-            print '  <p,q> = %f' % matrixmultiply(p,q)
-            print '  |Aq| = %f' % linalg.norm(matrixmultiply(J_coords,q))
-            print '  |transpose(A)p| = %f\n' % linalg.norm(matrixmultiply(transpose(J_coords),p))
+            print('\nChecking...')
+            print('  |q| = %f' % linalg.norm(q))
+            print('  <p,q> = %f' % matrixmultiply(p,q))
+            print('  |Aq| = %f' % linalg.norm(matrixmultiply(J_coords,q)))
+            print('  |transpose(A)p| = %f\n' % linalg.norm(matrixmultiply(transpose(J_coords),p)))
 
         self.info(C, -1)
 
@@ -301,7 +301,7 @@ class FoldPoint(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -331,9 +331,9 @@ class HopfPoint(BifPoint):
                 for j in range(i+1,len(eigs)):
                     if C.verbosity >= 2:
                         if abs(eigs[i]) < 1e-5 and abs(eigs[j]) < 1e-5:
-                            print 'Fold-Fold point found in Hopf!\n'
+                            print('Fold-Fold point found in Hopf!\n')
                         elif abs(imag(eigs[j])) < 1e-5 and abs(real(eigs[i]) + real(eigs[j])) < 1e-5:
-                            print 'Neutral saddle found!\n'
+                            print('Neutral saddle found!\n')
             elif abs(real(eigs[i])) < 1e-5:
                 for j in range(i+1, len(eigs)):
                     if abs(real(eigs[j])) < 1e-5 and abs(real(eigs[i]) - real(eigs[j])) < 1e-5:
@@ -368,7 +368,7 @@ class HopfPoint(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -402,9 +402,9 @@ class BTPoint(BifPoint):
             else:
                 b = C.CorrFunc.testfunc.data.w[:,0]
                 c = C.CorrFunc.testfunc.data.v[:,0]
-            print '\nChecking...'
-            print '  <b,c> = %f' % matrixmultiply(transpose(b), c)
-            print '\n'
+            print('\nChecking...')
+            print('  <b,c> = %f' % matrixmultiply(transpose(b), c))
+            print('\n')
 
         self.info(C, -1)
 
@@ -412,7 +412,7 @@ class BTPoint(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -439,7 +439,7 @@ class ZHPoint(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -467,9 +467,9 @@ class CPPoint(BifPoint):
         a = 0.5*matrixmultiply(transpose(p), reshape([bilinearform(B[i,:,:], q, q) \
                 for i in range(B.shape[0])],(B.shape[0],1)))[0][0]
         if C.verbosity >= 2:
-            print '\nChecking...'
-            print '  |a| = %f' % a
-            print '\n'
+            print('\nChecking...')
+            print('  |a| = %f' % a)
+            print('\n')
 
         self.info(C, -1)
 
@@ -477,7 +477,7 @@ class CPPoint(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -529,7 +529,7 @@ class BranchPointFold(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -630,7 +630,7 @@ class _BranchPointFold(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -665,7 +665,7 @@ class DHPoint(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -690,9 +690,9 @@ class GHPoint(BifPoint):
                 for j in range(i+1,len(eigs)):
                     if C.verbosity >= 2:
                         if abs(eigs[i]) < 1e-5 and abs(eigs[j]) < 1e-5:
-                                print 'Fold-Fold point found in Hopf!\n'
+                                print('Fold-Fold point found in Hopf!\n')
                         elif abs(imag(eigs[j])) < 1e-5 and abs(real(eigs[i]) + real(eigs[j])) < 1e-5:
-                                print 'Neutral saddle found!\n'
+                                print('Neutral saddle found!\n')
             elif abs(real(eigs[i])) < 1e-5:
                 for j in range(i+1, len(eigs)):
                     if abs(real(eigs[j])) < 1e-5 and abs(real(eigs[i]) - real(eigs[j])) < 1e-5:
@@ -727,7 +727,7 @@ class GHPoint(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -761,7 +761,7 @@ class LPCPoint(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -821,7 +821,7 @@ class PDPoint(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 
@@ -866,7 +866,7 @@ class NSPoint(BifPoint):
 
     def info(self, C, ind=None):
         if ind is None:
-            ind = range(len(self.found))
+            ind = list(range(len(self.found)))
         elif isinstance(ind, int):
             ind = [ind]
 

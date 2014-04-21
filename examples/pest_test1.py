@@ -3,6 +3,7 @@
 
     Robert Clewley, February 2005.
 """
+from __future__ import print_function
 
 # PyDSTool imports
 from PyDSTool import *
@@ -30,8 +31,8 @@ sin_input_traj = sin_input.compute('noise')
 
 
 ## Prepare goal ODE trajectory
-print 'Preparing goal trajectory from perturbed system (with k = ', \
-    refpars['k'], ') ...'
+print('Preparing goal trajectory from perturbed system (with k = ', \
+    refpars['k'], ') ...')
 
 xfn_refstr = "50-k*w+a*(2-t)*sin_input"
 
@@ -47,7 +48,7 @@ refDSargs = args(algparams={'init_step':0.02, 'strictdt':True},
               )
 refODE = Generator.Vode_ODEsystem(refDSargs)
 reftraj = refODE.compute('goal')
-print '... finished.\n'
+print('... finished.\n')
 
 
 ## Get plot data for goal orbit
@@ -57,8 +58,8 @@ refleg = 'w'+' for k = '+str(refpars['k'])
 
 
 ## Parameter estimation
-print 'Estimating parameter k for fit (assuming initial condition for w)'
-print 'Goal value is k = ', refpars['k'], " ..."
+print('Estimating parameter k for fit (assuming initial condition for w)')
+print('Goal value is k = ', refpars['k'], " ...")
 
 xfn_str = "50-k*w"
 testDSargs = args(algparams={'init_step':0.02, 'strictopt':True},
@@ -104,13 +105,13 @@ start_time = time.clock()
 pestData_par = pest_pars.run(parDict={'ftol': ftol,
                                       'xtol':1e-3},
                              verbose=True)
-print '... finished in %.4f seconds\n' % (time.clock()-start_time)
+print('... finished in %.4f seconds\n' % (time.clock()-start_time))
 
 bestFitModel_par = pestData_par['sys_sol']
 
 ## Initial condition estimation
-print "Estimating initial condition for w (assuming k is correct)"
-print "Goal value is w(0) = ", xic['w'], " ..."
+print("Estimating initial condition for w (assuming k is correct)")
+print("Goal value is w(0) = ", xic['w'], " ...")
 
 modelArgs_ic = copy(testDSargs)
 modelArgs_ic['ics'] = {'w': 0.0}
@@ -127,11 +128,11 @@ pestData_ic = pest_ic.run(parDict={'ftol': ftol,
                                    'xtol':1e-3},
                           verbose=True)
 bestFitModel_ic = pestData_ic['sys_sol']
-print '... finished'
+print('... finished')
 
 
 ## Finish preparing plots
-print '\nPreparing plots'
+print('\nPreparing plots')
 west_plotData_par = bestFitModel_par.sample('test_iface_traj', dt=0.02,
                                                            tlo=min(trange),
                                                            thi=max(trange),

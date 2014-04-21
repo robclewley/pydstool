@@ -6,12 +6,13 @@
 
     Drew LaMar, April 2007
 """
+from __future__ import print_function
 
 from PyDSTool import *
 import sys
 
 vdp_filename = 'vanderPol.dat'
-print "At end of testing you can delete the temp file", vdp_filename
+print("At end of testing you can delete the temp file", vdp_filename)
 
 def integrate(DS, t1=200, name='traj'):
     DS.set(tdata=[0, t1])
@@ -182,7 +183,7 @@ def save_continuation(PyCont, sessions, filename='foo', force=True):
 
 def load_continuation(PyCont, filename='foo'):
     data = loadObjects(filename)
-    for i in range(len(data)/2):
+    for i in range(len(data)//2):
         name = data[2*i].name
         PyCont[name].sol = data[2*i]
         PyCont[name].parsdict = data[2*i+1]
@@ -224,7 +225,7 @@ def cont_func(C, pt, pars):
     DS = C.gensys
     DS.pars['a'] = pt['a']
 
-    if ((not C._userdata.has_key('sgn')) or C._userdata.sgn == -1):
+    if (('sgn' not in C._userdata) or C._userdata.sgn == -1):
         x1 = {'x': -1.0, 'y': pars['y1']}
     else:
         x1 = {'x': DS.pars['a'], 'y': pars['y1']}
@@ -234,7 +235,7 @@ def cont_func(C, pt, pars):
     try:
         tx1b = DS.compute('x1b', dirn='b', ics=x1)
     except PyDSTool_ExistError:
-        print 'Lost canard!\n'
+        print('Lost canard!\n')
         C._userdata.problem = True
         return array([0], float)
     x1b = DS.getEvents()['event_x_a'][0].toarray()
@@ -259,7 +260,7 @@ def cont_func(C, pt, pars):
         px1b = tx1b.sample(dt=0.01)
         plt.plot(px1f['x'], px1f['y'])
         plt.plot(px1b['x'], px1b['y'])
-        raw_input()
+        input()
         plt.close()
 
     F = array([x1f[1]-x1b[1]], float)
@@ -271,7 +272,7 @@ def plot_cycles(PyCont, name='UD1', meas=None):
     if meas is None and solution measure nm2 or max if specified."""
     if meas is None:
         for pt in PyCont[name].sol:
-            if 'UD' in pt.labels and pt.labels['UD']['data'].has_key('cycle'):
+            if 'UD' in pt.labels and 'cycle' in pt.labels['UD']['data']:
                 cycle = pt.labels['UD']['data'].cycle
                 plt.plot(cycle['x'], cycle['y'], '-b')
     else:
@@ -280,7 +281,7 @@ def plot_cycles(PyCont, name='UD1', meas=None):
         ind = []
         if meas == 'nm2':
             for i, pt in enumerate(PyCont[name].sol):
-                if 'UD' in pt.labels and pt.labels['UD']['data'].has_key('cycle'):
+                if 'UD' in pt.labels and 'cycle' in pt.labels['UD']['data']:
                     cycle = pt.labels['UD']['data'].cycle
                     dt = (cycle['t'][1:]-cycle['t'][0:-1])/(cycle['t'][-1]-cycle['t'][0])
                     solmeas.append(sqrt(0.5*(sum(dt*(cycle['x'][1:]*cycle['x'][1:] + \
@@ -288,7 +289,7 @@ def plot_cycles(PyCont, name='UD1', meas=None):
                     ind.append(i)
         elif meas == 'max':
             for i, pt in enumerate(PyCont[name].sol):
-                if 'UD' in pt.labels and pt.labels['UD']['data'].has_key('cycle'):
+                if 'UD' in pt.labels and 'cycle' in pt.labels['UD']['data']:
                     solmeas.append(max(abs(pt.labels['UD']['data'].cycle['x'])))
                     ind.append(i)
 
@@ -303,7 +304,7 @@ DS = create_system()
 
 # Compute limit cycle
 cycle = find_cycle(DS, disp=False)
-print "Finding limit cycle using AUTO"
+print("Finding limit cycle using AUTO")
 C = ContClass(DS)
 continuation(C, cycle=cycle, compute=True, disp=False)
 
@@ -315,7 +316,7 @@ plot_manifold()
 plt.xlim([-2.5, 2.5])
 plt.ylim([-1, 1])
 
-print "Continuing limit cycle"
+print("Continuing limit cycle")
 continuation(C, cycle=None, compute=False, disp=False)
 DS.set(tdata=[0, 400])
 
@@ -328,20 +329,20 @@ user_continuation(C)
 C['UD1'].gensys.eventstruct['event_x_a'].activeFlag = True
 C['UD1'].gensys.eventstruct['event_x_a'].termFlag = True
 
-print 'UD1: Integrating backward...'
+print('UD1: Integrating backward...')
 try:
     C['UD1'].backward()
 except:
     exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-    print "Error: ", exceptionType, ": message:", exceptionValue
-print 'done!\n\n'
-print 'UD1: Integrating forward...'
+    print("Error: ", exceptionType, ": message:", exceptionValue)
+print('done!\n\n')
+print('UD1: Integrating forward...')
 try:
     C['UD1'].forward()
 except:
     exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-    print "Error: ", exceptionType, ": message:", exceptionValue
-print 'done!\n\n'
+    print("Error: ", exceptionType, ": message:", exceptionValue)
+print('done!\n\n')
 
 ## Temp removed UD2 calculation (broken)
 
@@ -367,5 +368,5 @@ print 'done!\n\n'
 plot_manifold()
 plot_cycles(C, 'UD1')
 #plot_cycles(C, 'UD2')
-print "At end of testing you can delete the temp file", vdp_filename
+print("At end of testing you can delete the temp file", vdp_filename)
 show()

@@ -14,9 +14,9 @@ fprintf('code inserted at start
 /* Verbose code insert -- end */
 
 /* reused term definitions */
-double sin_t = sin(t);
-double expmt = exp(-t);
 double afn1call = myauxfn1(2+t, p_, wk_, xv_);
+double expmt = exp(-t);
+double sin_t = sin(t);
 double ast = a*sin_t;
 
 f_[0] = k*w+ast*itable+myauxfn1(t, p_, wk_, xv_)*myauxfn2(w, p_, wk_, xv_)/(ast);
@@ -150,8 +150,8 @@ if (e1_ < e2_) {return e1_;} else {return e2_;};
 
 
 /* reused term definitions */
-double sin_t = sin(t);
 double expmt = exp(-t);
+double sin_t = sin(t);
 
 f_[0][0] = 2e5*z0+.1;
 f_[0][1] = -3.e-2-a*w+z1;

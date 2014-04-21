@@ -20,7 +20,7 @@
 #
 # ----------------------------------------------------------------------------
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from PyDSTool import pointsToPointset, Point, Pointset
 from PyDSTool.common import args
@@ -79,11 +79,11 @@ def monotone(x, num=None, direc=1):
     in 'x' if num < 0.
     """
     if num is None:
-        ind = range(len(x)-1)
+        ind = list(range(len(x)-1))
     elif num > 1:
-        ind = range(num-1)
+        ind = list(range(num-1))
     elif num < -1:
-        ind = range(num, -1)
+        ind = list(range(num, -1))
     else:
         raise PyDSTool_ValueError('Number of indices must be larger than 1.')
 
@@ -199,12 +199,12 @@ def indtoij(ind):
 
 def testindij(n):
     bn = n*(n-1)/2
-    print "Testing %d..." % n
+    print("Testing %d..." % n)
     for ind in range(bn):
         i, j = indtoij(ind)
         ind2 = ijtoind(i, j)
         if ind != ind2:
-            print "DAMNIT!\n"
+            print("DAMNIT!\n")
         #print "  %d ---> (%d,%d) ---> %d" % (ind,i,j,ind2)
 
 def wedge(u, v):
@@ -286,12 +286,12 @@ def firstlyapunov(X, F, w, J_coords=None, V=None, W=None, p=None, q=None,
         p = direc*p
 
     if check:
-        print 'Checking...'
-        print '  |q| = %f' % linalg.norm(q)
+        print('Checking...')
+        print('  |q| = %f' % linalg.norm(q))
         temp = matrixmultiply(conjugate(p),q)
-        print '  |<p,q> - 1| = ', abs(temp-1)
-        print '  |Aq - iwq| = %f' % linalg.norm(matrixmultiply(J_coords,q) - 1j*w*q)
-        print '  |A*p + iwp| = %f\n' % linalg.norm(matrixmultiply(transpose(J_coords),p) + 1j*w*p)
+        print('  |<p,q> - 1| = ', abs(temp-1))
+        print('  |Aq - iwq| = %f' % linalg.norm(matrixmultiply(J_coords,q) - 1j*w*q))
+        print('  |A*p + iwp| = %f\n' % linalg.norm(matrixmultiply(transpose(J_coords),p) + 1j*w*p))
 
     # Compute first lyapunov coefficient
     B = F.hess(X, F.coords, F.coords)
@@ -369,7 +369,7 @@ def unique(s):
     except TypeError:
         del u  # move on to the next method
     else:
-        return u.keys()
+        return list(u.keys())
 
     # We can't hash all the elements.  Second fastest is to sort,
     # which brings the equal elements together; then duplicates are
@@ -437,7 +437,7 @@ def partition(a, elems):
 
 def negate(x):
     if isinstance(x, dict):
-        for k, v in x.iteritems():
+        for k, v in x.items():
             x[k] = -1*v
     elif isinstance(x, Point):
         for i in range(len(x)):
@@ -449,7 +449,7 @@ def negate(x):
     elif isinstance(x, ndarray):
         x = -1*x
     elif isinstance(x, args):
-        for k, v in x.iteritems():
+        for k, v in x.items():
             x[k] = negate(x[k])
     else:
         raise TypeError("Invalid argument type given")
@@ -466,15 +466,15 @@ def getFlowJac(pt, verbose=False):
 
     J = linalg.solve(jac1, jac0)
     if verbose:
-        print "Jacobian J*x"
-        print "------------\n"
-        print J
-        print "\n"
+        print("Jacobian J*x")
+        print("------------\n")
+        print(J)
+        print("\n")
 
-        print "Check Jacobian"
-        print "--------------\n"
-        print "   eigs = ", linalg.eig(J)[0]
-        print "   eigs = ", pt.labels['LC']['data'].evals
+        print("Check Jacobian")
+        print("--------------\n")
+        print("   eigs = ", linalg.eig(J)[0])
+        print("   eigs = ", pt.labels['LC']['data'].evals)
 
     return J
 
@@ -489,7 +489,7 @@ def getFlowMaps(n, pt, pttype, method='standard'):
         flow = pt.labels[pttype]['flow']  # flow maps (matrices)
     except:
         raise RuntimeError("Malformed point -- no flow map information.")
-    ntst = len(flow)/2
+    ntst = len(flow)//2
     maps = []
     if method=='standard':
         for i in range(ntst):
@@ -518,10 +518,10 @@ def getLeftEvecs(n, ntst, maps, flow_vecs, method='standard', verbose=False):
         evals.append(w)
         levecs.append(vl)
         revecs.append(vr)  # unused unless verbose (for debugging)
-    idxs = range(ntst)
+    idxs = list(range(ntst))
 
     if verbose:
-        print "Eigenvalues:", [evals[i] for i in idxs]
+        print("Eigenvalues:", [evals[i] for i in idxs])
         check1 = linalg.norm(matrixmultiply(maps[i], revecs[i][:,ind]) - \
                         evals[i][ind]*revecs[i][:,ind])
         check2 =  linalg.norm(matrixmultiply(transpose(levecs[i][:,ind]),

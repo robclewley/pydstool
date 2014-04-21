@@ -208,8 +208,8 @@ def test_c_funcspec_with_reuseterms():
     assert fs.spec[0].split('\n') == [
         'void vfieldfunc(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_){',
         '/* reused term definitions */',
-        'double sx = sin(x);',
         'double cy = cos(y);',
+        'double sx = sin(x);',
         'double sc = sx*cy;',
         '',
         'f_[0] = cy+sx;',

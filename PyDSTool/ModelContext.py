@@ -4,7 +4,7 @@
    Robert Clewley, September 2007.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import copy
 import sys, traceback
@@ -105,16 +105,16 @@ class feature(object):
             display_error = self.pars.verbose_level > 0 or self.pars.debug
             if display_error:
                 exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-                print "******************************************"
-                print "Problem evaluating feature:", self.name
-                print "  ", exceptionType, exceptionValue
+                print("******************************************")
+                print("Problem evaluating feature:" + self.name)
+                print("  %s %s" % (exceptionType, exceptionValue))
                 for line in traceback.format_exc().splitlines()[-12:-1]:
-                    print "   " + line
-                print "  originally on line:", traceback.tb_lineno(exceptionTraceback)
+                    print("   " + line)
+                print("  originally on line:%d" % traceback.tb_lineno(exceptionTraceback))
                 if self.pars.debug:   #and self.pars.verbose_level > 1:
                     raise
                 else:
-                    print "(Proceeding as 'unsatisfied')\n"
+                    print("(Proceeding as 'unsatisfied')\n")
             satisfied = False
             if hasattr(self, 'metric'):
                 self.metric.results = self.pars.penalty * \
@@ -243,8 +243,8 @@ class feature_node(feature):
 
     def __str__(self):
         s = "Feature %s "%self.name
-        if len(self._namemap.keys()) > 0:
-            s += "- " + str(self._namemap.keys())
+        if len(list(self._namemap.keys())) > 0:
+            s += "- " + str(list(self._namemap.keys()))
         return s
 
     __repr__ = __str__
@@ -295,7 +295,7 @@ class feature_node(feature):
             sf.super_results.update(self.results)
             sf.reset_metric()
             if self.pars.verbose_level > 1:
-                print "feature_node.evaluate: sf=", sf
+                print("feature_node.evaluate: sf=%r" % sf)
             error_raised = False
             try:
                 new_result = sf(target)
@@ -312,7 +312,7 @@ class feature_node(feature):
             # for potential use by a residual function
             satisfied = satisfied and new_result
             if error_raised:
-                print " ... error raised"
+                print(" ... error raised")
                 if hasattr(self, 'metric'):
                     # kludgy penalty function in lieu of something smarter
                     if sf.metric.results is None:
@@ -328,7 +328,7 @@ class feature_node(feature):
         self.ref_traj = ref_traj
         self.postprocess_ref_traj()
         if isinstance(self.subfeatures, dict):
-            sfs = self.subfeatures.values()
+            sfs = list(self.subfeatures.values())
         else:
             sfs = self.subfeatures
         for sf in sfs:
@@ -397,7 +397,7 @@ class condition(object):
         # False (unwanted feature)
         self.namemap = {}
         try:
-            for f, c in feature_composition_dict.iteritems():
+            for f, c in feature_composition_dict.items():
                 assert isinstance(c, bool), \
                        "Feature composition dictionary requires boolean values"
                 assert isinstance(f, (ql_feature_leaf, qt_feature_leaf,
@@ -440,14 +440,14 @@ class condition(object):
         """Set reference trajectory for the features (if used, otherwise will
         be ignored or overridden in feature _local_init methods).
         """
-        for f,c in self.fcd.iteritems():
+        for f,c in self.fcd.items():
             f.set_ref_traj(ref_traj)
 
     def evaluate(self, target):
         """Apply conditions to trajectory segments
         and returns True if all are satisfied."""
         satisfied = True
-        for f,c in self.fcd.iteritems():
+        for f,c in self.fcd.items():
             # have to call new separately to ensure f calcs its residual
             new = f(target) == c
             satisfied = satisfied and new
@@ -458,8 +458,8 @@ class condition(object):
 
     def __str__(self):
         s = "Condition "
-        if len(self.namemap.keys()) > 0:
-            s += "- " + str(self.namemap.keys())
+        if len(list(self.namemap.keys())) > 0:
+            s += "- " + str(list(self.namemap.keys()))
         return s
 
     __repr__ = __str__
@@ -490,7 +490,7 @@ class condition(object):
                         feature_names=None):
         res = []
         if feature_names is None:
-            feature_list = self.fcd.keys()
+            feature_list = list(self.fcd.keys())
         else:
             feature_list = [self.namemap[f] for f in feature_names]
         for f in feature_list:
@@ -525,7 +525,7 @@ class context(object):
         metric_features = {}
         res_feature_list = []
         tot_size = 0
-        for test_mi, ref_mi_class in self.interfaces.iteritems():
+        for test_mi, ref_mi_class in self.interfaces.items():
             # list of suitable features for each test_mi
             metric_features[test_mi] = test_mi.conditions._residual_info()
             tot_size += metric_features[test_mi]['total_size']
@@ -550,9 +550,9 @@ class context(object):
         self.weight_index_mapping = {}
         self.feat_weights = {}
         ix = 0
-        for test_mi, feat_dict in self.metric_features.iteritems():
+        for test_mi, feat_dict in self.metric_features.items():
             self.weight_index_mapping[test_mi] = {}
-            for f, size in feat_dict['features'].iteritems():
+            for f, size in feat_dict['features'].items():
                 self.weight_index_mapping[test_mi][f] = (ix, ix+size)
                 # weights are constant for a given feature
                 self.feat_weights[(test_mi, f)] = self.weights[ix]
@@ -562,7 +562,7 @@ class context(object):
         """Set weights for a single feature given as an (interface, feature)
         pair, setting all others to zero."""
         wdict = {}
-        for test_mi, feat_dict in self.metric_features.iteritems():
+        for test_mi, feat_dict in self.metric_features.items():
             if test_mi != feat[0]:
                 continue
             w = {}.fromkeys(feat_dict['features'].keys(), 0)
@@ -579,9 +579,9 @@ class context(object):
         Features and model interfaces must correspond to those declared for the
         context.
         """
-        for test_mi, fs in weight_dict.iteritems():
+        for test_mi, fs in weight_dict.items():
             try:
-                flist = self.metric_features[test_mi]['features'].keys()
+                flist = list(self.metric_features[test_mi]['features'].keys())
             except KeyError:
                 raise AssertionError("Invalid test model interface")
             if isinstance(fs, common._num_types):
@@ -592,7 +592,7 @@ class context(object):
                 assert npy.alltrue([f in flist for f in fs.keys()]), \
                        "Invalid features given for this test model interface"
                 feat_dict = fs
-            for f, w in feat_dict.iteritems():
+            for f, w in feat_dict.items():
                 self.feat_weights[(test_mi, f)] = w
                 # update weight value
                 start_ix, end_ix = self.weight_index_mapping[test_mi][f]
@@ -602,8 +602,8 @@ class context(object):
         """Show detail of feature -> residual mapping for a given residual
         vector."""
         i = 0
-        for test_mi, feat_dict in self.metric_features.iteritems():
-            print "Test model interface:", test_mi
+        for test_mi, feat_dict in self.metric_features.items():
+            print("Test model interface:", test_mi)
             for f in feat_dict['features']:
                 if self.feat_weights[(test_mi, f)] == 0:
                     continue
@@ -613,12 +613,12 @@ class context(object):
                 # '  unweighted:' is 13 chars long
                 extra_space_w = " "*max([0, 13-len(f_str)])
                 extra_space_unw = " "*max([0, len(f_str)-13])
-                print f_str + extra_space_w , resvec[i:i+len_w]
+                print(f_str + extra_space_w  + "%r" % resvec[i:i+len_w])
                 try:
-                    print "  unweighted:" + extra_space_unw, \
-                           resvec[i:i+len_w]/self.weights[ix0:ix1]
+                    print("  unweighted:" + extra_space_unw +
+                           "%r" % (resvec[i:i+len_w]/self.weights[ix0:ix1]))
                 except ZeroDivisionError:
-                    print "  (unweighted values unavailable)"
+                    print("  (unweighted values unavailable)")
                 i += len_w
 
     def _map_to_features(self, x):
@@ -629,7 +629,7 @@ class context(object):
         """
         out = {}
         i = 0
-        for test_mi, feat_dict in self.metric_features.iteritems():
+        for test_mi, feat_dict in self.metric_features.items():
             for f in feat_dict['features']:
                 if self.feat_weights[(test_mi, f)] == 0:
                     continue
@@ -662,9 +662,9 @@ class context(object):
                 if self.debug_mode:
                     raise
                 else:
-                    print "******************************************"
-                    print "Problem evaluating interface", test_mi, "on ", ref_mi
-                    print "  ", sys.exc_info()[0], sys.exc_info()[1]
+                    print("******************************************")
+                    print("Problem evaluating interface %s on %s" % (test_mi,ref_mi))
+                    print("  %s %s" % (sys.exc_info()[0], sys.exc_info()[1]))
                     new_result = False
             # must create new_res first, to ensure all interfaces are
             # evaluated (to create their results for possible post-processing)
@@ -723,7 +723,7 @@ class binary_feature(ql_feature_leaf):
         except KeyboardInterrupt:
             raise
         except:
-            print "Failed to find trajectory values for given variable name: %s"%self.pars.varname
+            print("Failed to find trajectory values for given variable name: %s"%self.pars.varname)
             raise
         self.results.output = pts
         return all(self.results.output==1)
@@ -794,6 +794,9 @@ class dsInterface(object):
 
     def __ge__(self, other):
         return self.name >= other.name
+
+    def __hash__(self):
+        return hash(self.name)
 
 
 class GeneratorInterface(dsInterface):
@@ -1060,9 +1063,9 @@ class intModelInterface(ModelInterface):
             except KeyboardInterrupt:
                 raise
             except:
-                print "Model interface compute_traj method for model " + \
-                      "'%s' failed" % self.model.name
-                print sys.exc_info()[0], sys.exc_info()[1]
+                print("Model interface compute_traj method for model " + \
+                      "'%s' failed" % self.model.name)
+                print("%s %s" % (sys.exc_info()[0], sys.exc_info()[1]))
                 return False
             else:
                 return True

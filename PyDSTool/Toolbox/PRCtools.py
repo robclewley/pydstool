@@ -1,7 +1,7 @@
 """Toolbox for phase response curves measured by finite perturbations
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import numpy as np
 from PyDSTool import Pointset, Model, embed
@@ -54,9 +54,9 @@ def one_period_traj(model, ev_name, ev_t_tol, ev_norm_tol, T_est,
         t_check = 10000*np.ones((tries,),float)
         norm_check = 10000*np.ones((tries,),float)
         T = np.zeros((tries,),float)
-        look_range = range(1, min((tries+1, len(evts))))
+        look_range = list(range(1, min((tries+1, len(evts)))))
         if verbose:
-            print "\n Tries: ", tries, "\n"
+            print("\n Tries: ", tries, "\n")
         for lookback in look_range:
             try:
                 d_evts = [evts[i]-evts[i-lookback] for i in \
@@ -75,8 +75,8 @@ def one_period_traj(model, ev_name, ev_t_tol, ev_norm_tol, T_est,
         ix1 = min((t_ix, n_ix))
         ix2 = max((t_ix, n_ix))
         if verbose:
-            print t_check, norm_check, T
-            print ix1, ix2
+            print(t_check, norm_check, T)
+            print(ix1, ix2)
         if t_check[ix1] < ev_t_tol and norm_check[ix1] < ev_norm_tol:
             success = True
             T_final = T[ix1]
@@ -103,8 +103,8 @@ def one_period_traj(model, ev_name, ev_t_tol, ev_norm_tol, T_est,
             model.set(algparams={'poly_interp': old_interp_setting})
         return ref_traj, ref_pts, T_final
     else:
-        print "norm check was", norm_check
-        print "t check was", t_check
+        print("norm check was", norm_check)
+        print("t check was", t_check)
         raise RuntimeError("Failure to converge after 80 iterations")
 
 
@@ -145,7 +145,7 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
         model = embed(model)
         if keep_trajs:
             tag_pts = True
-            print "Note: model object will be stored in PRC attribute _model"
+            print("Note: model object will be stored in PRC attribute _model")
     try:
         all_pts = ref_traj_period.sample()
         ref_pts = all_pts[::skip]
@@ -169,14 +169,14 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
     PRCvals = []
     t_off = 0
     if verbose:
-        print "Period T =", T
+        print("Period T =", T)
     for i, t0 in enumerate(ref_ts):
         if t0 > stop_at_t:
             break
         ic = do_pert(model, ref_pts[i], pertcoord, pertsize, t0)
         if verbose:
-            print i, "of", len(ref_ts), ": t0 = ", t0, "of", T, "  t_end", settle*T+t0
-            print "   ", ic
+            print(i, "of", len(ref_ts), ": t0 = ", t0, "of", T, "  t_end", settle*T+t0)
+            print("   ", ic)
         model.set(ics=ic.copy(), tdata=[0, (settle+1)*T+t0])
         if keep_trajs:
             model.compute(trajname='pert_%i'%i, force=True)
@@ -185,7 +185,7 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
             model.compute(trajname='pert', force=True)
             evts = model.getTrajEventTimes('pert', evname)
         if verbose:
-            print "    Last event:", evts[-1]
+            print("    Last event:", evts[-1])
         if i == 0:
             # make sure to always use the same event number
             evnum = max(0,len(evts)-2)
@@ -197,7 +197,7 @@ def finitePRC(model, ref_traj_period, evname, pertcoord, pertsize=0.05,
             m = np.argmin(abs(PRCvals[-1] - test_vals))
             val = test_vals[m]
             if verbose and abs(PRCvals[-1] - val) > 0.05:
-                print "\nCorrected value", i, PRCvals, val
+                print("\nCorrected value", i, PRCvals, val)
         else:
             # i = 0. Check that value is adjusted to be closest to zero,
             # given that we assume the minimum will be at the beginning of the run.
@@ -238,7 +238,7 @@ def compare_pert(model, ref_traj_period, evname, pertcoord, pertsize, t0, settle
     PRC_val = -np.mod(evts[-1]+t0, T)/T
     if abs(PRC_val) > 0.5:
         PRC_val += 1
-    print "t0 = %.6f, PRC value = %f" % (t0, PRC_val)
+    print("t0 = %.6f, PRC value = %f" % (t0, PRC_val))
 
     if fignum is not None:
         figure(fignum)

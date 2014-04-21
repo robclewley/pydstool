@@ -5,7 +5,7 @@
 ##  def gradient(self, x):
 ##    return numpy.array((2 * (x[0] - 2), 4 * (2 * x[1] + 4)))
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 
 from .line_search import CubicInterpolationSearch
@@ -41,7 +41,7 @@ def BarzilaiBorwein_nonmonotone(function, x0, df = None, maxIter = 1000):
     xk = x0.copy()
     last_M_iter_objFun_values = []
 
-    for k in xrange(maxIter):
+    for k in range(maxIter):
         gk = function.gradient(xk)
         if norm(gk) <= gradtol: break
 
@@ -76,6 +76,6 @@ if __name__ == '__main__':
     x0 = sin(arange(300))
     fun = Function()
     x_opt = BarzilaiBorwein_nonmonotone(fun, x0)
-    print x_opt
-    print fun(x_opt)
+    print(x_opt)
+    print(fun(x_opt))
 

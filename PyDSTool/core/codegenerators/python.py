@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from PyDSTool.common import invertMap, intersect, remain, concatStrDict, makeUniqueFn
 from PyDSTool.parseUtils import _indentstr, convertPowers, makeParList, parseMatrixStrToDictStr, count_sep
@@ -27,7 +27,7 @@ class Python(CodeGenerator):
         self._fn_template = PYTHON_FUNCTION_TEMPLATE
 
     def generate_aux(self):
-        auxnames = self.fspec._auxfnspecs.keys()
+        auxnames = list(self.fspec._auxfnspecs.keys())
         # User aux fn interface
         uafi = {}
         # protectednames = auxnames + self.fspec._protected_mathnames + \
@@ -81,8 +81,8 @@ class Python(CodeGenerator):
             # Process Jacobian functions, etc., specially, if present
             if auxname == 'Jacobian':
                 if not compareList(auxinfo[0], ['t'] + self.fspec.vars):
-                    print ['t'] + self.fspec.vars
-                    print "Auxinfo =", auxinfo[0]
+                    print(['t'] + self.fspec.vars)
+                    print("Auxinfo =" + auxinfo[0])
                     raise ValueError(
                         "Invalid argument list given in Jacobian.")
                 auxparlist = ["t", "x", "parsinps"]
@@ -122,13 +122,13 @@ class Python(CodeGenerator):
                 body_processed = ""
                 for row in range(m):
                     if specdict_check[specvars[row]] != n:
-                        print "Row %i: " % m, specdict[specvars[row]]
-                        print "Found length %i" % specdict_check[specvars[row]]
+                        print("Row %i: " % m + specdict[specvars[row]])
+                        print("Found length %i" % specdict_check[specvars[row]])
                         raise ValueError("Jacobian should be %sx%s" % (m, n))
             elif auxname == 'Jacobian_pars':
                 if not compareList(auxinfo[0], ['t'] + self.fspec.pars):
-                    print ['t'] + self.fspec.pars
-                    print "Auxinfo =", auxinfo[0]
+                    print(['t'] + self.fspec.pars)
+                    print("Auxinfo =" + auxinfo[0])
                     raise ValueError(
                         "Invalid argument list given in Jacobian.")
                 auxparlist = ["t", "x", "parsinps"]
@@ -170,19 +170,19 @@ class Python(CodeGenerator):
                 for row in range(m):
                     try:
                         if specdict_check[self.fspec.vars[row]] != n:
-                            print "Row %i: " % m, specdict[self.fspec.vars[row]]
-                            print "Found length %i" % specdict_check[self.fspec.vars[row]]
+                            print("Row %i: " % m + specdict[self.fspec.vars[row]])
+                            print("Found length %i" % specdict_check[self.fspec.vars[row]])
                             raise ValueError(
                                 "Jacobian w.r.t. pars should be %sx%s" % (m, n))
                     except IndexError:
-                        print "\nFound:\n"
+                        print("\nFound:\n")
                         info(specdict)
                         raise ValueError(
                             "Jacobian w.r.t. pars should be %sx%s" % (m, n))
             elif auxname == 'massMatrix':
                 if not compareList(auxinfo[0], ['t'] + self.fspec.vars):
-                    print ['t'] + self.fspec.vars
-                    print "Auxinfo =", auxinfo[0]
+                    print(['t'] + self.fspec.vars)
+                    print("Auxinfo =" + auxinfo[0])
                     raise ValueError(
                         "Invalid argument list given in Mass Matrix.")
                 auxparlist = ["t", "x", "parsinps"]
@@ -199,7 +199,7 @@ class Python(CodeGenerator):
                            "'[' character invalid in mass matrix for 1D system"
                     assert ']' not in auxstr, \
                            "']' character invalid in mass matrix for 1D system"
-                    specdict[specvars.values()[0]] = auxstr
+                    specdict[list(specvars.values())[0]] = auxstr
                 else:
                     specdict = parseMatrixStrToDictStr(auxstr, specvars)
                 reusestr, body_processed_dict = self._processReusedPy(
@@ -222,8 +222,8 @@ class Python(CodeGenerator):
                 body_processed = ""
                 for row in range(m):
                     if specdict_check[specvars[row]] != n:
-                        print "Row %i: " % m, specdict[specvars[row]]
-                        print "Found length %i" % specdict_check[specvars[row]]
+                        print("Row %i: " % m + specdict[specvars[row]])
+                        print("Found length %i" % specdict_check[specvars[row]])
                         raise ValueError(
                             "Mass matrix should be %sx%s" % (m, n))
             else:
@@ -241,8 +241,7 @@ class Python(CodeGenerator):
                 badparnames = intersect(auxparlist,
                                         remain(protectednames, auxnames))
                 if badparnames != []:
-                    print "Bad parameter names in auxiliary function", \
-                        auxname, ":", badparnames
+                    print("Bad parameter names in auxiliary function %s: %r" % (auxname, badparnames))
                     # print auxinfo[0]
                     # print auxparlist
                     raise ValueError("Cannot use protected names (including"
@@ -275,7 +274,7 @@ class Python(CodeGenerator):
                 auxfns[auxname] = makeUniqueFn(auxstr_py)
                 # Note: this automatically updates self.fspec._pyauxfns too
             except Exception:
-                print 'Error in supplied auxiliary spec dictionary code'
+                print('Error in supplied auxiliary spec dictionary code')
                 raise
             auxfn_namemap['ds.' + auxname] = 'ds.' + auxfns[auxname][1]
             # prepare user-interface wrapper function (not method)
@@ -290,7 +289,7 @@ class Python(CodeGenerator):
                        '(__parsinps__', fn_args, ')\n']
             uafi[auxname] = ''.join(fn_elts)
         # resolve inter-auxiliary function references
-        for auxname, auxspec in auxfns.iteritems():
+        for auxname, auxspec in auxfns.items():
             dummyQ = QuantSpec('dummy', auxspec[0], preserveSpace=True,
                                treatMultiRefs=False)
             dummyQ.mapNames(auxfn_namemap)
@@ -341,11 +340,11 @@ class Python(CodeGenerator):
              + _indentstr + "except KeyError:\n" + 2 * _indentstr
              + "try:\n" + 3 * _indentstr
              + "return ds.pdomain[name][bd]\n" + 2 * _indentstr
-             + "except KeyError, e:\n" + 3 * _indentstr
-             + "print 'Invalid var / par name %s'%name,\n"
-             + 3 * _indentstr + "print 'or bounds not well defined:'\n"
-             + 3 * _indentstr + "print ds.xdomain, ds.pdomain\n"
-             + 3 * _indentstr + "raise (RuntimeError, e)",
+             + "except KeyError as e:\n" + 3 * _indentstr
+             + "print('Invalid var / par name %s'%name)\n"
+             + 3 * _indentstr + "print('or bounds not well defined:')\n"
+             + 3 * _indentstr + "print('%r %r' % (ds.xdomain, ds.pdomain))\n"
+             + 3 * _indentstr + "raise RuntimeError(e)",
              '_auxfn_getbound')
 
         return auxfns
@@ -354,7 +353,7 @@ class Python(CodeGenerator):
         assert self.fspec.targetlang == 'python', ('Wrong target language for this'
                                               ' call')
         assert self.fspec.varspecs != {}, 'varspecs attribute must be defined'
-        specnames_unsorted = self.fspec.varspecs.keys()
+        specnames_unsorted = list(self.fspec.varspecs.keys())
         _vbfs_inv = invertMap(self.fspec._varsbyforspec)
         # Process state variable specifications
         if len(_vbfs_inv) > 0:
@@ -374,7 +373,7 @@ class Python(CodeGenerator):
             specname_vars = intersect(self.fspec.vars, specnames_unsorted)
             specname_auxvars = intersect(self.fspec.auxvars, specnames_unsorted)
         specname_vars.sort()
-        for vn, vs in self.fspec.varspecs.items():
+        for vn, vs in list(self.fspec.varspecs.items()):
             if any([pt in vs for pt in ('^', '**')]):
                 self.fspec.varspecs[vn] = convertPowers(vs, 'pow')
         self.fspec.vars.sort()
@@ -403,12 +402,12 @@ class Python(CodeGenerator):
         try:
             spec_info = makeUniqueFn(specstr_py)
         except SyntaxError:
-            print "Syntax error in specification:\n", specstr_py
+            print("Syntax error in specification:\n" + specstr_py)
             raise
         try:
             auxspec_info = makeUniqueFn(auxspecstr_py)
         except SyntaxError:
-            print "Syntax error in auxiliary spec:\n", auxspecstr_py
+            print("Syntax error in auxiliary spec:\n" + auxspecstr_py)
             raise
         self.fspec.spec = spec_info
         self.fspec.auxspec = auxspec_info
@@ -520,7 +519,7 @@ class Python(CodeGenerator):
                                                 dopars=dopars, doinps=doinps,
                                                 illegal=illegal)
         reusedefs = {}.fromkeys(new_protected)
-        for _, deflist in reusedParsed.iteritems():
+        for _, deflist in reusedParsed.items():
             for d in deflist:
                 reusedefs[d[2]] = d
         return (concatStrDict(reusedefs, intersect(order, reusedefs.keys())),
@@ -560,7 +559,7 @@ class Python(CodeGenerator):
             parsinps_names = []
             parsinps_arrayixstr = {}
         specialtokens = remain(allnames, specials) + ['(', 't'] + specials
-        for specname, itemlist in d.iteritems():
+        for specname, itemlist in d.items():
             listix = -1
             for strlist in itemlist:
                 listix += 1

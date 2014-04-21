@@ -14,6 +14,10 @@
 
     Robert Clewley, October 2005.
 """
+import sys
+# FIXME: broken on Python 3
+if sys.version[0] > '2':
+    raise RuntimeError('This example is broken on Python 3')
 
 from PyDSTool import *
 from time import clock
@@ -158,9 +162,9 @@ except IndexError:
 
 # -------------------------------------------------------------------------
 
-print '-------- IF network test with delayed pulse coupling'
+print('-------- IF network test with delayed pulse coupling')
 
-print "Building coupled IF model\n"
+print("Building coupled IF model\n")
 
 delay = Par('6', 'delay')
 vreset = Par('-90', 'Vreset')
@@ -194,7 +198,7 @@ IFmodel=IFmodelC.getModel()
 
 # -------------------------------------------------------------------------
 
-print "Computing trajectory...\n"
+print("Computing trajectory...\n")
 icdict = {'IF1.V': -76, 'IF2.V': -66, 'IF1.excited': 0, 'IF2.excited': 0,
           'IF1.syn_IF2_IF1.s': 0, 'IF2.syn_IF1_IF2.s': 0}
 start = clock()
@@ -202,11 +206,11 @@ IFmodel.compute(trajname='test',
                     tdata=[0, 1000],
                     ics=icdict,
                     verboselevel=0)
-print '... finished in %.3f seconds.\n' % (clock()-start)
+print('... finished in %.3f seconds.\n' % (clock()-start))
 
 # -------------------------------------------------------------------------
 
-print "Testing synch orbits"
+print("Testing synch orbits")
 icdict['IF1.V'] = icdict['IF2.V']
 IFmodel.compute(trajname='synch_test', tdata=[0,30], ics=icdict)
 assert IFmodel.getTrajEventTimes('synch_test')['IF1_thresh'][-1] - \

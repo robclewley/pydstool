@@ -5,6 +5,7 @@ See ModelSpec_test.py for example of using the neuralcomp toolbox.
 
    Robert Clewley, June 2005.
 """
+from __future__ import print_function
 
 from PyDSTool import *
 from time import clock
@@ -62,14 +63,14 @@ def makeHHneuron(name, par_args, ic_args, evs=None, extra_terms='',
 
 if __name__=='__main__':
     # need the __main__ to use above functions as imports without running this part
-    print '-------- Test: Hodgkin-Huxley system'
+    print('-------- Test: Hodgkin-Huxley system')
     par_args = {'gna': 100, 'gk': 80, 'gl': 0.1,
                 'vna': 50, 'vk': -100, 'vl': -67,
                 'Iapp': 1.75, 'C': 1.0}
     ic_args = {'v':-70.0, 'm': 0, 'h': 1, 'n': 0}
 
     # test single terminal event first
-    print "Testing single terminal event and its sampling"
+    print("Testing single terminal event and its sampling")
 
     thresh_ev = Events.makePythonStateZeroCrossEvent('v', 0, 1,
                                        {'name': 'thresh_ev',
@@ -88,10 +89,10 @@ if __name__=='__main__':
     HH_term.set(tdata=[0, 25])
     start = clock()
     HHtraj_term = HH_term.compute('test_term')
-    print 'Computed trajectory in %.3f seconds.\n' % (clock()-start)
+    print('Computed trajectory in %.3f seconds.\n' % (clock()-start))
     trajdata = HHtraj_term.sample(dt=1.0, precise=True)
-    print "sampled this data up until the event", HH_term.getEventTimes(), ":"
-    print trajdata['v'], "\n"
+    print("sampled this data up until the event", HH_term.getEventTimes(), ":")
+    print(trajdata['v'], "\n")
 
 
     HH = makeHHneuron('HHtest', par_args, ic_args, [thresh_ev])
@@ -109,33 +110,33 @@ if __name__=='__main__':
     # equations, are not dynamical systems!)
     HH.set(tdata=[0, 6.797])
 
-    print 'Integrating...'
+    print('Integrating...')
     start = clock()
     HHtraj = HH.compute('test')
-    print '  ... finished in %.3f seconds.\n' % (clock()-start)
+    print('  ... finished in %.3f seconds.\n' % (clock()-start))
     evt = HH.getEventTimes()['thresh_ev']
     evt_same = HH.getEventTimes('thresh_ev')
     assert evt == [] == evt_same
 
-    print 'Saving Model and Trajectory...'
+    print('Saving Model and Trajectory...')
     saveObjects([HH, HHtraj], 'temp_HH.pkl', True)
 
     # try a longer run
-    print "Trying a longer run"
+    print("Trying a longer run")
     HH.set(tdata=[0, 40])
     HHtraj2 = HH.compute('test_long')
     evts=HH.getEvents()
     HH.set(tdata=[40, 60])
     HHtraj3 = HH.compute('test_long_c','c')
-    print "In 50ms, found the following events:"
+    print("In 50ms, found the following events:")
     evts_c=HH.getEvents()
     all_evts = copy(evts)
-    for k, a in evts_c.items():
+    for k, a in list(evts_c.items()):
         if k in evts and a is not None:
             all_evts[k].append(a)
         else:
             all_evts[k] = a
-    print all_evts
+    print(all_evts)
     assert len(all_evts['thresh_ev']) == 4, "Problem with ODE events"
     assert allclose(all_evts['thresh_ev']['t'][3], 56.218, 1e-3), "Problem with ODE events"
 
@@ -147,8 +148,8 @@ if __name__=='__main__':
     # pick out first event
     evt = evts['thresh_ev']['t'][0]
     plt.plot(evt, HHtraj(evt, 'v'), 'ro')
-    print "Showing longer trajectory with +10mV offset, using the syntax"
-    print ">>> plotData2['v'] += 10"
+    print("Showing longer trajectory with +10mV offset, using the syntax")
+    print(">>> plotData2['v'] += 10")
     plotData2 = HHtraj2.sample()
     plotData3 = HHtraj3.sample()
     plotData2['v'] += 10  # could have plotted plotData2['v']+10

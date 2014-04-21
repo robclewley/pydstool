@@ -5,8 +5,7 @@ and also the feature that allows inclusion of the right-hand of an ODE into anot
 This is essentially a small extension on the following tutorial example:
     http://www.ni.gsu.edu/~rclewley/PyDSTool/Tutorial/Tutorial_linear.html
 """
-from PyDSTool import *
-from PyDSTool.Toolbox.makeSloppyModel import *
+from PyDSTool.Toolbox.makeSloppyModel import makeSloppyModel
 from numpy.testing import assert_allclose
 
 

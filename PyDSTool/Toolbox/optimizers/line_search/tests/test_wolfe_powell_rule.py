@@ -10,7 +10,7 @@ import numpy
 
 from numpy.testing import assert_array_less
 
-from line_search import WolfePowellRule
+from PyDSTool.Toolbox.optimizers.line_search import WolfePowellRule
 
 
 class Function(object):

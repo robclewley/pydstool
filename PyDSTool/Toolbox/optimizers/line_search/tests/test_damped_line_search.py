@@ -10,7 +10,7 @@ import numpy
 
 from numpy.testing import assert_equal
 
-from line_search import DampedLineSearch
+from PyDSTool.Toolbox.optimizers.line_search import DampedLineSearch
 
 
 class Function(object):

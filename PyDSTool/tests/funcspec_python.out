@@ -8,25 +8,25 @@ Specification functions (in target language):
    which are for internal use only)
 
   def _specfn(ds, t, x, parsinps):
-    print 'code inserted at start'
-    sin_t = math.sin(t)
-    expmt = math.exp(-t)
+    print('code inserted at start')
     afn1call = ds._auxfn_myauxfn1(parsinps, 2+t)
+    expmt = math.exp(-t)
+    sin_t = math.sin(t)
     ast = parsinps[0]*sin_t
     xnew0 = parsinps[1]* x[0] + ast*parsinps[2] + ds._auxfn_myauxfn1(parsinps, t)*ds._auxfn_myauxfn2(parsinps, x[0])/(ast)
     xnew1 = 2*parsinps[0]+afn1call-x[0]*expmt+3*math.pow(x[1],2)+x[2] 
     xnew2 = 2*parsinps[0]+afn1call-x[0]*expmt+3*math.pow(x[2],2)+x[3] 
     xnew3 = 2*parsinps[0]+afn1call-x[0]*expmt+3*math.pow(x[3],2)+x[1] 
-    print 'code inserted at end'
+    print('code inserted at end')
     return array([xnew0, xnew1, xnew2, xnew3])
 
  def _auxspecfn(ds, t, x, parsinps):
-    print 'code inserted at start'
+    print('code inserted at start')
     sin_t = math.sin(t)
     auxvals0 = 1+ds._auxfn_if(parsinps, x[2]>0,(1e-2+x[0]), parsinps[1]+0.4)
     auxvals1 = ds._auxfn_myauxfn1(parsinps, 2*t) + ds._auxfn_initcond(parsinps, 'w')
     auxvals2 = x[0]*2 + ds._auxfn_globalindepvar(parsinps, t)-0.5*sin_t 
-    print 'code inserted at end'
+    print('code inserted at end')
     return array([auxvals0, auxvals1, auxvals2])
 
 
@@ -45,11 +45,11 @@ User-defined auxiliary functions (in target language):
     except KeyError:
         try:
             return ds.pdomain[name][bd]
-        except KeyError, e:
-            print 'Invalid var / par name %s'%name,
-            print 'or bounds not well defined:'
-            print ds.xdomain, ds.pdomain
-            raise (RuntimeError, e)
+        except KeyError as e:
+            print('Invalid var / par name %s'%name)
+            print('or bounds not well defined:')
+            print('%r %r' % (ds.xdomain, ds.pdomain))
+            raise RuntimeError(e)
 
   def _auxfn_Jac_p(ds, t, x, parsinps):
     sin_t = math.sin(t)
@@ -72,8 +72,8 @@ User-defined auxiliary functions (in target language):
     return ds.initialconditions[varname]
 
   def _auxfn_Jac(ds, t, x, parsinps):
-    sin_t = math.sin(t)
     expmt = math.exp(-t)
+    sin_t = math.sin(t)
     xjac0 = [2e5*x[1]+.1,-x[0]/2,0,1.] 
     xjac1 = [-3.e-2-parsinps[0]*x[0]+x[2],1.,x[1]+1,x[1]+sin_t] 
     xjac2 = [parsinps[1],x[0]*x[2]+expmt,0.,x[3]/3+x[0]] 

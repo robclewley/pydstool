@@ -13,7 +13,7 @@ variable increases.
 R. Clewley, 2006 - 2011
 """
 
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 # itertools, operator used for _filter_consecutive function
 import itertools, operator
 
@@ -33,7 +33,10 @@ try:
 except ImportError:
     # older version of numpy
     from numpy import unique1d as unique
-import matplotlib.pyplot as pp
+try:
+    import matplotlib.pyplot as pp
+except ImportError:
+    pp = None
 
 from scipy.interpolate import UnivariateSpline, InterpolatedUnivariateSpline
 from scipy.optimize import fsolve, minpack
@@ -48,6 +51,7 @@ from scipy import linspace, isfinite, sign, alltrue, sometrue, arctan, arctan2
 from random import uniform
 import copy
 import sys
+import six
 
 norm = np.linalg.norm
 
@@ -243,7 +247,7 @@ class distance_to_pointset(object):
                     test = q-self.history[2]   # a Point
                 except:
                     # problem with self.history[2] (externally tampered with?)
-                    print "History is: ", self.history
+                    print("History is: ", self.history)
                     raise RuntimeError("Invalid history object in "
                                        "distance_to_pointset class instance")
                 try:
@@ -570,7 +574,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
         y_dom = gen.xdomain[yname]
     if not (isfinite(y_dom[0]) and isfinite(y_dom[1])):
         raise PyDSTool_ExistError("Must specify finite range for %s"%yname)
-    for varname, dom in subdomain.iteritems():
+    for varname, dom in subdomain.items():
         if isinstance(dom, (tuple,list)):
             if not (isfinite(dom[0]) and isfinite(dom[1])):
                 raise RuntimeError("Must specify a finite range for %s" % varname)
@@ -822,7 +826,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 if 'fnspecs' in gen.funcspec._initargs:
                     old_fnspecs = gen.funcspec._initargs['fnspecs']
                     fnspecs, new_varspecs = resolveClashingAuxFnPars(old_fnspecs, varspecs,
-                                                                     sysargs_y.pars.keys())
+                                                                     list(sysargs_y.pars.keys()))
                     # TEMP
                     # process any Jacobian functions to remove un-needed terms
                     if 'Jacobian' in fnspecs:
@@ -875,7 +879,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 except PyDSTool_ExistError:
                     tries += 1
                     if tries == max_tries:
-                        print 'null_curve_y failed in forward direction'
+                        print('null_curve_y failed in forward direction')
                         raise
                     else:
                         # try a different starting point
@@ -915,7 +919,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 except PyDSTool_ExistError:
                     tries += 1
                     if tries == max_tries:
-                        print 'null_curve_y failed in backward direction'
+                        print('null_curve_y failed in backward direction')
                         raise
                     else:
                         # try a different starting point
@@ -963,9 +967,9 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             try:
                 fp_ixs = [findClosestPointIndex(pt, y_null) for pt in add_fp_pts]
             except ValueError:
-                print "Non-monotonic data computed. Try (1) reducing max_step, (2) crop_tol_pc down to zero if non-monotonicity"
-                print " is at domain endpoints, or (3) normalize tolerances for fixed points with that of nullclines."
-                print " Not including fixed points in nullcline data"
+                print("Non-monotonic data computed. Try (1) reducing max_step, (2) crop_tol_pc down to zero if non-monotonicity")
+                print(" is at domain endpoints, or (3) normalize tolerances for fixed points with that of nullclines.")
+                print(" Not including fixed points in nullcline data")
             else:
                 for n, ix in enumerate(fp_ixs):
                     # +n offsets fact that n entries were already added
@@ -1023,7 +1027,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 if 'fnspecs' in gen.funcspec._initargs:
                     old_fnspecs = gen.funcspec._initargs['fnspecs']
                     fnspecs, new_varspecs = resolveClashingAuxFnPars(old_fnspecs, varspecs,
-                                                                     sysargs_x.pars.keys())
+                                                                     list(sysargs_x.pars.keys()))
                     # TEMP
                     # process any Jacobian functions to remove un-needed terms
                     if 'Jacobian' in fnspecs:
@@ -1073,7 +1077,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 except PyDSTool_ExistError:
                     tries += 1
                     if tries == max_tries:
-                        print 'null_curve_x failed in forward direction'
+                        print('null_curve_x failed in forward direction')
                         raise
                     else:
                         # try a different starting point
@@ -1099,7 +1103,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                 except PyDSTool_ExistError:
                     tries += 1
                     if tries == max_tries:
-                        print 'null_curve_x failed in backward direction'
+                        print('null_curve_x failed in backward direction')
                         raise
                     else:
                         # try a different starting point
@@ -1135,9 +1139,9 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             try:
                 fp_ixs = [findClosestPointIndex(pt, x_null) for pt in add_fp_pts]
             except ValueError:
-                print "Non-monotonic data computed. Try (1) reducing max_step, (2) crop_tol_pc down to zero if non-monotonicity"
-                print " is at domain endpoints, or (3) normalize tolerances for fixed points with that of nullclines."
-                print " Not including fixed points in nullcline data"
+                print("Non-monotonic data computed. Try (1) reducing max_step, (2) crop_tol_pc down to zero if non-monotonicity")
+                print(" is at domain endpoints, or (3) normalize tolerances for fixed points with that of nullclines.")
+                print(" Not including fixed points in nullcline data")
             else:
                 for n, ix in enumerate(fp_ixs):
                     # +n offsets fact that n entries were already added
@@ -1181,7 +1185,7 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1000, eps=1e-8,
     D = 0
     xdict = {}.fromkeys(gen.funcspec.vars)
     fixed_vars = {}
-    for xname, dom in subdomain.iteritems():
+    for xname, dom in subdomain.items():
         if isinstance(dom, (tuple,list)):
             if not (isfinite(dom[0]) and isfinite(dom[1])):
                 raise RuntimeError("Must specify a finite range for %s"%xname)
@@ -1240,8 +1244,8 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1000, eps=1e-8,
     fp_listdict = []
     d_posns = base_n_counter(n,D)
     xtol = eps/10.
-    for dummy_ix in xrange(n**D):
-        x0 = array([x0_coords[i][d_posns[i]] for i in xrange(D)])
+    for dummy_ix in range(n**D):
+        x0 = array([x0_coords[i][d_posns[i]] for i in range(D)])
         res = fsolve(Rhs_wrap,x0,(t,gen.pars),xtol=xtol,
                           fprime=fprime,full_output=True)
         xinf_val = res[0]
@@ -1410,9 +1414,9 @@ class Point2D(Point):
 
     def info(self, verboselevel=1):
         if verboselevel == 1:
-            print self.__str__()
+            print(self.__str__())
         elif verboselvel > 1:
-            print self.__repr__()
+            print(self.__repr__())
 
     def __copy__(self):
         return Point2D(self.x, self.y, self.xname, self.yname, self._normord,
@@ -1720,8 +1724,8 @@ class nullcline(object):
             return nullcline(self.xname, self.yname, np.array(sample_vals),
                              x_relative_scale=self.x_relative_scale_fac)
         except:
-            print "Error cropping nullcline at sample points", sample_vals
-            print "MAYBE TOO FEW VALUES SAMPLED: number was", len(sample_vals)
+            print("Error cropping nullcline at sample points", sample_vals)
+            print("MAYBE TOO FEW VALUES SAMPLED: number was", len(sample_vals))
             raise
 
     def is_monotonic(self):
@@ -1758,7 +1762,7 @@ def filter_close_points(pts, eps, normord=2):
     in the given norm.
     """
     # start with all indices, and remove those that are unwanted
-    remaining = range(len(pts))
+    remaining = list(range(len(pts)))
     for i, p in enumerate(pts):
         for j in range(i+1, len(pts)):
             if norm(p-pts[j],normord) < eps:
@@ -1935,8 +1939,8 @@ class fixedpoint_nD(object):
             var_ixs.append(gen.query('vars').index(v))
         fp_evaluated = array(gen.Rhs(0, gen._FScompatibleNames(pt), gen.pars))[var_ixs]
         if sometrue([abs(fp_i) > eps for fp_i in fp_evaluated]):
-            print "Tolerance =", eps
-            print "vector field is", fp_evaluated
+            print("Tolerance =", eps)
+            print("vector field is", fp_evaluated)
             raise PyDSTool_ValueError("Given point is not a fixed point of the system at given tolerance")
         self.coordnames = pt.coordnames
         self._classify()
@@ -2015,7 +2019,7 @@ class fixedpoint_nD(object):
                     dict_str = "{" + ",".join(entries) + "})\n"
                     jac_def_str = "def jac_fn(t, " + arg_str + "):\n\t" + \
                         "return self.gen.Jacobian(t, " + dict_str
-                    exec jac_def_str in locals(), globals()
+                    six.exec_(jac_def_str, locals(), globals())
                     return jac_fn
                 else:
                     raise NotImplementedError('Jacobian is not the right shape')
@@ -2030,7 +2034,7 @@ class fixedpoint_nD(object):
 
     def _classify(self):
         if self.dimension == 2:
-            print "Use fixedpoint_2D class"
+            print("Use fixedpoint_2D class")
 
         real_evals = (isreal(self.evals[0]), isreal(self.evals[1]))
         equal_evals = abs(self.evals[0] - self.evals[1]) < self.eps
@@ -2130,7 +2134,7 @@ class local_linear_2D(object):
         self.xvar = x
         varsPP = [x, 'v']
         if isinstance(model, NonHybridModel):
-            self.gen = model.registry.values()[0]
+            self.gen = list(model.registry.values())[0]
         elif isinstance(model, Generator.Generator):
             self.gen = model
         else:
@@ -2217,7 +2221,7 @@ class local_linear_2D(object):
                                                 )
             DSargs.events = [thresh_ev]
         if targlang == 'c':
-            print "Warning! Did you delete any existing linear systems?"
+            print("Warning! Did you delete any existing linear systems?")
             self.lin = Generator.Dopri_ODEsystem(DSargs)
         else:
             self.lin = Generator.Vode_ODEsystem(DSargs)
@@ -2713,7 +2717,7 @@ def closest_perp_distance_between_splines(NullcA, NullcB, dist_delta_tol=1e-5,
         assert Bmon, "Nullcline B must be monotonic"
     else:
         if not Bmon:
-            print "Warning: nullcline B is not monotonic in closest_perp_distance_between splines"
+            print("Warning: nullcline B is not monotonic in closest_perp_distance_between splines")
     # search interior sample points of spline A first, and 1% inside endpoints
     xa_search_vals = _sample_array_interior(NullcA.array[:,0], 0.01)
     dists = [closest_perp_distance_on_spline(NullcA, NullcB, xa) for xa in xa_search_vals]
@@ -2960,7 +2964,7 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
 
     def test_fn(x, dircode):
         if verboselevel>1:
-            print "Test point", x[x.coordnames[0]], x[x.coordnames[1]], "in direction", dircode, "\n"
+            print("Test point", x[x.coordnames[0]], x[x.coordnames[1]], "in direction", dircode, "\n")
         gen.set(ics=x)
         try:
             test = gen.compute('test', dirn=dircode)
@@ -2974,26 +2978,26 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
             if events['Gamma_out_minus'] is None:
                 if verboselevel>1:
                     pts=test.sample(coords=x.coordnames)
-                    print "Last computed point was\n", pts[-1]
-                    print "...after time", pts['t'][-1]
+                    print("Last computed point was\n", pts[-1])
+                    print("...after time", pts['t'][-1])
                     plot(pts[x.coordnames[0]],pts[x.coordnames[1]],'b-')
                 raise RuntimeError("Did not reach Gamma surfaces")
             else:
                 # hit Gamma_out_minus
                 if verboselevel>1:
-                    print "Reached Gamma minus at t=", events['Gamma_out_minus']['t'][0]
+                    print("Reached Gamma minus at t=", events['Gamma_out_minus']['t'][0])
                 sgn = -1
         else:
             if events['Gamma_out_minus'] is None:
                 # hit Gamma_out_plus
                 if verboselevel>1:
-                    print "Reached Gamma plus at t=", events['Gamma_out_plus']['t'][0]
+                    print("Reached Gamma plus at t=", events['Gamma_out_plus']['t'][0])
                 sgn = 1
             else:
                 if verboselevel>1:
                     pts=test.sample(coords=x.coordnames)
-                    print "Last computed point was\n", pts[-1]
-                    print "...after time", pts['t'][-1]
+                    print("Last computed point was\n", pts[-1])
+                    print("...after time", pts['t'][-1])
                     plot(pts[x.coordnames[0]],pts[x.coordnames[1]],'b-')
                 raise RuntimeError("Did not reach Gamma surfaces")
         return sgn
@@ -3030,7 +3034,7 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
         ### w = 's' => stable branch
         ### w = 'u' => unstable branch
         if verboselevel>0:
-            print "Starting %s branch" % man_names[w]
+            print("Starting %s branch" % man_names[w])
         if w == 's':
             col = 'g'
             w_sgn = -1
@@ -3055,7 +3059,7 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
         # determines which is "before" and which is "after" the
         # event surface (time may be reversed depending on which
         # manifold is being computed)
-        print "Set these event directions according to your problem..."
+        print("Set these event directions according to your problem...")
         gen.eventstruct.setEventDir('Gamma_out_plus', -1)
         gen.eventstruct.setEventDir('Gamma_out_minus', 1)
         gen.set(pars={'Gamma_out_plus_p_'+var_x: p0_plus[var_x],
@@ -3104,7 +3108,7 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
             f_ic = -w_sgn * gen.Rhs(0, ic, gen.pars)  # array
         for sgn in directions:
             if verboselevel>0:
-                print "Starting direction", sgn
+                print("Starting direction", sgn)
             # PREDICTION
             x0_ic = ic+w_sgn*sgn*ic_dx*f_ic/norm(f_ic, normord)
             if verboselevel>1:
@@ -3126,14 +3130,14 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
                 try:
                     x = onto_manifold(x0_ic, dx_perp, norm_to_flow,
                                       dircode=integ_dircode)
-                except RuntimeError, e:
+                except RuntimeError as e:
                     dx_perp *= dx_perp_fac
                 else:
                     break
             if dx_perp <= dx_perp_eps:
                 # RuntimeError was raised and could not continue reducing dx_perp
-                print "dx_perp reached lower tolerance =", dx_perp_eps
-                print e
+                print("dx_perp reached lower tolerance =", dx_perp_eps)
+                print(e)
                 raise RuntimeError("Initial point did not converge")
             else:
                 curve_len += norm(x-ic, normord)
@@ -3141,8 +3145,8 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
                 num_pts = 1
                 last_x = x
                 if verboselevel>0:
-                    print "Initial point converged to (%.6f, %.6f)\n" % \
-                          (x[var_x], x[var_y])
+                    print("Initial point converged to (%.6f, %.6f)\n" % \
+                          (x[var_x], x[var_y]))
             dx_perp = dx_perp_default
             last_f = f_ic
             # step backwards along flow
@@ -3163,23 +3167,23 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
                 x_ic = last_x + w_sgn*sgn*dxscaled*f/norm(f,normord)
                 last_f = f
                 if verboselevel>1:
-                    print "\nStarting from point ", last_x
+                    print("\nStarting from point ", last_x)
                     delta = w_sgn*sgn*dxscaled*f/norm(f,normord)
-                    print "Trying point ", x_ic, "in direction (%.6f, %.6f)\n" % (delta[0], delta[1])
+                    print("Trying point ", x_ic, "in direction (%.6f, %.6f)\n" % (delta[0], delta[1]))
                 dx_perp = dx_perp_default
                 # CORRECTION
                 while dx_perp > dx_perp_eps:
                     try:
                         x = onto_manifold(x_ic, dx_perp, get_perp(f/norm(f,normord)),
                                           dircode=integ_dircode)
-                    except RuntimeError, e:
+                    except RuntimeError as e:
                         dx_perp *= 0.75
                     else:
                         break
                 if dx_perp <= dx_perp_eps:
                     # RuntimeError was raised and could not continue reducing dx_perp
-                    print "dx_perp reached lower tolerance =", dx_perp_eps
-                    print e
+                    print("dx_perp reached lower tolerance =", dx_perp_eps)
+                    print(e)
                     break  # end while search
                 else:
                     curve_len += norm(x-last_x, normord)
@@ -3187,13 +3191,13 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
                     last_x = x
                     num_pts += 1
                     if verboselevel>1:
-                        print "\nManifold has %i points" % num_pts
+                        print("\nManifold has %i points" % num_pts)
                     elif verboselevel>0:
-                        print ".",
+                        print(".", end=' ')
                         sys.stdout.flush()
         if verboselevel>0:
             # finish the line
-            print " "
+            print(" ")
         indepvar, piece_sorted = sortedDictLists(piece, byvalue=False)
         manifold[w] = pointsToPointset(piece_sorted, indepvarname='arc_len',
                                        indepvararray=indepvar, norm=normord)
@@ -3351,7 +3355,7 @@ def find_period(pts, thresh, dir=1, with_indices=False):
     except:
         raise TypeError("thresh must be a 1D Point object or dictionary")
     assert len(threshdict)==1, "thresh must be a 1D Point object or dictionary"
-    var = thresh.keys()[0]
+    var = list(thresh.keys())[0]
     a = pts[var]
     t = pts['t']
     ts = []
@@ -3384,7 +3388,7 @@ def find_period(pts, thresh, dir=1, with_indices=False):
         else:
             return ts[-1]-ts[-2]
     else:
-        print len(ts), "is not enough periods",
+        print(len(ts), "is not enough periods", end=' ')
         return NaN
 
 
@@ -3401,8 +3405,8 @@ def _filter_consecutive(indices, minimize_values=None):
       minimize_values=range(max_index,0,-1)
     """
     ## Find clusters
-    clusters = [map(operator.itemgetter(1), g) for k, g in \
-                itertools.groupby(enumerate(indices), lambda (i,x):i-x)]
+    clusters = [list(map(operator.itemgetter(1), g)) for k, g in \
+                itertools.groupby(enumerate(indices), lambda i_x:i_x[0]-i_x[1])]
     ## Minimize on clusters
     result = []
     for c in clusters:
@@ -3517,7 +3521,7 @@ class nullcline_zone_leaf(zone_leaf):
             zone_width = self.pars.zone_width
         except AttributeError:
             zone_width = np.inf  # may fail unexpectedly
-            print "Warning: zone_width parameter defaulted to infinity"
+            print("Warning: zone_width parameter defaulted to infinity")
         min_zone_x = x_center - zone_width
         max_zone_x = x_center + zone_width
         # Grow domain of zone past known sample points with same property
@@ -4000,7 +4004,7 @@ def show_PPs(gen, x, y, traj, t_start, t_step, t_end, moviename=None, doms=None,
     while t <= t_end:
         pt = traj(t)
         i += 1
-        print "Frame %i, t = %.4f: step %.4f until %.4f" % (i, t, t_step, t_end)
+        print("Frame %i, t = %.4f: step %.4f until %.4f" % (i, t, t_step, t_end))
         if moviename is not None:
             saveplot = 'pp_fig_%03d' % i
             format = 'png'
@@ -4161,8 +4165,8 @@ class mesh_patch_2D(object):
             try:
                 res[i] = f(p)
             except:
-                print "Problem evaluating supplied function on mesh patch at " \
-                    "point ", p
+                print("Problem evaluating supplied function on mesh patch at " \
+                    "point ", p)
                 raise
         return res
 
@@ -4199,7 +4203,7 @@ class mesh_patch_2D(object):
 ##            print "Min grad using ixs", ixs
             use_vals = [vals[i] for i in ixs]
         else:
-            ixs = range(1,self.n)
+            ixs = list(range(1,self.n))
             use_vals = vals
         return vals, ixs, use_vals
 
@@ -4438,7 +4442,7 @@ def create_test_fn(gen, tmax, dist_pts):
         try:
             test_traj = gen.compute('test')
         except:
-            print "Problem integrating test trajectory at i.c. ", ic
+            print("Problem integrating test trajectory at i.c. ", ic)
             raise
         test_pts = test_traj.sample(coords=dist_pts.all_pts.coordnames)
         # distance of endpoint to pointset
@@ -4467,7 +4471,7 @@ def create_test_fn_with_events(gen, tmax, dist_pts, iso_ev, other_evnames, pars_
         try:
             test_traj = gen.compute('test')
         except:
-            print "Problem integrating test trajectory at i.c. ", ic
+            print("Problem integrating test trajectory at i.c. ", ic)
             raise
         test_pts = test_traj.sample(coords=dist_pts.all_pts.coordnames)
         # distance of endpoint to pointset
@@ -4497,7 +4501,7 @@ def _xinf_ND(xdot,x0,args=(),xddot=None,xtol=1.49012e-8):
     except (ValueError, TypeError, OverflowError):
         xinf_val = NaN
     except:
-        print "Error in fsolve:", sys.exc_info()[0], sys.exc_info()[1]
+        print("Error in fsolve:", sys.exc_info()[0], sys.exc_info()[1])
         xinf_val = NaN
     else:
         if result[2] in (1,2,3): #,4,5):
@@ -4564,8 +4568,8 @@ def _find_min_pt(gen, q, pos1, pts, pars_to_vars, iso_ev, other_evnames,
         assert len(perp_ev) == 1
         t_ev = perp_ev['t'][0] + tdata_local[0]
     except:
-        print "Event name:", iso_ev
-        print perp_ev
+        print("Event name:", iso_ev)
+        print(perp_ev)
         raise ValueError("No nearest point found with event")
     return (perp_ev, t_ev)
 

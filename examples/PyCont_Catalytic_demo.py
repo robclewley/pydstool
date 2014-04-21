@@ -29,9 +29,9 @@ testDS = Generator.Dopri_ODEsystem(DSargs)
 PyCont = ContClass(testDS)
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
 str = """
 PCargs = args(name='EQ1', type='EP-C')
@@ -45,68 +45,68 @@ PyCont.newCurve(PCargs)
 PyCont['EQ1'].forward()
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-print 'Computing curve...'
-exec str
+print('Computing curve...')
+exec(str)
 
 str = """
 PyCont['EQ1'].info()
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
 str = """
 X = PyCont['EQ1'].getSpecialPoint('LP1')
-print X
+print(X)
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
 str = """
-print X.labels['LP']['data'].a
+print(X.labels['LP']['data'].a)
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
 str = """
 PyCont['EQ1'].display(axes=(1,2,1))
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 show()
 
 str = """
 PyCont['EQ1'].display(('q2','x'), axes=(1,2,2))
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
 str = """
 PyCont.plot.info()
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
 str = """
 PyCont.info()
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
 str = """
 PCargs = args(name='HO1', type='H-C2')
@@ -120,19 +120,19 @@ PyCont.newCurve(PCargs)
 PyCont['HO1'].forward()
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-print 'Computing curve...'
-exec str
+print('Computing curve...')
+exec(str)
 
 str = """
 PyCont.plot.clearall()
 PyCont.display(('q2','x'))
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
 str = """
 PCargs = args(name='FO1', type='LP-C')
@@ -145,45 +145,45 @@ PyCont.newCurve(PCargs)
 PyCont['FO1'].forward()
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-print 'Computing curve...'
-exec str
+print('Computing curve...')
+exec(str)
 
 str = """
 PyCont.plot.clearall()
 PyCont.display(('q2','x'))
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
 str = """
 PyCont['FO1'].backward()
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-print 'Computing curve...'
-exec str
+print('Computing curve...')
+exec(str)
 
 str = """
 PyCont.plot.fig1.axes1.FO1.delete()
 PyCont['FO1'].display(('q2','x'))
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
 str = """
 PyCont.plot.toggleLabels('off')
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
 str = """
 PyCont.plot.toggleLabels('on')
@@ -192,9 +192,9 @@ PyCont.plot.toggleCurves('off', byname = 'HO1')
 PyCont.plot.fig1.axes1.HO1.toggleCurve('off')
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
 str = """
 PyCont.computeEigen()
@@ -202,10 +202,10 @@ PyCont.display(coords=('q2','x'), stability=True, figure='fig2')
 PyCont.plot.fig2.toggleAll('off', bytype='P')
 """
 
-print '\n' + c*d(str) + str + c*d(str)
+print('\n' + c*d(str) + str + c*d(str))
 #dummy = raw_input()
-exec str
+exec(str)
 
-print '\n'
+print('\n')
 
 #dummy = raw_input()

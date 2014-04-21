@@ -10,7 +10,7 @@
 
 Rob Clewley, September 2005.
 """
-from __future__ import division, absolute_import
+from __future__ import division, absolute_import, print_function
 
 from PyDSTool import *
 from copy import copy
@@ -1195,7 +1195,7 @@ def makeSynapse(name, gatevar, precompartment, typestr, threshfun=None,
             raise TypeError("threshold function must be a string or a "
                             "QuantSpec")
         if threshfun[0] not in funbody:
-            print "Warning: voltage name %s does not appear in function body!"%threshfun[0]
+            print("Warning: voltage name %s does not appear in function body!"%threshfun[0])
         f = Fun(funbody, [threshfun[0]], 'thresh')
     assert len(f.signature) == 1, \
            'threshold function must be a function of a single argument (voltage)'

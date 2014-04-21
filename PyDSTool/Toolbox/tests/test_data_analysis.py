@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from numpy import arange
 from numpy.linalg import norm
 import numpy.random as rand
@@ -34,7 +36,7 @@ def test_find_diameter(with_plot=False):
 
     # test function for radius of data set
     diam = find_diameter(spiral, 0.5)
-    print "\nDiameter of spiral to within +/- 0.5 is", diam
+    print("\nDiameter of spiral to within +/- 0.5 is", diam)
     assert abs(diam - 2.75) < 0.5
     #centre_ix = find_central_point(spiral)
     centre_ix = 80  # pick a point out on the arm
@@ -42,13 +44,13 @@ def test_find_diameter(with_plot=False):
     times = 0.1 * arange(0, len(spiral))
     rec_info = find_recurrences(spiral, centre_ix, diam / 3, times)
 
-    print "\nall data indices in ball: ", rec_info.ball_ixs
+    print("\nall data indices in ball: ", rec_info.ball_ixs)
 
-    print "\npartitions found (by index): ", rec_info.partitions
+    print("\npartitions found (by index): ", rec_info.partitions)
 
-    print "\nnumber of contiguous traj points in a ball near centre_ix = ", rec_info.partition_lengths
-    print "\nrecurrence times for a ball around the black square of radius %.3f" % (diam / 3)
-    print "for the partitions found are ", rec_info.rec_times
+    print("\nnumber of contiguous traj points in a ball near centre_ix = ", rec_info.partition_lengths)
+    print("\nrecurrence times for a ball around the black square of radius %.3f" % (diam / 3))
+    print("for the partitions found are ", rec_info.rec_times)
 
     if with_plot:
         from matplotlib.pyplot import figure, plot, show
