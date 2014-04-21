@@ -106,7 +106,7 @@ targetLangs = ['c', 'python', 'matlab'] #, 'xpp', 'dstool'
 
 _num_types = (float, int, floating, integer) # complex, complexfloating
 
-_int_types = (int, integer, long)
+_int_types = six.integer_types + (integer, )
 _float_types = (float, floating)
 _complex_types = (complex, complexfloating)
 _real_types = (int, integer, float, floating)
