@@ -108,9 +108,9 @@ _seq_types = (list, tuple, ndarray)
 
 _all_numpy_int = (int_, int0, int8, int16, int32, int64)
 
-_all_int = (int, integer)+_all_numpy_int
-_all_float = (float, floating)+_all_numpy_float
-_all_complex = (complex, complexfloating)+_all_numpy_complex
+_all_int = _int_types+_all_numpy_int
+_all_float = _float_types+_all_numpy_float
+_all_complex = _complex_types+_all_numpy_complex
 
 LargestInt32 = 2147483647
 Macheps = finfo(double).eps
