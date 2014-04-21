@@ -38,6 +38,12 @@ except ImportError:
 else:
     _all_numpy_complex = (complex_, complex64, complex128, complex192)
 
+try:
+    from scipy.misc import factorial
+except ImportError:
+    # retain backward compatibility to older scipy versions
+    from scipy import factorial
+
 
 import time
 from copy import copy, deepcopy
@@ -2353,11 +2359,6 @@ class KroghInterpolator(object):
             raise ValueError, "%d x values provided and %d y values; must be equal" % (n, nn)
         self.r = r
 
-        try:
-            from scipy.misc import factorial
-        except ImportError:
-            # retain backward compatibility to older scipy versions
-            from scipy import factorial
         c = npy.zeros((n+1,r))
         c[0] = yi[0]
         Vk = npy.zeros((n,r))
@@ -2480,7 +2481,7 @@ class KroghInterpolator(object):
             for i in xrange(1,n-k+1):
                 pi[i] = w[k+i-1]*pi[i-1]+pi[i]
                 cn[k] = cn[k]+pi[i,:,npy.newaxis]*cn[k+i]
-            cn[k]*=spy.misc.factorial(k)
+            cn[k]*=factorial(k)
 
         cn[n,...] = 0
         if not self.vector_valued:
