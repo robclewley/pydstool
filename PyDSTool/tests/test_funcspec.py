@@ -7,7 +7,6 @@
 import os
 import platform
 import re
-import sys
 
 import pytest
 
@@ -220,7 +219,7 @@ def _compare_with_file(specstr, filename):
                 assert set(extract_deps(s)) == set(extract_deps(spec[i]))
 
 
-@pytest.mark.skipif("int(sys.version[0]) > 2")
+@pytest.mark.xfail(run=False, reason="FIXME: test relies on order of keys in dict")
 def test_funcspecs_python(fsargs):
     _compare_with_file(RHSfuncSpec(fsargs)._infostr(verbose=2), "funcspec_python.out")
 
@@ -237,7 +236,7 @@ def test_funcspec_recreate(fsargs):
     assert cspec._infostr(verbose=2) == cspec_recreated._infostr(verbose=2)
 
 
-@pytest.mark.skipif("int(sys.version[0]) > 2")
+@pytest.mark.xfail(run=False, reason="FIXME: test relies on order of keys in dict")
 def test_funcspecs_c(fsargs):
     fsargs['targetlang'] = 'c'
     fsargs['codeinsert_start'] = "fprintf('code inserted at start\n')"
