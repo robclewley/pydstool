@@ -3,6 +3,13 @@ Release notes: Highlights of new features
 
 As of 2014: see http://github.com/robclewley/pydstool
 
+
+version 0.??
+---------------------------------
+
+* Python 3.3 compatibility
+* Standard Python installer using `python setup.py install`
+
 version 0.88 02 Dec 2012
 ---------------------------------
 This is primarily a bug fix release in the run-up to version 0.90.
