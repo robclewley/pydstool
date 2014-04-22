@@ -1,4 +1,4 @@
-include *.txt
+include *.txt *.rst
 recursive-include PyDSTool/integrator *.f *.c *.h *.i
 recursive-include PyDSTool/PyCont *.txt Makefile
 recursive-include PyDSTool/PyCont/auto/cmds *.csh *.sh
