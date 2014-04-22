@@ -87,16 +87,17 @@ setup(
         "scipy>=0.9",
         "numpy>=1.6"
     ],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'mock'],
     cmdclass={
         'test': PyTest,
         'clean': clean
     },
     author="Rob Clewley; W. Erik Sherwood; M. Drew Lamar; Vladimir Zakharov",
+    author_email="rob.clewley@gmail.com",
     maintainer="Rob Clewley",
     maintainer_email="rob.clewley@gmail.com",
     description=("Python dynamical systems simulation and modeling"),
-    long_description = read('README.md'),
+    long_description = read('README.rst'),
     license = "BSD",
     keywords = "dynamical systems, bioinformatics, modeling, bifurcation analysis",
     url = "http://pydstool.sourceforge.net",
