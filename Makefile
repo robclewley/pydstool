@@ -46,8 +46,8 @@ clean:
 	-@find . -maxdepth 1 -type d \( -name "auto_temp" -o -name "radau5_temp" -o -name "dopri853_temp" \) -exec rm -rf {} \;
 	-@find examples -maxdepth 1 -type d \( -name "auto_temp" -o -name "radau5_temp" -o -name "dopri853_temp" \) -exec rm -rf {} \;
 	-@find . -type f \( -name "dop853_*_vf.py" -o -name "radau5_*_vf.py" -o -name "auto_*_vf.py" \) -delete
-	-@find . -type f -name "*.so" -delete
-	-@find . -type f -name "*module.c" -delete
+	-@find . -path ./.tox -prune -o -type f -name "*.so" -exec rm -f {} \;
+	-@find . -path ./.tox -prune -o -type f -name "*module.c" -exec rm -rf {} \;
 	-@find . \( -name "temp*.pkl" -o -name "fort.*" -o -name "tvals.dat" -o -name "varvals.dat" -o -name "vanderPol.dat" \) -delete
 
 distclean: clean
