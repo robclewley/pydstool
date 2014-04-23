@@ -16,7 +16,7 @@ class vertex(object):
     def __eq__(self, other):
         return alltrue(self.pos == other.pos)
 
-    def __neq__(self, other):
+    def __ne__(self, other):
         return not self.__eq__(other)
 
 
@@ -29,7 +29,7 @@ class edge(object):
     def __eq__(self, other):
         return self.u == other.u and self.v == other.v
 
-    def __neq__(self, other):
+    def __ne__(self, other):
         return not self.__eq__(other)
 
 

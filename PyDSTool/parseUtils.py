@@ -980,7 +980,7 @@ class symbolMapClass(object):
         except AttributeError:
             return False
 
-    def __neq__(self, other):
+    def __eq__(self, other):
         return not self.__eq__(other)
 
     def __copy__(self):
