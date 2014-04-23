@@ -19,6 +19,7 @@ from .Symbolic import QuantSpec
 # Other imports
 from copy import copy, deepcopy
 from numpy import any
+import operator
 
 import PyDSTool.core.codegenerators as CG
 
@@ -232,7 +233,7 @@ class FuncSpec(object):
                 specQ = QuantSpec('__spectemp__', spec)
                 [deps.add((name, s)) for s in specQ if s in valid_targets]
 
-            self._dependencies = list(deps)
+            self._dependencies = sorted(deps, key=operator.itemgetter(0))
 
         return self._dependencies
 
