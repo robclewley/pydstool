@@ -19,6 +19,7 @@ def _generate_filenames(vf_name):
         ('%s_', '_vf.pyc'),
         ('_%s_', '_vf.so'),
         ('_%s_', '_vf.cpython-33m.so'),
+        ('_%s_', '_vf.cpython-34m.so'),
     )
     for g in ['radau5', 'dop853']:
         for prefix, suffix in parts:
