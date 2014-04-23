@@ -974,6 +974,8 @@ class symbolMapClass(object):
             else:
                 return res
 
+    __hash__ = None
+
     def __eq__(self, other):
         try:
             return self.lookupDict == other.lookupDict

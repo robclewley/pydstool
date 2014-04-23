@@ -409,6 +409,8 @@ class condition(object):
         self.fcd = feature_composition_dict
         self.results = common.args()
 
+    __hash__ = None
+
     def __eq__(self, other):
         try:
             return self.namemap == other.namemap

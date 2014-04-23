@@ -519,6 +519,7 @@ class Point(object):
         except ZeroDivisionError:
             raise ValueError("Norm order for point cannot be zero")
 
+    __hash__ = None
 
     def _infostr(self, verbose=0):
         precision = 8
@@ -1326,6 +1327,8 @@ class Pointset(Point):
             except:
                 raise TypeError("Invalid type for comparison with Pointset")
 
+    __hash__ = None
+
     def __eq__(self, other):
         if isinstance(other, Pointset):
             if not all(self.indepvararray == other.indepvararray):
@@ -2075,6 +2078,7 @@ class PointInfo(object):
         else:
             raise KeyError("Index or label not found")
 
+    __hash__ = None
 
     def __eq__(self, other):
         try:

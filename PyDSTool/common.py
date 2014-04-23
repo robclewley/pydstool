@@ -497,6 +497,8 @@ class args(object):
     def __delitem__(self, k):
         del self.__dict__[k]
 
+    __hash__ = None
+
     def __cmp__(self, other):
         return self.__dict__ == other
 
@@ -3436,6 +3438,9 @@ def nearest_2n_indices(x, i, n):
 class DomainType(object):
     def __init__(self, name):
         self.name = name
+
+    def __hash__(self):
+        return hash(self.name)
 
     def __eq__(self, other):
         try:

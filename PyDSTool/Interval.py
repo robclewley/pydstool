@@ -153,6 +153,7 @@ class Interval(object):
         else:
             raise PyDSTool_ExistError('Interval undefined')
 
+    __hash__ = None
 
     def __eq__(self, other):
         assert isinstance(other, Interval)

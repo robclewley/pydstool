@@ -1184,6 +1184,8 @@ class regObject(object):
         # maps local variable name to globalized name (if global, o/w identical)
         self.namemap = copy(namemap)
 
+    __hash__ = None
+
     def __eq__(self, other):
         tests = []
         try:

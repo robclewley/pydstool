@@ -1192,6 +1192,8 @@ class QuantSpec(object):
 
     __str__ = __call__
 
+    __hash__ = None
+
     def __eq__(self, other, diff=False):
         results = []
         try:
