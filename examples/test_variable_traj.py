@@ -3,10 +3,6 @@ Tests and demonstration of Variable class
 """
 from __future__ import print_function
 
-import sys
-# FIXME: broken on Python 3
-if sys.version[0] > '2':
-    raise RuntimeError('This example is broken on Python 3')
 from PyDSTool import *
 
 w_pts = Pointset({'coordarray': array([4.456, 2.34634, 7.3431, 5.443], float64),

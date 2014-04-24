@@ -54,10 +54,10 @@ class Redirector(object):
 
             if self.fd == STDOUT:
                 self.old = sys.stdout
-                sys.stdout = os.fdopen(self.tmpfd, 'w+b')
+                sys.stdout = os.fdopen(self.tmpfd, 'w')
             else:
                 self.old = sys.stderr
-                sys.stderr = os.fdopen(self.tmpfd, 'w+b')
+                sys.stderr = os.fdopen(self.tmpfd, 'w')
 
             self.started = True
 
@@ -76,7 +76,7 @@ class Redirector(object):
             else:
                 sys.stderr.close()
                 sys.stderr = self.old
-            tmpr = open(self.tmpfn, 'rb')
+            tmpr = open(self.tmpfn, 'r')
             output = tmpr.read()
             tmpr.close()  # this also closes self.tmpfd
             os.remove(self.tmpfn)
