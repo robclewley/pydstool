@@ -14,10 +14,6 @@
 
     Robert Clewley, October 2005.
 """
-import sys
-# FIXME: broken on Python 3
-if sys.version[0] > '2':
-    raise RuntimeError('This example is broken on Python 3')
 
 from PyDSTool import *
 from time import clock

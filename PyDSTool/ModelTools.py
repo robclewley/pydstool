@@ -1536,13 +1536,18 @@ class EvMapping(object):
         self.makeCallFn()
 
 
-    def __cmp__(self, other):
+    __hash__ = None
+
+    def __eq__(self, other):
         try:
             return alltrue([self.assignDict==other.assignDict,
                             self.defString==other.defString,
                             self.activeDict==other.activeDict])
         except AttributeError:
             return False
+
+    def __ne__(self, other):
+        return not self == other
 
     def makeCallFn(self):
         """Note that the function created alters xdict, pdict, idict, and estruct
