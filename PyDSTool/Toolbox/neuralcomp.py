@@ -569,7 +569,7 @@ def makeChannel_halfact(name,voltage=voltage,s=None,isinstant=False,sinf=None,
     """Make an ionic membrane channel using the steady state and rate function formalism.
 
     i.e., that the gating variable s has a differential equation in the form:
-       s' = (sinf(v) - v)/taus(v)
+       s' = (sinf(v) - s)/taus(v)
     The channel may have up to two gating variables, each of which is given by an ODE.
 
     If either gating variable has its corresponding 'isinstant' argument set to True, then
