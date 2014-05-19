@@ -21,14 +21,18 @@ Requirements
 *  `numpy <http://www.numpy.org>`__ > 1.6;
 *  `scipy <http://www.scipy.org>`__ > 0.9.
 
+Dopri/Radau and AUTO interface requirements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+*  `swig <http://www.swig.org>`__ > 2.0;
+*  C compiler (e.g, gcc or clang);
+*  GNU Fortran compiler (Radau only).
+
 Optional requirements
 ^^^^^^^^^^^^^^^^^^^^^
 
 *  `matplotlib <http://www.matplotlib.org>`__ 
    Matplotlib is needed for plotting functionality and running many of the examples.
-
-*  `swig <http://www.swig.org>`__ > 2.0 
-   SWIG is needed to compile Radau and Dopri ODE generators.
 
 Recommended
 ^^^^^^^^^^^
@@ -110,22 +114,25 @@ platform and settings.
 Running test suite
 ^^^^^^^^^^^^^^^^^^
 
+To run test suite, install `py.test <http://www.pytest.org>`__ and
+`mock <http://www.voidspace.org.uk/python/mock/>`__, using ``pip``:
+
+::
+
+        sudo pip install py.test mock
+
+or package manager:
+
+::
+
+        sudo apt-get install python-pytest python-mock
+
+Then run:
+
 ::
 
         python setup.py test
 
-This requires `py.test <http://www.pytest.org>`__, install it using
-``pip``:
-
-::
-
-        sudo pip install py.test
-
-or with package manager:
-
-::
-
-        sudo apt-get install python-pytest
 
 Getting coverage report
 ^^^^^^^^^^^^^^^^^^^^^^^
