@@ -5,7 +5,7 @@ PyDSTool v0.88
 .. image:: https://travis-ci.org/robclewley/pydstool.svg?branch=master
    :target: https://travis-ci.org/robclewley/pydstool
    :alt: Build Status
-   
+
 .. image:: https://coveralls.io/repos/robclewley/pydstool/badge.png?branch=master
    :target: https://coveralls.io/r/robclewley/pydstool?branch=master
    :alt: Coverage Status
@@ -31,7 +31,7 @@ Dopri/Radau and AUTO interface requirements
 Optional requirements
 ^^^^^^^^^^^^^^^^^^^^^
 
-*  `matplotlib <http://www.matplotlib.org>`__ 
+*  `matplotlib <http://www.matplotlib.org>`__
    Matplotlib is needed for plotting functionality and running many of the examples.
 
 Recommended
