@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, print_function
 
-import platform
 import sys
 
 from numpy.testing import assert_array_almost_equal
@@ -25,13 +24,11 @@ def test_vode():
 
 
 @pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
-@pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_dopri():
     _check_continued_integration(Dopri_ODEsystem)
 
 
 @pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
-@pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_radau():
     _check_continued_integration(Radau_ODEsystem)
 

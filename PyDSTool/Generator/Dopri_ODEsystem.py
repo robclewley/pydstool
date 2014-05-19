@@ -768,7 +768,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                                  sources=modfilelist,
                                  include_dirs=incdirs,
 #                                 library_dirs=['./'],
-                                 extra_compile_args=utils.extra_arch_arg(['-w', '-D__DOPRI__']),
+                                 extra_compile_args=utils.extra_arch_arg(['-w', '-D__DOPRI__', '-Wno-return-type']),
                                  extra_link_args=utils.extra_arch_arg(['-w']))])
         except:
             print("\nError occurred in generating Dopri system...")

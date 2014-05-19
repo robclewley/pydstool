@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, print_function
 
-import platform
 import sys
 
 from numpy import linspace
@@ -27,19 +26,16 @@ def test_euler_vode():
 
 
 @pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
-@pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_vode_radau():
     _cross_check_forward_integration(Vode_ODEsystem, Radau_ODEsystem)
 
 
 @pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
-@pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_vode_dopri():
     _cross_check_forward_integration(Vode_ODEsystem, Dopri_ODEsystem)
 
 
 @pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
-@pytest.mark.skipif("platform.system() == 'FreeBSD' and int(platform.release()[:2].replace('.', '')) >= 10")
 def test_radau_dopri():
     _cross_check_forward_integration(Radau_ODEsystem, Dopri_ODEsystem)
 
