@@ -22,7 +22,7 @@ before_install:
     - python -c 'import struct; print(struct.calcsize("P") * 8)'
     - sudo apt-get update -qq
     - sudo apt-get install -qq liblapack-dev libatlas-dev libatlas-base-dev gfortran swig
-    - pip install --upgrade pip setuptools
+    - pip install --upgrade pip setuptools pytest pytest-xdist
     - pip install --use-wheel six
     - export PIP_CMD='pip install --find-links http://wheels.astropy.org/ --find-links http://wheels2.astropy.org/ --use-wheel'
 
