@@ -1,6 +1,7 @@
 """Test pickling for saving and loading various PyDSTool objects"""
 
 import os
+from tempfile import mkstemp
 from numpy import (
     array,
     float64,
@@ -24,36 +25,41 @@ from PyDSTool.Generator import (
 )
 import pytest
 
+@pytest.fixture
+def fname():
+    _, fname = mkstemp()
+    return fname
 
-def test_saveload_array():
+
+def test_saveload_array(fname):
     """Test pickling for saving and loading array"""
     a = array([1, Inf])
     b = [Inf, 0]
 
-    saveObjects([a, b], 'temp_objects.pkl', True)
-    loadedObjs = loadObjects('temp_objects.pkl')
+    saveObjects([a, b], fname, True)
+    loadedObjs = loadObjects(fname)
     assert a[0] == loadedObjs[0][0]
     assert a[1] == loadedObjs[0][1]
     assert b[0] == loadedObjs[1][0]
-    os.remove('temp_objects.pkl')
+    os.remove(fname)
 
 
-def test_saveload_interval():
+def test_saveload_interval(fname):
     """Test pickling for saving and loading 'Interval'"""
 
     m = Interval('test1', float, (-Inf, 1))
     s = Interval('a_singleton', float, 0.4)
-    saveObjects([m, s], 'temp_objects.pkl', True)
-    objs_ivals = loadObjects('temp_objects.pkl')
+    saveObjects([m, s], fname, True)
+    objs_ivals = loadObjects(fname)
     assert objs_ivals[0].get(1) == 1
 
     # Try loading partial list from a larger file
-    objs_part = loadObjects('temp_objects.pkl', ['a_singleton'])
+    objs_part = loadObjects(fname, ['a_singleton'])
     assert objs_part[0] == s
-    os.remove('temp_objects.pkl')
+    os.remove(fname)
 
 
-def test_saveload_point_and_pointset():
+def test_saveload_point_and_pointset(fname):
     """Test pickling for saving and loading 'Point' and 'Pointset'"""
 
     x = Point(
@@ -75,14 +81,14 @@ def test_saveload_point_and_pointset():
         indepvartype=float
     )
 
-    saveObjects([x, v], 'temp_objects.pkl', True)
-    objs_pts = loadObjects('temp_objects.pkl')
+    saveObjects([x, v], fname, True)
+    objs_pts = loadObjects(fname)
     assert objs_pts[0] == x
     assert objs_pts[1] == v
-    os.remove('temp_objects.pkl')
+    os.remove(fname)
 
 
-def test_saveload_variable():
+def test_saveload_variable(fname):
     """Test pickling for saving and loading 'Variable'"""
 
     var1 = Variable(
@@ -92,13 +98,13 @@ def test_saveload_variable():
         ),
         name='v1'
     )
-    saveObjects(var1, 'temp_objects.pkl', True)
-    obj_var = loadObjects('temp_objects.pkl')[0]
+    saveObjects(var1, fname, True)
+    obj_var = loadObjects(fname)[0]
     assert obj_var(1.5) == var1(1.5)
-    os.remove('temp_objects.pkl')
+    os.remove(fname)
 
 
-def test_saveload_trajectory():
+def test_saveload_trajectory(fname):
     """Test pickling for saving and loading 'Trajectory'"""
 
     var1 = Variable(
@@ -116,10 +122,10 @@ def test_saveload_trajectory():
         name='v2'
     )
     traj = Trajectory('traj1', [var1, var2])
-    saveObjects(traj, 'temp_objects.pkl', True)
-    traj_loaded = loadObjects('temp_objects.pkl')[0]
+    saveObjects(traj, fname, True)
+    traj_loaded = loadObjects(fname)[0]
     assert traj_loaded(2.0) == traj(2.0)
-    os.remove('temp_objects.pkl')
+    os.remove(fname)
 
 
 @pytest.fixture
@@ -136,19 +142,19 @@ def interptable():
     return InterpolateTable(itableArgs)
 
 
-def test_saveload_interpolated_table_generator(interptable):
+def test_saveload_interpolated_table_generator(interptable, fname):
     """Test pickling for saving and loading 'InterpolateTable' Generator"""
     itabletraj = interptable.compute('itable')
-    saveObjects(itabletraj, 'temp_objects.pkl', True)
-    obj_itab = loadObjects('temp_objects.pkl')
+    saveObjects(itabletraj, fname, True)
+    obj_itab = loadObjects(fname)
     t = 0.1
     while t < 2.1:
         assert obj_itab[0](t) == itabletraj(t)
         t += 0.1
-    os.remove('temp_objects.pkl')
+    os.remove(fname)
 
 
-def test_saveload_vode_odesystem(interptable):
+def test_saveload_vode_odesystem(interptable, fname):
     """Test pickling for saving and loading 'Vode_ODEsystem' Generator"""
 
     # Vode object with event and external input trajectory (defined earlier)
@@ -185,17 +191,17 @@ def test_saveload_vode_odesystem(interptable):
     }
     testODE = Vode_ODEsystem(DSargs)
     odetraj = testODE.compute('testode')
-    saveObjects([odetraj, testODE], 'temp_objects.pkl', True)
-    objs_ode = loadObjects('temp_objects.pkl')
+    saveObjects([odetraj, testODE], fname, True)
+    objs_ode = loadObjects(fname)
     objs_ode[1].diagnostics.clearWarnings()
     assert len(objs_ode[1].diagnostics.warnings) == 0
     odetraj2 = objs_ode[1].compute('testode2')
     assert odetraj2(0.6) == odetraj(0.6)
     assert len(objs_ode[1].diagnostics.warnings) == 1
-    os.remove('temp_objects.pkl')
+    os.remove(fname)
 
 
-def test_saveload_explicitfngen():
+def test_saveload_explicitfngen(fname):
     """Test pickling for saving and loading 'ExplicitFnGen'"""
 
     args = {
@@ -211,14 +217,14 @@ def test_saveload_explicitfngen():
     sintraj1 = sin_gen.compute('sine1')
     sin_gen.set(pars={'speed': 2})
     sintraj2 = sin_gen.compute('sine2')
-    saveObjects([sin_gen, sintraj1, sintraj2], 'temp_objects.pkl', True)
-    objs_sin = loadObjects('temp_objects.pkl')
+    saveObjects([sin_gen, sintraj1, sintraj2], fname, True)
+    objs_sin = loadObjects(fname)
     assert sintraj1(0.55) == objs_sin[1](0.55)
     assert sintraj2(0.55) == objs_sin[2](0.55)
-    os.remove('temp_objects.pkl')
+    os.remove(fname)
 
 
-def test_saveload_implicitfngen():
+def test_saveload_implicitfngen(fname):
     """Test pickling for saving and loading 'ImplicitFnGen'"""
 
     argsi = {
@@ -238,13 +244,13 @@ def test_saveload_implicitfngen():
 
     testimp = ImplicitFnGen(argsi)
     traj1 = testimp.compute('traj1')
-    saveObjects([testimp, traj1], 'temp_objects.pkl', True)
-    objs_imp = loadObjects('temp_objects.pkl')
+    saveObjects([testimp, traj1], fname, True)
+    objs_imp = loadObjects(fname)
     assert objs_imp[0].xdomain['y'] == [-2, 2]
     assert traj1(-0.4) == objs_imp[1](-0.4)
-    os.remove('temp_objects.pkl')
+    os.remove(fname)
 
 
-def test_saveload_model():
+def test_saveload_model(fname):
     """Test pickling for saving and loading 'Model'"""
     pass
