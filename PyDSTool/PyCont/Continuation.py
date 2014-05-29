@@ -57,6 +57,7 @@ from numpy import array, float, complex, int, float64, complex64, int32, \
     zeros, divide, subtract, arange, all, any, argsort, reshape, nonzero, \
     log10, Inf, NaN, isfinite, r_, c_, sign, mod, mat, log2, \
     subtract, divide, transpose, eye, real, imag, isnan, resize
+from numpy.linalg import cond # not present in scipy.linalg!
 
 from copy import copy, deepcopy
 from math import ceil
