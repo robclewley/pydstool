@@ -12,6 +12,22 @@ PyDSTool v0.88
 
 April 2014. *This is a beta release version.*
 
+PyDSTool is a sophisticated & integrated simulation and analysis environment
+for dynamical systems models of physical systems (ODEs, DAEs, maps, and hybrid
+systems).
+
+PyDSTool is platform independent, written primarily in Python with some
+underlying C and Fortran legacy code for fast solving. It makes extensive use
+of the numpy and scipy libraries. PyDSTool supports symbolic math,
+optimization, phase plane analysis, continuation and bifurcation analysis, data
+analysis, and other tools for modeling -- particularly for biological
+applications.
+
+The project is fully open source with a BSD license, and welcomes contributions
+from the community.
+
+See more at `pydstool.sourceforge.net <http://pydstool.sourceforge.net>`__.
+
 --------------
 
 Requirements
