@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from PyDSTool import *
 import nineml.abstraction_layer as al
 from PyDSTool.Toolbox.NineML import *
@@ -357,8 +359,8 @@ def test_Izh_FS(Iexts=None):
         pts = izh.sample(name)
         evs = izh.getTrajEventTimes(name)['spikeOutput']
         ISIs = np.diff(evs)
-        print "Iext =", Iext, ":"
-        print "  Mean ISI = %.3f, variance = %.6f" % (np.mean(ISIs), np.var(ISIs))
+        print("Iext =", Iext, ":")
+        print("  Mean ISI = %.3f, variance = %.6f" % (np.mean(ISIs), np.var(ISIs)))
 
         Vp = izh.query('pars')['Vpeak']
         plt.figure(6)
@@ -407,20 +409,20 @@ def test_compound():
 
 
 
-print "Testing Hodgkin Huxley cell model"
+print("Testing Hodgkin Huxley cell model")
 test_HH()
 
-print "Testing adaptive Integrate and Fire cell model"
+print("Testing adaptive Integrate and Fire cell model")
 test_aeIF()
 
-#print "Testing compound cell model"
+#print("Testing compound cell model")
 #test_compound()
 
-print "Testing basic Izhikevich cell model"
+print("Testing basic Izhikevich cell model")
 test_Izh()
 
-print "Testing Izhikevich fast spiking cell model from XML import"
-print "   at three input current levels"
+print("Testing Izhikevich fast spiking cell model from XML import")
+print("   at three input current levels")
 test_Izh_FS([100,200,400])
 
 plt.show()
