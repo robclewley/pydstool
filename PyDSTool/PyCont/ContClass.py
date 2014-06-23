@@ -18,7 +18,7 @@ from PyDSTool.Model import Model, findTrajInitiator
 from PyDSTool.Generator import Generator
 from PyDSTool.ModelTools import embed
 from PyDSTool import Point, Pointset
-from PyDSTool.common import pickle, Utility, args, filteredDict
+from PyDSTool.common import pickle, Utility, args, filteredDict, isUniqueSeq
 from PyDSTool.utils import remain
 from PyDSTool import utils
 from PyDSTool import common
