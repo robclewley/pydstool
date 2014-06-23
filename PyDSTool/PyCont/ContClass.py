@@ -384,7 +384,7 @@ class ContClass(Utility):
         for v in self.curves.values():
             v.update(args)
 
-    def loadAutoMod(self):
+    def loadAutoMod(self,nobuild=False):
         thisplatform = platform.system()
         if thisplatform == 'Windows':
             self._dllext = ".pyd"
@@ -414,14 +414,26 @@ class ContClass(Utility):
                                 "auto"+self._vf_filename_ext+".py")) and \
                 os.path.isfile(os.path.join(os.getcwd(),
                                 "_auto"+self._vf_filename_ext+self._dllext))):
-            if True:
-                self.funcspec = self.gensys.funcspec.recreate('c')
+            self.funcspec = self.gensys.funcspec.recreate('c')
+            if not nobuild:
                 self.makeAutoLibSource()
                 self.compileAutoLib()
             else:
                 print("Build the library using the makeLib method, or in ")
-                print("stages using the makeLibSource and compileLib methods.")
+                print("stages using the makeAutoLibSource and compileAutoLib methods.")
+                print("Then load the Auto module using the importAutoMod method")
 
+        if not nobuild:
+            self.importAutoMod()
+
+    def importAutoLib(self):
+        """
+        Import the Auto library.
+        This method should be called only after compiling the Auto library.
+
+        In general, users do not need to explicitely call this method except if the "nobuild" option
+        was specified in loadAutoMod.
+        """
         try:
             self._autoMod = __import__("auto"+self._vf_filename_ext, globals())
         except:
