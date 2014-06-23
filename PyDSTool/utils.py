@@ -683,7 +683,7 @@ def loadObjects(filename, namelist=None):
         except EOFError:
             notDone = False
         except:
-            print("Error in un-pickling:")
+            print("Error in un-pickling %s:"%filename)
             print("Was the object created with an old version of PyDSTool?")
             pklfile.close()
             raise
