@@ -43,8 +43,8 @@ undev:
 clean:
 	@find . -type f -name "*.py[co]" -delete
 	@find . -type d -name "__pycache__" -delete
-	-@find . -maxdepth 1 -type d \( -name "auto_temp" -o -name "radau5_temp" -o -name "dopri853_temp" \) -exec rm -rf {} \;
-	-@find examples -maxdepth 1 -type d \( -name "auto_temp" -o -name "radau5_temp" -o -name "dopri853_temp" \) -exec rm -rf {} \;
+	-@find . -maxdepth 1 -type d \( -name "auto_temp" -o -name "radau5_temp" -o -name "dop853_temp" \) -exec rm -rf {} \;
+	-@find examples -maxdepth 1 -type d \( -name "auto_temp" -o -name "radau5_temp" -o -name "dop853_temp" \) -exec rm -rf {} \;
 	-@find . -type f \( -name "dop853_*_vf.py" -o -name "radau5_*_vf.py" -o -name "auto_*_vf.py" \) -delete
 	-@find . -path ./.tox -prune -o -type f -name "*.so" -exec rm -f {} \;
 	-@find . -path ./.tox -prune -o -type f -name "*module.c" -exec rm -rf {} \;

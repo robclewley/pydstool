@@ -781,3 +781,14 @@ def extra_arch_arg(arglist):
         return arglist + ['-m32']
     else:
         return arglist
+
+
+def get_lib_extension():
+    this = platform.system()
+    if this == 'Windows':
+        return ".pyd"
+    elif this not in ['Linux', 'IRIX', 'Solaris', 'SunOS', 'MacOS', 'Darwin', 'FreeBSD']:
+        print("Shared library extension not tested on this platform.")
+        print("If this process fails please report the errors to the")
+        print("developers.")
+    return ".so"
