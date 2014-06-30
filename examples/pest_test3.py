@@ -172,11 +172,11 @@ pts2=HH_test_model('test_iface_traj', tmesh, coords=['v'])
 #plot(tmesh, pts2['v'])
 print("\nResidual norm before feature weighting:")
 print(norm(pest_context.residual(HH_test_model)))
-assert_almost_equal(norm(pest_context.residual(HH_test_model)), 284.769635808)
+assert_almost_equal(norm(pest_context.residual(HH_test_model)), 284.769635808, 3)
 pest_context.set_weights({geom_interface: 0.005, spike_interface: 0.25})
 print("Residual norm after feature weighting:")
 print(norm(pest_context.residual(HH_test_model)))
-assert_almost_equal(norm(pest_context.residual(HH_test_model)), 1.60832200407)
+assert_almost_equal(norm(pest_context.residual(HH_test_model)), 1.60832200407, 4)
 
 ## Parameter estimation
 print('\nEstimating pars gl and vl for fit')
