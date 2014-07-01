@@ -9,6 +9,7 @@
 %{
 #include <numpy/libnumarray.h>
 #include "interface.h"
+#include "radau5mod.h"
 %}
 
 %init %{

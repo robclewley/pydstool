@@ -9,6 +9,7 @@
 %{
 #include <numpy/libnumarray.h>
 #include "interface.h"
+#include "dop853mod.h"
 %}
 
 %init %{
