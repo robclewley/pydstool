@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, print_function
 
-import sys
 import pytest
 
 from numpy import linspace, sin
@@ -12,7 +11,6 @@ from PyDSTool import (
     args,
     Events
 )
-from PyDSTool.utils import architecture
 from PyDSTool.Generator import (
     Dopri_ODEsystem,
     Euler_ODEsystem,
@@ -96,7 +94,6 @@ def dsargs():
     return DSargs
 
 
-@pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
 def test_dopri_event(dsargs):
     """
         Test Dopri_ODEsystem with events involving external inputs.
@@ -107,7 +104,6 @@ def test_dopri_event(dsargs):
     _run_checks(Dopri_ODEsystem(dsargs))
 
 
-@pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
 def test_radau_event(dsargs):
     """
         Test Radau_ODEsystem with events involving external inputs.
@@ -133,7 +129,6 @@ def test_euler_event(dsargs):
 
     dsargs.algparams['init_step'] = 0.0001
     _run_checks(Euler_ODEsystem(dsargs))
-
 
 
 def _run_checks(ode):
