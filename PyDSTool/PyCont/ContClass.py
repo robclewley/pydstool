@@ -424,7 +424,7 @@ class ContClass(Utility):
                 print("Then load the Auto module using the importAutoMod method")
 
         if not nobuild:
-            self.importAutoMod()
+            self.importAutoLib()
 
     def importAutoLib(self):
         """
