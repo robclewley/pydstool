@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .base import CodeGenerator
+from PyDSTool.core.codegenerators.base import CodeGenerator
 
 
 def test_define():
