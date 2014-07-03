@@ -32,7 +32,7 @@ install:
     - if [ "${COVERAGE}" == "yes" ]; then pip install coverage coveralls; fi
 
 script:
-    - if [ "${COVERAGE}" == "yes" ]; then coverage run --source=PyDSTool setup.py test -q; else python setup.py test; fi
+    - if [ "${COVERAGE}" == "yes" ]; then sed -i'' -e 's/--boxed//g' pytest.ini && coverage run --source=PyDSTool setup.py test -q; else python setup.py test; fi
 
 after_success:
     - if [ "${COVERAGE}" == "yes" ]; then coveralls; fi
