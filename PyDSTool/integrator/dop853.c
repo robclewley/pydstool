@@ -543,7 +543,7 @@ static int dopcor (unsigned n, FcnEqDiff fcn, double x, double* y, double *pars,
 	{
 	  nonsti = 0;
 	  iasti++;
-	  if (iasti == 15)
+	  if (iasti == 15) {
 	    if (fileout)
 	      fprintf (fileout, "The problem seems to become stiff at x = %.16e\r\n", x);
 	    else
@@ -552,6 +552,7 @@ static int dopcor (unsigned n, FcnEqDiff fcn, double x, double* y, double *pars,
 	      hout = h;
 	      return -4;
 	    }
+      }
 	}
 	else
 	{
@@ -662,7 +663,7 @@ static int dopcor (unsigned n, FcnEqDiff fcn, double x, double* y, double *pars,
 	for( i = 0; i < n; i++ ) {
 	  if( fabs(y[i]) > magbound[i] ) {
 	    if(fileout)
-	      fprintf(fileout,"The solution exceeded magbound %g in component %d at x=%.16\r\n", magbound[i], i, x);
+	      fprintf(fileout,"The solution exceeded magbound %g in component %d at x=%.16e\r\n", magbound[i], i, x);
 	    return -8;
 	  }
 	}
@@ -673,7 +674,7 @@ static int dopcor (unsigned n, FcnEqDiff fcn, double x, double* y, double *pars,
 	for( i = 0; i < n; i++ ) {
 	  if( fabs(y[i]) > magbound[i] ) {
 	    if(fileout)
-	      fprintf(fileout,"The solution exceeded magbound %g in component %d at x=%.16\r\n", magbound[i], i, x);
+	      fprintf(fileout,"The solution exceeded magbound %g in component %d at x=%.16e\r\n", magbound[i], i, x);
 	    return -8;
 	  }
 	}

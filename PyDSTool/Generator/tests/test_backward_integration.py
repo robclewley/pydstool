@@ -3,12 +3,9 @@
 
 from __future__ import absolute_import, print_function
 
-import sys
-
 from numpy.testing import assert_allclose
 import pytest
 
-from PyDSTool.utils import architecture
 from PyDSTool.Generator import (
     Dopri_ODEsystem,
     Radau_ODEsystem,
@@ -24,12 +21,10 @@ def test_vode():
         _check_backward_integration(Vode_ODEsystem)
 
 
-@pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
 def test_dopri():
     _check_backward_integration(Dopri_ODEsystem)
 
 
-@pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
 def test_radau():
     _check_backward_integration(Radau_ODEsystem)
 

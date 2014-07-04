@@ -6,7 +6,7 @@
 #include <limits.h>
 #include <float.h>
 #include <stdlib.h> 
-#include <memory.h>
+#include "memory.h"
 #include <string.h>
 #include <assert.h>
 #include "Python.h"

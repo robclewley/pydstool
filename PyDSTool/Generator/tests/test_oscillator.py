@@ -18,10 +18,7 @@
 from __future__ import absolute_import, print_function
 
 from numpy import linspace, allclose, array, cos, sin, sqrt
-import sys
-import pytest
 
-from PyDSTool.utils import architecture
 from PyDSTool.Generator import (
     Euler_ODEsystem,
     Vode_ODEsystem,
@@ -68,12 +65,10 @@ def test_vode():
     _check_generator(Vode_ODEsystem)
 
 
-@pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
 def test_radau():
     _check_generator(Radau_ODEsystem)
 
 
-@pytest.mark.skipif("architecture() == 64 and int(sys.version[0]) > 2")
 def test_dopri():
     _check_generator(Dopri_ODEsystem)
 
