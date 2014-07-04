@@ -44,6 +44,12 @@ start = clock()
 PyCont['EQ1'].forward()
 print('done in %.3f seconds!' % (clock()-start))
 
+# Option to delay build of system if want to add user-defined C code
+#PyCont.loadAutoMod(nobuild=True)
+#PyCont.makeAutoLibSource()
+# Make edits to the ABReaction_vf.c file by hand
+#PyCont.compileAutoLib()
+
 PCargs.name = 'LC1'
 PCargs.type = 'LC-C'
 PCargs.initpoint = 'EQ1:H1'
