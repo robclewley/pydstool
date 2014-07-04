@@ -384,7 +384,7 @@ class ContClass(Utility):
         for v in self.curves.values():
             v.update(args)
 
-    def loadAutoMod(self,nobuild=False):
+    def loadAutoMod(self, nobuild=False):
         thisplatform = platform.system()
         if thisplatform == 'Windows':
             self._dllext = ".pyd"
@@ -419,9 +419,9 @@ class ContClass(Utility):
                 self.makeAutoLibSource()
                 self.compileAutoLib()
             else:
-                print("Build the library using the makeLib method, or in ")
+                print("Build the library using the makeAutoLib method, or in ")
                 print("stages using the makeAutoLibSource and compileAutoLib methods.")
-                print("Then load the Auto module using the importAutoMod method")
+                print("Then load the Auto module using the importAutoLib method")
 
         if not nobuild:
             self.importAutoLib()
@@ -712,6 +712,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                                  library_dirs=libdirs+['./'],
                                  libraries=libsources)])
         except:
+            rout.stop()
             print("\nError occurred in generating Auto system...")
             print(sys.exc_info()[0], sys.exc_info()[1])
             raise RuntimeError
