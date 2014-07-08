@@ -13,8 +13,8 @@ from PyDSTool.Generator import (
     Vode_ODEsystem,
 )
 
-from PyDSTool.Generator.tests.helpers import clean_files
-from PyDSTool.Generator.tests.samples import vanDerPol
+from .helpers import clean_files
+from .samples import vanDerPol
 
 
 def test_euler_vode():

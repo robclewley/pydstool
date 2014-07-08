@@ -14,7 +14,7 @@ from PyDSTool.Generator import (
     Radau_ODEsystem,
 )
 
-from PyDSTool.Generator.tests.helpers import clean_files
+from .helpers import clean_files
 
 
 @pytest.fixture

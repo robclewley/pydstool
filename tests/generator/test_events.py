@@ -19,7 +19,7 @@ from PyDSTool.Generator import (
     Vode_ODEsystem,
 )
 
-from PyDSTool.Generator.tests.helpers import clean_files
+from .helpers import clean_files
 
 
 @pytest.fixture

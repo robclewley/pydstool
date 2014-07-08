@@ -26,7 +26,7 @@ from PyDSTool.Generator import (
     Dopri_ODEsystem,
 )
 
-from PyDSTool.Generator.tests.helpers import clean_files
+from .helpers import clean_files
 
 
 def oscillator(t):

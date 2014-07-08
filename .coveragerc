@@ -1,5 +1,5 @@
 [run]
-omit = PyDSTool/tests/*, PyDSTool/Toolbox/tests/*, PyDSTool/Generator/tests/*, PyDSTool/Toolbox/optimizers/tests/*, PyDSTool/Toolbox/optimizers/*/tests/*, **/test_*
+omit = tests/*
 
 [report]
 show_missing = True
