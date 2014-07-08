@@ -5,19 +5,16 @@
 """
 
 import os
-import platform
 import re
 
 import pytest
 
-import pytest
 from PyDSTool import (
     FuncSpec,
     RHSfuncSpec,
     PyDSTool_KeyError,
     args
 )
-from PyDSTool.Generator import Vode_ODEsystem, Dopri_ODEsystem
 
 
 def test_funcspec_raises_exception_if_there_are_invalid_keys():
@@ -219,7 +216,6 @@ def _compare_with_file(specstr, filename):
                 assert set(extract_deps(s)) == set(extract_deps(spec[i]))
 
 
-@pytest.mark.xfail(run=False, reason="FIXME: test relies on order of keys in dict")
 def test_funcspecs_python(fsargs):
     _compare_with_file(RHSfuncSpec(fsargs)._infostr(verbose=2), "funcspec_python.out")
 
@@ -236,7 +232,6 @@ def test_funcspec_recreate(fsargs):
     assert cspec._infostr(verbose=2) == cspec_recreated._infostr(verbose=2)
 
 
-@pytest.mark.xfail(run=False, reason="FIXME: test relies on order of keys in dict")
 def test_funcspecs_c(fsargs):
     fsargs['targetlang'] = 'c'
     fsargs['codeinsert_start'] = "fprintf('code inserted at start\n')"

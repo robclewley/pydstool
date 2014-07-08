@@ -931,10 +931,10 @@ class FuncSpec(object):
                     outputStr += v+'  '
                 outputStr += '\n\nUser-defined auxiliary functions (in target ' + \
                              'language):'
-                for auxname in self.auxfns:
+                for auxname, auxdef in sortedDictItems(self.auxfns):
                     # verbose option shows up builtin auxiliary func definitions
-                    if auxname not in self._builtin_auxnames or verbose>0:
-                        outputStr += '\n  '+self.auxfns[auxname][0]+'\n'
+                    if auxname not in self._builtin_auxnames or verbose > 0:
+                        outputStr += '\n  ' + auxdef[0] + '\n'
             outputStr += "\n\nDependencies in specification functions - pair (i, o)"\
                     " means i depends on o:\n  " + str(self.dependencies)
         return outputStr

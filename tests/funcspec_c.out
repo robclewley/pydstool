@@ -47,6 +47,96 @@ f_[2] = w*2+globalindepvar(t, p_, wk_, xv_)-0.5*sin_t;
 User-defined auxiliary variables:  aux_iftest  aux_other  aux_wdouble  
 
 User-defined auxiliary functions (in target language):
+  double __maxof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {
+if (e1_ > e2_) {return e1_;} else {return e2_;};
+}
+
+  double __maxof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {
+double temp_;
+if (e1_ > e2_) {temp_ = e1_;} else {temp_ = e2_;};
+if (e3_ > temp_) {return e3_;} else {return temp_;};
+}
+
+  double __maxof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {
+double temp_;
+if (e1_ > e2_) {temp_ = e1_;} else {temp_ = e2_;};
+if (e3_ > temp_) {temp_ = e3_;};
+if (e4_ > temp_) {return e4_;} else {return temp_;};
+}
+
+  double __minof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {
+if (e1_ < e2_) {return e1_;} else {return e2_;};
+}
+
+  double __minof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {
+double temp_;
+if (e1_ < e2_) {temp_ = e1_;} else {temp_ = e2_;};
+if (e3_ < temp_) {return e3_;} else {return temp_;};
+}
+
+  double __minof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {
+double temp_;
+if (e1_ < e2_) {temp_ = e1_;} else {temp_ = e2_;};
+if (e3_ < temp_) {temp_ = e3_;};
+if (e4_ < temp_) {return e4_;} else {return temp_;};
+}
+
+  double __rhs_if(int cond_, double e1_, double e2_, double *p_, double *wk_, double *xv_) {
+  if (cond_) {return e1_;} else {return e2_;};
+}
+
+  double getbound(char *name, int which_bd, double *p_, double *wk_, double *xv_) {
+  return gBds[which_bd][getindex(name)];
+}
+
+  double globalindepvar(double t, double *p_, double *wk_, double *xv_) {
+  return globalt0+t;
+}
+
+  double initcond(char *varname, double *p_, double *wk_, double *xv_) {
+
+  if (strcmp(varname, "w")==0)
+	return gICs[0];
+  else if (strcmp(varname, "z0")==0)
+	return gICs[1];
+  else if (strcmp(varname, "z1")==0)
+	return gICs[2];
+  else if (strcmp(varname, "z2")==0)
+	return gICs[3];
+  else {
+	fprintf(stderr, "Invalid variable name %s for initcond call\n", varname);
+	return 0.0/0.0;
+	}
+}
+
+  double myauxfn1(double __t__, double *p_, double *wk_, double *xv_) {
+
+
+return 2.5*cos(3*__t__)*simpfn()+sin(__t__)*2.e-3 ;
+
+}
+
+  double myauxfn2(double __z0__, double __w__, double *p_, double *wk_, double *xv_) {
+
+
+return __rhs_if(-__z0__<0,__w__/2+exp(-__w__),0);
+
+}
+
+  double myauxfn3(double __w__, double *p_, double *wk_, double *xv_) {
+
+
+return k*__w__/2+pow(__w__,-3.0+k);
+
+}
+
+  double simpfn(double *p_, double *wk_, double *xv_) {
+
+
+return 1+a ;
+
+}
+
   int getindex(char *name, double *p_, double *wk_, double *xv_) {
 
   if (strcmp(name, "w")==0)
@@ -67,83 +157,8 @@ User-defined auxiliary functions (in target language):
 	}
 }
 
-  double __maxof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {
-double temp_;
-if (e1_ > e2_) {temp_ = e1_;} else {temp_ = e2_;};
-if (e3_ > temp_) {return e3_;} else {return temp_;};
-}
-
-  double __maxof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {
-if (e1_ > e2_) {return e1_;} else {return e2_;};
-}
-
-  double globalindepvar(double t, double *p_, double *wk_, double *xv_) {
-  return globalt0+t;
-}
-
-  double __maxof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {
-double temp_;
-if (e1_ > e2_) {temp_ = e1_;} else {temp_ = e2_;};
-if (e3_ > temp_) {temp_ = e3_;};
-if (e4_ > temp_) {return e4_;} else {return temp_;};
-}
-
-  double getbound(char *name, int which_bd, double *p_, double *wk_, double *xv_) {
-  return gBds[which_bd][getindex(name)];
-}
-
-  double initcond(char *varname, double *p_, double *wk_, double *xv_) {
-
-  if (strcmp(varname, "w")==0)
-	return gICs[0];
-  else if (strcmp(varname, "z0")==0)
-	return gICs[1];
-  else if (strcmp(varname, "z1")==0)
-	return gICs[2];
-  else if (strcmp(varname, "z2")==0)
-	return gICs[3];
-  else {
-	fprintf(stderr, "Invalid variable name %s for initcond call\n", varname);
-	return 0.0/0.0;
-	}
-}
-
-  void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_) {
-
-
-/* reused term definitions */
-double sin_t = sin(t);
-
-f_[0][0] = 0.;
-f_[0][1] = z0;
-f_[0][2] = 3*w;
-f_[0][3] = 2-z1;
-f_[1][0] = 2.;
-f_[1][1] = 1;
-f_[1][2] = 0.;
-f_[1][3] = sin_t*z2;
-
- ;
-
-}
-
   int heav(double x_, double *p_, double *wk_, double *xv_) {
   if (x_>0.0) {return 1;} else {return 0;}
-}
-
-  double simpfn(double *p_, double *wk_, double *xv_) {
-
-
-return 1+a ;
-
-}
-
-  double __minof2(double e1_, double e2_, double *p_, double *wk_, double *xv_) {
-if (e1_ < e2_) {return e1_;} else {return e2_;};
-}
-
-  double __rhs_if(int cond_, double e1_, double e2_, double *p_, double *wk_, double *xv_) {
-  if (cond_) {return e1_;} else {return e2_;};
 }
 
   void jacobian(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_) {
@@ -174,40 +189,25 @@ f_[3][3] = z0-w/3;
 
 }
 
-  double __minof3(double e1_, double e2_, double e3_, double *p_, double *wk_, double *xv_) {
-double temp_;
-if (e1_ < e2_) {temp_ = e1_;} else {temp_ = e2_;};
-if (e3_ < temp_) {return e3_;} else {return temp_;};
-}
-
-  double myauxfn1(double __t__, double *p_, double *wk_, double *xv_) {
+  void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_) {
 
 
-return 2.5*cos(3*__t__)*simpfn()+sin(__t__)*2.e-3 ;
+/* reused term definitions */
+double sin_t = sin(t);
 
-}
+f_[0][0] = 0.;
+f_[0][1] = z0;
+f_[0][2] = 3*w;
+f_[0][3] = 2-z1;
+f_[1][0] = 2.;
+f_[1][1] = 1;
+f_[1][2] = 0.;
+f_[1][3] = sin_t*z2;
 
-  double myauxfn2(double __z0__, double __w__, double *p_, double *wk_, double *xv_) {
+ ;
 
-
-return __rhs_if(-__z0__<0,__w__/2+exp(-__w__),0);
-
-}
-
-  double myauxfn3(double __w__, double *p_, double *wk_, double *xv_) {
-
-
-return k*__w__/2+pow(__w__,-3.0+k);
-
-}
-
-  double __minof4(double e1_, double e2_, double e3_, double e4_, double *p_, double *wk_, double *xv_) {
-double temp_;
-if (e1_ < e2_) {temp_ = e1_;} else {temp_ = e2_;};
-if (e3_ < temp_) {temp_ = e3_;};
-if (e4_ < temp_) {return e4_;} else {return temp_;};
 }
 
 
 Dependencies in specification functions - pair (i, o) means i depends on o:
-  [('z0', 'z0'), ('z1', 'w'), ('z2', 'z1'), ('z2', 'z2'), ('w', 'z0'), ('w', 'w'), ('z0', 'w'), ('z0', 'z1'), ('z1', 'z1'), ('z1', 'z2'), ('z2', 'z0'), ('z2', 'w'), ('aux_wdouble', 'w'), ('aux_other', 'w'), ('aux_iftest', 'z1'), ('aux_iftest', 'w'), ('w', 'itable')]
+  [('aux_iftest', 'z1'), ('aux_iftest', 'w'), ('aux_other', 'w'), ('aux_wdouble', 'w'), ('w', 'w'), ('w', 'itable'), ('z0', 'z1'), ('z0', 'z0'), ('z0', 'w'), ('z1', 'z1'), ('z1', 'w'), ('z1', 'z2'), ('z2', 'z2'), ('z2', 'w'), ('z2', 'z0'), ('w', 'z0'), ('z2', 'z1')]

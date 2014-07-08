@@ -33,11 +33,22 @@ Specification functions (in target language):
 User-defined auxiliary variables:  aux_iftest  aux_other  aux_wdouble  
 
 User-defined auxiliary functions (in target language):
-  def _auxfn_getindex(ds, parsinps, varname):
-    return ds._var_namemap[varname]
+  def _auxfn_Jac(ds, t, x, parsinps):
+    expmt = math.exp(-t)
+    sin_t = math.sin(t)
+    xjac0 = [2e5*x[1]+.1,-x[0]/2,0,1.] 
+    xjac1 = [-3.e-2-parsinps[0]*x[0]+x[2],1.,x[1]+1,x[1]+sin_t] 
+    xjac2 = [parsinps[1],x[0]*x[2]+expmt,0.,x[3]/3+x[0]] 
+    xjac3 = [0,x[2]+parsinps[0],1.,x[1]-x[0]/3] 
+    return array([xjac0, xjac1, xjac2, xjac3])
 
-  def _auxfn_globalindepvar(ds, parsinps, t):
-    return ds.globalt0 + t
+  def _auxfn_Jac_p(ds, t, x, parsinps):
+    sin_t = math.sin(t)
+    pjac0 = [0.,2.] 
+    pjac1 = [x[1],1] 
+    pjac2 = [3*x[0],0.] 
+    pjac3 = [2-x[2],sin_t*x[3]] 
+    return array([pjac0, pjac1, pjac2, pjac3])
 
   def _auxfn_getbound(ds, parsinps, name, bd):
     try:
@@ -51,13 +62,11 @@ User-defined auxiliary functions (in target language):
             print('%r %r' % (ds.xdomain, ds.pdomain))
             raise RuntimeError(e)
 
-  def _auxfn_Jac_p(ds, t, x, parsinps):
-    sin_t = math.sin(t)
-    pjac0 = [0.,2.] 
-    pjac1 = [x[1],1] 
-    pjac2 = [3*x[0],0.] 
-    pjac3 = [2-x[2],sin_t*x[3]] 
-    return array([pjac0, pjac1, pjac2, pjac3])
+  def _auxfn_getindex(ds, parsinps, varname):
+    return ds._var_namemap[varname]
+
+  def _auxfn_globalindepvar(ds, parsinps, t):
+    return ds.globalt0 + t
 
   def _auxfn_heav(ds, parsinps, x):
     if x>0:
@@ -65,20 +74,14 @@ User-defined auxiliary functions (in target language):
     else:
         return 0
 
-  def _auxfn_simpfn(ds, parsinps):
-    return 1+parsinps[0]
+  def _auxfn_if(ds, parsinps, c, e1, e2):
+    if c:
+        return e1
+    else:
+        return e2
 
   def _auxfn_initcond(ds, parsinps, varname):
     return ds.initialconditions[varname]
-
-  def _auxfn_Jac(ds, t, x, parsinps):
-    expmt = math.exp(-t)
-    sin_t = math.sin(t)
-    xjac0 = [2e5*x[1]+.1,-x[0]/2,0,1.] 
-    xjac1 = [-3.e-2-parsinps[0]*x[0]+x[2],1.,x[1]+1,x[1]+sin_t] 
-    xjac2 = [parsinps[1],x[0]*x[2]+expmt,0.,x[3]/3+x[0]] 
-    xjac3 = [0,x[2]+parsinps[0],1.,x[1]-x[0]/3] 
-    return array([xjac0, xjac1, xjac2, xjac3])
 
   def _auxfn_myauxfn1(ds, parsinps, t):
     sin_t = math.sin(t)
@@ -90,12 +93,9 @@ User-defined auxiliary functions (in target language):
   def _auxfn_myauxfn3(ds, parsinps, w):
     return parsinps[1]*w/2+ math.pow(w,-3.0+parsinps[1])
 
-  def _auxfn_if(ds, parsinps, c, e1, e2):
-    if c:
-        return e1
-    else:
-        return e2
+  def _auxfn_simpfn(ds, parsinps):
+    return 1+parsinps[0]
 
 
 Dependencies in specification functions - pair (i, o) means i depends on o:
-  [('z0', 'z0'), ('z1', 'w'), ('z2', 'z1'), ('z2', 'z2'), ('w', 'z0'), ('w', 'w'), ('z0', 'w'), ('z0', 'z1'), ('z1', 'z1'), ('z1', 'z2'), ('z2', 'z0'), ('z2', 'w'), ('w', 'itable'), ('aux_iftest', 'z1'), ('aux_iftest', 'w'), ('aux_wdouble', 'w'), ('aux_other', 'w')]
+  [('aux_iftest', 'z1'), ('aux_iftest', 'w'), ('aux_other', 'w'), ('aux_wdouble', 'w'), ('w', 'w'), ('w', 'itable'), ('z0', 'w'), ('z0', 'z1'), ('z0', 'z0'), ('z1', 'z1'), ('z1', 'w'), ('z1', 'z2'), ('z2', 'z2'), ('z2', 'z0'), ('z2', 'w'), ('w', 'z0'), ('z2', 'z1')]
