@@ -10,7 +10,7 @@ from .Continuation import (
     FixedPointCurve, LimitCycleCurve, UserDefinedCurve,
     FixedPointFoldCurve, FixedPointFlipCurve, FixedPointNSCurve, \
     FixedPointCuspCurve
-    )
+)
 from .misc import *
 from .Plotting import pargs, initializeDisplay
 
@@ -28,8 +28,8 @@ from PyDSTool.matplotlib_import import *
 
 from numpy import dot as matrixmultiply
 from numpy import array, float, complex, int, float64, complex64, int32, \
-    zeros, divide, subtract, Inf, NaN, isfinite, r_, c_, sign, mod, mat, \
-    subtract, divide, transpose, eye, real, imag, all, ndarray
+     zeros, divide, subtract, Inf, NaN, isfinite, r_, c_, sign, mod, mat, \
+     subtract, divide, transpose, eye, real, imag, all, ndarray
 from numpy import get_numarray_include, get_include
 
 from PyDSTool.parseUtils import addArgToCalls, wrapArgInCall
@@ -83,8 +83,8 @@ class ContClass(Utility):
         else:
             self.model = model
             mi, swRules, globalConRules, nextModelName, reused, \
-               epochStateMaps, notDone = model._findTrajInitiator(None,
-                    0, 0, self.model.icdict, None, None)
+                epochStateMaps, notDone = model._findTrajInitiator(None,
+                                                                   0, 0, self.model.icdict, None, None)
             self.gensys = mi.model
         self._autoMod = None
         self.curves = {}
@@ -128,7 +128,7 @@ class ContClass(Utility):
 
         if cname in self.curves:
             raise ValueError('Ambiguous name field: ' + cname \
-                           + ' already exists (use force=True to override)')
+                             + ' already exists (use force=True to override)')
 
         # Check parameters
         if (curvetype != 'UD-C' and self.model.pars == {}) or \
@@ -179,7 +179,13 @@ class ContClass(Utility):
                         initargs['initcycle'] = v   # Dictionary w/ cycle, name, and tangent information
 
                 # Save initial point information
-                initargs['initpoint'] = initargs['initpoint'].copy().todict()
+                initPoint = {}
+                if 'curvename' in locals() and curvename in self.curves:
+                    initPoint = self.curves[curvename].parsdict.copy()
+
+                initPoint.update(initargs['initpoint'].copy().todict())
+                 initargs['initpoint'] = initPoint                
+                # initargs['initpoint'] = initargs['initpoint'].copy().todict()
                 #for p in initargs['freepars']:
                 #    if p not in initargs['initpoint'].keys():
                 #        initargs['initpoint'][p] = self.model.pars[p]
@@ -193,7 +199,7 @@ class ContClass(Utility):
                                         'coordarray': initargs['initcycle'][1:,:].copy(),
                                         'indepvarname': 't',
                                         'indepvararray': initargs['initcycle'][0,:].copy()
-                                       })
+                                        })
                 initargs['initcycle'] = c0
             elif isinstance(initargs['initcycle'], Pointset):
                 c0 = {}
@@ -319,8 +325,8 @@ class ContClass(Utility):
                     repr(len(curve.sol)) + " " + repr(len(curve.sol)-1)
                 for n in range(len(curve.sol)):
                     GeomviewOutput += " " + repr((curve.sol[n][coords[0]]-alim[0][0])/(alim[0][1]-alim[0][0])) + \
-                                           " " + repr((curve.sol[n][coords[1]]-alim[1][0])/(alim[1][1]-alim[1][0])) + \
-                                           " " + repr((curve.sol[n][coords[2]]-alim[2][0])/(alim[2][1]-alim[2][0]))
+                        " " + repr((curve.sol[n][coords[1]]-alim[1][0])/(alim[1][1]-alim[1][0])) + \
+                        " " + repr((curve.sol[n][coords[2]]-alim[2][0])/(alim[2][1]-alim[2][0]))
                 for n in range(len(curve.sol)-1):
                     GeomviewOutput += " 2 " + repr(n) + " " + repr(n+1) + " 0 0 0 1"
 
@@ -397,11 +403,11 @@ class ContClass(Utility):
             self._dllext = '.so'
 
         self._compilation_tempdir = os.path.join(os.getcwd(),
-                                                      "auto_temp")
+                                                 "auto_temp")
         if not os.path.isdir(self._compilation_tempdir):
             try:
                 assert not os.path.isfile(self._compilation_tempdir), \
-                     "A file already exists with the same name"
+                       "A file already exists with the same name"
                 os.mkdir(self._compilation_tempdir)
             except:
                 print("Could not create compilation temp directory " + \
@@ -411,9 +417,9 @@ class ContClass(Utility):
         self._vf_file = self.gensys.name+"_vf.c"
         self._vf_filename_ext = "_"+self._vf_file[:-2]
         if not (os.path.isfile(os.path.join(os.getcwd(),
-                                "auto"+self._vf_filename_ext+".py")) and \
+                                            "auto"+self._vf_filename_ext+".py")) and \
                 os.path.isfile(os.path.join(os.getcwd(),
-                                "_auto"+self._vf_filename_ext+self._dllext))):
+                                            "_auto"+self._vf_filename_ext+self._dllext))):
             self.funcspec = self.gensys.funcspec.recreate('c')
             if not nobuild:
                 self.makeAutoLibSource()
@@ -478,8 +484,8 @@ class ContClass(Utility):
         STDLIB = 0
         USERLIB = 1
         libinclude = dict([('math.h', STDLIB), ('stdio.h', STDLIB), ('stdlib.h', STDLIB),
-                      ('string.h', STDLIB), ('autovfield.h', USERLIB),
-                      ('auto_c.h', USERLIB)])
+                           ('string.h', STDLIB), ('autovfield.h', USERLIB),
+                           ('auto_c.h', USERLIB)])
         include_str = '#include "auto_f2c.h"\n' # This must come first
         for libstr, libtype in libinclude.items():
             if libtype == STDLIB:
@@ -547,22 +553,22 @@ static double pi = 3.1415926535897931;
 ##            # add to undefines
 ##            inpundefines += self.funcspec._undefstr+" "+inp+"\n"
         allfilestr += "\n/* Variable, parameter, and input definitions: */ \n" \
-                      + pardefines + vardefines + inpdefines + "\n"
+            + pardefines + vardefines + inpdefines + "\n"
         # add signature for auxiliary functions
         if self.funcspec.auxfns:
             allfilestr += "\n"
             for finfo in self.funcspec.auxfns.values():
                 allfilestr += finfo[1] + ";\n"
         allfilestr += "\nvoid auxvars(unsigned, unsigned, double, double*, double*, " \
-              + "double*, unsigned, double*, unsigned, double*);\n" \
-              + """void jacobian(unsigned, unsigned, double, double*, double*, double**, unsigned, double*, unsigned, double*);
+            + "double*, unsigned, double*, unsigned, double*);\n" \
+            + """void jacobian(unsigned, unsigned, double, double*, double*, double**, unsigned, double*, unsigned, double*);
 void jacobianParam(unsigned, unsigned, double, double*, double*, double**, unsigned, double*, unsigned, double*);
 """
         if self.funcspec.auxvars == []:
             allfilestr += "int N_AUXVARS = 0;\n\n\n"
         else:
             allfilestr += "int N_AUXVARS = " + str(len(self.funcspec.auxvars)) \
-                       + ";\n\n\n"
+                + ";\n\n\n"
         allfilestr += self.funcspec.spec[0] + "\n\n"
 
         if self.funcspec.auxfns:
@@ -570,14 +576,14 @@ void jacobianParam(unsigned, unsigned, double, double*, double*, double**, unsig
                 fbody = finfo[0]
                 # subs _p into auxfn-to-auxfn calls (but not to the signature)
                 fbody_parsed = addArgToCalls(fbody,
-                                        list(self.funcspec.auxfns.keys()),
-                                        "p_, wk_, xv_", notFirst=fname)
+                                             list(self.funcspec.auxfns.keys()),
+                                             "p_, wk_, xv_", notFirst=fname)
                 if 'initcond' in self.funcspec.auxfns:
                     # convert 'initcond(x)' to 'initcond("x")' for
                     # compatibility with C syntax, but don't affect the
                     # function signature!
                     fbody_parsed = wrapArgInCall(fbody_parsed,
-                                        'initcond', '"', notFirst=True)
+                                                 'initcond', '"', notFirst=True)
                 allfilestr += "\n" + fbody_parsed + "\n\n"
         # add auxiliary variables (shell of the function always present)
         # add event functions
@@ -615,7 +621,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
           precompiled libraries."""
 
         if os.path.isfile(os.path.join(os.getcwd(),
-                                "_auto"+self._vf_filename_ext+self._dllext)):
+                                       "_auto"+self._vf_filename_ext+self._dllext)):
             # then DLL file already exists and we can't overwrite it at this
             # time
             proceed = False
@@ -624,7 +630,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             print("Present limitation of Python: Cannot rebuild library")
             print("without exiting Python and deleting the shared library")
             print("   " + str(os.path.join(os.getcwd(),
-                                "_auto"+self._vf_filename_ext+self._dllext)))
+                                           "_auto"+self._vf_filename_ext+self._dllext)))
             print("by hand! If you made any changes to the system you should")
             print("not proceed with running the integrator until you quit")
             print("and rebuild.")
@@ -642,7 +648,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             ifacefile_orig = open(os.path.join(self._compilation_sourcedir,
                                                "automod.i"), 'r')
             ifacefile_copy = open(os.path.join(self._compilation_tempdir,
-                                       "auto_"+self._vf_file[:-2]+".i"), 'w')
+                                               "auto_"+self._vf_file[:-2]+".i"), 'w')
             firstline = ifacefile_orig.readline()
             ifacefile_copy.write('%module auto_'+self._vf_file[:-2]+'\n')
             iffilestr = ifacefile_orig.read()
@@ -660,19 +666,19 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
 
         # source files
         if not (all([os.path.isfile(os.path.join(self._compilation_tempdir,
-                           sf)) for sf in ['auto'+self._vf_filename_ext+'_wrap.o',
-                                           'auto'+self._vf_filename_ext+'.py',
-                                           '_auto'+self._vf_filename_ext+'.def']])):
+                                                 sf)) for sf in ['auto'+self._vf_filename_ext+'_wrap.o',
+                                                                 'auto'+self._vf_filename_ext+'.py',
+                                                                 '_auto'+self._vf_filename_ext+'.def']])):
             modfilelist = [swigfile]
         else:
             modfilelist = []
         # FOR DIST (ADD)
         modfilelist.extend([os.path.join(self._compilation_sourcedir, "../src/"+x) \
-            for x in ['auto.c','autlib1.c','autlib2.c','autlib3.c','autlib4.c','autlib5.c', \
-            'eispack.c', 'conpar.c','setubv.c','reduce.c','dmatrix.c','fcon.c','libf2c/cabs.c','libf2c/d_lg10.c', \
-            'libf2c/i_nint.c','libf2c/pow_di.c','libf2c/r_lg10.c','libf2c/z_exp.c','libf2c/d_imag.c', \
-            'libf2c/d_sign.c','libf2c/i_dnnt.c','libf2c/pow_dd.c','libf2c/pow_ii.c','libf2c/z_abs.c', \
-            'libf2c/z_log.c']])
+                            for x in ['auto.c','autlib1.c','autlib2.c','autlib3.c','autlib4.c','autlib5.c', \
+                                      'eispack.c', 'conpar.c','setubv.c','reduce.c','dmatrix.c','fcon.c','libf2c/cabs.c','libf2c/d_lg10.c', \
+                                      'libf2c/i_nint.c','libf2c/pow_di.c','libf2c/r_lg10.c','libf2c/z_exp.c','libf2c/d_imag.c', \
+                                      'libf2c/d_sign.c','libf2c/i_dnnt.c','libf2c/pow_dd.c','libf2c/pow_ii.c','libf2c/z_abs.c', \
+                                      'libf2c/z_log.c']])
 
         modfilelist.extend([automodfile, interfacefile, vffile])
         # FOR DIST (SUBTRACT)
@@ -680,8 +686,8 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
 
         # script args
         script_args = ['-q', 'build', '--build-lib=.', #+os.getcwd(), # '-t/',
-                 '-tauto_temp', #+self._compilation_tempdir,
-                 '--build-base=auto_temp'] #+self._compilation_sourcedir]
+                       '-tauto_temp', #+self._compilation_tempdir,
+                       '--build-base=auto_temp'] #+self._compilation_sourcedir]
         if self.gensys._compiler != '':
             script_args.append('-c'+str(self.gensys._compiler))
 
@@ -690,7 +696,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
         npydir = get_include()
 
         incdirs = [narraydir, npydir, os.getcwd(), os.path.join(self._compilation_sourcedir,"include"),
-            self._compilation_tempdir, os.path.join(_pydstool_path,"PyCont/auto/src/include")]
+                   self._compilation_tempdir, os.path.join(_pydstool_path,"PyCont/auto/src/include")]
         incdirs.extend(libdirs)
 
         # libraries
@@ -702,15 +708,15 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
         rout.start()    # redirect stdout
         try:
             distobject = setup(name = "Auto 2000 continuer",
-                  author = "PyDSTool (automatically generated)",
-                  script_args = script_args,
-                  ext_modules = [Extension("_auto"+self._vf_filename_ext,
-                                 sources=modfilelist,
-                                 include_dirs=incdirs,
-                                 extra_compile_args=utils.extra_arch_arg(['-w', '-D__PYTHON__', '-std=c99']),
-                                 extra_link_args=utils.extra_arch_arg(['-w']),
-                                 library_dirs=libdirs+['./'],
-                                 libraries=libsources)])
+                               author = "PyDSTool (automatically generated)",
+                               script_args = script_args,
+                               ext_modules = [Extension("_auto"+self._vf_filename_ext,
+                                                        sources=modfilelist,
+                                                        include_dirs=incdirs,
+                                                        extra_compile_args=utils.extra_arch_arg(['-w', '-D__PYTHON__', '-std=c99']),
+                                                        extra_link_args=utils.extra_arch_arg(['-w']),
+                                                        library_dirs=libdirs+['./'],
+                                                        libraries=libsources)])
         except:
             rout.stop()
             print("\nError occurred in generating Auto system...")
@@ -722,13 +728,13 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             distdestdir = distutil_destination()
             if swigfile in modfilelist or not \
                os.path.isfile(os.path.join(self._compilation_tempdir,
-                                "auto"+self._vf_filename_ext+".py")):
+                                           "auto"+self._vf_filename_ext+".py")):
                 shutil.move(os.path.join(os.getcwd(),
-                                self._compilation_tempdir, distdestdir,
-                                "auto_temp",
-                                 "auto"+self._vf_filename_ext+".py"),
+                                         self._compilation_tempdir, distdestdir,
+                                         "auto_temp",
+                                         "auto"+self._vf_filename_ext+".py"),
                             os.path.join(os.getcwd(),
-                                 "auto"+self._vf_filename_ext+".py"))
+                                         "auto"+self._vf_filename_ext+".py"))
         except:
             print("\nError occurred in generating Auto system")
             print("(while moving library extension modules to CWD)")
