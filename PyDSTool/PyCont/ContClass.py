@@ -184,7 +184,7 @@ class ContClass(Utility):
                     initPoint = self.curves[curvename].parsdict.copy()
 
                 initPoint.update(initargs['initpoint'].copy().todict())
-                 initargs['initpoint'] = initPoint                
+                initargs['initpoint'] = initPoint                
                 # initargs['initpoint'] = initargs['initpoint'].copy().todict()
                 #for p in initargs['freepars']:
                 #    if p not in initargs['initpoint'].keys():
