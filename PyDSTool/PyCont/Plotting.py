@@ -140,12 +140,13 @@ class pargs(args):
         if bylabel is None and byname is None and bytype is None:
             bytype = all_point_types    # Turn off all points
         for k, v in self.items():
-            if bytype is not None and k.strip('0123456789') in bytype or \
-               byname is not None and k in byname or \
-               bylabel is not None and isinstance(v, pargs) and 'text' in v and v.text.get_text().lstrip(' ') in bylabel:
-                v.toggleLabel(visible=visible, refresh=False)
-            elif isinstance(v, pargs):
-                v.toggleLabels(visible=visible, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
+            if isinstance(v, pargs):
+                if 'point' in v and (bytype is not None and k.strip('0123456789') in bytype or \
+                   byname is not None and k in byname or \
+                   bylabel is not None and v.text.get_text().lstrip(' ') in bylabel):
+                    v.toggleLabel(visible=visible, refresh=False)
+                else:
+                    v.toggleLabels(visible=visible, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
 
         if ct == 1:
             self.refresh()
@@ -169,12 +170,13 @@ class pargs(args):
         if bylabel is None and byname is None and bytype is None:
             bytype = all_point_types    # Turn off all points
         for k, v in self.items():
-            if bytype is not None and k.strip('0123456789') in bytype or \
-               byname is not None and k in byname or \
-               bylabel is not None and isinstance(v, pargs) and 'text' in v and v.text.get_text().lstrip(' ') in bylabel:
-                v.togglePoint(visible=visible, refresh=False)
-            elif isinstance(v, pargs):
-                v.togglePoints(visible=visible, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
+            if isinstance(v, pargs):
+                if 'point' in v and (bytype is not None and k.strip('0123456789') in bytype or \
+                   byname is not None and k in byname or \
+                   bylabel is not None and v.text.get_text().lstrip(' ') in bylabel):
+                    v.togglePoint(visible=visible, refresh=False)
+                else:
+                    v.togglePoints(visible=visible, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
 
         if ct == 1:
             self.refresh()
@@ -255,14 +257,15 @@ class pargs(args):
         if bylabel is None and byname is None and bytype is None:
             bytype = all_point_types
         for k, v in self.items():
-            if bytype is not None and k.strip('0123456789') in bytype or \
-               byname is not None and k in byname or \
-               bylabel is not None and isinstance(v, pargs) and (('text' in v and v.text.get_text().lstrip(' ') in bylabel) or ('curve' in v and v.curve[0].get_label() in bylabel) or ('cycle' in v and v.cycle[0].get_label() in bylabel)):
-                v.toggleLabel(visible=visible, refresh=False)
-                v.togglePoint(visible=visible, refresh=False)
-                v.toggleCycle(visible=visible, refresh=False)
-            elif isinstance(v, pargs):
-                v.toggleAll(visible=visible, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
+            if isinstance(v, pargs):
+                if ('cycle' in v or 'point' in v) and (bytype is not None and k.strip('0123456789') in bytype or \
+                   byname is not None and k in byname or \
+                   bylabel is not None and (('point' in v and v.text.get_text().lstrip(' ') in bylabel) or ('cycle' in v and v.cycle[0].get_label() in bylabel))):
+                    v.toggleLabel(visible=visible, refresh=False)
+                    v.togglePoint(visible=visible, refresh=False)
+                    v.toggleCycle(visible=visible, refresh=False)
+                else:
+                    v.toggleAll(visible=visible, bylabel=bylabel, byname=byname, bytype=bytype, ct=ct)
 
         if ct == 1:
             self.refresh()
