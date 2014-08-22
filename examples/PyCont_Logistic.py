@@ -41,10 +41,6 @@ start = clock()
 PyCont['FP1'].forward()
 print('done in %.3f seconds!' % (clock()-start))
 
-s = PyCont['FP1'].sol
-assert len(s.bylabel('SP-r-0')) == 1
-assert len(s.bylabel('SP-r-1')) == 1
-
 PCargs.name = 'FP2'
 PCargs.initpoint = 'FP1:BP1'
 PCargs.initdirec = PyCont['FP1'].getSpecialPoint('BP1').labels['BP']['data'].branch

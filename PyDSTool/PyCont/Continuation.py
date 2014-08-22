@@ -8,6 +8,7 @@
     continuation.
 
     TO DO/Notes:
+        * Why are there two BranchPointFold in BifPoint.py?
         * Highlight not working in plot_cycles
         * Branch point curve
         * Phase plane stuff! (see PyCont_PredPreyI-III examples in Phage project)
@@ -97,7 +98,8 @@ equilibrium_args_list = ['LocBifPoints']
 equilibrium_bif_points = ['BP', 'LP', 'H']
 
 fold_args_list = ['LocBifPoints']
-fold_bif_points = ['BT', 'ZH', 'CP', 'BP']
+fold_bif_points = ['BT', 'ZH', 'CP']
+#fold_bif_points = ['BT', 'ZH', 'CP', 'BP']  # Disabling BP for now.
 
 hopf_args_list = ['LocBifPoints']
 hopf_bif_points = ['BT', 'ZH', 'GH', 'DH']
