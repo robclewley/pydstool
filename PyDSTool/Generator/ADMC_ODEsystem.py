@@ -7,7 +7,6 @@ from .baseclasses import Generator, theGenSpecHelper
 from PyDSTool.utils import *
 from PyDSTool.common import *
 from PyDSTool.integrator import integrator
-import PyDSTool.fixedpickle as fpickle
 
 # Other imports
 from numpy import Inf, NaN, isfinite, sometrue, alltrue, isnan, zeros
