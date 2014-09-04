@@ -15,7 +15,9 @@ def ode():
     return Vode_ODEsystem({
         'name': 'ode',
         'vars': ['x'],
-        'varspecs': {'x': 'x'},
+        'pars': ['p'],
+        'varspecs': {'x': 'x+p'},
+        'pdomain': {'p': [0,1]}
     })
 
 
@@ -84,6 +86,36 @@ def test_setting_xdomain_raises_exception_for_illegal_varname(ode):
 def test_setting_xdomain_raises_exception_for_nondictionary_value(ode):
     with pytest.raises(AttributeError):
         ode.set(xdomain=('x', []))
+
+
+def test_setting_xdomain_raises_exception_for_wrongly_sorted_values(ode):
+    with pytest.raises(PyDSTool_ValueError):
+        ode.set(xdomain={'x': [20, 0]})
+
+
+def test_settting_xdomain_raises_exception_for_nonsequence_value(ode):
+    with pytest.raises(PyDSTool_TypeError):
+        ode.set(xdomain={'x': {}})
+
+
+def test_setting_pdomain(ode):
+    ode.set(pdomain={'p': [0, 20]})
+    assert_array_almost_equal([0, 20], ode.variables['p'].depdomain.get())
+
+
+def test_setting_pdomain_using_single_value(ode):
+    ode.set(pdomain={'p': 0})
+    assert_array_almost_equal([0, 0], ode.parameterDomains['p'].get())
+
+
+def test_setting_pdomain_raises_exception_for_illegal_parname(ode):
+    with pytest.raises(ValueError):
+        ode.set(pdomain={'q': []})
+
+
+def test_setting_pdomain_raises_exception_for_nondictionary_value(ode):
+    with pytest.raises(AttributeError):
+        ode.set(pdomain=('p', []))
 
 
 def test_setting_xdomain_raises_exception_for_wrongly_sorted_values(ode):

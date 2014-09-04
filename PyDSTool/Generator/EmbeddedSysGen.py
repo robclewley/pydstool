@@ -182,7 +182,7 @@ class EmbeddedSysGen(ctsGen):
                 else:
                     raise ValueError('Illegal parameter name')
                 try:
-                    self.parameterDomains[k].depdomain.set(v)
+                    self.parameterDomains[k].set(v)
                 except TypeError:
                     raise TypeError('pdomain must be a dictionary of parameter'
                                       ' names -> valid interval 2-tuples or '
