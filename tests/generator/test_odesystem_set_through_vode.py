@@ -98,9 +98,10 @@ def test_settting_xdomain_raises_exception_for_nonsequence_value(ode):
         ode.set(xdomain={'x': {}})
 
 
+
 def test_setting_pdomain(ode):
     ode.set(pdomain={'p': [0, 20]})
-    assert_array_almost_equal([0, 20], ode.variables['p'].depdomain.get())
+    assert_array_almost_equal([0, 20], ode.parameterDomains['p'].get())
 
 
 def test_setting_pdomain_using_single_value(ode):
@@ -118,11 +119,11 @@ def test_setting_pdomain_raises_exception_for_nondictionary_value(ode):
         ode.set(pdomain=('p', []))
 
 
-def test_setting_xdomain_raises_exception_for_wrongly_sorted_values(ode):
+def test_setting_pdomain_raises_exception_for_wrongly_sorted_values(ode):
     with pytest.raises(PyDSTool_ValueError):
-        ode.set(xdomain={'x': [20, 0]})
+        ode.set(pdomain={'p': [20, 0]})
 
 
-def test_settting_xdomain_raises_exception_for_nonsequence_value(ode):
+def test_settting_pdomain_raises_exception_for_nonsequence_value(ode):
     with pytest.raises(PyDSTool_TypeError):
-        ode.set(xdomain={'x': {}})
+        ode.set(pdomain={'p': {}})
