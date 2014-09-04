@@ -15,7 +15,7 @@ def ode():
     return Vode_ODEsystem({
         'name': 'ode',
         'vars': ['x'],
-        'pars': ['p'],
+        'pars': {'p': 0.5},
         'varspecs': {'x': 'x+p'},
         'pdomain': {'p': [0,1]}
     })
