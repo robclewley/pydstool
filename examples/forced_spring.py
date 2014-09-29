@@ -29,7 +29,7 @@ x_ddot = '(F(t)-c*y-k*x)/m'
 DSargs = args(name='forced_spring')
 DSargs.pars = pars
 DSargs.varspecs = {'x': x_dot, 'y': x_ddot}
-DSargs.fnspecs = {'F': (['t'], "if(t>=t_on,f_mag,0)*if(t>t_off,0,1)")})}
+DSargs.fnspecs = {'F': (['t'], "if(t>=t_on,f_mag,0)*if(t>t_off,0,1)")}
 # alternative definition of F: "heav(t>=t_on)*heav(t<t_off)*f_mag"
 # or: "heav(t-t_on)*heav(t-t_off)*f_mag"
 DSargs.ics = icdict
