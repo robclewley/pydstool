@@ -34,7 +34,7 @@ Requirements
 ~~~~~~~~~~~~
 
 *  `Python <http://www.python.org>`__ 2.6+ or 3.3+;
-*  `numpy <http://www.numpy.org>`__ > 1.6;
+*  `numpy <http://www.numpy.org>`__ < 1.9;
 *  `scipy <http://www.scipy.org>`__ > 0.9.
 
 Dopri/Radau and AUTO interface requirements
