@@ -3,15 +3,14 @@ from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem
-from .baseclasses import Generator, theGenSpecHelper, genDB, _pollInputs
+from .baseclasses import theGenSpecHelper, genDB, _pollInputs
+from .mixins import CompiledMixin
 from PyDSTool.utils import *
 from PyDSTool.common import *
 # for future cleanup of * imports
 from PyDSTool import utils
 from PyDSTool import common
 from PyDSTool.integrator import integrator
-from PyDSTool.parseUtils import addArgToCalls, wrapArgInCall
-import PyDSTool.Redirector as redirc
 import numpy as npy
 
 # Other imports
@@ -20,19 +19,10 @@ from numpy import Inf, NaN, isfinite, int, int32, float, float64, \
 import math, random
 import operator
 from copy import copy, deepcopy
-import os, platform, shutil, sys, gc
+import sys, gc
 #import distutils
-from numpy.distutils.core import setup, Extension
 from distutils.sysconfig import get_python_inc
 from time import clock, sleep
-
-# path to the installation
-import PyDSTool
-_pydstool_path = PyDSTool.__path__[0]
-
-
-rout = redirc.Redirector(redirc.STDOUT)
-rerr = redirc.Redirector(redirc.STDERR)
 
 
 class dopri(integrator):
@@ -56,7 +46,7 @@ class dopri(integrator):
             raise
         # check module's directory
         assert 'Integrate' in dir(self._integMod), \
-               "dopri853 library does not contain Integrate()"
+               "dop853 library does not contain Integrate()"
 
         self.fac1 = []
         self.fac2 = []
@@ -281,8 +271,7 @@ class dopri(integrator):
         self.safety = safety
 
 
-
-class Dopri_ODEsystem(ODEsystem):
+class Dopri_ODEsystem(ODEsystem, CompiledMixin):
     """Wrapper for Dopri853 integrator.
 
     Uses C target language only for functional specifications."""
@@ -310,12 +299,8 @@ class Dopri_ODEsystem(ODEsystem):
         compileLib methods or to make changes to the C code by hand.
         No build options can be specified otherwise."""
 
-        if 'nobuild' in kw:
-            nobuild = kw['nobuild']
-            # delete because not covered in ODEsystem
-            del kw['nobuild']
-        else:
-            nobuild = False
+        # delete because not covered in ODEsystem
+        nobuild = kw.pop('nobuild', False)
         ODEsystem.__init__(self, kw)
         self.diagnostics.outputStatsInfo = {
             'last_step': 'Predicted step size of the last accepted step (useful for a subsequent call to dop853).',
@@ -369,76 +354,29 @@ class Dopri_ODEsystem(ODEsystem):
         if len(self.algparams) != len(algparams_def):
             raise ValueError("Invalid keys present in algparams argument: " \
                      + str(remain(self.algparams.keys(),algparams_def.keys())))
-        thisplatform = platform.system()
-        if thisplatform == 'Windows':
-            self._dllext = ".pyd"
-        elif thisplatform in ['Linux', 'IRIX', 'Solaris', 'SunOS', 'MacOS', 'Darwin', 'FreeBSD']:
-            self._dllext = '.so'
-        else:
-            print("Shared library extension not tested on this platform.")
-            print("If this process fails please report the errors to the")
-            print("developers.")
-            self._dllext = '.so'
-        self._compilation_tempdir = os.path.join(os.getcwd(),
-                                                      "dopri853_temp")
-        if not os.path.isdir(self._compilation_tempdir):
-            try:
-                assert not os.path.isfile(self._compilation_tempdir), \
-                     "A file already exists with the same name"
-                os.mkdir(self._compilation_tempdir)
-            except:
-                print("Could not create compilation temp directory %s" % self._compilation_tempdir)
-                raise
-        self._compilation_sourcedir = os.path.join(_pydstool_path,"integrator")
-        self._vf_file = self.name+"_vf.c"
-        self._vf_filename_ext = "_"+self._vf_file[:-2]
+
+        if self.haveMass():
+            raise ValueError("Mass matrix declaration is incompatible "
+                             "with Dopri853 integrator system specification")
+
         self._prepareEventSpecs()
-        if not (os.path.isfile(os.path.join(os.getcwd(),
-                                "dop853"+self._vf_filename_ext+".py")) and \
-                os.path.isfile(os.path.join(os.getcwd(),
-                                "_dop853"+self._vf_filename_ext+self._dllext))):
-            if not nobuild:
-                self.makeLibSource()
-                self.compileLib()
-            else:
-                print("Build the library using the makeLib method, or in ")
-                print("stages using the makeLibSource and compileLib methods.")
         self._inputVarList = []
         self._inputTimeList = []
 
+        if nobuild:
+            print("Build the library using the makeLib method, or in ")
+            print("stages using the makeLibSource and compileLib methods.")
+        else:
+            self.makeLib()
 
-    def forceLibRefresh(self):
-        """forceLibRefresh should be called after event contents are changed,
-        or alterations are made to the right-hand side of the ODEs.
-
-        Currently this function does NOT work!"""
-
-        # (try to) free dopri module from namespace
-        delfiles = True
-        self._solver = None
-        try:
-            del(sys.modules["_dop853"+self._vf_filename_ext])
-            del(sys.modules["dop853"+self._vf_filename_ext])
-##            del(self._integMod)
-        except NameError:
-            # modules weren't loaded, so nothing to do
-            delfiles = False
-        if delfiles:
-            gc.collect()
-            # still not able to delete these files!!!!! Argh!
-##            if os.path.isfile(os.path.join(os.getcwd(),
-##                                    "dop853"+self._vf_filename_ext+".py")):
-##                os.remove(os.path.join(os.getcwd(),
-##                                    "dop853"+self._vf_filename_ext+".py"))
-##            if os.path.isfile(os.path.join(os.getcwd(),
-##                                 "_dop853"+self._vf_filename_ext+self._dllext)):
-##                os.remove(os.path.join(os.getcwd(),
-##                                 "_dop853"+self._vf_filename_ext+self._dllext))
-        print("Cannot rebuild library without restarting session. Sorry.")
-        print("Try asking the Python developers to make a working module")
-        print("unimport function!")
-##        self.makeLibSource()
-
+    @property
+    def integrator(self):
+        return {
+            'name': ('dop853', 'Dopri853'),
+            'description': "Dopri 853 integrator",
+            'src': ["dop853mod.c", "dop853.c"],
+            'cflags': ["-D__DOPRI__"],
+        }
 
     def _prepareEventSpecs(self):
         eventActive = []
@@ -479,324 +417,6 @@ class Dopri_ODEsystem(ODEsystem):
         self.algparams['eventDir'] = eventDir
 
 
-    def makeLib(self, libsources=[], libdirs=[], include=[]):
-        """makeLib calls makeLibSource and then the compileLib method.
-        To postpone compilation of the source to a DLL, call makelibsource()
-        separately."""
-        self.makeLibSource(include)
-        self.compileLib(libsources, libdirs)
-
-
-    def makeLibSource(self, include=[]):
-        """makeLibSource generates the C source for the vector field specification.
-        It should be called only once per vector field."""
-
-        # Make vector field (and event) file for compilation
-        assert isinstance(include, list), "includes must be in form of a list"
-        # codes for library types (default is USERLIB, since compiler will look in standard library d
-        STDLIB = 0
-        USERLIB = 1
-        libinclude = dict([('Python.h', STDLIB), ('math.h', STDLIB), ('stdio.h', STDLIB),
-                    ('stdlib.h', STDLIB), ('string.h', STDLIB), ('vfield.h', USERLIB),
-                    ('events.h', USERLIB), ('signum.h', USERLIB), ('maxmin.h', USERLIB)])
-        include_str = ''
-        for libstr, libtype in libinclude.items():
-            if libtype == STDLIB:
-                quoteleft = '<'
-                quoteright = '>'
-            else:
-                quoteleft = '"'
-                quoteright = '"'
-            include_str += "#include " + quoteleft + libstr + quoteright + "\n"
-        if include != []:
-            assert isUniqueSeq(include), "list of library includes must not contain repeats"
-            for libstr in include:
-                if libstr in libinclude:
-                    # don't repeat libraries
-                    print("Warning: library '%s'' already appears in list" % libstr\
-                          + " of imported libraries")
-                else:
-                    include_str += "#include " + '"' + libstr + '"\n'
-        allfilestr = "/*  Vector field function and events for Dopri853 integrator.\n " \
-            + "  This code was automatically generated by PyDSTool, but may be modified " \
-            + "by hand. */\n\n" + include_str + """
-extern double *gICs;
-extern double **gBds;
-extern double globalt0;
-
-static double pi = 3.1415926535897931;
-
-double signum(double x)
-{
-  if (x<0) {
-    return -1;
-  }
-  else if (x==0) {
-    return 0;
-  }
-  else if (x>0) {
-    return 1;
-  }
-  else {
-    /* must be that x is Not-a-Number */
-    return x;
-  }
-}
-
-"""
-        pardefines = ""
-        vardefines = ""
-        auxvardefines = ""
-        inpdefines = ""
-        # sorted version of var, par, and input names
-        vnames = self._var_ixmap
-        pnames = self.funcspec.pars
-        inames = self.funcspec.inputs
-        pnames.sort()
-        inames.sort()
-        for i in range(self.numpars):
-            p = pnames[i]
-            # add to defines
-            pardefines += self.funcspec._defstr+" "+p+"\tp_["+str(i)+"]\n"
-        for i in range(self.dimension):
-            v = vnames[i]
-            # add to defines
-            vardefines += self.funcspec._defstr+" "+v+"\tY_["+str(i)+"]\n"
-        for i, v in enumerate(self.funcspec.auxvars):
-            auxvardefines += self.funcspec._defstr+" "+v+"\t("+self.funcspec._auxdefs_parsed[v]+")\n"
-        for i in range(len(self.funcspec.inputs)):
-            inp = inames[i]
-            # add to defines
-            inpdefines += self.funcspec._defstr+" "+inp+"\txv_["+str(i)+"]\n"
-        allfilestr += "\n/* Variable, aux variable, parameter, and input definitions: */ \n" \
-                      + pardefines + vardefines + auxvardefines + inpdefines + "\n"
-        # preprocess event code
-        allevs = ""
-        if self._eventNames == []:
-            numevs = 0
-        else:
-            numevs = len(self._eventNames)
-        for evname in self._eventNames:
-            ev = self.eventstruct.events[evname]
-            evfullfn = ""
-            assert isinstance(ev, LowLevelEvent), ("Dopri can only "
-                                                "accept low level events")
-            evsig = ev._LLreturnstr + " " + ev.name + ev._LLargstr
-            assert ev._LLfuncstr.index(';') > 1, ("Event function code "
-                    "error: Have you included a ';' character at the end of"
-                                            "your 'return' statement?")
-            fbody = ev._LLfuncstr
-            # check fbody for calls to user-defined aux fns
-            # and add hidden p argument
-            if self.funcspec.auxfns:
-                fbody_parsed = addArgToCalls(fbody,
-                                        list(self.funcspec.auxfns.keys()),
-                                        "p_, wk_, xv_")
-                if 'initcond' in self.funcspec.auxfns:
-                    # convert 'initcond(x)' to 'initcond("x")' for
-                    # compatibility with C syntax
-                    fbody_parsed = wrapArgInCall(fbody_parsed,
-                                        'initcond', '"')
-            else:
-                fbody_parsed = fbody
-            evbody = " {\n" + fbody_parsed + "\n}\n\n"
-            allevs += evsig + evbody
-            allfilestr += evsig + ";\n"
-        # add signature for auxiliary functions
-        if self.funcspec.auxfns:
-            allfilestr += "\n"
-            for finfo in self.funcspec.auxfns.values():
-                allfilestr += finfo[1] + ";\n"
-        assignEvBody = ""
-        for evix in range(numevs):
-            assignEvBody += "events[%d] = &%s;\n"%(evix,self._eventNames[evix])
-        allfilestr += "\nint N_EVENTS = " + str(numevs) + ";\nvoid assignEvents(" \
-              + "EvFunType *events){\n " + assignEvBody  \
-              + "\n}\n\nvoid auxvars(unsigned, unsigned, double, double*, double*, " \
-              + "double*, unsigned, double*, unsigned, double*);\n" \
-              + """void jacobian(unsigned, unsigned, double, double*, double*, double**, unsigned, double*, unsigned, double*);
-void jacobianParam(unsigned, unsigned, double, double*, double*, double**, unsigned, double*, unsigned, double*);
-"""
-        if self.funcspec.auxvars == []:
-            allfilestr += "int N_AUXVARS = 0;\n\n\n"
-        else:
-            allfilestr += "int N_AUXVARS = " + str(len(self.funcspec.auxvars)) \
-                       + ";\n\n\n"
-        if self.funcspec.inputs == []:
-            allfilestr += "int N_EXTINPUTS = 0;\n\n\n"
-        else:
-            allfilestr += "int N_EXTINPUTS = " + str(len(self.funcspec.inputs)) \
-                       + ";\n\n\n"
-        allfilestr += self.funcspec.spec[0] + "\n\n"
-        if self.funcspec.auxfns:
-            for fname, finfo in self.funcspec.auxfns.items():
-                fbody = finfo[0]
-                # subs _p into auxfn-to-auxfn calls (but not to the signature)
-                fbody_parsed = addArgToCalls(fbody,
-                                        list(self.funcspec.auxfns.keys()),
-                                        "p_, wk_, xv_", notFirst=fname)
-                if 'initcond' in self.funcspec.auxfns:
-                    # convert 'initcond(x)' to 'initcond("x")' for
-                    # compatibility with C syntax, but don't affect the
-                    # function signature!
-                    fbody_parsed = wrapArgInCall(fbody_parsed,
-                                        'initcond', '"', notFirst=True)
-                allfilestr += "\n" + fbody_parsed + "\n\n"
-        # add auxiliary variables (shell of the function always present)
-        # add event functions
-        allfilestr += self.funcspec.auxspec[0] + allevs
-        # if jacobians or mass matrix not present, fill in dummy
-        if self.haveMass():
-            raise ValueError("Mass matrix declaration is incompatible with "
-                             "Dopri integrator system specification")
-        else:
-            allfilestr += """
-void massMatrix(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_) {
-}
-"""
-        if not self.haveJacobian():
-            allfilestr += """
-void jacobian(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_) {
-}
-"""
-        if not self.haveJacobian_pars():
-            allfilestr += """
-void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double **f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_) {
-}
-""" #+ "\n/* Variable and parameter substitutions undefined:*/\n" + parundefines + varundefines + "\n"
-        # write out C file
-        vffile = os.path.join(self._compilation_tempdir, self._vf_file)
-        try:
-            file = open(vffile, 'w')
-            file.write(allfilestr)
-            file.close()
-        except IOError as e:
-            print("Error opening file %s for writing" % self._vf_file)
-            raise IOError(e)
-
-
-    def compileLib(self, libsources=[], libdirs=[]):
-        """compileLib generates a python extension DLL with integrator and vector
-        field compiled and linked.
-
-        libsources list allows additional library sources to be linked.
-        libdirs list allows additional directories to be searched for
-          precompiled libraries."""
-
-        if os.path.isfile(os.path.join(os.getcwd(),
-                                "_dop853"+self._vf_filename_ext+self._dllext)):
-            # then DLL file already exists and we can't overwrite it at this
-            # time
-            proceed = False
-            print("\n")
-            print("-----------------------------------------------------------")
-            print("Present limitation of Python: Cannot rebuild library")
-            print("without exiting Python and deleting the shared library")
-            print("   %s" % str(os.path.join(os.getcwd(),
-                                "_dop853"+self._vf_filename_ext+self._dllext)))
-            print("by hand! If you made any changes to the system you should")
-            print("not proceed with running the integrator until you quit")
-            print("and rebuild.")
-            print("-----------------------------------------------------------")
-            print("\n")
-        else:
-            proceed = True
-        if not proceed:
-            print("Did not compile shared library.")
-            return
-        if self._solver is not None:
-            self.forceLibRefresh()
-        vffile = os.path.join(self._compilation_tempdir, self._vf_file)
-        try:
-            ifacefile_orig = open(os.path.join(self._compilation_sourcedir,
-                                               "dop853.i"), 'r')
-            ifacefile_copy = open(os.path.join(self._compilation_tempdir,
-                                       "dop853_"+self._vf_file[:-2]+".i"), 'w')
-            firstline = ifacefile_orig.readline()
-            ifacefile_copy.write('%module dop853_'+self._vf_file[:-2]+'\n')
-            iffilestr = ifacefile_orig.read()
-            ifacefile_copy.write(iffilestr)
-            ifacefile_orig.close()
-            ifacefile_copy.close()
-        except IOError:
-            print("dop853.i copying error in dopri853 compilation directory")
-            raise
-        swigfile = os.path.join(self._compilation_tempdir,
-                                "dop853"+self._vf_filename_ext+".i")
-        dopwrapfile = os.path.join(self._compilation_sourcedir, "dop853mod.c")
-        dopfile = os.path.join(self._compilation_sourcedir, "dop853.c")
-        integfile = os.path.join(self._compilation_sourcedir, "integration.c")
-        interfacefile = os.path.join(self._compilation_sourcedir, "interface.c")
-        eventfile = os.path.join(self._compilation_sourcedir, "eventFinding.c")
-        memfile = os.path.join(self._compilation_sourcedir, "memory.c")
-        # The following if statement attempts to avoid recompiling the SWIG wrapper
-        # if the files mentioned already exist, because in principle the SWIG interface
-        # only needs compiling once. But this step doesn't seem to work yet.
-        # Instead, it seems that SWIG always gets recompiled with everything else
-        # (at least on Win32). Maybe the list of files is incorrect...
-        if not (all([os.path.isfile(os.path.join(self._compilation_tempdir,
-                           sf)) for sf in ['dop853'+self._vf_filename_ext+'_wrap.o',
-                                           'lib_dop853'+self._vf_filename_ext+'.a',
-                                           'dop853'+self._vf_filename_ext+'.py',
-                                           '_dop853'+self._vf_filename_ext+'.def']])):
-            modfilelist = [swigfile]
-        else:
-            modfilelist = []
-        modfilelist.extend([dopwrapfile, dopfile, vffile, integfile, eventfile,
-                           interfacefile, memfile])
-        modfilelist.extend(libsources)
-        script_args = ['-q', 'build', '--build-lib=.', #+os.getcwd(), # '-t/',
-                 '-tdopri853_temp',#+self._compilation_tempdir,
-                 '--build-base=dopri853_temp', '--build-purelib=dopri853_temp']#+self._compilation_sourcedir]
-        #script_args = ['-q', 'build', '--build-lib='+os.getcwd(), '-t/',
-        #               '--build-base='+self._compilation_tempdir]
-        if self._compiler != '':
-            script_args.append('-c'+str(self._compiler))
-
-        # include directories for libraries
-        narraydir = npy.get_numarray_include()
-        npydir = npy.get_include()
-
-        incdirs = [npydir, narraydir, os.getcwd(), self._compilation_sourcedir] #_compilation_tempdir]
-        incdirs.extend(libdirs)
-        # Use distutils to perform the compilation of the selected files
-        try:
-            distobject = setup(name = "Dopri 853 integrator",
-                  author = "PyDSTool (automatically generated)",
-                  script_args = script_args,
-                  ext_modules = [Extension("_dop853"+self._vf_filename_ext,
-                                 sources=modfilelist,
-                                 include_dirs=incdirs,
-#                                 library_dirs=['./'],
-                                 extra_compile_args=utils.extra_arch_arg(['-w', '-D__DOPRI__', '-Wno-return-type']),
-                                 extra_link_args=utils.extra_arch_arg(['-w']))])
-        except:
-            print("\nError occurred in generating Dopri system...")
-            print("%s %s" % (sys.exc_info()[0], sys.exc_info()[1]))
-            raise RuntimeError
-        rout.start()    # redirect stdout
-        try:
-            # move library files into the user's CWD
-            distdestdir = distutil_destination()
-            if swigfile in modfilelist or not \
-               os.path.isfile(os.path.join(self._compilation_tempdir,
-                                "dop853"+self._vf_filename_ext+".py")):
-                # temporary hack to fix numpy_distutils bug
-                shutil.move(os.path.join(os.getcwd(),
-                                  self._compilation_tempdir, distdestdir,
-                                  "dopri853_temp",
-                                 "dop853"+self._vf_filename_ext+".py"),
-                            os.path.join(os.getcwd(),
-                                 "dop853"+self._vf_filename_ext+".py"))
-        except:
-            rout.stop()
-            print("\nError occurred in generating Dopri system")
-            print("(while moving library extension modules to CWD)")
-            print("%s %s" % (sys.exc_info()[0], sys.exc_info()[1]))
-            raise RuntimeError
-        rout.stop()    # restore stdout
-
-
     def compute(self, trajname, dirn='f', ics=None):
         continue_integ = ODEsystem.prepDirection(self, dirn)
         if ics is not None:
@@ -829,7 +449,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
         self.algparams['hasJac'] = self.haveJacobian()
         self.algparams['hasJacP'] = self.haveJacobian_pars()
         if self._solver is None:
-            self._solver = dopri("dop853"+self._vf_filename_ext,
+            self._solver = dopri(self.modname,
                                  rhs=self.name, phaseDim=self.dimension,
                                  paramDim=len(plist), nAux=len(anames),
                                  nEvents=len(self._eventNames),
@@ -1292,8 +912,8 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
     def _ensure_solver(self, pars=None):
         if self._solver is None:
             sortedDictValues(filteredDict(self.initialconditions, self.funcspec.vars))
-#            _integMod = self._ensureLoaded("dopri853"+self._vf_filename_ext)
-            self._solver = dopri("dop853"+self._vf_filename_ext,
+#            _integMod = self._ensureLoaded(self.modname)
+            self._solver = dopri(self.modname,
                                  rhs=self.name, phaseDim=self.dimension,
                                  paramDim=self.numpars,
                                  nAux=len(self.funcspec.auxvars),

@@ -460,6 +460,9 @@ class FuncSpec(object):
                 assert type(spec) == str, "Specification for %s was not a string" % name
             self.spec = self.codegen.generate_spec(self.vars, self.varspecs)
 
+    def generate_user_module(self, eventstruct, **kwargs):
+        return self.codegen.generate_user_module(self, eventstruct, **kwargs)
+
     def doPreMacros(self):
         """Pre-process any macro spec definitions (e.g. `for` loops)."""
 
