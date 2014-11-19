@@ -19,7 +19,7 @@ from PyDSTool.Generator import (
     Vode_ODEsystem,
 )
 
-from .helpers import clean_files
+from .helpers import clean_files, numpy_unsupported
 
 
 @pytest.fixture
@@ -94,6 +94,7 @@ def dsargs():
     return DSargs
 
 
+@pytest.mark.skipif("numpy_unsupported()")
 def test_dopri_event(dsargs):
     """
         Test Dopri_ODEsystem with events involving external inputs.
@@ -104,6 +105,7 @@ def test_dopri_event(dsargs):
     _run_checks(Dopri_ODEsystem(dsargs))
 
 
+@pytest.mark.skipif("numpy_unsupported()")
 def test_radau_event(dsargs):
     """
         Test Radau_ODEsystem with events involving external inputs.

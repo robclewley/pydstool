@@ -10,7 +10,7 @@ import os
 import shutil
 import sys
 
-from numpy import get_numarray_include, get_include
+from numpy import get_include
 from numpy.distutils.core import setup, Extension
 
 from PyDSTool import utils
@@ -169,8 +169,13 @@ class _Builder(object):
             script_args.append("-c" + str(compiler))
 
         # include directories for libraries
-        incdirs = [get_include(), get_numarray_include(), os.getcwd(),
-                   _sourcedir]
+        try:
+            from numpy import get_numarray_include
+            incdirs = [get_include(), get_numarray_include()]
+        except ImportError:
+            incdirs = [get_include()]
+
+        incdirs.extend([os.getcwd(), _sourcedir])
         incdirs.extend(libdirs or [])
         # Use distutils to perform the compilation of the selected files
         rout = redirc.Redirector(redirc.STDOUT)

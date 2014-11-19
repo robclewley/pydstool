@@ -34,8 +34,10 @@ Requirements
 ~~~~~~~~~~~~
 
 *  `Python <http://www.python.org>`__ 2.6+ or 3.3+;
-*  `numpy <http://www.numpy.org>`__ < 1.9;
-*  `scipy <http://www.scipy.org>`__ > 0.9.
+*  `numpy <http://www.numpy.org>`__;
+*  `scipy <http://www.scipy.org>`__.
+
+**Warning**! Radau and Dopri ODE generators **do not work** on numpy-1.9+ yet.
 
 Dopri/Radau and AUTO interface requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

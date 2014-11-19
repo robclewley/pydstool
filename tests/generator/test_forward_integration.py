@@ -5,6 +5,7 @@ from __future__ import absolute_import, print_function
 
 from numpy import linspace
 from numpy.testing import assert_array_almost_equal
+import pytest
 
 from PyDSTool.Generator import (
     Euler_ODEsystem,
@@ -13,7 +14,7 @@ from PyDSTool.Generator import (
     Vode_ODEsystem,
 )
 
-from .helpers import clean_files
+from .helpers import clean_files, numpy_unsupported
 from .samples import vanDerPol
 
 
@@ -21,14 +22,17 @@ def test_euler_vode():
     _cross_check_forward_integration(Euler_ODEsystem, Vode_ODEsystem)
 
 
+@pytest.mark.skipif("numpy_unsupported()")
 def test_vode_radau():
     _cross_check_forward_integration(Vode_ODEsystem, Radau_ODEsystem)
 
 
+@pytest.mark.skipif("numpy_unsupported()")
 def test_vode_dopri():
     _cross_check_forward_integration(Vode_ODEsystem, Dopri_ODEsystem)
 
 
+@pytest.mark.skipif("numpy_unsupported()")
 def test_radau_dopri():
     _cross_check_forward_integration(Radau_ODEsystem, Dopri_ODEsystem)
 

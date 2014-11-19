@@ -1,20 +1,25 @@
 language: python
 matrix:
     include:
+        - python: 3.4
+          env:
+            - NUMPY_SPEC=numpy
+            - SCIPY_SPEC=scipy
+            - COVERAGE="no"
         - python: 3.3
           env:
-            - NUMPY_SPEC='numpy<1.9'
+            - NUMPY_SPEC=numpy
             - SCIPY_SPEC=scipy
             - COVERAGE="no"
         - python: 2.7
           env:
-            - NUMPY_SPEC='numpy<1.9'
+            - NUMPY_SPEC=numpy
             - SCIPY_SPEC=scipy
             - COVERAGE="yes"
         - python: 2.6
           env:
-            - NUMPY_SPEC='numpy==1.6.2'
-            - SCIPY_SPEC='scipy==0.9.0'
+            - NUMPY_SPEC='numpy<1.9'
+            - SCIPY_SPEC=scipy
             - COVERAGE="no"
 
 before_install:

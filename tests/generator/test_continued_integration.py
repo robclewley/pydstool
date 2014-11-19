@@ -4,6 +4,7 @@
 from __future__ import absolute_import, print_function
 
 from numpy.testing import assert_array_almost_equal
+import pytest
 
 from PyDSTool.Generator import (
     Dopri_ODEsystem,
@@ -11,7 +12,7 @@ from PyDSTool.Generator import (
     Vode_ODEsystem,
 )
 
-from .helpers import clean_files
+from .helpers import clean_files, numpy_unsupported
 from .samples import vanDerPol
 
 
@@ -19,10 +20,12 @@ def test_vode():
     _check_continued_integration(Vode_ODEsystem)
 
 
+@pytest.mark.skipif("numpy_unsupported()")
 def test_dopri():
     _check_continued_integration(Dopri_ODEsystem)
 
 
+@pytest.mark.skipif("numpy_unsupported()")
 def test_radau():
     _check_continued_integration(Radau_ODEsystem)
 

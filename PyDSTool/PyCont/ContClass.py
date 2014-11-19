@@ -30,7 +30,7 @@ from numpy import dot as matrixmultiply
 from numpy import array, float, complex, int, float64, complex64, int32, \
      zeros, divide, subtract, Inf, NaN, isfinite, r_, c_, sign, mod, mat, \
      subtract, divide, transpose, eye, real, imag, all, ndarray
-from numpy import get_numarray_include, get_include
+from numpy import get_include
 
 from PyDSTool.parseUtils import addArgToCalls, wrapArgInCall
 from PyDSTool.utils import distutil_destination
@@ -692,11 +692,14 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             script_args.append('-c'+str(self.gensys._compiler))
 
         # include directories for libraries
-        narraydir = get_numarray_include()
-        npydir = get_include()
+        try:
+            from numpy import get_numarray_include
+            incdirs = [get_include(), get_numarray_include()]
+        except ImportError:
+            incdirs = [get_include()]
 
-        incdirs = [narraydir, npydir, os.getcwd(), os.path.join(self._compilation_sourcedir,"include"),
-                   self._compilation_tempdir, os.path.join(_pydstool_path,"PyCont/auto/src/include")]
+        incdirs.extend([os.getcwd(), os.path.join(self._compilation_sourcedir,"include"),
+                   self._compilation_tempdir, os.path.join(_pydstool_path,"PyCont/auto/src/include")])
         incdirs.extend(libdirs)
 
         # libraries
