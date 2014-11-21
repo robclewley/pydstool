@@ -7,13 +7,8 @@
 %array_functions(int, intArray)
 
 %{
-#include <numpy/libnumarray.h>
 #include "interface.h"
 #include "dop853mod.h"
-%}
-
-%init %{
-import_libnumarray();
 %}
 
 %typemap(in) double * {

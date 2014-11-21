@@ -169,12 +169,7 @@ class _Builder(object):
             script_args.append("-c" + str(compiler))
 
         # include directories for libraries
-        try:
-            from numpy import get_numarray_include
-            incdirs = [get_include(), get_numarray_include()]
-        except ImportError:
-            incdirs = [get_include()]
-
+        incdirs = [get_include()]
         incdirs.extend([os.getcwd(), _sourcedir])
         incdirs.extend(libdirs or [])
         # Use distutils to perform the compilation of the selected files

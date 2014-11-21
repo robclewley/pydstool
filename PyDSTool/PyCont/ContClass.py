@@ -692,12 +692,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
             script_args.append('-c'+str(self.gensys._compiler))
 
         # include directories for libraries
-        try:
-            from numpy import get_numarray_include
-            incdirs = [get_include(), get_numarray_include()]
-        except ImportError:
-            incdirs = [get_include()]
-
+        incdirs = [get_include()]
         incdirs.extend([os.getcwd(), os.path.join(self._compilation_sourcedir,"include"),
                    self._compilation_tempdir, os.path.join(_pydstool_path,"PyCont/auto/src/include")])
         incdirs.extend(libdirs)

@@ -10,7 +10,7 @@
 #include <string.h>
 #include <assert.h>
 #include "Python.h"
-#include <numpy/libnumarray.h>
+#include <numpy/arrayobject.h>
 #include "dop853.h"
 #include "vfield.h"
 #include "events.h"

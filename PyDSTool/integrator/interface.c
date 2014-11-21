@@ -13,13 +13,12 @@ extern double **gBds;
 
 PyObject* Vfield(double t, double *x, double *p) {
   PyObject *OutObj = NULL;
-  PyArrayObject *PointsOut = NULL;
+  PyObject *PointsOut = NULL;
   
   double *ftemp = NULL;
   int i; 
 
-  /* for NumArray compatibility */
-  import_libnumarray();
+  import_array();
 
   if( (gIData == NULL) || (gIData->isInitBasic == 0) ) {
     Py_INCREF(Py_None);
@@ -44,28 +43,27 @@ PyObject* Vfield(double t, double *x, double *p) {
 	       gIData->extraSpaceSize, gIData->gExtraSpace, 
 	       gIData->nExtInputs, gIData->gCurrentExtInputVals);
     
-    PointsOut = NA_NewArray(NULL, tFloat64, 1, gIData->phaseDim);
-    assert(PointsOut);
-    for( i = 0; i < gIData->phaseDim; i++ ) {
-      NA_set1_Float64(PointsOut, i, ftemp[i]);
+    npy_intp dims[1] = {gIData->phaseDim};
+    PointsOut = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, ftemp);
+    if(!PointsOut) {
+        PyMem_Free(ftemp);
+        Py_INCREF(Py_None);
+        return Py_None;
     }
-
-    PyTuple_SetItem(OutObj, 0, (PyObject *)PointsOut);
-
-    PyMem_Free(ftemp);
+    PyArray_UpdateFlags((PyArrayObject *)PointsOut, NPY_ARRAY_CARRAY | NPY_ARRAY_OWNDATA);
+    PyTuple_SetItem(OutObj, 0, PointsOut);
     return OutObj;
   }
 }
 
 PyObject* Jacobian(double t, double *x, double *p) {
   PyObject *OutObj = NULL;
-  PyArrayObject *JacOut = NULL;
+  PyObject *JacOut = NULL;
 
   double *jactual = NULL, **jtemp = NULL;
   int i, j, n;
 
-  /* for NumArray compatibility */
-  import_libnumarray();
+  import_array();
 
   if( (gIData == NULL) || (gIData->isInitBasic == 0) || (gIData->hasJac == 0) ) {
     Py_INCREF(Py_None);
@@ -85,8 +83,7 @@ PyObject* Jacobian(double t, double *x, double *p) {
     jtemp = (double **)PyMem_Malloc(n*sizeof(double *));
     assert(jtemp);
     for( i = 0; i < n; i++ ) {
-      jtemp[i] = jactual;
-      jactual += n;
+      jtemp[i] = jactual + i * n;
     }
     
 
@@ -99,33 +96,31 @@ PyObject* Jacobian(double t, double *x, double *p) {
 	     gIData->extraSpaceSize, gIData->gExtraSpace, 
 	     gIData->nExtInputs, gIData->gCurrentExtInputVals);
 
-    JacOut = NA_NewArray(NULL, tFloat64, 2, gIData->phaseDim, gIData->phaseDim);
-    assert(JacOut);
-    /* Return jacobian in row-major format */
-    for( i = 0; i < gIData->phaseDim; i++ ) {
-      for( j = 0; j < gIData->phaseDim; j++ ) {
-	NA_set2_Float64(JacOut, i, j, jtemp[j][i]);
-      }
-    } 
-
-    PyTuple_SetItem(OutObj, 0, (PyObject *)JacOut);
-
-    PyMem_Free(jtemp[0]);
     PyMem_Free(jtemp);
-
-    return OutObj;
+    npy_intp dims[2] = {gIData->phaseDim, gIData->phaseDim};
+    JacOut = PyArray_SimpleNewFromData(2, dims, NPY_DOUBLE, jactual);
+    if(JacOut) {
+        PyArray_UpdateFlags((PyArrayObject *)JacOut, NPY_ARRAY_CARRAY | NPY_ARRAY_OWNDATA);
+        PyTuple_SetItem(OutObj, 0, PyArray_Transpose((PyArrayObject *)JacOut, NULL));
+        return OutObj;
+    }
+    else {
+        PyMem_Free(jactual);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
   }
 }
 
+
 PyObject* JacobianP(double t, double *x, double *p) {
   PyObject *OutObj = NULL;
-  PyArrayObject *JacPOut = NULL;
+  PyObject *JacPOut = NULL;
 
   double *jactual = NULL, **jtemp = NULL;
   int i, j, n, m;
 
-  /* for NumArray compatibility */
-  import_libnumarray();
+  import_array();
 
   if( (gIData == NULL) || (gIData->isInitBasic == 0) 
       || (gIData->hasJacP == 0) || (gIData->paramDim == 0) ) {
@@ -147,44 +142,42 @@ PyObject* JacobianP(double t, double *x, double *p) {
     jtemp = (double **)PyMem_Malloc(n*sizeof(double *));
     assert(jtemp);
     for( i = 0; i < n; i++ ) {
-      jtemp[i] = jactual;
-      jactual += m;
+      jtemp[i] = jactual + m * i;
     }
     
     if( gIData->nExtInputs > 0 ) {
       FillCurrentExtInputValues( gIData, t );
     }
 
+    /* Assume jacobianParam is returned in column-major format */
     jacobianParam(gIData->phaseDim, gIData->paramDim, t, x, p, jtemp, 
 		  gIData->extraSpaceSize, gIData->gExtraSpace, 
 		  gIData->nExtInputs, gIData->gCurrentExtInputVals);
-    
-    JacPOut = NA_NewArray(NULL, tFloat64, 2, gIData->paramDim, gIData->phaseDim);
-    assert(JacPOut);
-    for( i = 0; i < gIData->phaseDim; i++ ) {
-      for( j = 0; j < gIData->paramDim; j++ ) {
-	NA_set2_Float64(JacPOut, j, i, jtemp[i][j]);
-      }
-    } 
 
-    PyTuple_SetItem(OutObj, 0, (PyObject *)JacPOut);
-    
-    PyMem_Free(jtemp[0]);
     PyMem_Free(jtemp);
-    
-    return OutObj;
+
+    npy_intp dims[2] = {gIData->paramDim, gIData->phaseDim};
+    JacPOut = PyArray_SimpleNewFromData(2, dims, NPY_DOUBLE, jactual);
+    if(JacPOut) {
+        PyArray_UpdateFlags((PyArrayObject *)JacPOut, NPY_ARRAY_CARRAY | NPY_ARRAY_OWNDATA);
+        PyTuple_SetItem(OutObj, 0, PyArray_Transpose((PyArrayObject *)JacPOut, NULL));
+        return OutObj;
+    } else {
+        PyMem_Free(jactual);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
   }
 }
 
 PyObject* AuxFunc(double t, double *x, double *p) {
   PyObject *OutObj = NULL;
-  PyArrayObject *AuxOut = NULL;
+  PyObject *AuxOut = NULL;
   
   double *ftemp = NULL;
   int i; 
 
-  /* for NumArray compatibility */
-  import_libnumarray();
+  import_array();
 
   if( (gIData == NULL) || (gIData->isInitBasic == 0) || (gIData->nAuxVars == 0) ) {
     Py_INCREF(Py_None);
@@ -208,29 +201,31 @@ PyObject* AuxFunc(double t, double *x, double *p) {
     auxvars(gIData->phaseDim, gIData->phaseDim, t, x, p, ftemp, 
 	    gIData->extraSpaceSize, gIData->gExtraSpace, 
 	    gIData->nExtInputs, gIData->gCurrentExtInputVals);
-    
-    AuxOut = NA_NewArray(NULL, tFloat64, 1, gIData->nAuxVars);
-    assert(AuxOut);
-    for( i = 0; i < gIData->nAuxVars; i++ ) {
-      NA_set1_Float64(AuxOut, i, ftemp[i]);
+
+    npy_intp dims[1] = {gIData->nAuxVars};
+    AuxOut = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, ftemp);
+    if(AuxOut) {
+        PyArray_UpdateFlags((PyArrayObject *)AuxOut, NPY_ARRAY_CARRAY | NPY_ARRAY_OWNDATA);
+        PyTuple_SetItem(OutObj, 0, AuxOut);
+        return OutObj;
     }
-
-    PyTuple_SetItem(OutObj, 0, (PyObject *)AuxOut);
-
-    PyMem_Free(ftemp);
+    else {
+        PyMem_Free(ftemp);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
     return OutObj;
   }
 }
 
 PyObject* MassMatrix(double t, double *x, double *p) {
   PyObject *OutObj = NULL;
-  PyArrayObject *MassOut = NULL;
+  PyObject *MassOut = NULL;
 
-  double *jactual = NULL, **jtemp = NULL;
+  double *mmactual = NULL, **mmtemp = NULL;
   int i, j, n;
 
-  /* for NumArray compatibility */
-  import_libnumarray();
+  import_array();
   
   if( (gIData == NULL) || (gIData->isInitBasic == 0) || (gIData->hasMass == 0) ) {
     Py_INCREF(Py_None);
@@ -244,39 +239,36 @@ PyObject* MassMatrix(double t, double *x, double *p) {
     OutObj = PyTuple_New(1);
     assert(OutObj);
     n = gIData->phaseDim;
-    jactual = (double *)PyMem_Malloc(n*n*sizeof(double));
-    assert(jactual);
-    jtemp = (double **)PyMem_Malloc(n*sizeof(double *));
-    assert(jtemp);
+    mmactual = (double *)PyMem_Malloc(n*n*sizeof(double));
+    assert(mmactual);
+    mmtemp = (double **)PyMem_Malloc(n*sizeof(double *));
+    assert(mmtemp);
     for( i = 0; i < n; i++ ) {
-      jtemp[i] = jactual;
-      jactual += n;
+      mmtemp[i] = mmactual + n * i;
     }
     
     if( gIData->nExtInputs > 0 ) {
       FillCurrentExtInputValues( gIData, t );
     }
 
-    /* Assume jacobian is returned in column-major format */
-    massMatrix(gIData->phaseDim, gIData->paramDim, t, x, p, jtemp, 
+    /* Assume massMatrix is returned in column-major format */
+    massMatrix(gIData->phaseDim, gIData->paramDim, t, x, p, mmtemp, 
 	       gIData->extraSpaceSize, gIData->gExtraSpace, 
 	       gIData->nExtInputs, gIData->gCurrentExtInputVals);
 
-    MassOut = NA_NewArray(NULL, tFloat64, 2, gIData->phaseDim, gIData->phaseDim);
-    assert(MassOut);
-    /* Return mass matrix in row-major format */
-    for( i = 0; i < gIData->phaseDim; i++ ) {
-      for( j = 0; j < gIData->phaseDim; j++ ) {
-	NA_set2_Float64(MassOut, i, j, jtemp[j][i]);
-      }
-    } 
+    PyMem_Free(mmtemp);
 
-    PyTuple_SetItem(OutObj, 0, (PyObject *)MassOut);
-
-    PyMem_Free(jtemp[0]);
-    PyMem_Free(jtemp);
-
-    return OutObj;
+    npy_intp dims[2] = {gIData->phaseDim, gIData->phaseDim};
+    MassOut = PyArray_SimpleNewFromData(2, dims, NPY_DOUBLE, mmactual);
+    if(MassOut) {
+        PyArray_UpdateFlags((PyArrayObject *)MassOut, NPY_ARRAY_CARRAY | NPY_ARRAY_OWNDATA);
+        PyTuple_SetItem(OutObj, 0, PyArray_Transpose((PyArrayObject *)MassOut, NULL));
+        return OutObj;
+    } else {
+        PyMem_Free(mmactual);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
   }
 }
 
@@ -602,19 +594,19 @@ PyObject* PackOut( IData *GS, double *ICs,
 
   /* Python objects to be returned at end of integration */
   PyObject *OutObj = NULL; /* Overall PyTuple output object */ 
-  PyArrayObject *TimeOut = NULL; /* Trajectory times */
-  PyArrayObject *PointsOut = NULL; /* Trajectory points */
-  PyArrayObject *StatsOut = NULL; /* */
+  PyObject *TimeOut = NULL; /* Trajectory times */
+  PyObject *PointsOut = NULL; /* Trajectory points */
+  PyObject *StatsOut = NULL; /* */
   PyObject *hout = NULL;
   PyObject *idout = NULL;
 
   PyObject *EventPointsOutTuple = NULL;
   PyObject *EventTimesOutTuple = NULL;
 
-  PyArrayObject **EventPointsOutArray = NULL;
-  PyArrayObject **EventTimesOutArray = NULL;
+  PyObject **EventPointsOutArray = NULL;
+  PyObject **EventTimesOutArray = NULL;
     
-  PyArrayObject *AuxOut = NULL;
+  PyObject *AuxOut = NULL;
 
   assert(GS);
 
@@ -623,8 +615,7 @@ PyObject* PackOut( IData *GS, double *ICs,
     return Py_None;
   }
   
- /* for NumArray compatibility */
-  import_libnumarray();
+  import_array();
 
   EventPointsOutTuple = PyTuple_New(GS->nEvents);
   assert(EventPointsOutTuple);
@@ -632,39 +623,43 @@ PyObject* PackOut( IData *GS, double *ICs,
   assert(EventTimesOutTuple);
 
   
-  /* Copy out points and then PyMem_Free them */
-  PointsOut = NA_NewArray(NULL, tFloat64, 2, GS->phaseDim, GS->pointsIdx); 
+  /* Copy out points */
+  npy_intp p_dims[2] = {GS->phaseDim, GS->pointsIdx};
+  PointsOut = PyArray_SimpleNew(2, p_dims, NPY_DOUBLE);
   assert(PointsOut);
   /* WARNING -- modified the order of the dimensions here! */
   for(i = 0; i < GS->pointsIdx; i++) {
     for(j = 0; j < GS->phaseDim; j++) {
-      NA_set2_Float64(PointsOut, j, i, GS->gPoints[i][j]);
+      *((double *) PyArray_GETPTR2((PyArrayObject *)PointsOut, j, i)) = GS->gPoints[i][j];
     }
   }
   
-  /* Copy out times and the PyMem_Free them */
-  TimeOut = NA_NewArray(NULL, tFloat64, 1, GS->timeIdx);
+  /* Copy out times */
+  npy_intp t_dims[1] = {GS->timeIdx};
+  TimeOut = PyArray_SimpleNew(1, t_dims, NPY_DOUBLE);
   assert(TimeOut);
   for( i = 0; i < GS->timeIdx; i++ ) {
-    NA_set1_Float64(TimeOut, i, GS->gTimeV[i]);
+      *((double *) PyArray_GETPTR1((PyArrayObject *)TimeOut, i)) = GS->gTimeV[i];
   }
 
   /* Copy out auxilliary points */
+  npy_intp au_dims[2] = {GS->nAuxVars, GS->pointsIdx};
   if( GS->nAuxVars > 0 && GS->calcAux == 1 ) {
     /* WARNING: The order of the dimensions 
        is switched here! */
-    AuxOut = NA_NewArray(NULL, tFloat64, 2, GS->nAuxVars, GS->pointsIdx);
+    AuxOut = PyArray_SimpleNew(2, au_dims, NPY_DOUBLE);
     assert(AuxOut);
     for( i = 0; i < GS->pointsIdx; i++ ) {
       for( j = 0; j < GS->nAuxVars; j++ ) {
-	NA_set2_Float64(AuxOut, j, i, GS->gAuxPoints[i][j]);
+	*((double *) PyArray_GETPTR2((PyArrayObject *)AuxOut, j, i)) = GS->gAuxPoints[i][j];
       }
     }
   }
   
   /* Allocate and copy out integration stats */
   /* Number of stats different between Radau, Dopri */
-  StatsOut = NA_NewArray(stats, tFloat64, 1, 7);
+  npy_intp s_dims[1] = {7};
+  StatsOut = PyArray_SimpleNewFromData(1, s_dims, NPY_DOUBLE, stats);
   assert(StatsOut);
 
   /* Setup the tuple for the event points and times (separate from trajectory).
@@ -686,9 +681,9 @@ PyObject* PackOut( IData *GS, double *ICs,
   /* Only allocate memory for events if something was caught */
   if( numEvents > 0 ) {
     /* Allocate separate arrays for each event */
-    EventPointsOutArray = PyMem_Malloc(sizeof(PyArrayObject *) * numEvents);
+    EventPointsOutArray = PyMem_Malloc(sizeof(PyObject *) * numEvents);
     assert(EventPointsOutArray);
-    EventTimesOutArray = PyMem_Malloc(sizeof(PyArrayObject *) * numEvents);
+    EventTimesOutArray = PyMem_Malloc(sizeof(PyObject *) * numEvents);
     assert(EventTimesOutArray);
     
     /* Lower reference count for Py_None from INCREFs in initialization of
@@ -707,25 +702,23 @@ PyObject* PackOut( IData *GS, double *ICs,
 	/* Get the number of points caught for this event, and which one (in list
 	   of all active and nonactive events) it is */
 	int EvtCt = GS->gCheckableEventCounts[i], EvtIdx = GS->gCheckableEvents[i];
+    npy_intp et_dims[1] = {EvtCt};
+    npy_intp ep_dims[2] = {GS->phaseDim, EvtCt};
 	
 	/* Copy the event times, points into a python array */
-	EventTimesOutArray[j] = NA_NewArray(NULL, tFloat64, 1, EvtCt);
+	EventTimesOutArray[j] = PyArray_SimpleNewFromData(1, et_dims, NPY_DOUBLE, GS->gEventTimes[i]);
 	assert(EventTimesOutArray[j]);
-	/* WARNING -- modified the order of the dimensions here! */
-	EventPointsOutArray[j] = NA_NewArray(NULL, tFloat64, 2, GS->phaseDim, EvtCt);
+	EventPointsOutArray[j] = PyArray_SimpleNew(2, ep_dims, NPY_DOUBLE);
 	assert(EventPointsOutArray[j]);
 	for( k = 0; k < EvtCt; k++ ) {
-	  NA_set1_Float64(EventTimesOutArray[j], k, GS->gEventTimes[i][k]);
 	  for( l = 0; l < GS->phaseDim; l++ ) {
-	    NA_set2_Float64(EventPointsOutArray[j], l, k, GS->gEventPoints[i][l][k]);
+          *((double *) PyArray_GETPTR2((PyArrayObject *)EventPointsOutArray[j], l, k)) = GS->gEventPoints[i][l][k];
 	  }
 	}
 	/* The returned python tuple has slots for all events, not just active
 	   ones, which is why we insert into the tuple at position EvtIdx */
-	PyTuple_SetItem(EventPointsOutTuple, EvtIdx, 
-			(PyObject *)(EventPointsOutArray[j]));
-	PyTuple_SetItem(EventTimesOutTuple, EvtIdx, 
-			(PyObject *)(EventTimesOutArray[j]));
+	PyTuple_SetItem(EventPointsOutTuple, EvtIdx, EventPointsOutArray[j]);
+	PyTuple_SetItem(EventTimesOutTuple, EvtIdx, EventTimesOutArray[j]);
 	j++; /* Only go to the next python array if we saved something for the ith event.
 		Otherwise, for loop will take us to next event to see if empty or not. */
       }
