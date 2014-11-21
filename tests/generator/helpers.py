@@ -5,8 +5,6 @@ from __future__ import absolute_import, print_function
 
 import os
 
-from numpy.version import version as NUMPY_VERSION
-
 
 def clean_files(vf_names):
     for v in vf_names:
@@ -26,8 +24,3 @@ def _generate_filenames(vf_name):
     for g in ['radau5', 'dop853']:
         for prefix, suffix in parts:
             yield ''.join([prefix % g, vf_name, suffix])
-
-
-def numpy_unsupported():
-    minor = int(NUMPY_VERSION.split('.')[1])
-    return minor > 8

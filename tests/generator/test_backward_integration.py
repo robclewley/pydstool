@@ -12,7 +12,7 @@ from PyDSTool.Generator import (
     Vode_ODEsystem,
 )
 
-from .helpers import clean_files, numpy_unsupported
+from .helpers import clean_files
 from .samples import vanDerPol
 
 
@@ -21,12 +21,10 @@ def test_vode():
         _check_backward_integration(Vode_ODEsystem)
 
 
-@pytest.mark.skipif("numpy_unsupported()")
 def test_dopri():
     _check_backward_integration(Dopri_ODEsystem)
 
 
-@pytest.mark.skipif("numpy_unsupported()")
 def test_radau():
     _check_backward_integration(Radau_ODEsystem)
 

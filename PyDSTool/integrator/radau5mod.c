@@ -86,8 +86,7 @@ PyObject* Integrate(double *ic, double t, double hinit, double hmax,
   if( verbose == 1 )
     ErrOut = stderr;
 
-  /* for NumArray compatibility */
-  import_libnumarray();
+  import_array();
 
 
   phaseDim = gIData->phaseDim;

@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "Python.h"
 #include <math.h>
-#include <numpy/libnumarray.h>
+#include <numpy/arrayobject.h>
 
 /* Somewhat arbitrary round-off tolerance */
 #define ROUND_TOL 2.3e-13

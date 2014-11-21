@@ -47,7 +47,7 @@ COMMON_SRC = \
 	memory.c
 
 dopri:
-	$(CC) $(CFLAGS) -I$(PYTHON_INCLUDE) -I$(NUMPY_INCLUDE) -I$(NUMPY_INCLUDE)/../../numarray/include -D__DOPRI__ -c dop853mod.c dop853.c $(COMMON_SRC)
+	$(CC) $(CFLAGS) -I$(PYTHON_INCLUDE) -I$(NUMPY_INCLUDE) -D__DOPRI__ -c dop853mod.c dop853.c $(COMMON_SRC)
 
 radau:
-	$(CC) $(CFLAGS) -I$(PYTHON_INCLUDE) -I$(NUMPY_INCLUDE) -I$(NUMPY_INCLUDE)/../../numarray/include -D__RADAU__ -c radau5mod.c $(COMMON_SRC)
+	$(CC) $(CFLAGS) -I$(PYTHON_INCLUDE) -I$(NUMPY_INCLUDE) -D__RADAU__ -c radau5mod.c $(COMMON_SRC)

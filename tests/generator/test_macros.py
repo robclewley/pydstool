@@ -14,7 +14,7 @@ from PyDSTool.Generator import (
     Radau_ODEsystem,
 )
 
-from .helpers import clean_files, numpy_unsupported
+from .helpers import clean_files
 
 
 @pytest.fixture
@@ -44,14 +44,12 @@ def test_macros_vode(fnspecs):
     _run_check_macros_3(Vode_ODEsystem, fnspecs)
 
 
-@pytest.mark.skipif("numpy_unsupported()")
 def test_macros_dopri(fnspecs):
 
     _run_check_macros_1(Dopri_ODEsystem, fnspecs)
     _run_check_macros_2(Dopri_ODEsystem, fnspecs)
 
 
-@pytest.mark.skipif("numpy_unsupported()")
 def test_macros_radau(fnspecs):
 
     _run_check_macros_1(Radau_ODEsystem, fnspecs)

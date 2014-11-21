@@ -53,8 +53,7 @@ PyObject* Integrate(double *ic, double t, double hinit,
     gIData->gIC[i] = ic[i];
   }
 
-  /* for NumArray compatibility */
-  import_libnumarray();
+  import_array();
 
 
   if( verbose == 1 )

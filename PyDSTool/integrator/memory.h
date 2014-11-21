@@ -6,7 +6,7 @@
 #include "events.h"
 #include <stdio.h>
 #include "Python.h"
-#include <numpy/libnumarray.h>
+#include <numpy/arrayobject.h>
 
 #define FAILURE 0
 #define SUCCESS 1
