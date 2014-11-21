@@ -18,7 +18,6 @@
 from __future__ import absolute_import, print_function
 
 from numpy import linspace, allclose, array, cos, sin, sqrt
-import pytest
 
 from PyDSTool.Generator import (
     Euler_ODEsystem,
@@ -27,7 +26,7 @@ from PyDSTool.Generator import (
     Dopri_ODEsystem,
 )
 
-from .helpers import clean_files, numpy_unsupported
+from .helpers import clean_files
 
 
 def oscillator(t):
@@ -66,12 +65,10 @@ def test_vode():
     _check_generator(Vode_ODEsystem)
 
 
-@pytest.mark.skipif("numpy_unsupported()")
 def test_radau():
     _check_generator(Radau_ODEsystem)
 
 
-@pytest.mark.skipif("numpy_unsupported()")
 def test_dopri():
     _check_generator(Dopri_ODEsystem)
 
