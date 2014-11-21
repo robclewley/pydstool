@@ -603,9 +603,6 @@ PyObject* PackOut( IData *GS, double *ICs,
   PyObject *EventPointsOutTuple = NULL;
   PyObject *EventTimesOutTuple = NULL;
 
-  PyObject **EventPointsOutArray = NULL;
-  PyObject **EventTimesOutArray = NULL;
-    
   PyObject *AuxOut = NULL;
 
   assert(GS);
@@ -680,12 +677,6 @@ PyObject* PackOut( IData *GS, double *ICs,
   }
   /* Only allocate memory for events if something was caught */
   if( numEvents > 0 ) {
-    /* Allocate separate arrays for each event */
-    EventPointsOutArray = PyMem_Malloc(sizeof(PyObject *) * numEvents);
-    assert(EventPointsOutArray);
-    EventTimesOutArray = PyMem_Malloc(sizeof(PyObject *) * numEvents);
-    assert(EventTimesOutArray);
-    
     /* Lower reference count for Py_None from INCREFs in initialization of
        OutTuples above. Decrease by 2*numevents) */
     for( i = 0; i < numEvents; i++ ) {
@@ -693,10 +684,7 @@ PyObject* PackOut( IData *GS, double *ICs,
       Py_DECREF(Py_None);
     }
 
-    for( i = 0, j = 0; i < GS->haveActive; i++ ) {
-      /* i tracks which of the active events we are (possibly) saving,
-	 j tracks which of the python arrays we are (possibly) storing the ith
-	 event's points in. */
+    for( i = 0; i < GS->haveActive; i++ ) {
       if( GS->gCheckableEventCounts[i] > 0 ) {
 	int k, l;
 	/* Get the number of points caught for this event, and which one (in list
@@ -706,21 +694,19 @@ PyObject* PackOut( IData *GS, double *ICs,
     npy_intp ep_dims[2] = {GS->phaseDim, EvtCt};
 	
 	/* Copy the event times, points into a python array */
-	EventTimesOutArray[j] = PyArray_SimpleNewFromData(1, et_dims, NPY_DOUBLE, GS->gEventTimes[i]);
-	assert(EventTimesOutArray[j]);
-	EventPointsOutArray[j] = PyArray_SimpleNew(2, ep_dims, NPY_DOUBLE);
-	assert(EventPointsOutArray[j]);
+	PyObject *e_times = PyArray_SimpleNewFromData(1, et_dims, NPY_DOUBLE, GS->gEventTimes[i]);
+	assert(e_times);
+	PyObject *e_points = PyArray_SimpleNew(2, ep_dims, NPY_DOUBLE);
+	assert(e_points);
 	for( k = 0; k < EvtCt; k++ ) {
 	  for( l = 0; l < GS->phaseDim; l++ ) {
-          *((double *) PyArray_GETPTR2((PyArrayObject *)EventPointsOutArray[j], l, k)) = GS->gEventPoints[i][l][k];
+          *((double *) PyArray_GETPTR2((PyArrayObject *)e_points, l, k)) = GS->gEventPoints[i][l][k];
 	  }
 	}
 	/* The returned python tuple has slots for all events, not just active
 	   ones, which is why we insert into the tuple at position EvtIdx */
-	PyTuple_SetItem(EventPointsOutTuple, EvtIdx, EventPointsOutArray[j]);
-	PyTuple_SetItem(EventTimesOutTuple, EvtIdx, EventTimesOutArray[j]);
-	j++; /* Only go to the next python array if we saved something for the ith event.
-		Otherwise, for loop will take us to next event to see if empty or not. */
+	PyTuple_SetItem(EventPointsOutTuple, EvtIdx, e_points);
+	PyTuple_SetItem(EventTimesOutTuple, EvtIdx, e_times);
       }
     }
   }
