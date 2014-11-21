@@ -73,7 +73,7 @@ class PyTest(TestCommand):
         import pytest
         errno = pytest.main(self.test_args)
         import os
-        os.system("rm -rf dopri853_temp radau5_temp auto_temp")
+        os.system("rm -rf dop853_temp radau5_temp auto_temp")
         sys.exit(errno)
 
 
