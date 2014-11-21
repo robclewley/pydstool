@@ -10,6 +10,7 @@ version 0.??
 * Python 3.3 compatibility
 * Standard Python installer using `python setup.py install`
 * Make Dopri/Radau compilable by Clang
+* Port Dopri/Radau from NumArray to NumPy to support numpy-1.9+
 
 version 0.88 02 Dec 2012
 ---------------------------------
