@@ -13,8 +13,9 @@ from PyDSTool.common import Utility, _seq_types, metric, args, sortedDictValues,
 from PyDSTool.utils import intersect, filteredDict
 from PyDSTool.errors import *
 from PyDSTool import common
+from PyDSTool.core.context_managers import RedirectNoOp, RedirectStderr, \
+    RedirectStdout
 from PyDSTool.ModelContext import qt_feature_leaf, process_raw_residual
-import PyDSTool.Redirector as redirc
 from PyDSTool.Toolbox.optimizers import *
 
 try:
@@ -86,8 +87,6 @@ solver_lookup = {'RecursiveBacktrackingSolver': RecursiveBacktrackingSolver,
 # ----
 # Used to suppress output from legacy codes
 
-rout = redirc.Redirector(redirc.STDOUT)
-rerr = redirc.Redirector(redirc.STDERR)
 
 # ----------------------------------------------------------------------------
 
@@ -1090,33 +1089,27 @@ class LMpest(ParamEst):
 
         self.reset_log()
         # perform least-squares fitting
-        if not verbose:
-            rout.start()
-            rerr.start()
+        rout = RedirectNoOp() if verbose else RedirectStdout(os.devnull)
+        rerr = RedirectNoOp() if verbose else RedirectStderr(os.devnull)
         try:
-            results = minpack.leastsq(self._residuals,
-                               self._p_start,
-                               args   = self._args,
-                               Dfun   = self._Dfun,
-                               full_output = self._full_output,
-                               col_deriv   = self._col_deriv,
-                               ftol   = self._ftol,
-                               xtol   = self._xtol,
-                               gtol   = self._gtol,
-                               maxfev = self._maxfev,
-                               epsfcn = self._epsfcn,
-                               factor = self._factor,
-                               diag   = self._diag)
+            with rout, rerr:
+                results = minpack.leastsq(self._residuals,
+                                          self._p_start,
+                                          args   = self._args,
+                                          Dfun   = self._Dfun,
+                                          full_output = self._full_output,
+                                          col_deriv   = self._col_deriv,
+                                          ftol   = self._ftol,
+                                          xtol   = self._xtol,
+                                          gtol   = self._gtol,
+                                          maxfev = self._maxfev,
+                                          epsfcn = self._epsfcn,
+                                          factor = self._factor,
+                                          diag   = self._diag)
         except:
-            if not verbose:
-                out = rout.stop()
-                err = rerr.stop()
             print("Calculating residual failed for pars:", \
                   parsOrig)
             raise
-        if not verbose:
-            out = rout.stop()
-            err = rerr.stop()
 
         # build return information
         success = results[4] == 1
@@ -1265,23 +1258,13 @@ class BoundMin(ParamEst):
 
         self.reset_log()
         full_output = 1
-        if not verbose:
-            rout.start()
-            rerr.start()
-        try:
+        rout = RedirectNoOp() if verbose else RedirectStdout(os.devnull)
+        rerr = RedirectNoOp() if verbose else RedirectStderr(os.devnull)
+        with rout, rerr:
             results = optimize.fminbound(self.fn.residual, parConstraints[0],
                         parConstraints[1], extra_args, xtol, maxiter,
-                                     full_output,
-                                     int(verbose))
-        except:
-            if not verbose:
-                out = rout.stop()
-                err = rerr.stop()
-            raise
-        else:
-            if not verbose:
-                out = rout.stop()
-                err = rerr.stop()
+                                    full_output,
+                                    int(verbose))
 
         # build return information
         success = results[2] == 0

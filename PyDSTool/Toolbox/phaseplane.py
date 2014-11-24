@@ -16,6 +16,7 @@ R. Clewley, 2006 - 2011
 from __future__ import division, absolute_import, print_function
 # itertools, operator used for _filter_consecutive function
 import itertools, operator
+import os
 
 from PyDSTool import *
 from PyDSTool.errors import PyDSTool_ValueError
@@ -25,7 +26,7 @@ from PyDSTool.common import args, metric, metric_L2, metric_weighted_L2, \
      metric_float, remain, fit_quadratic, fit_exponential, fit_diff_of_exp, \
      smooth_pts, nearest_2n_indices, make_poly_interpolated_curve, simple_bisection
 from PyDSTool.common import _seq_types, _num_types
-import PyDSTool.Redirector as redirc
+from PyDSTool.core.context_managers import RedirectStdout
 
 import numpy as np
 try:
@@ -54,6 +55,8 @@ import sys
 import six
 
 norm = np.linalg.norm
+
+_logfile = os.devnull
 
 # ----------------------------------------------------------------------------
 
@@ -695,33 +698,26 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
 
     # try to improve seed points or otherwise use crappy fsolve to find some
     # points on the nullclines.
-    rout = redirc.Redirector(redirc.STDOUT)
-    rout.start()
     if yname in do_vars:
         for x0 in x_range:
             try:
-                x_null_pts.extend([(_xinf_ND(xdot_x,x0,args=(y,t),
-                               xddot=xfprime_x,xtol=eps/10.),y) for y in y_range])
-                y_null_pts.extend([(x0,_xinf_ND(ydot_y,y,args=(x0,t),
-                               xddot=yfprime_y,xtol=eps/10.)) for y in y_range])
+                with RedirectStdout(_logfile):
+                    x_null_pts.extend([(_xinf_ND(xdot_x,x0,args=(y,t),
+                                xddot=xfprime_x,xtol=eps/10.),y) for y in y_range])
+                    y_null_pts.extend([(x0,_xinf_ND(ydot_y,y,args=(x0,t),
+                                xddot=yfprime_y,xtol=eps/10.)) for y in y_range])
             except (OverflowError, ZeroDivisionError):
-                rout.stop()
-            except:
-                rout.stop()
-                raise
+                pass
     if xname in do_vars:
         for y0 in y_range:
             try:
-                x_null_pts.extend([(_xinf_ND(xdot_x,x,args=(y0,t),
-                               xddot=xfprime_x,xtol=eps/10.),y0) for x in x_range])
-                y_null_pts.extend([(x,_xinf_ND(ydot_y,y0,args=(x,t),
-                               xddot=yfprime_y,xtol=eps/10.)) for x in x_range])
+                with RedirectStdout(_logfile):
+                    x_null_pts.extend([(_xinf_ND(xdot_x,x,args=(y0,t),
+                                xddot=xfprime_x,xtol=eps/10.),y0) for x in x_range])
+                    y_null_pts.extend([(x,_xinf_ND(ydot_y,y0,args=(x,t),
+                                xddot=yfprime_y,xtol=eps/10.)) for x in x_range])
             except (OverflowError, ZeroDivisionError):
-                rout.stop()
-            except:
-                rout.stop()
-                raise
-    rout.stop()
+                pass
 
     # intervals based on user specs (if different to inherent variable domains)
     xwidth = abs(x_dom[1]-x_dom[0])
