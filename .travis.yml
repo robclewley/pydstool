@@ -16,11 +16,6 @@ matrix:
             - NUMPY_SPEC=numpy
             - SCIPY_SPEC=scipy
             - COVERAGE="yes"
-        - python: 2.6
-          env:
-            - NUMPY_SPEC='numpy<1.9'
-            - SCIPY_SPEC=scipy
-            - COVERAGE="no"
 
 before_install:
     - uname -a
