@@ -3,11 +3,12 @@
 """
 from __future__ import absolute_import, print_function
 
+import os
 
 from .errors import *
 from .common import *
-from . import Redirector as redirc
 from .parseUtils import joinStrs
+from PyDSTool.core.context_managers import RedirectStdout
 
 from numpy import Inf, NaN, isfinite, less, greater, sometrue, alltrue, \
      searchsorted, take, argsort, array, swapaxes, asarray, zeros, transpose, \
@@ -42,10 +43,10 @@ _mappings = ['_implicitSolveMethods', '_1DimplicitSolveMethods']
 __all__ = _classes + _functions + _mappings
 
 
-rout = redirc.Redirector(redirc.STDOUT)
-rerr = redirc.Redirector(redirc.STDERR)
 
 ## ------------------------------------------------------------------
+# File for stdout redirecting
+_logfile = os.devnull
 
 ## Utility functions
 
@@ -164,87 +165,54 @@ def makeImplicitFunc(f, x0, fprime=None, extrafargs=(), xtolval=1e-8,
     try:
         if standalone:
             def newton_fn(t):
-                rout.start()
-##                rerr.start()
-                res = float(newton_meth(f, x0, args=(t,)+extrafargs, tol=xtolval,
-                                     maxiter=maxnumiter, fprime=fprime))
-                rout.stop()
-##                warns = rout.stop()
-##                rerr.stop()
-                # return {'result': res, 'warnings': warns}
-                return res
+                with RedirectStdout(_logfile):
+                    res = float(newton_meth(f, x0, args=(t,)+extrafargs, tol=xtolval,
+                                        maxiter=maxnumiter, fprime=fprime))
+                    return res
 
             def bisect_fn(t):
-                rout.start()
-##                rerr.start()
-                res = minpack.bisection(f, x0[0], x0[1], args=(t,)+extrafargs,
-                                      xtol=xtolval, maxiter=maxnumiter)
-                rout.stop()
-##                warns = rout.stop()
-##                rerr.stop()
-                return res
+                with RedirectStdout(_logfile):
+                    res = minpack.bisection(f, x0[0], x0[1], args=(t,)+extrafargs,
+                                        xtol=xtolval, maxiter=maxnumiter)
+                    return res
 
             def steffe_fn(t):
-                rout.start()
-##                rerr.start()
-                res = minpack.fixed_point(f, x0, args=(t,)+extrafargs,
-                                           xtol=xtolval, maxiter=maxnumiter)
-                rout.stop()
-##                warns = rout.stop()
-##                rerr.stop()
-                return res
+                with RedirectStdout(_logfile):
+                    res = minpack.fixed_point(f, x0, args=(t,)+extrafargs,
+                                            xtol=xtolval, maxiter=maxnumiter)
+                    return res
 
             def fsolve_fn(t):
-                rout.start()
-##                rerr.start()
-                res = minpack.fsolve(f, x0, args=(t,)+extrafargs,
-                                      xtol=xtolval, maxfev=maxnumiter,
-                                      fprime=fprime)
-                rout.stop()
-##                warns = rout.stop()
-##                rerr.stop()
-                return res
+                with RedirectStdout(_logfile):
+                    res = minpack.fsolve(f, x0, args=(t,)+extrafargs,
+                                        xtol=xtolval, maxfev=maxnumiter,
+                                        fprime=fprime)
+                    return res
         else:
             def newton_fn(s, t):
-                rout.start()
-##                rerr.start()
-                res = float(newton_meth(f, x0, args=(t,)+extrafargs, tol=xtolval,
-                                     maxiter=maxnumiter, fprime=fprime))
-                rout.stop()
-##                warns = rout.stop()
-##                rerr.stop()
-                return res
+                with RedirectStdout(_logfile):
+                    res = float(newton_meth(f, x0, args=(t,)+extrafargs, tol=xtolval,
+                                        maxiter=maxnumiter, fprime=fprime))
+                    return res
 
             def bisect_fn(s, t):
-                rout.start()
-##                rerr.start()
-                res = minpack.bisection(f, x0[0], x0[1], args=(t,)+extrafargs,
-                                      xtol=xtolval, maxiter=maxnumiter)
-                rout.stop()
-##                warns = rout.stop()
-##                rerr.stop()
-                return res
+                with RedirectStdout(_logfile):
+                    res = minpack.bisection(f, x0[0], x0[1], args=(t,)+extrafargs,
+                                        xtol=xtolval, maxiter=maxnumiter)
+                    return res
 
             def steffe_fn(s, t):
-                rout.start()
-##                rerr.start()
-                res = minpack.fixed_point(f, x0, args=(t,)+extrafargs,
-                                           xtol=xtolval, maxiter=maxnumiter)
-                rout.stop()
-##                warns = rout.stop()
-##                rerr.stop()
-                return res
+                with RedirectStdout(_logfile):
+                    res = minpack.fixed_point(f, x0, args=(t,)+extrafargs,
+                                            xtol=xtolval, maxiter=maxnumiter)
+                    return res
 
             def fsolve_fn(s, t):
-                rout.start()
-##                rerr.start()
-                res = minpack.fsolve(f, x0, args=(t,)+extrafargs,
-                                      xtol=xtolval, maxfev=maxnumiter,
-                                      fprime=fprime)
-                rout.stop()
-##                warns = rout.stop()
-##                rerr.stop()
-                return res
+                with RedirectStdout(_logfile):
+                    res = minpack.fsolve(f, x0, args=(t,)+extrafargs,
+                                        xtol=xtolval, maxfev=maxnumiter,
+                                        fprime=fprime)
+                    return res
 
     except TypeError as e:
         if solmethod == 'bisect':

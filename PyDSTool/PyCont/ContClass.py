@@ -22,7 +22,7 @@ from PyDSTool.common import pickle, Utility, args, filteredDict, isUniqueSeq
 from PyDSTool.utils import remain
 from PyDSTool import utils
 from PyDSTool import common
-import PyDSTool.Redirector as redirc
+from PyDSTool.core.context_managers import RedirectStdout
 from PyDSTool.errors import *
 from PyDSTool.matplotlib_import import *
 
@@ -52,8 +52,6 @@ _constants = ['curve_list', 'curve_args_list', 'auto_list']
 __all__ = _classes + _constants
 #####
 
-rout = redirc.Redirector(redirc.STDOUT)
-rerr = redirc.Redirector(redirc.STDERR)
 
 curve_list = {'EP-C': EquilibriumCurve, 'LP-C': FoldCurve,
               'H-C1': HopfCurveOne, 'H-C2': HopfCurveTwo,
@@ -685,7 +683,7 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
         #modfilelist.extend(libsources)
 
         # script args
-        script_args = ['-q', 'build', '--build-lib=.', #+os.getcwd(), # '-t/',
+        script_args = ['--verbose', 'build', '--build-lib=.', #+os.getcwd(), # '-t/',
                        '-tauto_temp', #+self._compilation_tempdir,
                        '--build-base=auto_temp'] #+self._compilation_sourcedir]
         if self.gensys._compiler != '':
@@ -703,24 +701,19 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
         #libsources.append('auto2000')
 
         # Use distutils to perform the compilation of the selected files
-        rout.start()    # redirect stdout
-        try:
-            distobject = setup(name = "Auto 2000 continuer",
-                               author = "PyDSTool (automatically generated)",
-                               script_args = script_args,
-                               ext_modules = [Extension("_auto"+self._vf_filename_ext,
-                                                        sources=modfilelist,
-                                                        include_dirs=incdirs,
-                                                        extra_compile_args=utils.extra_arch_arg(['-w', '-D__PYTHON__', '-std=c99']),
-                                                        extra_link_args=utils.extra_arch_arg(['-w']),
-                                                        library_dirs=libdirs+['./'],
-                                                        libraries=libsources)])
-        except:
-            rout.stop()
-            print("\nError occurred in generating Auto system...")
-            print(sys.exc_info()[0], sys.exc_info()[1])
-            raise RuntimeError
-        rout.stop()    # restore stdout
+        with RedirectStdout(os.path.join('auto_temp', 'auto.log')):
+            setup(name="Auto 2000 continuer",
+                  author="PyDSTool (automatically generated)",
+                  script_args=script_args,
+                  ext_modules=[Extension(
+                      "_auto" + self._vf_filename_ext,
+                      sources=modfilelist,
+                      include_dirs=incdirs,
+                      extra_compile_args=utils.extra_arch_arg([
+                          '-w', '-D__PYTHON__', '-std=c99']),
+                      extra_link_args=utils.extra_arch_arg(['-w']),
+                      library_dirs=libdirs + ['./'],
+                      libraries=libsources)])
         try:
             # move library files into the user's CWD
             distdestdir = distutil_destination()

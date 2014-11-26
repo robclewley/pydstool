@@ -14,7 +14,7 @@ from numpy import get_include
 from numpy.distutils.core import setup, Extension
 
 from PyDSTool import utils
-import PyDSTool.Redirector as redirc
+from PyDSTool.core.context_managers import RedirectStdout
 
 # path to the installation
 import PyDSTool
@@ -162,7 +162,7 @@ class _Builder(object):
         script_args = [
             "build_ext",
             "--inplace",
-            "-q",
+            "--verbose",
             "--build-temp={0}".format(self.tempdir),
         ]
         if compiler:
@@ -172,44 +172,36 @@ class _Builder(object):
         incdirs = [get_include()]
         incdirs.extend([os.getcwd(), _sourcedir])
         incdirs.extend(libdirs or [])
+
         # Use distutils to perform the compilation of the selected files
-        rout = redirc.Redirector(redirc.STDOUT)
-        rout.start()    # redirect stdout
-        try:
-            extmod = Extension(
-                "_" + self.modname,
-                sources=sources,
-                include_dirs=incdirs,
-                extra_compile_args=utils.extra_arch_arg(
-                    ["-w", "-Wno-return-type"]) + self.cflags,
-                extra_link_args=utils.extra_arch_arg(["-w"]),
-                libraries=self.libs
-            )
-
+        extmod = Extension(
+            "_" + self.modname,
+            sources=sources,
+            include_dirs=incdirs,
+            extra_compile_args=utils.extra_arch_arg(
+                ["-w", "-Wno-return-type", "-Wall"]) + self.cflags,
+            extra_link_args=utils.extra_arch_arg(["-w"]),
+            libraries=self.libs
+        )
+        with RedirectStdout(os.path.join(self.tempdir, 'build.log')):
             setup(name=self.description,
-                  author="PyDSTool (automatically generated)",
-                  script_args=script_args,
-                  ext_modules=[extmod],
-                  py_modules=[self.modname])
+                author="PyDSTool (automatically generated)",
+                script_args=script_args,
+                ext_modules=[extmod],
+                py_modules=[self.modname])
 
+        if swigfile in sources or not _exists(self.pyfile, self.tempdir):
             # move library files into the user's CWD
-            if swigfile in sources or not _exists(self.pyfile, self.tempdir):
+            try:
                 # temporary hack to fix numpy_distutils bug
                 shutil.move(
                     os.path.join(os.getcwd(), self.tempdir, self.pyfile),
                     os.path.join(os.getcwd(), self.pyfile))
-        except IOError:
-            print("\nError occurred in generating '%s' system" % self.vfname)
-            print("(while moving library extension modules to CWD)")
-            print("%s %s" % (sys.exc_info()[0], sys.exc_info()[1]))
-            raise RuntimeError
-        except Exception:
-            print("\n")
-            print("Error occurred in generating '%s' system..." % self.vfname)
-            print("%s %s" % (sys.exc_info()[0], sys.exc_info()[1]))
-            raise RuntimeError
-        finally:
-            rout.stop()    # restore stdout
+            except IOError:
+                print("\nError occurred in generating '%s' system" % self.vfname)
+                print("(while moving library extension modules to CWD)")
+                print("%s %s" % (sys.exc_info()[0], sys.exc_info()[1]))
+                raise RuntimeError
 
     def done(self):
         """Check if all files generated"""

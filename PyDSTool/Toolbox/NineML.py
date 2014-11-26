@@ -9,7 +9,6 @@ from __future__ import division, absolute_import
 
 from PyDSTool import *
 from PyDSTool.common import _seq_types, _num_types
-import PyDSTool.Redirector as redirc
 
 import numpy as np
 from scipy import linspace, isfinite, sign, alltrue, sometrue
