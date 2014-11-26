@@ -48,11 +48,7 @@ except ImportError:
 import time
 from copy import copy, deepcopy
 import os
-if os.name == 'nt':
-    # slow object copying for you guys
-    import fixedpickle as pickle
-else:
-    from six.moves import cPickle as pickle
+from six.moves import cPickle as pickle
 import six
 
 # ----------------------------------------------------------------------------
