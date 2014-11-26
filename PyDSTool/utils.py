@@ -614,15 +614,7 @@ def saveObjects(objlist, filename, force=False):
         if os.path.isfile(filename):
             raise ValueError("File '" + filename + "' already exists")
     pklfile = open(filename, 'wb')
-    # Win32 only: in call to pickle.dump ...
-    # DO NOT use binary option (or HIGHESTPROTOCOL) because
-    # IEE754 special values are not UNpickled correctly in Win32
-    # (you'll see no exception raised). This is a known bug
-    # and fixedpickle.py is a work-around. (June 2005)
-    if os.name == 'nt':
-        opt = None
-    else:
-        opt = 0
+    opt = 0
     if not isinstance(objlist, list):
         objlist=[objlist]
     for obj in objlist:
