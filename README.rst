@@ -1,14 +1,7 @@
-PyDSTool v0.88
-==============
+PyDSTool
+========
 
-
-.. image:: https://travis-ci.org/robclewley/pydstool.svg?branch=master
-   :target: https://travis-ci.org/robclewley/pydstool
-   :alt: Build Status
-
-.. image:: https://coveralls.io/repos/robclewley/pydstool/badge.png?branch=master
-   :target: https://coveralls.io/r/robclewley/pydstool?branch=master
-   :alt: Coverage Status
+|buildstatus|_ |coverage|_
 
 April 2014. *This is a beta release version.*
 
@@ -91,9 +84,9 @@ See the `online documentation <http://pydstool.sourceforge.net>`__,
 particularly the GettingStarted and Tutorials pages! Please report bugs
 and suggestions using the user forum linked to there.
 
-Full API documentation can be found locally
-`here <./html/index.html>`__. It is auto-generated from the source code
-using Epydoc and is meant as a reference for functions and classes only.
+Full API documentation can be found locally in `html` directory.  It is
+auto-generated from the source code using Epydoc and is meant as a reference
+for functions and classes only.
 
 Tests and examples
 ~~~~~~~~~~~~~~~~~~
@@ -167,17 +160,6 @@ Getting coverage report
 
 *  open file ``htmlcov/index.html`` in your browser
 
-Change histories
-~~~~~~~~~~~~~~~~
-
-Older (pre-git) version change histories appear in the
-`bzr <http://pydstool.bzr.sourceforge.net/bzr/pydstool/changes>`__
-repository browser, and some older information is in the headers of each
-source file. An overview of the changes in a new release can be found in
-the SourceForge release notes.
-
---------------
-
 Credits
 ~~~~~~~
 
@@ -186,3 +168,12 @@ Zakharov, and John Guckenheimer, except where otherwise stated in the
 code or documentation. (Several other open source codes have been
 redistributed here under the compatible licenses.)
 
+--------------
+
+
+
+.. |buildstatus| image:: https://travis-ci.org/robclewley/pydstool.svg?branch=master
+.. _buildstatus: https://travis-ci.org/robclewley/pydstool
+
+.. |coverage| image:: https://coveralls.io/repos/robclewley/pydstool/badge.png?branch=master
+.. _coverage: https://coveralls.io/r/robclewley/pydstool?branch=master
