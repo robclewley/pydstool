@@ -4,7 +4,7 @@ For last changes see http://github.com/robclewley/pydstool
 
 
 Version 0.90.0 02 Dec 2014
----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Added support for Python 3.3+
 * Added support for Python setuptools
@@ -14,7 +14,7 @@ Version 0.90.0 02 Dec 2014
 * Dropped Python<2.7 support
 
 version 0.88 02 Dec 2012
----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This is primarily a bug fix release in the run-up to version 0.90.
 
 * Improved 64-bit support for C integrators
@@ -25,7 +25,7 @@ This is primarily a bug fix release in the run-up to version 0.90.
 * Minor bug fixes and internal code efficiency improvements
 
 version 0.88 04 May 2012
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
  * Added initial demos for NineML and PySCeS interfacing
  * Added minor functions to support user-defined Jacobian
@@ -34,22 +34,24 @@ version 0.88 04 May 2012
  * Minor bug fixes and internal code efficiency improvements
 
 version 0.88 21 Dec 2011
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
  * Minor efficiency improvements to hybrid model initialization
  * Improvements to phaseplane diagnostic tools (still work in progress)
  * Pointset merge function added
  * Added support for use of auxvar definitions in event functions
  * Parsing support for new macro 'SUM' in dynamics specifications: see
-    basic_gen_tests.py
+   basic_gen_tests.py
+
  * Improved modular model building demonstrations in ModelSpec_test for
-    biophysical neural models, including examples for noise signals
+   biophysical neural models, including examples for noise signals
+
  * Test code cleanup
  * Better code commenting
  * Minor bug fixes
 
 version 0.88 26 Aug 2011
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
   * Made compatible with newest numpy/scipy versions
   * Improved efficiency of PyCont
@@ -58,10 +60,10 @@ version 0.88 26 Aug 2011
   * Improved API of various functions and classes
   * Added some additional documentation
   * Created an Euler_ODEsystem for testing and simple (e.g. demo) integrations + with support for user-defined calls before and after a step
-   * Other recent changes at http://pydstool.bzr.sourceforge.net/bzr/pydstool/changes
+  * Other recent changes at http://pydstool.bzr.sourceforge.net/bzr/pydstool/changes
 
 version 0.88 18 Feb 2011
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
   * New numeric_to_traj and pointset_to_traj utility functions
   * Major improvements to intelligent expr2func (symbolic -> python function conversion)
@@ -76,7 +78,7 @@ version 0.88 18 Feb 2011
   * Other bug fixes and improvements
 
 version 0.88 22 Nov 2010
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
     * Neural computation toolbox now supports gap junctions, Calcium stores, among others
     * Trajectory Events are now recorded in sampled pointset using labels
@@ -86,7 +88,7 @@ version 0.88 22 Nov 2010
     * Fixed some minor bugs
 
 version 0.88 04 Oct 2010
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
     * New numeric_to_traj and pointset_to_traj utility functions
     * Major improvements to intelligent expr2func (symbolic -> python function conversion)
@@ -95,78 +97,86 @@ version 0.88 04 Oct 2010
     * Optimization tools from third-party genericOpt (included with permission) - improved parameter estimation examples
     * Numerical phase-response calculations now possible in PRC toolbox (see ToolboxDocumentation)
     * Fully-fledged DSSRT toolbox for neural modeling (see ToolboxDocumentation)
-    *  New tests/demonstrations in PyDSTool/tests
+    * New tests/demonstrations in PyDSTool/tests
     * Improved compatibility with cross-platform use and with recent python versions and associated libraries
     * Added many minor features
     * Fixed many minor bugs
 
 
 version 0.87 10 Nov 2008
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Major new features:
  * ModelInterface class and new-style Models - major restructure of
-    how Models are organized and can be hierarchically embedded in
-    each other
+   how Models are organized and can be hierarchically embedded in
+   each other
+
  * Feature & condition classes with ModelInterface ease specification
-    of hybrid models and complex parameter estimation & model
-    inference problems
+   of hybrid models and complex parameter estimation & model
+   inference problems
+
  * Support for 2nd order interpolated polynomial representation of
-    Trajectory objects (using Anne Archibald's poly_int classes):
-    These are off by default as they require a large amount of time
-    to compute. See tests/poly_interp_test.py (Auxiliary variables
-    cannot be included in this, and remain linearly interpolated,
-    as their derivatives are not generally available.)
+   Trajectory objects (using Anne Archibald's poly_int classes):
+   These are off by default as they require a large amount of time
+   to compute. See tests/poly_interp_test.py (Auxiliary variables
+   cannot be included in this, and remain linearly interpolated,
+   as their derivatives are not generally available.)
+
  * Descriptors, Transform classes for automated model building and
-    manipulation of specifications
+   manipulation of specifications
+
  * MProject sub-package for managing model estimation/inference
-    projects
+   projects
+
  * All generators now return trajectories that only continue until
-    any user-defined state bounds are reached. The state bounds are
-    not found with the same accuracy as terminal events defined to
-    trap these bounds errors, which is the recommended way to
-    implement this (e.g., through ModelConstructor options).
+   any user-defined state bounds are reached. The state bounds are
+   not found with the same accuracy as terminal events defined to
+   trap these bounds errors, which is the recommended way to
+   implement this (e.g., through ModelConstructor options).
+
  * Default interval checking is now off (use 'checklevel' option 1
-    or 2 to return to consistency checking with warnings) to improve
-    speed of ODE solving
+   or 2 to return to consistency checking with warnings) to improve
+   speed of ODE solving
 
 Feature and API improvements and fixes by module:
 
 Model.py:
  * Improved interaction between domain boundaries and event detection
-    for hybrid model switching at those boundaries (esp. for VODE)
+   for hybrid model switching at those boundaries (esp. for VODE)
  * Hybrid model classes and functionality cleaned up and re-organized.
-     Hybrid models are now a sub-class of Model so that they can be
-     organized hierarchically, with Generator-only based models as the
-     leaves. All methods and attributes involving name "Generator" now
-     replaced with "submodel" or "DS" (for dynamical system).
+   Hybrid models are now a sub-class of Model so that they can be
+   organized hierarchically, with Generator-only based models as the
+   leaves. All methods and attributes involving name "Generator" now
+   replaced with "submodel" or "DS" (for dynamical system).
  * HybridTrajectory sub-class behaves like a proper Trajectory
  * Fixed bug in recording of events for hybrid models
  * Now all sub-models of a hybrid system must "export" the same
-    variables (e.g., see differences in fingermodel_vode.py)
  * Can promote a Generator's auxiliary variables to be treated as
-    observable or internal vars at Model level, provided all
-    sub-models export them. forceObsVars and forceIntVars used to
-    promote the aux vars or to change internal <-> observable variables
-    (now has no effect if variables already of desired type)
+   observable or internal vars at Model level, provided all
+   sub-models export them. forceObsVars and forceIntVars used to
+   promote the aux vars or to change internal <-> observable variables
+   (now has no effect if variables already of desired type)
  * Method delTraj -> _delTraj deprecated because del model[trajname]
-    now works
+   now works
  * Removed method numPartitions (instead, use
-    len(getTrajTimePartitions(trajname)))
+   len(getTrajTimePartitions(trajname)))
  * Added renameTraj method
  * fulldimension -> dimension (= # of obs + int vars)
-   genInfo tuple -> modelInfo dict (see technical documentation
-    for details)
+   genInfo tuple -> modelInfo dict (see technical documentation for details)
    generators list attribute -> registry dict attribute
 
 Trajectory.py:
  * Regular continuouss trajectories can now be called as a map (0 or
-    1 only) to yield endpoints
+   1 only) to yield endpoints
+
  * Can now delete variables from a Trajectory
+
  * Now support FScompatibleNames map (primarily for internal use by
-    Model objects)
+   Model objects)
+
  * Fixed bug in trajectory calling as map (appending of time to vals
-    works in place and so previously, result was None)
+   works in place and so previously, result was None)
+
  * Attribute .varnames -> .coordnames
 
 PyCont:
@@ -177,7 +187,7 @@ Generators:
  * Generators now support queries in hierarchical name format
  * Fixed bug in event detection for VODE integrator
  * Fixed access to external inputs for C-based ODE integrators before
-    first integration performed
+   first integration performed
 
 Points.py:
  * Can now rename variables in pointsets and points
@@ -191,12 +201,12 @@ FuncSpec.py:
  * Fixed obscure error in cross-referenced aux fns
  * Fixed abs -> fabs mapping error in vector field functions
  * Allowed scripts using C-based Generators to be re-run provided
-     definition of Generator has not changed (used to always raise an
-     error)
+   definition of Generator has not changed (used to always raise an
+   error)
 
 
 version 0.86  01 Jun 2008
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
  * Now compatible with Python 2.5 and Numpy 1.0.4 / Scipy 0.6.0
  * Interval class now supports discrete valued intervals
@@ -206,88 +216,88 @@ version 0.86  01 Jun 2008
  * Fixed some slice bugs with Point and Pointset classes
  * Improved 'info' pretty printer utility
  * Added support for numerical rounding error tolerance in resolving independent
-    variable values in Variable and Model/ModelConsturctor classes
+   variable values in Variable and Model/ModelConsturctor classes
  * Added Jacobian and standard event arguments (for zero crossing detection)
-    options to ModelConstructor to auto-generate Jacobian and Jacobian w.r.t.
-    parameters
+   options to ModelConstructor to auto-generate Jacobian and Jacobian w.r.t.
+   parameters
  * Improved efficiency of VODE Generator in computing trajectories
 
 Minor
 
  * Created a new HybridTrajectrory and HybridVariable class so that APIs are
-    more in line with non-hybrid versions
+   more in line with non-hybrid versions
  * Moved underlyingMesh for Trajectory to the Variable class
  * Fixed ModelSpec indentation
  * Fixed bug so that ImplicitFnGen Trajectories are now parameterized
  * Syntax for Symbolic and ModelSpec classes: moved target language and
-    compatible types specifications to the ModelSpec class
+   compatible types specifications to the ModelSpec class
  * Added external input support to calls to RHS, Jacobian functions, etc. in
-    Generator classes
+   Generator classes
  * Moved eventtol to ModelConstructor, from GeneratorConstructor, and made abseps
-    default better
+   default better
  * Removed backwards compatible method names such as computeTraj, sampleTraj, and
-    setModelPars from Model, in favor of compute, sample, and set
+   setModelPars from Model, in favor of compute, sample, and set
  * Auxiliary variables retained in Model trajectory computations
  * Fixed platform-dependent problems with time module that confuses the timestamp
-    function in common.py (used to make auto-generated function names unique)
+   function in common.py (used to make auto-generated function names unique)
  * ModelSpec classes now use 'compatibleSubcomponents' and 'compatibleContainers'
-    tuple attributes instead of 'componentTypes' and 'compatibleNodes',
-    respectively
+   tuple attributes instead of 'componentTypes' and 'compatibleNodes',
+   respectively
  * The above tuple attributes also now consist of actual classes, not their names
-    -- thus they must be initialized after all the classes involved have been
-    declared
+   -- thus they must be initialized after all the classes involved have been
+   declared
  * ModelSpec now only re-validates self when flattenSpec called (speeds up model
-    building)
+   building)
 
 
 version 0.85  10 July 2007
---------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  * PyCont can now perform continuation according to the zeros of user-defined
-    functions or bounds (see example tests/PyCont_vanDerPol.py and
-    PyCont_Hopfield.py)
+   functions or bounds (see example tests/PyCont_vanDerPol.py and
+   PyCont_Hopfield.py)
  * Support for scipy.special functions in Generator definitions (Python targets
-    only. C targets with a more limited range of functions will be supported soon)
+   only. C targets with a more limited range of functions will be supported soon)
  * A few phase plane analysis tools have been added to Toolbox/phaseplane.py
-    -- in particular, the finding of fixed points, nullclines,
-    and some simple code to compute saddle manifolds in planar systems
+   -- in particular, the finding of fixed points, nullclines,
+   and some simple code to compute saddle manifolds in planar systems
  * Phase response curves can now be calculated for limit cycles using the adjoint
-    method (see tests/ML_adjointPRC.py and HH_adjointPRC.py for examples)
+   method (see tests/ML_adjointPRC.py and HH_adjointPRC.py for examples)
  * Generators now include auxiliary variable data in recorded event data
  * Pointset comparisons using arithmetic operators now consistent with the
-     norm-based comparisons used by Points
+   norm-based comparisons used by Points
  * Time mesh points for external inputs to integrators now forced to be integration
-     mesh points for greater numerical accuracy and stability
+   mesh points for greater numerical accuracy and stability
  * VODE now supports 'use_special' for forcing values of output trajectory mesh
  * Improved support for numpy float and int types alongside standard python types
  * Improved numerical first derivative computed by central finite differences and
-    Ridders' method
+   Ridders' method
  * Added a multilinear regression auxiliary function builder
-    (common.py/makeMultilinearRegrFn)
+   (common.py/makeMultilinearRegrFn)
  * Support for parameter estimation using least squares using qualitative features
-    such as positions of extrema (see wiki page ParamEst)
+   such as positions of extrema (see wiki page ParamEst)
  * Moved ParamEst.py into PyDSTool/Toolbox, a more logical home, and removed its
-    default import in PyDSTool
+   default import in PyDSTool
  * Added Toolbox/ModelHelper.py for additional model building utilities (esp.
-    for neural modelling)
+   for neural modelling)
  * Minor bug fixes and improvements (see Trac wiki site for full change log)
 
 
 version 0.84 - patch 1  13 Mar 2007
------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  * Fixed PyDSTool __init__.py to ensure new numpy names are exposed,
-    not the numpy.oldnumeric compatibility names from pylab
+   not the numpy.oldnumeric compatibility names from pylab
  * Fixed Radau generator for Windows platforms
  * Added functions to Model.py for changing event settings, flags, etc.
  * Fixed bugs where terminal events not associated with hybrid system
-    switching raised exceptions. Now all events are by default mapped
-    to 'terminate'
+   switching raised exceptions. Now all events are by default mapped
+   to 'terminate'
  * Other minor bug fixes
 
 
 version 0.84  20 Feb 2007
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This is primarily a release to bring PyDSTool up to date with "new Scipy"
 and Python versions later than 2.4. Major code improvements are still in
@@ -296,211 +306,210 @@ development and will be released in a 0.90 version as soon as we can.
  * Compatible with Scipy 0.5.1 and Python 2.4 onwards.
  * 64-bit CPU compatible.
  * New ModelSpec building functionality, in particular "standard events"
-    for threshold crossings and turning points in every variable are
-    automatically generated (but detection turned off by default).
+   for threshold crossings and turning points in every variable are
+   automatically generated (but detection turned off by default).
  * Improved symbolic evaluation behavior (but in this pre-0.90 version
-    we have switched off some of the advanced simplification code as
-    there is a bug in it which we haven't yet traced).
+   we have switched off some of the advanced simplification code as
+   there is a bug in it which we haven't yet traced).
  * PyCont functionality improved and interface cleaned up.
  * ExtrapolateTable Generator class added
  * Various other minor fixes and improvements.
 
 
 version 0.83.3 20 Sep 2006
---------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  * Point and Pointset behaviour modified to make access to values or arrays
-     of values (respectively) easier. Now, a Point pt['x'] is not the same
-     as pt[['x']]. The former now returns the numeric value, the latter a
-     new Point containing only the coordinate 'x'. Behaviour with a Pointset
-     pts is altered similarly, except pts['x'] would be an array of numeric
-     values.
+   of values (respectively) easier. Now, a Point pt['x'] is not the same
+   as pt[['x']]. The former now returns the numeric value, the latter a
+   new Point containing only the coordinate 'x'. Behaviour with a Pointset
+   pts is altered similarly, except pts['x'] would be an array of numeric
+   values.
  * Pointsets can now be initialized with independent variable arrays in
-     reverse order (e.g., from a backwards integration). The initializer
-     method now automatically detects the reverse order and reverses both
-     the independent and dependent variable arrays before creating the
-     Pointset.
+   reverse order (e.g., from a backwards integration). The initializer
+   method now automatically detects the reverse order and reverses both
+   the independent and dependent variable arrays before creating the
+   Pointset.
  * Updated FuncSpec and Generators to allow specs to be provided by lists
-     of symbolic quantities,
+   of symbolic quantities,
  * Provided better support for bounds events in C and Python specifications.
-     See tests/HH_model_testbounds.py and HH_model_Cintegrator_testbounds.py
+   See tests/HH_model_testbounds.py and HH_model_Cintegrator_testbounds.py
  * Provided helper functions to automatically create turning-point and zero
-     crossing events for oDE right-hand sides and other auxiliary functions
-     from ModelSpec definitions,
+   crossing events for oDE right-hand sides and other auxiliary functions
+   from ModelSpec definitions,
  * Fixed symbolic.py to properly process string literals.
  * Fixed bugs in defining Jacobian with respect to parameters.
  * Other bug fixes for ModelConstructor, ModelSpec, Symbolic.
  * Fixed bugs in Model/Trajectory sample methods to properly use tlo and thi
-     limits with precise=False option and eventdata option turned off.
+   limits with precise=False option and eventdata option turned off.
  * Added data analysis toolbox for use in data-driven dynamical systems
-     modelling. Moved some functions over from fracdim.py toolbox.
+   modelling. Moved some functions over from fracdim.py toolbox.
  * Fixed bug in using global time with hybrid systems that have external
-     inputs.
+   inputs.
  * Event definitions now support external inputs.
  * Suppressed messages to stdout from compilers and calls to minpack
-     optimizers.
+   optimizers.
 
 PyCont 0.3.1:
  * Two plotting methods were added to plot_cycles:  'stack' and 'highlight'.
  * Added continuation argument 'StopAtPoints', allowing computation to stop
-     at specified special points.
+   at specified special points.
  * Added domain checking through introduction of a new special point labeled
-    'B' for 'Boundary'. Note that if 'B' is active (through specification in
-     LocBifPoints), domain information is saved along the curve with the
-     labels 'inside' and 'outside'.
+   B' for 'Boundary'. Note that if 'B' is active (through specification in
+   LocBifPoints), domain information is saved along the curve with the
+   labels 'inside' and 'outside'.
  * Added continuation argument 'description' allowing the user to give details
-     on the specific curve computation.  When the info() method is called from
-     the curve class, the description will be displayed.
+   on the specific curve computation.  When the info() method is called from
+   the curve class, the description will be displayed.
  * Added argument SPOut to the LimitCycle class, allowing the user to stop at
-     specified values of variables or parameters.
+   specified values of variables or parameters.
  * Jacobians with respect to variables is now implemented in AUTO interface.
-     Jacobians with respect to parameters is currently not working, but will
-     be added very soon in a minor release.
+   Jacobians with respect to parameters is currently not working, but will
+   be added very soon in a minor release.
  * Added get() method to plot class.
  * Bug fixes (see PyCont/README for details).
 
 
 version 0.83.2, 16 Jun 2006 (w/ patch #1)
------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  * Provided support for 1D Jacobians for generators (only D>1
-    was previously supported).
+   was previously supported).
  * Fixed bug with symbolic differentiation and simplification of expressions
-    involving parsing of division of compound expressions, where braces are
-    not explicitly given.
+   involving parsing of division of compound expressions, where braces are
+   not explicitly given.
  * Points, pointsets, and parameter estimation objects are initialized
-    with keywords now, not dictionaries (although points and pointsets
-    retain dictionary backwards compatibility ... for now).
+   with keywords now, not dictionaries (although points and pointsets
+   retain dictionary backwards compatibility ... for now).
  * Parameterized pointsets now have the option to be referenced by values
-    that are within a small tolerance of the defined independent variable
-    values.
+   that are within a small tolerance of the defined independent variable
+   values.
  * Improved syntax for common object methods: 'computeTraj' is now 'compute',
-     'sampleTraj' is now 'sample', 'setPars' for generators is now 'set',
-     'setParsModel' for models is now 'set'. Previous method names are still
-     valid for now.
+   'sampleTraj' is now 'sample', 'setPars' for generators is now 'set',
+   'setParsModel' for models is now 'set'. Previous method names are still
+   valid for now.
  * Allowed C-target FuncSpec objects to use multi-references in definitions
  * Model trajectories can now be referenced and deleted using the
-     m[traj_name] notation, where m is a Model object.
+   m[traj_name] notation, where m is a Model object.
  * Fixed EventMappings bug for multiple assignments specified by dictionary.
  * Update of Toolbox utilities.
  * Other minor bug fixes.
-
  * PyCont:
-   - Overhaul of plotting so that bifurcation diagrams can be adjusted
+
+    - Overhaul of plotting so that bifurcation diagrams can be adjusted
       through a curve's 'plot' attribute.
-   - AUTO is interfaced for limit cycle continuation. Requires external
+    - AUTO is interfaced for limit cycle continuation. Requires external
       C compiler access in the same way as the Dopri and Radau integrators.
-   - Improvements to the PyCont API.
-   - Support for bifurcations of discrete maps
+    - Improvements to the PyCont API.
+    - Support for bifurcations of discrete maps
 
 
 05 Apr 2006
------------
+~~~~~~~~~~~
 
  * Fixed bug in matplotlib_import for len(args)==0 to plot()
  * Fixed bug (again!) in Radau_ODEsystem when continuing orbits
 
 
 Version 0.83.1, 30 Mar 2006
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  * Trajectory objects that can be sampled with default options
-    (by calling the sampleTraj method with no arguments) are now
-    acceptable plot call arguments, without first needing to be
-    converted to Pointsets or arrays.
-
+   (by calling the sampleTraj method with no arguments) are now
+   acceptable plot call arguments, without first needing to be
+   converted to Pointsets or arrays.
  * Updated some internal use of imports to improve compatibility with
-    numarray 1.4.1 and 1.5.1.
-
+   numarray 1.4.1 and 1.5.1.
  * Improved consistency in output of Model class for "hierarchical
-    names", especially in getTrajEvents, getTrajEventTimes, forceIntVars,
-    forceObsVars.
-
+   names", especially in getTrajEvents, getTrajEventTimes, forceIntVars,
+   forceObsVars.
  * Minor bug fixes and improvements.
 
 PyCont:
 
  * An initial direction can now be specified for a new curve.
-     This is useful for following multiple branches.
-     See PyCont_Logistic.py
+   This is useful for following multiple branches.
+   See PyCont_Logistic.py
  * Added SaveJacobian and SaveEigen parameters
  * Added computeEigen method to curves.  Once the eigen information is
-    computed, you can plot the stability of the fixed points by activating
-    the plot_stability flag in the call to display()
+   computed, you can plot the stability of the fixed points by activating
+   the plot_stability flag in the call to display()
  * Added an exportGeomview() method to export the curves to a Geomview
-    data file (default is geom.dat)
+   data file (default is geom.dat)
  * Discrete maps are now implemented (curve class FP-C) with the fold,
-    flip and torus bifurcations detected.
+   flip and torus bifurcations detected.
  * Added pseudo-arclength continuation (Keller method).  This is unstable
-    right now (trouble detecting bifurcation points). Use only when
-    MoorePenrose gives strange output.
+   right now (trouble detecting bifurcation points). Use only when
+   MoorePenrose gives strange output.
 
 
 
 Version 0.83, 12 Mar 2006
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 PyCont continuation:
   * More bifurcations can be detected
   * Improved user interface / graphing capabilities
   * Exporting data to Pointsets now possible
   * Added example PyCont_LotkaVolterra.py (gonna use this as test example
-     for variable and par bounds)
+    for variable and par bounds)
   * Added example PyCont_PredPrey.py (example with Zero-Hopf point)
 
 Pointsets and Points:
   * Arithmetic and comparison operations now supported
   * Both classes now have an associated norm (defaults
-      to the 2-norm) in order to implement point-wise
-      comparison
+    to the 2-norm) in order to implement point-wise
+    comparison
   * Labelling of points better implemented
   * Calling Pointsets now only applies if they are
-     parameterized, when argument must be an independent
-     variable value. Other functionality previously
-     associated with calling has been moved to
-     [] referencing. Calling is now more efficient for
-     its original intended purpose
+    parameterized, when argument must be an independent
+    variable value. Other functionality previously
+    associated with calling has been moved to
+    [] referencing. Calling is now more efficient for
+    its original intended purpose
   * Setitem for Pointsets now allows setting of entire
-     coordinate or independent variable array
+    coordinate or independent variable array
   * Full support for Points to be used as dictionaries
   * Better support for Pointsets to be used like arrays
 
 Symbolic
   * Fixed handling of functions under differentiation to
-     make more sense
+    make more sense
   * Can now declare symbolic functions without defining them,
-     and can differentiate them symbolically
+    and can differentiate them symbolically
   * Introduction of symbolic vectors and vector functions
   * Symbolic eval() more efficient, more intelligent
   * Fixed minor bugs and added many minor features
 
 Generators
   * Definition can now be done using Quantity objects as well
-     as strings
+    as strings
   * Initialization keyword syntax simplified, partly to reflect
-     the fact that instances of class args() can be provided
-     instead of dictionaries
-    - 'specstrdict' -> 'varspecs'
-    - 'auxfndict'   -> 'fnspecs'
-    - 'xdatadict'   -> 'ics'
-    - 'parameters'  -> 'pars'
+    the fact that instances of class args() can be provided
+    instead of dictionaries
+
+        - 'specstrdict' -> 'varspecs'
+        - 'auxfndict'   -> 'fnspecs'
+        - 'xdatadict'   -> 'ics'
+        - 'parameters'  -> 'pars'
+
   * External input signals (as arrays) can now be passed to
-     the vector field in Dopri and Radau integrators
+    the vector field in Dopri and Radau integrators
   * New ADMC++ target for Matlab (to facilitate automatic differentiation
-     and parameter sensitivity calculations)
+    and parameter sensitivity calculations)
   * Fixed some Radau compilation issues on non-Windows platforms
   * Added 'method' key to InterpTable to allow piecewise-constant
-     interpolation of data (key value = 'constant' or 'linear')
+    interpolation of data (key value = 'constant' or 'linear')
 
 Tests
   * Added a couple of new test and example scripts, e.g. for
-     a SloppyCell model, and for symbolic differentiation and
-     manipulation.
+    a SloppyCell model, and for symbolic differentiation and
+    manipulation.
 
 Memory management
   * Used cPickle on non-Windows platforms to improve
-     efficiency of object __copy__ methods
+    efficiency of object __copy__ methods
 
 Models
   * No longer need to provide initial condition to
-     computeTraj call for single vector field model
+    computeTraj call for single vector field model
