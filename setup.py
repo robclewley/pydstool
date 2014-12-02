@@ -25,20 +25,18 @@ from setuptools.command.test import test as TestCommand
 from setuptools import Command
 import sys
 
-vernum_major = '0.88'
-vernum_minor = '140328'
-vernum = vernum_major+'.'+vernum_minor
-__version__  = vernum
-__revision__ = '$Revision: %s $' % vernum_minor
-__date__     = '$Date: 2014/03/28 00:00:00 $'
+MAJOR = 0
+MINOR = 88
+MICRO = 140328
+__version__ = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
+
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-def check_dependency_versions():
-    if sys.version_info[:2] < (2, 6) or (3, 0) <= sys.version_info[0:2] < (3, 3):
-        raise RuntimeError("Python version 2.6, 2.7 or >= 3.3 required.")
+if sys.version_info[:2] < (2, 7) or (3, 0) <= sys.version_info[0:2] < (3, 3):
+    raise RuntimeError("Python version 2.7 or >= 3.3 required.")
 
 
 class clean(Command):
@@ -77,7 +75,6 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-check_dependency_versions()
 setup(
     name="PyDSTool",
     version=__version__,
@@ -96,22 +93,22 @@ setup(
     author_email="rob.clewley@gmail.com",
     maintainer="Rob Clewley",
     maintainer_email="rob.clewley@gmail.com",
-    description=("Python dynamical systems simulation and modeling"),
-    long_description = read('README.rst'),
-    license = "BSD",
-    keywords = "dynamical systems, bioinformatics, modeling, bifurcation analysis",
-    url = "http://pydstool.sourceforge.net",
+    description="Python dynamical systems simulation and modeling",
+    long_description=read('README.rst') + '\n\n' + read('WHATS_NEW.txt'),
+    license="BSD",
+    keywords="dynamical systems, bioinformatics, modeling, bifurcation analysis",
+    url="http://pydstool.sourceforge.net/",
+    download_url="https://github.com/robclewley/pydstool/tarball/v%s" % __version__,
     include_package_data=True,
-    platforms = ["any"],
-    package_data = {
+    platforms=["any"],
+    package_data={
         '': ['*.txt', '*.rst'],
     },
-    classifiers = [
+    classifiers=[
         "Development Status :: 4 - Beta",
         "Topic :: Scientific/Engineering",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: BSD License",
-        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
