@@ -1,17 +1,17 @@
 Release notes: Highlights of new features
 =========================================
+For last changes see http://github.com/robclewley/pydstool
 
-As of 2014: see http://github.com/robclewley/pydstool
 
-
-version 0.??
+Version 0.90.0 02 Dec 2014
 ---------------------------------
 
-* Python 3.3 compatibility
-* Standard Python installer using `python setup.py install`
-* Make Dopri/Radau compilable by Clang
-* Port Dopri/Radau from NumArray to NumPy to support numpy-1.9+
-* Drop Python 2.6 support
+* Added support for Python 3.3+
+* Added support for Python setuptools
+* Fixed Dopri/Radau bug on 64-bit platforms
+* Added support for Clang compiler in Dopri/Radau C interface
+* Ported Dopri/Radau C interface from NumArray to NumPy to support numpy-1.9+
+* Dropped Python<2.7 support
 
 version 0.88 02 Dec 2012
 ---------------------------------
