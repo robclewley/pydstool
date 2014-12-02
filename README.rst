@@ -3,7 +3,7 @@ PyDSTool
 
 |buildstatus|_ |coverage|_
 
-April 2014. *This is a beta release version.*
+*This is a beta release version.*
 
 PyDSTool is a sophisticated & integrated simulation and analysis environment
 for dynamical systems models of physical systems (ODEs, DAEs, maps, and hybrid
