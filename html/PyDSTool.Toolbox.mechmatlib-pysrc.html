@@ -1,258 +1,0 @@
-<?xml version="1.0" encoding="ascii"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-          "DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-  <title>PyDSTool.Toolbox.mechmatlib</title>
-  <link rel="stylesheet" href="epydoc.css" type="text/css" />
-  <script type="text/javascript" src="epydoc.js"></script>
-</head>
-
-<body bgcolor="white" text="black" link="blue" vlink="#204080"
-      alink="#204080">
-<!-- ==================== NAVIGATION BAR ==================== -->
-<table class="navbar" border="0" width="100%" cellpadding="0"
-       bgcolor="#a0c0ff" cellspacing="0">
-  <tr valign="middle">
-  <!-- Home link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="PyDSTool-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Tree link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Index link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Help link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Project homepage -->
-      <th class="navbar" align="right" width="100%">
-        <table border="0" cellpadding="0" cellspacing="0">
-          <tr><th class="navbar" align="center"
-            >PyDSTool</th>
-          </tr></table></th>
-  </tr>
-</table>
-<table width="100%" cellpadding="0" cellspacing="0">
-  <tr valign="top">
-    <td width="100%">
-      <span class="breadcrumbs">
-        <a href="PyDSTool-module.html">Package&nbsp;PyDSTool</a> ::
-        <a href="PyDSTool.Toolbox-module.html">Package&nbsp;Toolbox</a> ::
-        Module&nbsp;mechmatlib
-      </span>
-    </td>
-    <td>
-      <table cellpadding="0" cellspacing="0">
-        <!-- hide/show private -->
-        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
-    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
-        <tr><td align="right"><span class="options"
-            >[<a href="frames.html" target="_top">frames</a
-            >]&nbsp;|&nbsp;<a href="PyDSTool.Toolbox.mechmatlib-pysrc.html"
-            target="_top">no&nbsp;frames</a>]</span></td></tr>
-      </table>
-    </td>
-  </tr>
-</table>
-<h1 class="epydoc">Source Code for <a href="PyDSTool.Toolbox.mechmatlib-module.html">Module PyDSTool.Toolbox.mechmatlib</a></h1>
-<pre class="py-src">
-<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># Library functions for building matrices for rigid body mechanics</tt> </tt>
-<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># Robert Clewley, (c) 2005, 2006</tt> </tt>
-<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"></tt> </tt>
-<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">numpy</tt> <tt class="py-keyword">import</tt> <tt class="py-name">mat</tt><tt class="py-op">,</tt> <tt class="py-name">identity</tt><tt class="py-op">,</tt> <tt class="py-name">shape</tt><tt class="py-op">,</tt> <tt class="py-name">resize</tt><tt class="py-op">,</tt> <tt id="link-0" class="py-name" targets="Function PyDSTool.Toolbox.mechmatlib.dot()=PyDSTool.Toolbox.mechmatlib-module.html#dot"><a title="PyDSTool.Toolbox.mechmatlib.dot" class="py-name" href="#" onclick="return doclink('link-0', 'dot', 'link-0');">dot</a></tt><tt class="py-op">,</tt> <tt class="py-name">array</tt><tt class="py-op">,</tt> <tt class="py-name">transpose</tt> </tt>
-<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">math</tt> </tt>
-<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-1" class="py-name" targets="Method PyDSTool.common.args.copy()=PyDSTool.common.args-class.html#copy,Method PyDSTool.parseUtils.symbolMapClass.copy()=PyDSTool.parseUtils.symbolMapClass-class.html#copy"><a title="PyDSTool.common.args.copy
-PyDSTool.parseUtils.symbolMapClass.copy" class="py-name" href="#" onclick="return doclink('link-1', 'copy', 'link-1');">copy</a></tt> </tt>
-<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"> </tt>
-<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-name">__all__</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-string">'augment_3x3_matrix'</tt><tt class="py-op">,</tt> <tt class="py-string">'augment_3_vector'</tt><tt class="py-op">,</tt> <tt class="py-string">'ZeroPos'</tt><tt class="py-op">,</tt> <tt class="py-string">'Id'</tt><tt class="py-op">,</tt> </tt>
-<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line">           <tt class="py-string">'make_rot'</tt><tt class="py-op">,</tt> <tt class="py-string">'make_disp'</tt><tt class="py-op">,</tt> <tt class="py-string">'make_T'</tt><tt class="py-op">,</tt> <tt class="py-string">'cross'</tt><tt class="py-op">,</tt> <tt class="py-string">'dot'</tt><tt class="py-op">]</tt> </tt>
-<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"> </tt>
-<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment"># ---------------------------------------------------------------------------</tt> </tt>
-<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment"></tt> </tt>
-<a name="augment_3_vector"></a><div id="augment_3_vector-def"><a name="L13"></a><tt class="py-lineno"> 13</tt> <a class="py-toggle" href="#" id="augment_3_vector-toggle" onclick="return toggle('augment_3_vector');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="PyDSTool.Toolbox.mechmatlib-module.html#augment_3_vector">augment_3_vector</a><tt class="py-op">(</tt><tt class="py-param">v</tt><tt class="py-op">=</tt><tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-param">free</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="augment_3_vector-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="augment_3_vector-expanded"><a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">free</tt><tt class="py-op">:</tt> </tt>
-<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line">        <tt class="py-name">freeval</tt> <tt class="py-op">=</tt> <tt class="py-number">0.</tt> </tt>
-<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line">    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
-<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line">        <tt class="py-name">freeval</tt> <tt class="py-op">=</tt> <tt class="py-number">1.</tt> </tt>
-<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line">    <tt class="py-keyword">assert</tt> <tt class="py-name">shape</tt><tt class="py-op">(</tt><tt class="py-name">v</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-op">(</tt><tt class="py-number">3</tt><tt class="py-op">,</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-string">"v argument must be 3-vector -- found "</tt><tt class="py-op">+</tt><tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">shape</tt><tt class="py-op">(</tt><tt class="py-name">v</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
-<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line">    <tt class="py-name">vaug</tt> <tt class="py-op">=</tt> <tt class="py-name">resize</tt><tt class="py-op">(</tt><tt class="py-name">v</tt><tt class="py-op">,</tt><tt class="py-op">(</tt><tt class="py-number">4</tt><tt class="py-op">,</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
-<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line">    <tt class="py-name">vaug</tt><tt class="py-op">[</tt><tt class="py-number">3</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">freeval</tt> </tt>
-<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">vaug</tt> </tt>
-</div><a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"> </tt>
-<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt id="link-2" class="py-name" targets="Variable PyDSTool.Toolbox.mechmatlib.ZeroPos=PyDSTool.Toolbox.mechmatlib-module.html#ZeroPos"><a title="PyDSTool.Toolbox.mechmatlib.ZeroPos" class="py-name" href="#" onclick="return doclink('link-2', 'ZeroPos', 'link-2');">ZeroPos</a></tt> <tt class="py-op">=</tt> <tt id="link-3" class="py-name" targets="Function PyDSTool.Toolbox.mechmatlib.augment_3_vector()=PyDSTool.Toolbox.mechmatlib-module.html#augment_3_vector"><a title="PyDSTool.Toolbox.mechmatlib.augment_3_vector" class="py-name" href="#" onclick="return doclink('link-3', 'augment_3_vector', 'link-3');">augment_3_vector</a></tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
-<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"> </tt>
-<a name="augment_3x3_matrix"></a><div id="augment_3x3_matrix-def"><a name="L25"></a><tt class="py-lineno"> 25</tt> <a class="py-toggle" href="#" id="augment_3x3_matrix-toggle" onclick="return toggle('augment_3x3_matrix');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="PyDSTool.Toolbox.mechmatlib-module.html#augment_3x3_matrix">augment_3x3_matrix</a><tt class="py-op">(</tt><tt class="py-param">M</tt><tt class="py-op">=</tt><tt class="py-name">mat</tt><tt class="py-op">(</tt><tt class="py-name">identity</tt><tt class="py-op">(</tt><tt class="py-number">3</tt><tt class="py-op">,</tt><tt class="py-string">'f'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
-<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line">                   <tt class="py-param">disp</tt><tt class="py-op">=</tt><tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-param">free</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="augment_3x3_matrix-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="augment_3x3_matrix-expanded"><a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">free</tt><tt class="py-op">:</tt> </tt>
-<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line">        <tt class="py-name">freeval</tt> <tt class="py-op">=</tt> <tt class="py-number">0.</tt> </tt>
-<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line">    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
-<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line">        <tt class="py-name">freeval</tt> <tt class="py-op">=</tt> <tt class="py-number">1.</tt> </tt>
-<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">    <tt class="py-keyword">assert</tt> <tt class="py-name">shape</tt><tt class="py-op">(</tt><tt class="py-name">M</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-op">(</tt><tt class="py-number">3</tt><tt class="py-op">,</tt><tt class="py-number">3</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-string">"M argument must be 3 x 3 matrix"</tt> </tt>
-<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line">    <tt class="py-keyword">assert</tt> <tt class="py-name">shape</tt><tt class="py-op">(</tt><tt class="py-name">disp</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-op">(</tt><tt class="py-number">3</tt><tt class="py-op">,</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-string">"displacement argument must be 1 x 3 array"</tt> </tt>
-<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line">    <tt class="py-comment"># resize works properly only on rows ... therefore,</tt> </tt>
-<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"><tt class="py-comment"></tt>    <tt class="py-comment"># use transpose twice. (resize on columns messes up matrix contents)</tt> </tt>
-<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"><tt class="py-comment"></tt>    <tt class="py-name">Mxr</tt> <tt class="py-op">=</tt> <tt class="py-name">mat</tt><tt class="py-op">(</tt><tt class="py-name">resize</tt><tt class="py-op">(</tt><tt class="py-name">M</tt><tt class="py-op">.</tt><tt class="py-name">array</tt><tt class="py-op">,</tt> <tt class="py-op">(</tt><tt class="py-number">4</tt><tt class="py-op">,</tt><tt class="py-number">3</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
-<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">    <tt class="py-name">Mxr</tt><tt class="py-op">[</tt><tt class="py-number">3</tt><tt class="py-op">,</tt><tt class="py-op">:</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-number">0.</tt><tt class="py-op">,</tt><tt class="py-number">0.</tt><tt class="py-op">,</tt><tt class="py-number">0.</tt><tt class="py-op">]</tt> </tt>
-<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line">    <tt class="py-name">MxrcT</tt> <tt class="py-op">=</tt> <tt class="py-name">mat</tt><tt class="py-op">(</tt><tt class="py-name">resize</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">Mxr</tt><tt class="py-op">.</tt><tt class="py-name">T</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">array</tt><tt class="py-op">,</tt> <tt class="py-op">(</tt><tt class="py-number">4</tt><tt class="py-op">,</tt><tt class="py-number">4</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
-<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">    <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
-<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">        <tt class="py-comment"># array</tt> </tt>
-<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-name">dcol</tt> <tt class="py-op">=</tt> <tt id="link-4" class="py-name"><a title="PyDSTool.common.args.copy
-PyDSTool.parseUtils.symbolMapClass.copy" class="py-name" href="#" onclick="return doclink('link-4', 'copy', 'link-1');">copy</a></tt><tt class="py-op">.</tt><tt id="link-5" class="py-name"><a title="PyDSTool.common.args.copy
-PyDSTool.parseUtils.symbolMapClass.copy" class="py-name" href="#" onclick="return doclink('link-5', 'copy', 'link-1');">copy</a></tt><tt class="py-op">(</tt><tt class="py-name">disp</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">resize</tt><tt class="py-op">(</tt><tt class="py-number">4</tt><tt class="py-op">)</tt> </tt>
-<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">        <tt class="py-name">dcol</tt><tt class="py-op">[</tt><tt class="py-number">3</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">freeval</tt> </tt>
-<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">    <tt class="py-keyword">except</tt> <tt class="py-name">AttributeError</tt><tt class="py-op">:</tt> </tt>
-<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">        <tt class="py-comment"># list</tt> </tt>
-<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-name">dcol</tt> <tt class="py-op">=</tt> <tt id="link-6" class="py-name"><a title="PyDSTool.common.args.copy
-PyDSTool.parseUtils.symbolMapClass.copy" class="py-name" href="#" onclick="return doclink('link-6', 'copy', 'link-1');">copy</a></tt><tt class="py-op">.</tt><tt id="link-7" class="py-name"><a title="PyDSTool.common.args.copy
-PyDSTool.parseUtils.symbolMapClass.copy" class="py-name" href="#" onclick="return doclink('link-7', 'copy', 'link-1');">copy</a></tt><tt class="py-op">(</tt><tt class="py-name">disp</tt><tt class="py-op">)</tt> </tt>
-<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">        <tt class="py-name">dcol</tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Method PyDSTool.Points.Pointset.append()=PyDSTool.Points.Pointset-class.html#append,Method PyDSTool.common.PiecewisePolynomial.append()=PyDSTool.common.PiecewisePolynomial-class.html#append"><a title="PyDSTool.Points.Pointset.append
-PyDSTool.common.PiecewisePolynomial.append" class="py-name" href="#" onclick="return doclink('link-8', 'append', 'link-8');">append</a></tt><tt class="py-op">(</tt><tt class="py-name">freeval</tt><tt class="py-op">)</tt> </tt>
-<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">    <tt class="py-name">MxrcT</tt><tt class="py-op">[</tt><tt class="py-number">3</tt><tt class="py-op">,</tt><tt class="py-op">:</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">dcol</tt> </tt>
-<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">MxrcT</tt><tt class="py-op">.</tt><tt class="py-name">T</tt> </tt>
-</div><a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line"> </tt>
-<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line"> </tt>
-<a name="make_disp"></a><div id="make_disp-def"><a name="L50"></a><tt class="py-lineno"> 50</tt> <a class="py-toggle" href="#" id="make_disp-toggle" onclick="return toggle('make_disp');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="PyDSTool.Toolbox.mechmatlib-module.html#make_disp">make_disp</a><tt class="py-op">(</tt><tt class="py-param">r</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="make_disp-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="make_disp-expanded"><a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">    <tt class="py-docstring">"""Make 3D displacement</tt> </tt>
-<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
-<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt id="link-9" class="py-name" targets="Function PyDSTool.Toolbox.mechmatlib.augment_3x3_matrix()=PyDSTool.Toolbox.mechmatlib-module.html#augment_3x3_matrix"><a title="PyDSTool.Toolbox.mechmatlib.augment_3x3_matrix" class="py-name" href="#" onclick="return doclink('link-9', 'augment_3x3_matrix', 'link-9');">augment_3x3_matrix</a></tt><tt class="py-op">(</tt><tt class="py-name">disp</tt><tt class="py-op">=</tt><tt class="py-name">r</tt><tt class="py-op">)</tt> </tt>
-</div><a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line"> </tt>
-<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line"> </tt>
-<a name="make_rot"></a><div id="make_rot-def"><a name="L56"></a><tt class="py-lineno"> 56</tt> <a class="py-toggle" href="#" id="make_rot-toggle" onclick="return toggle('make_rot');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="PyDSTool.Toolbox.mechmatlib-module.html#make_rot">make_rot</a><tt class="py-op">(</tt><tt class="py-param">a</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="make_rot-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="make_rot-expanded"><a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">    <tt class="py-docstring">"""Make 3D rotation (around z, then new x, then new y)</tt> </tt>
-<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
-<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">    <tt class="py-name">a1</tt> <tt class="py-op">=</tt> <tt id="link-10" class="py-name" targets="Variable PyDSTool.Symbolic.a=PyDSTool.Symbolic-module.html#a"><a title="PyDSTool.Symbolic.a" class="py-name" href="#" onclick="return doclink('link-10', 'a', 'link-10');">a</a></tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
-<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line">    <tt class="py-name">a2</tt> <tt class="py-op">=</tt> <tt id="link-11" class="py-name"><a title="PyDSTool.Symbolic.a" class="py-name" href="#" onclick="return doclink('link-11', 'a', 'link-10');">a</a></tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
-<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">    <tt class="py-name">a3</tt> <tt class="py-op">=</tt> <tt id="link-12" class="py-name"><a title="PyDSTool.Symbolic.a" class="py-name" href="#" onclick="return doclink('link-12', 'a', 'link-10');">a</a></tt><tt class="py-op">[</tt><tt class="py-number">2</tt><tt class="py-op">]</tt> </tt>
-<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">     </tt>
-<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">    <tt class="py-name">ca1</tt> <tt class="py-op">=</tt> <tt class="py-name">math</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name" targets="Variable PyDSTool.Symbolic.cos=PyDSTool.Symbolic-module.html#cos,Variable PyDSTool.Toolbox.NineML.cos=PyDSTool.Toolbox.NineML-module.html#cos,Variable PyDSTool.Toolbox.phaseplane.cos=PyDSTool.Toolbox.phaseplane-module.html#cos,Variable PyDSTool.Toolbox.synthetic_data.cos=PyDSTool.Toolbox.synthetic_data-module.html#cos,Variable PyDSTool.Toolbox.syntheticdata.cos=PyDSTool.Toolbox.syntheticdata-module.html#cos"><a title="PyDSTool.Symbolic.cos
-PyDSTool.Toolbox.NineML.cos
-PyDSTool.Toolbox.phaseplane.cos
-PyDSTool.Toolbox.synthetic_data.cos
-PyDSTool.Toolbox.syntheticdata.cos" class="py-name" href="#" onclick="return doclink('link-13', 'cos', 'link-13');">cos</a></tt><tt class="py-op">(</tt><tt class="py-name">a1</tt><tt class="py-op">)</tt> </tt>
-<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">    <tt class="py-name">sa1</tt> <tt class="py-op">=</tt> <tt class="py-name">math</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name" targets="Variable PyDSTool.Symbolic.sin=PyDSTool.Symbolic-module.html#sin,Variable PyDSTool.Toolbox.NineML.sin=PyDSTool.Toolbox.NineML-module.html#sin,Variable PyDSTool.Toolbox.phaseplane.sin=PyDSTool.Toolbox.phaseplane-module.html#sin,Variable PyDSTool.Toolbox.synthetic_data.sin=PyDSTool.Toolbox.synthetic_data-module.html#sin,Variable PyDSTool.Toolbox.syntheticdata.sin=PyDSTool.Toolbox.syntheticdata-module.html#sin"><a title="PyDSTool.Symbolic.sin
-PyDSTool.Toolbox.NineML.sin
-PyDSTool.Toolbox.phaseplane.sin
-PyDSTool.Toolbox.synthetic_data.sin
-PyDSTool.Toolbox.syntheticdata.sin" class="py-name" href="#" onclick="return doclink('link-14', 'sin', 'link-14');">sin</a></tt><tt class="py-op">(</tt><tt class="py-name">a1</tt><tt class="py-op">)</tt> </tt>
-<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">    <tt class="py-name">ca2</tt> <tt class="py-op">=</tt> <tt class="py-name">math</tt><tt class="py-op">.</tt><tt id="link-15" class="py-name"><a title="PyDSTool.Symbolic.cos
-PyDSTool.Toolbox.NineML.cos
-PyDSTool.Toolbox.phaseplane.cos
-PyDSTool.Toolbox.synthetic_data.cos
-PyDSTool.Toolbox.syntheticdata.cos" class="py-name" href="#" onclick="return doclink('link-15', 'cos', 'link-13');">cos</a></tt><tt class="py-op">(</tt><tt class="py-name">a2</tt><tt class="py-op">)</tt> </tt>
-<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line">    <tt class="py-name">sa2</tt> <tt class="py-op">=</tt> <tt class="py-name">math</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name"><a title="PyDSTool.Symbolic.sin
-PyDSTool.Toolbox.NineML.sin
-PyDSTool.Toolbox.phaseplane.sin
-PyDSTool.Toolbox.synthetic_data.sin
-PyDSTool.Toolbox.syntheticdata.sin" class="py-name" href="#" onclick="return doclink('link-16', 'sin', 'link-14');">sin</a></tt><tt class="py-op">(</tt><tt class="py-name">a2</tt><tt class="py-op">)</tt> </tt>
-<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">    <tt class="py-name">ca3</tt> <tt class="py-op">=</tt> <tt class="py-name">math</tt><tt class="py-op">.</tt><tt id="link-17" class="py-name"><a title="PyDSTool.Symbolic.cos
-PyDSTool.Toolbox.NineML.cos
-PyDSTool.Toolbox.phaseplane.cos
-PyDSTool.Toolbox.synthetic_data.cos
-PyDSTool.Toolbox.syntheticdata.cos" class="py-name" href="#" onclick="return doclink('link-17', 'cos', 'link-13');">cos</a></tt><tt class="py-op">(</tt><tt class="py-name">a3</tt><tt class="py-op">)</tt> </tt>
-<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">    <tt class="py-name">sa3</tt> <tt class="py-op">=</tt> <tt class="py-name">math</tt><tt class="py-op">.</tt><tt id="link-18" class="py-name"><a title="PyDSTool.Symbolic.sin
-PyDSTool.Toolbox.NineML.sin
-PyDSTool.Toolbox.phaseplane.sin
-PyDSTool.Toolbox.synthetic_data.sin
-PyDSTool.Toolbox.syntheticdata.sin" class="py-name" href="#" onclick="return doclink('link-18', 'sin', 'link-14');">sin</a></tt><tt class="py-op">(</tt><tt class="py-name">a3</tt><tt class="py-op">)</tt> </tt>
-<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">     </tt>
-<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">    <tt class="py-comment"># rot: new y, by a3</tt> </tt>
-<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line"><tt class="py-comment"></tt>    <tt class="py-name">roty</tt> <tt class="py-op">=</tt> <tt id="link-19" class="py-name"><a title="PyDSTool.Toolbox.mechmatlib.augment_3x3_matrix" class="py-name" href="#" onclick="return doclink('link-19', 'augment_3x3_matrix', 'link-9');">augment_3x3_matrix</a></tt><tt class="py-op">(</tt><tt class="py-name">mat</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-op">[</tt><tt class="py-name">ca3</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-name">sa3</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-number">1.</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
-<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">                                              <tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-name">sa3</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-name">ca3</tt><tt class="py-op">]</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
-<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line"> </tt>
-<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">    <tt class="py-comment"># rot: new x, by a2</tt> </tt>
-<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line"><tt class="py-comment"></tt>    <tt class="py-name">rotx</tt> <tt class="py-op">=</tt> <tt id="link-20" class="py-name"><a title="PyDSTool.Toolbox.mechmatlib.augment_3x3_matrix" class="py-name" href="#" onclick="return doclink('link-20', 'augment_3x3_matrix', 'link-9');">augment_3x3_matrix</a></tt><tt class="py-op">(</tt><tt class="py-name">mat</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-op">[</tt><tt class="py-number">1.</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-name">ca2</tt><tt class="py-op">,</tt> <tt class="py-op">-</tt><tt class="py-name">sa2</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
-<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">                                              <tt class="py-op">[</tt><tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-name">sa2</tt><tt class="py-op">,</tt> <tt class="py-name">ca2</tt><tt class="py-op">]</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
-<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line"> </tt>
-<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">    <tt class="py-comment"># rot: z, by a1</tt> </tt>
-<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line"><tt class="py-comment"></tt>    <tt class="py-name">rotz</tt> <tt class="py-op">=</tt> <tt id="link-21" class="py-name"><a title="PyDSTool.Toolbox.mechmatlib.augment_3x3_matrix" class="py-name" href="#" onclick="return doclink('link-21', 'augment_3x3_matrix', 'link-9');">augment_3x3_matrix</a></tt><tt class="py-op">(</tt><tt class="py-name">mat</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-op">[</tt><tt class="py-name">ca1</tt><tt class="py-op">,</tt> <tt class="py-op">-</tt><tt class="py-name">sa1</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-name">sa1</tt><tt class="py-op">,</tt> <tt class="py-name">ca1</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
-<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">                                              <tt class="py-op">[</tt><tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-number">1.</tt><tt class="py-op">]</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
-<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">roty</tt><tt class="py-op">*</tt><tt class="py-name">rotx</tt><tt class="py-op">*</tt><tt class="py-name">rotz</tt> </tt>
-</div><a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line"> </tt>
-<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line"> </tt>
-<a name="make_T"></a><div id="make_T-def"><a name="L84"></a><tt class="py-lineno"> 84</tt> <a class="py-toggle" href="#" id="make_T-toggle" onclick="return toggle('make_T');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="PyDSTool.Toolbox.mechmatlib-module.html#make_T">make_T</a><tt class="py-op">(</tt><tt class="py-param">r</tt><tt class="py-op">,</tt> <tt class="py-param">a</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="make_T-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="make_T-expanded"><a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">    <tt class="py-docstring">"""Make general 3D transformation (displacement then rotation)</tt> </tt>
-<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
-<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">    <tt class="py-name">R</tt> <tt class="py-op">=</tt> <tt id="link-22" class="py-name" targets="Function PyDSTool.Toolbox.mechmatlib.make_rot()=PyDSTool.Toolbox.mechmatlib-module.html#make_rot"><a title="PyDSTool.Toolbox.mechmatlib.make_rot" class="py-name" href="#" onclick="return doclink('link-22', 'make_rot', 'link-22');">make_rot</a></tt><tt class="py-op">(</tt><tt id="link-23" class="py-name"><a title="PyDSTool.Symbolic.a" class="py-name" href="#" onclick="return doclink('link-23', 'a', 'link-10');">a</a></tt><tt class="py-op">)</tt> </tt>
-<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">    <tt class="py-name">D</tt> <tt class="py-op">=</tt> <tt id="link-24" class="py-name" targets="Function PyDSTool.Toolbox.mechmatlib.make_disp()=PyDSTool.Toolbox.mechmatlib-module.html#make_disp"><a title="PyDSTool.Toolbox.mechmatlib.make_disp" class="py-name" href="#" onclick="return doclink('link-24', 'make_disp', 'link-24');">make_disp</a></tt><tt class="py-op">(</tt><tt class="py-name">r</tt><tt class="py-op">)</tt> </tt>
-<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">R</tt><tt class="py-op">*</tt><tt class="py-name">D</tt> </tt>
-</div><a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line"> </tt>
-<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line"><tt class="py-comment"># Identity matrix</tt> </tt>
-<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt id="link-25" class="py-name" targets="Variable PyDSTool.Toolbox.mechmatlib.Id=PyDSTool.Toolbox.mechmatlib-module.html#Id"><a title="PyDSTool.Toolbox.mechmatlib.Id" class="py-name" href="#" onclick="return doclink('link-25', 'Id', 'link-25');">Id</a></tt> <tt class="py-op">=</tt> <tt class="py-name">mat</tt><tt class="py-op">(</tt><tt class="py-name">identity</tt><tt class="py-op">(</tt><tt class="py-number">4</tt><tt class="py-op">,</tt><tt class="py-string">'f'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
-<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line"> </tt>
-<a name="cross"></a><div id="cross-def"><a name="L94"></a><tt class="py-lineno"> 94</tt> <a class="py-toggle" href="#" id="cross-toggle" onclick="return toggle('cross');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="PyDSTool.Toolbox.mechmatlib-module.html#cross">cross</a><tt class="py-op">(</tt><tt class="py-param">a</tt><tt class="py-op">,</tt><tt class="py-param">b</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="cross-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="cross-expanded"><a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">    <tt class="py-docstring">"""Cross product of two 3D vectors</tt> </tt>
-<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
-<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">    <tt id="link-26" class="py-name" targets="Variable PyDSTool.Interval'.c=PyDSTool.Interval%27-module.html#c,Variable PyDSTool.Symbolic.c=PyDSTool.Symbolic-module.html#c"><a title="PyDSTool.Interval'.c
-PyDSTool.Symbolic.c" class="py-name" href="#" onclick="return doclink('link-26', 'c', 'link-26');">c</a></tt> <tt class="py-op">=</tt> <tt class="py-name">array</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">,</tt> <tt class="py-number">0.</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
-<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">    <tt id="link-27" class="py-name"><a title="PyDSTool.Interval'.c
-PyDSTool.Symbolic.c" class="py-name" href="#" onclick="return doclink('link-27', 'c', 'link-26');">c</a></tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-28" class="py-name"><a title="PyDSTool.Symbolic.a" class="py-name" href="#" onclick="return doclink('link-28', 'a', 'link-10');">a</a></tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">*</tt><tt class="py-name">b</tt><tt class="py-op">[</tt><tt class="py-number">2</tt><tt class="py-op">]</tt><tt class="py-op">-</tt><tt id="link-29" class="py-name"><a title="PyDSTool.Symbolic.a" class="py-name" href="#" onclick="return doclink('link-29', 'a', 'link-10');">a</a></tt><tt class="py-op">[</tt><tt class="py-number">2</tt><tt class="py-op">]</tt><tt class="py-op">*</tt><tt class="py-name">b</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
-<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">    <tt id="link-30" class="py-name"><a title="PyDSTool.Interval'.c
-PyDSTool.Symbolic.c" class="py-name" href="#" onclick="return doclink('link-30', 'c', 'link-26');">c</a></tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-31" class="py-name"><a title="PyDSTool.Symbolic.a" class="py-name" href="#" onclick="return doclink('link-31', 'a', 'link-10');">a</a></tt><tt class="py-op">[</tt><tt class="py-number">2</tt><tt class="py-op">]</tt><tt class="py-op">*</tt><tt class="py-name">b</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">-</tt><tt id="link-32" class="py-name"><a title="PyDSTool.Symbolic.a" class="py-name" href="#" onclick="return doclink('link-32', 'a', 'link-10');">a</a></tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">*</tt><tt class="py-name">b</tt><tt class="py-op">[</tt><tt class="py-number">2</tt><tt class="py-op">]</tt> </tt>
-<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">    <tt id="link-33" class="py-name"><a title="PyDSTool.Interval'.c
-PyDSTool.Symbolic.c" class="py-name" href="#" onclick="return doclink('link-33', 'c', 'link-26');">c</a></tt><tt class="py-op">[</tt><tt class="py-number">2</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-34" class="py-name"><a title="PyDSTool.Symbolic.a" class="py-name" href="#" onclick="return doclink('link-34', 'a', 'link-10');">a</a></tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">*</tt><tt class="py-name">b</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">-</tt><tt id="link-35" class="py-name"><a title="PyDSTool.Symbolic.a" class="py-name" href="#" onclick="return doclink('link-35', 'a', 'link-10');">a</a></tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">*</tt><tt class="py-name">b</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
-<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt id="link-36" class="py-name"><a title="PyDSTool.Interval'.c
-PyDSTool.Symbolic.c" class="py-name" href="#" onclick="return doclink('link-36', 'c', 'link-26');">c</a></tt> </tt>
-</div><a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line"> </tt><script type="text/javascript">
-<!--
-expandto(location.href);
-// -->
-</script>
-</pre>
-<br />
-<!-- ==================== NAVIGATION BAR ==================== -->
-<table class="navbar" border="0" width="100%" cellpadding="0"
-       bgcolor="#a0c0ff" cellspacing="0">
-  <tr valign="middle">
-  <!-- Home link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="PyDSTool-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Tree link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Index link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Help link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Project homepage -->
-      <th class="navbar" align="right" width="100%">
-        <table border="0" cellpadding="0" cellspacing="0">
-          <tr><th class="navbar" align="center"
-            >PyDSTool</th>
-          </tr></table></th>
-  </tr>
-</table>
-<table border="0" cellpadding="0" cellspacing="0" width="100%%">
-  <tr>
-    <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Sun Dec  2 23:44:35 2012
-    </td>
-    <td align="right" class="footer">
-      <a target="mainFrame" href="http://epydoc.sourceforge.net"
-        >http://epydoc.sourceforge.net</a>
-    </td>
-  </tr>
-</table>
-
-<script type="text/javascript">
-  <!--
-  // Private objects are initially displayed (because if
-  // javascript is turned off then we want them to be
-  // visible); but by default, we want to hide them.  So hide
-  // them unless we have a cookie that says to show them.
-  checkCookie();
-  // -->
-</script>
-</body>
-</html>

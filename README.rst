@@ -84,10 +84,6 @@ See the `online documentation <http://pydstool.sourceforge.net>`__,
 particularly the GettingStarted and Tutorials pages! Please report bugs
 and suggestions using the user forum linked to there.
 
-Full API documentation can be found locally in `html` directory.  It is
-auto-generated from the source code using Epydoc and is meant as a reference
-for functions and classes only.
-
 Tests and examples
 ~~~~~~~~~~~~~~~~~~
 
