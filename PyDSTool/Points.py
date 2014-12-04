@@ -9,6 +9,8 @@
 
 from __future__ import division, absolute_import, print_function
 
+from collections import defaultdict
+
 ## PyDSTool imports
 from .utils import *
 from .common import *
@@ -1807,15 +1809,15 @@ class PointInfo(object):
 
     def __init__(self, ptlabels=None):
         if ptlabels is None:
-            self.by_label = DefaultDict({})
-            self.by_index = DefaultDict({})
+            self.by_label = defaultdict(dict)
+            self.by_index = defaultdict(dict)
         elif isinstance(ptlabels, PointInfo):
             self.by_label = ptlabels.by_label
             self.by_index = ptlabels.by_index
         elif isinstance(ptlabels, dict):
             # always expect the dictionary to be based on index
-            self.by_label = DefaultDict({})
-            self.by_index = DefaultDict({})
+            self.by_label = defaultdict(dict)
+            self.by_index = defaultdict(dict)
             for k, v in ptlabels.items():
                 if not isinstance(k, _int_types):
                     raise TypeError("Initialization dictionary must be keyed "
@@ -1873,7 +1875,7 @@ class PointInfo(object):
     def __getitem__(self, key):
         # indices already are enforced to be integers, and labels strings,
         # so this is a safe way to search!
-        # Note: if don't use if-then test then DefaultDict will
+        # Note: if don't use if-then test then defaultdict will
         # create an empty entry for the failed key when .values() is called!
         if isinstance(key, tuple):
             raise TypeError("Can only reference PointInfo with a single key")
@@ -1981,7 +1983,7 @@ class PointInfo(object):
                 key2 = list(self.by_label[key1].keys())
         if byix:
             for k in key2:
-                # have to check k in dict otherwise DefaultDict creates entry!
+                # have to check k in dict otherwise defaultdict creates entry!
                 if k in self.by_label:
                     del self.by_index[key1][k]
                     del self.by_label[k][key1]
@@ -1993,7 +1995,7 @@ class PointInfo(object):
                 del self.by_index[key1]
         else:
             for k in key2:
-                # have to check k in dict otherwise DefaultDict creates entry!
+                # have to check k in dict otherwise defaultdict creates entry!
                 if k in self.by_index:
                     del self.by_index[k][key1]
                     del self.by_label[key1][k]

@@ -55,7 +55,7 @@ import six
 ### EXPORTS
 
 _classes = ['Verbose', 'interpclass', 'interp0d', 'interp1d', 'Utility',
-            'args', 'DefaultDict', 'Struct', 'pickle', 'Diagnostics',
+            'args', 'Struct', 'pickle', 'Diagnostics',
             'metric', 'metric_float', 'metric_float_1D', 'metric_L2',
             'metric_L2_1D', 'metric_weighted_L2', 'metric_weighted_deadzone_L2',
             'predicate', 'null_predicate', 'and_op', 'or_op', 'not_op']
@@ -194,18 +194,6 @@ class Struct(object):
     def __repr__(self):
         attributes = [attr for attr in dir(self) if attr[0] != '_']
         return 'Struct(' + ', '.join(attributes) + ')'
-
-
-class DefaultDict(dict):
-    """Dictionary with a default value for unknown keys.
-
-    Written by Peter Norvig."""
-    def __init__(self, default):
-        self.default = default
-
-    def __getitem__(self, key):
-        if key in self: return self.get(key)
-        return self.setdefault(key, deepcopy(self.default))
 
 
 ### PREDICATES ETC
