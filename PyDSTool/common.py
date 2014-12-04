@@ -55,7 +55,7 @@ import six
 ### EXPORTS
 
 _classes = ['interpclass', 'interp0d', 'interp1d', 'Utility',
-            'args', 'Struct', 'pickle', 'Diagnostics',
+            'args', 'pickle', 'Diagnostics',
             'metric', 'metric_float', 'metric_float_1D', 'metric_L2',
             'metric_L2_1D', 'metric_weighted_L2', 'metric_weighted_deadzone_L2',
             'predicate', 'null_predicate', 'and_op', 'or_op', 'not_op']
@@ -150,19 +150,6 @@ _pytypefromtype = {float64: float, int32: int} #, complex128: complex}
 
 
 #-------------------------------------------------------------------------
-
-
-class Struct(object):
-    """The args class is a more sophisticated type of Struct.
-    """
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-
-    def __repr__(self):
-        attributes = [attr for attr in dir(self) if attr[0] != '_']
-        return 'Struct(' + ', '.join(attributes) + ')'
-
-
 ### PREDICATES ETC
 
 class predicate_op(object):
