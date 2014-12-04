@@ -74,7 +74,7 @@ _functions = ['isUniqueSeq', 'makeArrayIxMap', 'className',
               'listid', 'idfn', 'noneFn', 'isincreasing', 'ismonotonic',
               'extent', 'n_sigdigs_str',
               'linearInterp', 'object2str', 'getSuperClasses',
-              'filteredDict', 'arraymax', 'simplifyMatrixRepr',
+              'filteredDict', 'simplifyMatrixRepr',
               'makeMultilinearRegrFn', 'fit_quadratic', 'fit_quadratic_at_vertex',
               'fit_exponential', 'fit_diff_of_exp', 'fit_linear', 'fit_cubic',
               'smooth_pts', 'nearest_2n_indices',
@@ -829,20 +829,6 @@ def insertInOrder(sourcelist, inslist, return_ixs=False, abseps=0):
                 return sorted_sourcelist, dict(close_ixs)
             else:
                 return sorted_sourcelist
-
-
-def arraymax(a1,a2,t=float64):
-    """Element-wise comparison of maximum values for two arrays."""
-    o=[]
-    try:
-        for x, y in zip(a1,a2):
-            o.append(max(x,y))
-    except TypeError:
-        print("Problem with type of arguments in arraymax:")
-        print("Received a1 = %r" % a1)
-        print("         a2 = %r" % a2)
-        raise
-    return array(o,t)
 
 
 def simplifyMatrixRepr(m):
