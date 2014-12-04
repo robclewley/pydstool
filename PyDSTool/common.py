@@ -54,7 +54,7 @@ import six
 # ----------------------------------------------------------------------------
 ### EXPORTS
 
-_classes = ['Verbose', 'interpclass', 'interp0d', 'interp1d', 'Utility',
+_classes = ['interpclass', 'interp0d', 'interp1d', 'Utility',
             'args', 'Struct', 'pickle', 'Diagnostics',
             'metric', 'metric_float', 'metric_float_1D', 'metric_L2',
             'metric_L2_1D', 'metric_weighted_L2', 'metric_weighted_deadzone_L2',
@@ -3459,91 +3459,3 @@ global Continuous, Discrete
 
 Continuous = DomainType("Continuous Domain")
 Discrete = DomainType("Discrete Domain")
-
-
-#-----------------------------------------------------------------------------
-# The following code, in particular the Verbose class, was written by
-# John D. Hunter as part of the front end of MatplotLib.
-# (See matplotlib.sourceforge.net/license.html for details.)
-#
-# Copyright (c) 2002-2004 John D. Hunter; All Rights Reserved
-#-----------------------------------------------------------------------------
-
-# This is not yet used in PyDSTool
-class Verbose(object):
-    """
-    A class to handle reporting.  Set the fileo attribute to any file
-    instance to handle the output.  Default is sys.stdout
-    """
-    levels = ('silent', 'error', 'helpful', 'debug', 'debug-annoying')
-    vald = dict( [(level, i) for i,level in enumerate(levels)])
-
-    # parse the verbosity from the command line; flags look like
-    # --verbose-error or --verbose-helpful
-    _commandLineVerbose = None
-
-
-    for arg in sys.argv[1:]:
-        if not arg.startswith('--verbose-'): continue
-        _commandLineVerbose = arg[10:]
-
-    def __init__(self, level):
-        self.setLevel(level)
-        self.fileo = sys.stdout
-        self.erro = sys.stderr
-
-    def setLevel(self, level):
-        'set the verbosity to one of the Verbose.levels strings'
-
-        if self._commandLineVerbose is not None:
-            level = self._commandLineVerbose
-        if level not in self.levels:
-            raise ValueError('Illegal verbose string "%s".  Legal values are %s'%(level, self.levels))
-        self.level = level
-
-    def report(self, s, level='helpful'):
-        """
-        print message s to self.fileo if self.level>=level.  Return
-        value indicates whether a message was issue.
-        """
-        if self.ge(level):
-            print(s, file=self.fileo)
-            return True
-        return False
-
-    def report_error(self, s):
-        """
-        print message s to self.fileo if self.level>=level.  Return
-        value indicates whether a message was issued
-        """
-        if self.ge('error'):
-            print(s, file=self.erro)
-            return True
-        return False
-
-
-    def wrap(self, fmt, func, level='helpful', always=True):
-        """
-        return a callable function that wraps func and reports it
-        output through the verbose handler if current verbosity level
-        is higher than level
-
-        if always is True, the report will occur on every function
-        call; otherwise only on the first time the function is called
-        """
-        assert callable(func)
-        def wrapper(*args, **kwargs):
-            ret = func(*args, **kwargs)
-
-            if (always or not wrapper._spoke):
-                spoke = self.report(fmt%ret, level)
-                if not wrapper._spoke: wrapper._spoke = spoke
-            return ret
-        wrapper._spoke = False
-        wrapper.__doc__ = func.__doc__
-        return wrapper
-
-    def ge(self, level):
-        'return true if self.level is >= level'
-        return self.vald[self.level]>=self.vald[level]
-
