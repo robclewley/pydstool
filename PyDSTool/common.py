@@ -82,7 +82,7 @@ _functions = ['isUniqueSeq', 'makeArrayIxMap', 'className',
               'PiecewisePolynomial', 'make_poly_interpolated_curve',
               'simple_bisection', 'get_opt', 'array_bounds_check',
               'verify_intbool', 'verify_nonneg', 'verify_pos',
-              'verify_values', 'ensurefloat', 'API']
+              'verify_values', 'ensurefloat']
 
 _constants = ['Continuous', 'Discrete', 'targetLangs', '_seq_types',
               '_num_types', '_int_types', '_float_types', '_complex_types',
@@ -150,39 +150,6 @@ _pytypefromtype = {float64: float, int32: int} #, complex128: complex}
 
 
 #-------------------------------------------------------------------------
-
-
-class API_class(object):
-    """Adapted from ."""
-    def _print_values(self, obj):
-        def _print_value(key):
-            if key.startswith('_'):
-                return ''
-            value = getattr(obj, key)
-            if not hasattr(value, 'im_func'):
-                doc = type(value).__name__
-            else:
-                if value.__doc__ is None:
-                    doc = 'no docstring'
-                else:
-                    doc = value.__doc__
-            return '    %s : %s' % (key, doc)
-        res = [_print_value(el) for el in dir(obj)]
-        return '\n'.join([el for el in res
-                          if el != ''])
-
-    def __call__(self, obj):
-        if obj.__doc__ is None:
-            doc = 'No docstring'
-        else:
-            doc = obj.__doc__
-        if hasattr(obj, '__name__'):
-            return obj.__name__ + " : " + doc + "\n\n" + \
-               self._print_values(obj)
-        else:
-            return doc + "\n\n" + self._print_values(obj)
-
-API = API_class()
 
 
 class Struct(object):
