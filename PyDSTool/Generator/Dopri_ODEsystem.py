@@ -1,6 +1,8 @@
 # Dopri ODE system
 from __future__ import division, absolute_import, print_function
 
+import imp
+
 from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem
 from .baseclasses import theGenSpecHelper, genDB, _pollInputs
@@ -39,7 +41,8 @@ class dopri(integrator):
                             extraSpace=extraSpace, defaultBound=defaultBound)
         self.modname = modname
         try:
-            self._integMod = __import__(modname, globals())
+            self._integMod = imp.load_module(
+                modname, *imp.find_module(modname, ["dop853_temp"]))
         except:
             print("Error in importing compiled vector field and integrator.")
             print("Did you compile the RHS C code?")

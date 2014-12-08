@@ -7,8 +7,6 @@ from __future__ import print_function, absolute_import
 
 from abc import abstractproperty, ABCMeta
 import os
-import shutil
-import sys
 
 from numpy import get_include
 from numpy.distutils.core import setup, Extension
@@ -136,7 +134,7 @@ class _Builder(object):
         return "_" + self.modname + utils.get_lib_extension()
 
     def build(self, libsources=None, libdirs=None, compiler=None):
-        if _exists(self.extfile):
+        if _exists(self.extfile, self.tempdir):
             # DLL file already exists and we can't overwrite it at this time
             self._fail()
             return
@@ -175,7 +173,7 @@ class _Builder(object):
 
         # Use distutils to perform the compilation of the selected files
         extmod = Extension(
-            "_" + self.modname,
+            '.'.join([self.tempdir, "_" + self.modname]),
             sources=sources,
             include_dirs=incdirs,
             extra_compile_args=utils.extra_arch_arg(
@@ -185,27 +183,10 @@ class _Builder(object):
         )
         with RedirectStdout(os.path.join(self.tempdir, 'build.log')):
             setup(name=self.description,
-                author="PyDSTool (automatically generated)",
-                script_args=script_args,
-                ext_modules=[extmod],
-                py_modules=[self.modname])
-
-        if swigfile in sources or not _exists(self.pyfile, self.tempdir):
-            # move library files into the user's CWD
-            try:
-                # temporary hack to fix numpy_distutils bug
-                shutil.move(
-                    os.path.join(os.getcwd(), self.tempdir, self.pyfile),
-                    os.path.join(os.getcwd(), self.pyfile))
-            except IOError:
-                print("\nError occurred in generating '%s' system" % self.vfname)
-                print("(while moving library extension modules to CWD)")
-                print("%s %s" % (sys.exc_info()[0], sys.exc_info()[1]))
-                raise RuntimeError
-
-    def done(self):
-        """Check if all files generated"""
-        return all(_exists(f) for f in [self.pyfile, self.extfile])
+                  author="PyDSTool (automatically generated)",
+                  script_args=script_args,
+                  ext_modules=[extmod],
+                  py_modules=[self.modname])
 
     def save_vfield(self, code, fname=None):
         """Save code for vector-field to file"""
