@@ -20,7 +20,11 @@ def _generate_filenames(vf_name):
         ('_%s_', '_vf.so'),
         ('_%s_', '_vf.cpython-33m.so'),
         ('_%s_', '_vf.cpython-34m.so'),
+        ('%s_', '_vf.i'),
+        ('', '_vf.c'),
+        ('%s_', '_vf_wrap.c'),
     )
     for g in ['radau5', 'dop853']:
         for prefix, suffix in parts:
-            yield ''.join([prefix % g, vf_name, suffix])
+            yield os.path.join('%s_temp' % g, ''.join([
+                prefix % g if prefix else '', vf_name, suffix]))
