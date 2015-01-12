@@ -18,13 +18,10 @@ matrix:
             - COVERAGE="yes"
 
 before_install:
-    - uname -a
-    - python -c 'import struct; print(struct.calcsize("P") * 8)'
     - sudo apt-get update -qq
     - sudo apt-get install -qq liblapack-dev libatlas-dev libatlas-base-dev gfortran swig
-    - pip install --upgrade pip setuptools pytest pytest-xdist
-    - pip install --use-wheel six
-    - export PIP_CMD='pip install --find-links http://wheels.astropy.org/ --find-links http://wheels2.astropy.org/ --use-wheel'
+    - pip install --use-wheel pytest pytest-xdist six mock
+    - export PIP_CMD='pip install --use-wheel'
 
 install:
     - $PIP_CMD $NUMPY_SPEC
