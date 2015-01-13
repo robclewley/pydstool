@@ -100,6 +100,14 @@ def test_symbolic():
     k = expr2fun('-f(c,d)+b', f=fnspec['f'], b=0.5, a=1)
     assert k(1,2) == -4.5
 
+    # alternate scope and testing embedded dynamic pars in both
+    # main expression and sub-expressions like f()
+    l = expr2fun('-f(c,d)+b', ensure_dynamic={'a':1, 'c':2},
+                 **fnspec)
+    assert l._args == ['d', 'b']
+    assert l._call_spec == "-self.f(self._pardict['c'],d)+b"
+    assert l(1,2) == -2
+
     s='1+a/(f(x,y)-3)+h(2)'
     t=s.replace('y','g(x,z)')
     u=t.replace('z','f(z)')

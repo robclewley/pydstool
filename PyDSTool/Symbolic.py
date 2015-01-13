@@ -387,7 +387,8 @@ def _join_sublist(qspec, math_globals, local_free, eval_at_runtime):
         return str(_eval(qspec, math_globals, local_free, eval_at_runtime))
 
 
-def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, **values):
+def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, fn_name='',
+             for_funcspec=True, **values):
     """qexpr is a string, Quantity, or QuantSpec object.
     values is a dictionary binding free names to numerical values
     or other objects defined at runtime that are in local scope.
@@ -415,6 +416,13 @@ def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, **values):
     accessible numeric values that can be looked up during function
     evaluation, using the optional ensure_dynamic dictionary. Later,
     you can modify the values in this dictionary directly.
+
+    You can name the function explicitly using fn_name option. This will
+    become the __name__ attribute of the generated class.
+
+    You can force the processing to be for non-FuncSpec output (e.g. to
+    support full Python syntax) by setting for_funcspec = False. Default
+    is True.
 
     The arguments to the returned callable function object are
     given by its attribute '_args', and its definition string by
@@ -457,14 +465,14 @@ def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, **values):
         else:
             vs = str(v)
         if isNumericToken(vs):
-            if '.' in k:
+            if '.' in k and for_funcspec:
                 kFS = k.replace('.','_')
                 h_map.update({k: kFS})
             else:
                 kFS = k
             valDict[kFS] = vs
         elif not isinstance(vs, Fun):
-            if '.' in k:
+            if '.' in k and for_funcspec:
                 kFS = k.replace('.','_')
                 h_map.update({k: kFS})
             else:
@@ -479,14 +487,22 @@ def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, **values):
         qvar = Var(qexpr, 'q')
     except TypeError as e:
         raise TypeError("Invalid qexpr argument type: " + str(e))
-    fspec = qvar.eval(**valDict)
+    # eval will fail if qvar contains python syntax outside of
+    # math expressions, e.g. for auto-code gen involving dictionary
+    # mapping lookups. So, at least only eval if valDict is non-empty
+    if len(valDict) > 0:
+        fspec = qvar.eval(**valDict)
+    else:
+        fspec = qvar.spec
 
     dyn_map = symbolMapClass()
     temp_dynamic = {}
     if ensure_dynamic is not None:
         dyn_keys = list(ensure_dynamic.keys())
-        dyn_vals = ["self._pardict['%s']" %d for d in dyn_keys]
-        dyn_map.update(dict(zip(dyn_keys, dyn_vals)))
+        # _pardict will only be used if for FuncSpec output
+        if for_funcspec:
+            dyn_vals = ["self._pardict['%s']" %d for d in dyn_keys]
+            dyn_map.update(dict(zip(dyn_keys, dyn_vals)))
         eval_at_runtime.extend(dyn_keys)
         for k in dyn_keys:
             temp_dynamic[k] = Var(k)
@@ -522,11 +538,18 @@ def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, **values):
     # a new QuantSpec.
     #
     # first, get rid of hierarchical names before running eval, which will think
-    # they are objects!
-    free_h = [symb.replace('.', '_') for symb in free]
-    free_h_nonFS = [symb.replace('_', '.') for symb in free]
-    h_map.update(dict(zip(free_h_nonFS, free_h)))
-    free = free_h
+    # they are python objects!
+    if for_funcspec:
+        # These statements assume that no underscore-leading names are used, e.g. 'a._b'
+        assert '._' not in str(fspec)
+        # enforce unique in case e.g. 'K.n' and 'K_n' were both separately in free symbols
+        # otherwise end up with duplicates of 'K_n' in argument list later
+        free_h = makeSeqUnique([symb.replace('.', '_') for symb in free])
+        # Don't want to replace '_' in free names if not part of hierarchical name
+        # e.g. if it's a module name for non-funcspec use
+        free_h_nonFS = makeSeqUnique([symb.replace('_', '.') for symb in free])
+        h_map.update(dict(zip(free_h_nonFS, free_h)))
+        free = free_h
     defs = filteredDict(local_free, [k for k, v in local_free.items() if v is not None])
     local_free.update(dict(zip(free, [QuantSpec(symb) for symb in free])))
     scope = filteredDict(local_free, [k for k, v in local_free.items() if v is not None])
@@ -550,8 +573,13 @@ def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, **values):
             fspec_eval.mapNames(dyn_map)
         fspec_str = str(fspec_eval)
     else:
-        fspec_eval = _eval(fspec, eval_globals,
+        if for_funcspec:
+            # BUG? Why is dyn_map not used here when eval_at_runtime != []?
+            fspec_eval = _eval(fspec, eval_globals,
                            scope, eval_at_runtime)
+        else:
+            # no need to try to simplify
+            fspec_eval = fspec
 
     def append_call_parens(k):
         """For defined references to future fn_wrapper attributes that need
@@ -576,9 +604,17 @@ def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, **values):
         if eval_at_runtime != []:
             fspec.mapNames(dict(zip(mapnames,
                         ['self.'+k+append_call_parens(k) for k in mapnames])))
+            # replace any occurrences of eval-at-runtime parameters x
+            # with 'self._pardict[x]'
+            fspec.mapNames(dyn_map)
             fspec_str = str(fspec)
         else:
-            fspec_str = str(fspec_eval.renderForCode())
+            if for_funcspec:
+                fspec_str = str(fspec_eval.renderForCode())
+            else:
+                # fspec may be using indexing in special use cases (general python
+                # syntax such as dictionary indexing for non-core PyDSTool parsing)
+                fspec_str = str(fspec_eval)
     arglist = copy(free)
     if ensure_args is not None:
         arglist.extend(remain(ensure_args, free))
@@ -592,10 +628,15 @@ def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, **values):
     # imports as per header of Symbolic.py
     my_locals = locals()
     my_locals.update(math_globals)
+    if fn_name == '' or fn_name is None:
+        # make a random, unique name
+        import time
+        fn_name = 'fn_' + str(time.time()).replace('.', '_')
     # !!! PERFORM MAGIC
     def_str = """
 from __future__ import division
 class fn_wrapper(object):
+    __name__ = '""" + fn_name + """'
     def __call__(self""" + arglist_str + """):
         return """ + fspec_str + """
 
@@ -604,19 +645,22 @@ class fn_wrapper(object):
 """
     if len(embed_funcs) > 0:
         for fname, (fnsig, fndef) in embed_funcs.items():
-            def_str += "\n    def " + fname + "(self"
             if len(fnsig) > 0:
-                def_str += ", " + ", ".join(fnsig)
-            def_str += "):\n        return " + fndef
+                embed_sig_str = ", " + ", ".join(fnsig)
+            else:
+                embed_sig_str = ""
+            def_str += "\n    def " + fname + "(self" + embed_sig_str + \
+                       "):\n        return " + fndef
     try:
-        six.exec_(def_str, locals(), globals())
+        six.exec_(def_str)
     except:
         print("Problem defining function:")
         raise
-    evalfunc = fn_wrapper()
+    evalfunc = locals()['fn_wrapper']()
     evalfunc.__dict__.update(defs)
-    if dyn_keys != []:
-        # don't make copy to allow automatic update
+    if dyn_keys != [] and for_funcspec:
+        # Don't make copy of the dict to allow automatic update.
+        # We don't need _pardict for non-funcspec definitions.
         evalfunc._pardict = ensure_dynamic
     evalfunc._args = arglist
     evalfunc._call_spec = fspec_str
