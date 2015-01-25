@@ -5,6 +5,8 @@ from __future__ import absolute_import, print_function
 
 import os
 
+from distutils.util import get_platform
+
 from .errors import *
 from .common import *
 from .parseUtils import joinStrs
@@ -705,7 +707,9 @@ def distutil_destination():
     if osname == 'linux':
         destdir = 'src.'+osname+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
     elif osname in ['darwin', 'freebsd']:
-        osver = platform.mac_ver()[0].split('.')
+        # use the same version string as produced by numpy.distutils.core.setup
+        osver = get_platform() 
+        #osver = platform.mac_ver()[0].split('.')
         if int(scipy.__version__.split('.')[1]) > 5 and len(osver)>1 and osver != ['']:
             destdir = 'src.macosx-'+osver[0]+'.'+osver[1]+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
         else:
