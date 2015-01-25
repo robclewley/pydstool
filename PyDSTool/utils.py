@@ -709,7 +709,6 @@ def distutil_destination():
     elif osname in ['darwin', 'freebsd']:
         # use the same version string as produced by numpy.distutils.core.setup
         osver = get_platform() 
-        #osver = platform.mac_ver()[0].split('.')
         if int(scipy.__version__.split('.')[1]) > 5 and len(osver)>1 and osver != ['']:
             destdir = 'src.macosx-'+osver[0]+'.'+osver[1]+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
         else:
