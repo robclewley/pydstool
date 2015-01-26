@@ -707,12 +707,9 @@ def distutil_destination():
     if osname == 'linux':
         destdir = 'src.'+osname+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
     elif osname in ['darwin', 'freebsd']:
-        # use the same version string as produced by numpy.distutils.core.setup
+        # use the same version string as numpy.distutils.core.setup used by ContClass.CompileAutoLib
         osver = get_platform() 
-        if int(scipy.__version__.split('.')[1]) > 5 and len(osver)>1 and osver != ['']:
-            destdir = 'src.macosx-'+osver[0]+'.'+osver[1]+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
-        else:
-            destdir = 'src.'+osname+'-'+platform.release()+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
+        destdir = 'src.' + osver + '-' +pyname[0] + '.' + pyname[1]
     elif osname == 'windows':
         destdir = 'src.win32-'+pyname[0]+'.'+pyname[1]
     else:
