@@ -3,6 +3,8 @@ from __future__ import print_function
 from PyDSTool import *
 import nineml.abstraction_layer as al
 from PyDSTool.Toolbox.NineML import *
+import nineml
+
 
 def get_HH_component():
     """A Hodgkin-Huxley single neuron model.
@@ -41,9 +43,9 @@ def get_HH_component():
     # indep vars, analog_analog_ports, etc.
     parameters = ['el', 'C', 'ek', 'ena', 'gkbar', 'gnabar', 'theta', 'gl', 'celsius']
 
-    analog_ports = [al.SendPort("V"), al.ReducePort("Isyn",reduce_op="+")]
+    analog_ports = [al.AnalogSendPort("V"), al.AnalogReducePort("Isyn",reduce_op="+")]
 
-    c1 = al.ComponentClass("HodgkinHuxley",
+    c1 = al.DynamicsClass("HodgkinHuxley",
                           parameters=parameters,
                           regimes=(hh_regime,),
                           aliases=aliases,
@@ -64,10 +66,10 @@ def get_Izh_component():
                            to='subthreshold_regime')]
     )
 
-    ports = [al.SendPort("V"),
-             al.ReducePort("Isyn", reduce_op="+")]
+    ports = [al.AnalogSendPort("V"),
+             al.AnalogReducePort("Isyn", reduce_op="+")]
 
-    c1 = al.ComponentClass(
+    c1 = al.DynamicsClass(
         name="Izhikevich",
         regimes=[subthreshold_regime],
         analog_ports=ports
@@ -80,7 +82,7 @@ def get_Izh_FS_component():
     Load Fast spiking Izhikevich XML definition from file and parse into
     Abstraction Layer of Python API.
     """
-    return al.parse('NineML_Izh_FS.xml')
+    return nineml.read('NineML_Izh_FS.xml')['Izh_FS']
 
 def get_aeIF_component():
     """
@@ -110,7 +112,7 @@ def get_aeIF_component():
     parameters = ['C_m', 'g_L', 'E_L', 'Delta', 'V_T', 'S',
                   'trefractory', 'tspike', 'tau_w', 'a', 'b']
 
-    aeIF = al.ComponentClass("aeIF",
+    aeIF = al.DynamicsClass("aeIF",
                      regimes=[
                          al.Regime(
                                 name="subthresholdregime",
@@ -130,7 +132,7 @@ def get_aeIF_component():
                                                to="subthresholdregime"),
                                 )
                                ],
-                         analog_ports=[al.ReducePort("Isyn", reduce_op="+")]
+                         analog_ports=[al.AnalogReducePort("Isyn", reduce_op="+")]
                      )
 
     return aeIF
@@ -140,9 +142,9 @@ def get_compound_component():
     """Cannot yet be implemented in PyDSTool
     """
     from nineml.abstraction_layer.testing_utils import RecordValue
-    from nineml.abstraction_layer import ComponentClass, Regime, On, OutputEvent, SendPort, ReducePort
+    from nineml.abstraction_layer import DynamicsClass, Regime, On, OutputEvent, AnalogSendPort, AnalogReducePort
 
-    emitter = ComponentClass(
+    emitter = DynamicsClass(
             name='EventEmitter',
             parameters=['cyclelength'],
             regimes=[
@@ -151,10 +153,10 @@ def get_compound_component():
                         't > tchange + cyclelength', do=[OutputEvent('emit'), 'tchange=t'])),
             ])
 
-    ev_based_cc = ComponentClass(
+    ev_based_cc = DynamicsClass(
             name='EventBasedCurrentClass',
             parameters=['dur', 'i'],
-            analog_ports=[SendPort('I')],
+            analog_ports=[AnalogSendPort('I')],
             regimes=[
                 Regime(
                     transitions=[
@@ -165,21 +167,21 @@ def get_compound_component():
             ]
         )
 
-    pulsing_emitter = ComponentClass(name='pulsing_cc',
+    pulsing_emitter = DynamicsClass(name='pulsing_cc',
                                          subnodes={'evs': emitter, 'cc': ev_based_cc},
                                          portconnections=[('evs.emit', 'cc.inputevent')]
                                          )
 
-    nrn = ComponentClass(
+    nrn = DynamicsClass(
             name='LeakyNeuron',
             parameters=['Cm', 'gL', 'E'],
             regimes=[Regime('dV/dt = (iInj + (E-V)*gL )/Cm'), ],
             aliases=['iIn := iInj'],
-            analog_ports=[SendPort('V'),
-                          ReducePort('iInj', reduce_op='+')],
+            analog_ports=[AnalogSendPort('V'),
+                          AnalogReducePort('iInj', reduce_op='+')],
         )
 
-    combined_comp = ComponentClass(name='Comp1',
+    combined_comp = DynamicsClass(name='Comp1',
                                        subnodes={
                                        'nrn': nrn,  'cc1': pulsing_emitter, 'cc2': pulsing_emitter},
                                        portconnections=[('cc1.cc.I', 'nrn.iInj'),

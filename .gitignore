@@ -15,3 +15,6 @@ matplotlibrc
 PyDSTool.egg-info/
 .ropeproject/
 .python-version
+.project
+.pydevproject
+.settings
