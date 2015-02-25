@@ -52,12 +52,10 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
     if alg_args is None:
         alg_args = {}
 
-    dyn = c.dynamics
-
     # lists
     pars = [p.name for p in c.parameters]
-    vars = dyn.state_variables_map.keys()
-    fns = c.aliases_map.keys()
+    vars = list(c.state_variable_names)
+    fns = list(c.alias_names)
 
     # Turn aliases into function defs:
     # multiple passes until all dependencies resolved
@@ -66,8 +64,8 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
     sigs = {}
 
     while not done:
-        done = all([a.lhs in sigs for a in dyn.aliases])
-        for a in dyn.aliases:
+        done = all([a.lhs in sigs for a in c.aliases])
+        for a in c.aliases:
             deps = list(a.rhs_names)
             resolved = True
             fnlist = []
@@ -88,7 +86,7 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
     # Quantity types
     declare_fns = []
 
-    for a in dyn.aliases:
+    for a in c.aliases:
         sig = sigs[a.lhs]
         fnspec = QuantSpec(a.lhs, a.rhs)
         fnspec.mapNames({'heaviside': 'heav'})
@@ -116,8 +114,8 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
     reg_info_list = []
     reg_models = {}
 
-    all_reg_names = c.regimes_map.keys()
-    num_regs = len(c.regimes_map)
+    all_reg_names = list(c.regime_names)
+    num_regs = c.num_regimes
     if num_regs > 1:
         is_hybrid = True
     else:
@@ -142,10 +140,10 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
     for reg_ix, r in enumerate(c.regimes):
         declare_vars = []
         new_vars = get_regime_model(r, fns, sigs)
-        if len(new_vars) != len(c.state_variables_map):
+        if len(new_vars) != c.num_state_variables:
             if len(new_vars) == 0:
                 reg_type = 'ExplicitFn'
-                for vname in c.state_variables_map:
+                for vname in c.state_variable_names:
                     new_vars.append( Var('initcond(%s)'%vname, name=vname, specType='ExpFuncSpec') )
                 if is_hybrid:
                     new_vars.append( Var('%i'%reg_ix, name='regime_', specType='ExpFuncSpec',
@@ -153,7 +151,7 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
             else:
                 # have to make ODEs with 0 for their RHS
                 reg_type = targetGen
-                for vname in remain(c.state_variables_map, [v.name for v in new_vars]):
+                for vname in remain(list(c.state_variable_names), [v.name for v in new_vars]):
                     new_vars.append( Var('0', name=vname, specType='RHSfuncSpec') )
                 if is_hybrid:
                     new_vars.append( Var('0', name='regime_', specType='RHSfuncSpec',
