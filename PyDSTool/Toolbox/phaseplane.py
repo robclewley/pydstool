@@ -3331,9 +3331,11 @@ def make_flow_normal_event(x, y, dxdt, dydt, targetlang, flatspec=None,
             evtArgs['name'] = 'flow_normal_2D_evt'
         v_dot_f = '((' + x_par + ' - ' + x + ') * (' + dxdt + ') + ' + \
                   '(' + y_par + ' - ' + y + ') * (' + dydt + '))'
-        norm_v = 'sqrt(' + x_par + '*' + x_par + '+' + y_par + '*' + y_par + ')'
-        norm_f = 'sqrt(pow((' + dydt + '),2) + pow((' + dxdt + '),2))'
-        flow_n_str = v_dot_f + '/(' + norm_v + '+' + norm_f + ')'
+        #norm_v = 'sqrt(' + x_par + '*' + x_par + '+' + y_par + '*' + y_par + ')'
+        #norm_f = 'sqrt(pow((' + dydt + '),2) + pow((' + dxdt + '),2))'
+        # the division by the norms is irrelevant when comparing the expression
+        # with zero.
+        flow_n_str = v_dot_f #+ '/(' + norm_v + '+' + norm_f + ')'
         ev = Events.makeZeroCrossEvent(expr=flow_n_str,
                                      dircode=0,
                                      argDict=evtArgs,
