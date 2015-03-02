@@ -1927,7 +1927,7 @@ class ModelManager(object):
             raise TypeError("Invalid model descriptor")
         if not model_desc.validate():
             raise ValueError("Model definition not successfully validated")
-        if model_desc not in self._mReg:
+        if model_desc.name not in self._mReg:
             self._mReg.add(model_desc)
         else:
             raise KeyError('Model with this name already exists in registry')
@@ -2395,8 +2395,11 @@ class MReg(object):
         """descriptor expected to be an MDescriptor object.
         """
         if isinstance(descriptor, MDescriptor):
-            self.descs[descriptor.name] = descriptor
-            self.instances[descriptor.name] = {}
+            if descriptor.name not in self.descs:
+                self.descs[descriptor.name] = descriptor
+                self.instances[descriptor.name] = {}
+            else:
+                raise ValueError("MDescriptor with name %s already added"%descriptor.name)
         else:
             raise TypeError("Only MDescriptor objects valid for MReg class")
 
