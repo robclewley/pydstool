@@ -82,7 +82,7 @@ def get_Izh_FS_component():
     Load Fast spiking Izhikevich XML definition from file and parse into
     Abstraction Layer of Python API.
     """
-    return nineml.read('NineML_Izh_FS.xml')['Izh_FS']
+    return nineml.read('NineML_Izh_FS.xml')['IzhikevichClass']
 
 def get_aeIF_component():
     """
@@ -338,9 +338,10 @@ def test_Izh_FS(Iexts=None):
     c = get_Izh_FS_component()
 
     # Convert to PyDSTool.ModelSpec and create HybridModel object
-    # Provide extra parameter Isyn which is missing from component definition
-    # in absence of any synaptic inputs coupled to the model membrane
-    izh = get_nineml_model(c, 'izh_9ML', extra_args=[Par('Iext'), Par('Isyn')],
+    # Provide extra parameters iSyn and iExt which are missing from
+    # component definition in absence of any synaptic inputs coupled
+    # to the model membrane
+    izh = get_nineml_model(c, 'izh_9ML', extra_args=[Par('iExt'), Par('iSyn')],
                             max_t=100)
 
     if Iexts is None:
@@ -355,13 +356,13 @@ def test_Izh_FS(Iexts=None):
              algparams={'init_step': 0.03})
 
     for Iext in Iexts:
-        izh.set(pars={'Iext': Iext})
-        name = 'Iext=%.1f'%(float(Iext))
+        izh.set(pars={'iExt': Iext})
+        name = 'iExt=%.1f'%(float(Iext))
         izh.compute(name, verboselevel=0)
         pts = izh.sample(name)
         evs = izh.getTrajEventTimes(name)['spikeOutput']
         ISIs = np.diff(evs)
-        print("Iext =", Iext, ":")
+        print("iExt =", Iext, ":")
         print("  Mean ISI = %.3f, variance = %.6f" % (np.mean(ISIs), np.var(ISIs)))
 
         Vp = izh.query('pars')['Vpeak']
@@ -412,16 +413,18 @@ def test_compound():
 
 
 print("Testing Hodgkin Huxley cell model")
-test_HH()
+#test_HH()
 
 print("Testing adaptive Integrate and Fire cell model")
-test_aeIF()
+#test_aeIF()
 
 #print("Testing compound cell model")
 #test_compound()
 
 print("Testing basic Izhikevich cell model")
-test_Izh()
+#test_Izh()
+
+fs = nineml.read('NineML_Izh_FS.xml')
 
 print("Testing Izhikevich fast spiking cell model from XML import")
 print("   at three input current levels")

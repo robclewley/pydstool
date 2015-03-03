@@ -635,14 +635,14 @@ def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, fn_name='',
     # !!! PERFORM MAGIC
     def_str = """
 from __future__ import division
-class fn_wrapper(object):
+class """+fn_name+"""_fn_wrapper(object):
     __name__ = '""" + fn_name + """'
     def __call__(self""" + arglist_str + """):
         return """ + fspec_str + """
 
     def alt_call(self, keyed_arg):
         return self.__call__(**filteredDict(self._namemap(keyed_arg), self._args))
-"""
+    """
     if len(embed_funcs) > 0:
         for fname, (fnsig, fndef) in embed_funcs.items():
             if len(fnsig) > 0:
@@ -656,7 +656,8 @@ class fn_wrapper(object):
     except:
         print("Problem defining function:")
         raise
-    evalfunc = locals()['fn_wrapper']()
+    cls = locals()[fn_name+'_fn_wrapper']
+    evalfunc = cls()
     evalfunc.__dict__.update(defs)
     if dyn_keys != [] and for_funcspec:
         # Don't make copy of the dict to allow automatic update.
@@ -665,8 +666,10 @@ class fn_wrapper(object):
     evalfunc._args = arglist
     evalfunc._call_spec = fspec_str
     evalfunc._namemap = h_map
+    # register the class in the global namespace to assist in pickling
+    g = globals()
+    g[cls.__name__] = cls
     return evalfunc
-
 
 
 def subs(qexpr, *bindings):
@@ -2752,10 +2755,13 @@ def dofun(l,r):
 qtypes = (Quantity, QuantSpec)
 
 def Diff(t, a):
-    """Diff expects strings, Quantity, or QuantSpec types,
-    a mixture of these, or a list of strings in second argument.
+    """Symbolic differentiation of argument t with respect to variables in a.
 
-    The return type is a QuantSpec.
+    Diff expects these arguments to be strings, Quantity, or QuantSpec types,
+    a mixture of these, or a list of strings.
+
+    The return type is a QuantSpec. To get the string version, either use DiffStr or
+    call the method q.renderForCode().specStr on the returned q object.
     """
 
     # deal with t -----------------------------------------

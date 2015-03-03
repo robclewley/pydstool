@@ -1,16 +1,21 @@
 """
     Phase plane utilities.
 
-    Some 2011 functionality has not yet been updated to use the plotter
-    phase plane plotting manager.
 
+IMPORTANT NOTES DURING DEVELOPMENT:
 
-IMPORTANT NOTE DURING DEVELOPMENT:
-For now, many operations with nullclines assume that they are NOT multi-valued
+Many operations with nullclines assume that they are NOT multi-valued
 as a function of their variables, and that they are monotonic only as the x
 variable increases.
 
-R. Clewley, 2006 - 2011
+Some 2011 functionality has not yet been updated to use the plotter
+phase plane plotting manager.
+
+Some of this code is still in need of improvements in functionality,
+efficiency, and documentation. Some of it is deliberately undocumented
+because it is still highly experimental.
+
+R. Clewley, 2006 - 2015
 """
 
 from __future__ import division, absolute_import, print_function
@@ -2391,15 +2396,17 @@ def bisection(func, a, b, args=(), xtol=1e-10, maxiter=400, normord=2):
         try:
             ev = func(p,*args)
         except RuntimeError:
-            return p
-        if ev == 0:
-            return p
-        i += 1
-        if ev*eva > 0:
-            a = p
-            eva = ev
+            print("Warning: RuntimeError in bisection")
+            break
         else:
-            b = p
+            if ev == 0:
+                return p
+            i += 1
+            if ev*eva > 0:
+                a = p
+                eva = ev
+            else:
+                b = p
     raise RuntimeError("Method failed after %d iterations." % maxiter)
 
 
@@ -2858,7 +2865,7 @@ class dx_scaled_2D(object):
         # angle gives relative y-axis contribution of dir vector
         try:
             angle = 2*atan2(dir[1],dir[0])/pi
-        except TypeError:
+        except (IndexError, TypeError):
             # e.g. unsubscriptable object, from a __mul__ call
             return self.dx*dir
         else:
@@ -2871,39 +2878,50 @@ class dx_scaled_2D(object):
         # angle gives relative y-axis contribution of dir vector
         try:
             angle = 2*atan2(dir[1],dir[0])/pi
-        except TypeError:
+        except (IndexError, TypeError):
             # e.g. unsubscriptable object
             return dx_scaled_2D(self.dx*dir, (1,self.y_scale))
         else:
             return self.dx*dir*(angle*self.y_scale+(1-angle))
 
 
-def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
-                          max_len=None, ic=None,
-                          ic_dx=None, max_pts=1000, directions=(1,-1),
+def find_saddle_manifolds(fp, xname, ds=None, ds_gamma=None, ds_perp=None, tmax=None,
+                          max_arclen=None, ic=None, eps=None, ev_dirn=1,
+                          ic_ds=None, max_pts=1000, directions=(1,-1),
                           which=('s', 'u'), other_pts=None, rel_scale=None,
-                          dx_perp_fac=0.75, verboselevel=0, fignum=None):
+                          ds_perp_fac=0.75, verboselevel=0, fignum=None):
     """Compute any branch of the stable or unstable sub-manifolds of a saddle.
     Accepts fixed point instances of class fixedpoint_2D.
 
     Required inputs:
       fp:       fixed point object
-      dx:       arc-length step size (**fixed**)
-      dx_gamma: determines the positions of the Gamma_plus and Gamma_minus
+      xname:    coordinate name of the x-axis variabe (e.g., for correct
+                 orientation of verbose plotting)
+      ds:       arc-length step size (**fixed**)
+      ds_gamma: determines the positions of the Gamma_plus and Gamma_minus
                 event surfaces (can be a real scalar or a pair if not symmetric)
-      dx_perp:  initial perturbation from the local linear sub-manifolds to
-                find starting points.
-      tmax:     maximum time to compute a trajectory before 'failing'
-      max_len:  maximum arc length to compute
+      ds_perp:  initial perturbation from the local linear sub-manifolds to
+                find starting points, computed in the direction of the eigenvalue.
+      tmax:     maximum time to compute a test trajectory before 'failing'
+      max_arclen:  maximum arc length to compute
       max_pts:  maximum number of points to compute on each sub-manifold branch
-      Specify either ic or ic_dx for initial point (e.g. to restart the calc
+      ic / ic_ds:
+        Specify either ic or ic_ds for initial point (e.g. to restart the calc
         after a previous failure) or a certain distance from the saddle point.
+      ev_dirn:  +1/-1. Event detection direction for Gamma_plus event.
+          This may need to be flipped after trying one direction and getting errors
+          that the event was not detected. An automated way to set this is not yet
+          available, so you have to use trial and error or some forethought!
+          Rule is: event direction code = 1 if, along the computed trajectory traj:
+             gamm_ev(traj(ev_t - delta)) < 0 and gamma_ev(traj(ev_t + delta)) > 0
+          for event detection time ev_t and small delta>0. The eigenvector along the
+          flow towards the event surfaces determines which is "before" and which is
+          "after" the event surface. (Also note that time will be reversed when
+          computing the unstalbe manifold, which you have to take into account.)
 
     Optional inputs:
-      rel_scale:  a pair giving relative scalings of x and y coordinates in
-        the plane, to improve stepping in the different directions.
-        e.g. (1,10) would make dx steps in the y-direction 10 times larger than
-        in the x-direction.
+      eps: epsilon tolerance for manifold calculations (defaults to 1/100 times
+          that of the FP objects passed to the function)
 
       which:  which sub-manifold to compute 's', 'u' or ('s', 'u').
         Default is both.
@@ -2911,20 +2929,43 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
       directions:  which directions along chosen sub-manifolds? (1,), (-1,)
         or (1,-1). Default is both.
 
-      other_pts can be a list of points whose proximity will be checked,
-    and the computation halted if they get within dx of the manifold.
+      rel_scale:  a pair giving relative scalings of x and y coordinates in
+        the plane, to improve stepping in the different directions.
+        e.g. (1,10) would make ds steps in the y-direction 10 times larger than
+        in the x-direction. Default is (1,1)
 
-      dx_perp_fac:  For advanced use only. If you get failures saying dx_perp
+      other_pts can be a list of points whose proximity will be checked,
+    and the computation halted if they get within ds of the manifold.
+
+      ds_perp_fac:  For advanced use only. If you get failures saying ds_perp
          too small and that initial displacement did not straddle manifold, try
          increasing this factor towards 1 (default 0.75). Especially for
-         unstable manifolds, initial values for dx_perp may diverge, but if
-         dx_perp is shrunk too quickly with this factor the sweet spot may be
+         unstable manifolds, initial values for ds_perp may diverge, but if
+         ds_perp is shrunk too quickly with this factor the sweet spot may be
          missed.
 
-      verboselevel
-      fignum
-    """
+      verboselevel: 0 means silent, 1 means basic text info, 2 means extended info
+         and also diagnostic plots. In diagnostic plots, the two solid black lines
+         show the gamma plus/minus exit event lines; the blue trajectories are the
+         test trajectories starting at the green cross test points;
+         flow direction from IC shown as solid red line, its normal as dotted red.
+      fignum:   Select figure number (defaults to 1)
 
+
+     Returns:
+       Dictionary keyed by 's' and 'u', containing dictionaries keyed by directions
+         1 or -1 (ints) to a Pointset (if computed) or None (if not computed);
+         parameterized by arc length, depending on user's selections for 'directions'
+         argument and 'which' argument.
+         E.g., if directions=(1,) and which = ('s',), returned structure looks like
+            {'s': {1: <<pointset>>, -1: None}, 'u': {1: None, -1: None}}
+
+      Major limitation:
+       Note that ds_perp does NOT automatically update to use recent curvature
+       information, which would make most sense. Instead, it always uses the
+       eigenvector as a starting point, which will become increasingly inaccurate for
+       curved manifolds far from the fixed point! This may be fixed at a later date.
+    """
     assert fp.classification == 'saddle' and not fp.degenerate
     if fp.evals[0] < 0:
         eval_s = fp.evals[0]
@@ -2939,44 +2980,57 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
     gen = fp.gen
     assert 'Gamma_out_plus' in gen.eventstruct, "Detection event surface(s) not present"
     assert 'Gamma_out_minus' in gen.eventstruct, "Detection event surface(s) not present"
-    # Dividing fixed point's inherited epsilon tolerance by 100
-    eps = fp.eps / 100
-    dx_perp_eps = 1e-12
-    if dx_perp_fac >= 1 or dx_perp_fac <= 0:
-        raise ValueError("dx_perp_fac must be between 0 and 1")
+    if eps is None:
+        # Dividing fixed point's inherited epsilon tolerance by 100
+        eps = fp.eps / 100
+    ds_perp_eps = 1e-12
+    if ds_perp_fac >= 1 or ds_perp_fac <= 0:
+        raise ValueError("ds_perp_fac must be between 0 and 1")
     normord = fp.normord
     if rel_scale is None:
         rel_scale = (1,1)
-    dxscaled = dx_scaled_2D(dx, rel_scale)
-    if isinstance(dx_gamma, dict):
-        assert len(dx_gamma) == 2, "Invalid value for dx_gamma"
-        assert remain(dx_gamma.keys(), [1,-1]) == [], \
-            "Invalid value for dx_gamma"
+    dsscaled = dx_scaled_2D(ds, rel_scale)
+    if isinstance(ds_gamma, dict):
+        assert len(ds_gamma) == 2, "Invalid value for ds_gamma"
+        assert remain(ds_gamma.keys(), [1,-1]) == [], \
+            "Invalid value for ds_gamma"
     else:
         try:
-            dx_gamma = {1: dx_gamma, -1: dx_gamma}
+            ds_gamma = {1: ds_gamma, -1: ds_gamma}
         except:
-            raise TypeError("Invalid type for dx_gamma")
+            raise TypeError("Invalid type for ds_gamma")
+
+    try:
+        xcoord_ix = fp.point.coordnames.index(xname)
+    except ValueError:
+        raise ValueError("Invalid x coordinate name '%s'"%xname)
+    else:
+        # x coordinate index is either 0 or 1 for this 2D system
+        # y coordinate index is therefore 1-xcoord_ix
+        ycoord_ix = 1-xcoord_ix
+    yname = fp.point.coordnames[ycoord_ix]
 
     def test_fn(x, dircode):
         if verboselevel>1:
-            print("Test point", x[x.coordnames[0]], x[x.coordnames[1]], "in direction", dircode, "\n")
+            print("Test point", x[xname], x[yname], "in direction", dircode, "\n")
         gen.set(ics=x)
         try:
             test = gen.compute('test', dirn=dircode)
+        except KeyboardInterrupt:
+            raise
         except:
             raise RuntimeError("Integration failed")
         events = gen.getEvents()
         if verboselevel>1:
             pts=test.sample(coords=x.coordnames)
-            plot(pts[x.coordnames[0]][:25],pts[x.coordnames[1]][:25],'b-')
+            plot(pts[xname][:25],pts[yname][:25],'b-')
         if events['Gamma_out_plus'] is None:
             if events['Gamma_out_minus'] is None:
                 if verboselevel>1:
                     pts=test.sample(coords=x.coordnames)
                     print("Last computed point was\n", pts[-1])
                     print("...after time", pts['t'][-1])
-                    plot(pts[x.coordnames[0]],pts[x.coordnames[1]],'b-')
+                    plot(pts[xname],pts[yname],'b-')
                 raise RuntimeError("Did not reach Gamma surfaces")
             else:
                 # hit Gamma_out_minus
@@ -2994,7 +3048,7 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
                     pts=test.sample(coords=x.coordnames)
                     print("Last computed point was\n", pts[-1])
                     print("...after time", pts['t'][-1])
-                    plot(pts[x.coordnames[0]],pts[x.coordnames[1]],'b-')
+                    plot(pts[xname],pts[yname],'b-')
                 raise RuntimeError("Did not reach Gamma surfaces")
         return sgn
 
@@ -3007,28 +3061,26 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
             if verboselevel>1:
                 xp = x_ic+dn*normal_dir
                 xm = x_ic-dn*normal_dir
-                plot(xp[var_x], xp[var_y], 'gx')
-                plot(xm[var_x], xm[var_y], 'gx')
-            raise RuntimeError("dx_perp too small? +/- initial displacement did not straddle manifold")
+                plot(xp[xname], xp[yname], 'gx')
+                plot(xm[xname], xm[yname], 'gx')
+            raise RuntimeError("ds_perp too small? +/- initial displacement did not straddle manifold")
         except RuntimeError:
             if verboselevel>1:
                 xp = x_ic+dn*normal_dir
                 xm = x_ic-dn*normal_dir
-                plot(xp[var_x], xp[var_y], 'gx')
-                plot(xm[var_x], xm[var_y], 'gx')
+                plot(xp[xname], xp[yname], 'gx')
+                plot(xm[xname], xm[yname], 'gx')
             raise
 
     gen.eventstruct['Gamma_out_plus'].activeFlag=True  # terminal
     gen.eventstruct['Gamma_out_minus'].activeFlag=True  # terminal
-    var_x = fp.point.coordnames[0]
-    var_y = fp.point.coordnames[1]
     assert tmax > 0
-    manifold = {}
+    manifold = {'s': {1: None, -1: None}, 'u': {1: None, -1: None}}
     man_names = {'s': 'stable', 'u': 'unstable'}
 
     for w in which:
-        ### w = 's' => stable branch
-        ### w = 'u' => unstable branch
+        # w = 's' => stable branch
+        # w = 'u' => unstable branch
         if verboselevel>0:
             print("Starting %s branch" % man_names[w])
         if w == 's':
@@ -3045,28 +3097,20 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
             evec_other = evec_u
         # set Gamma_out surfaces on "outgoing" branch
         # (polarity is arbitrary)
-        p0_plus = fp.point + dx_gamma[1]*evec
-        p0_minus = fp.point - dx_gamma[-1]*evec
+        p0_plus = fp.point + ds_gamma[1]*evec
+        p0_minus = fp.point - ds_gamma[-1]*evec
         evec_perp = get_perp(evec)
-        # !! Must choose the event directions correctly
-        # Algorithm should be based on: event dircode = 1
-        # if ev(traj(ev_t - delta)) < 0 and ev(traj(ev_t + delta)) > 0
-        # where the evec along the flow towards the event surfaces
-        # determines which is "before" and which is "after" the
-        # event surface (time may be reversed depending on which
-        # manifold is being computed)
-        print("Set these event directions according to your problem...")
-        gen.eventstruct.setEventDir('Gamma_out_plus', -1)
-        gen.eventstruct.setEventDir('Gamma_out_minus', 1)
-        gen.set(pars={'Gamma_out_plus_p_'+var_x: p0_plus[var_x],
-                      'Gamma_out_plus_p_'+var_y: p0_plus[var_y],
-                      'Gamma_out_plus_dp_'+var_x: evec_perp[var_x],
-                      'Gamma_out_plus_dp_'+var_y: evec_perp[var_y],
-                      'Gamma_out_minus_p_'+var_x: p0_minus[var_x],
-                      'Gamma_out_minus_p_'+var_y: p0_minus[var_y],
-                      'Gamma_out_minus_dp_'+var_x: evec_perp[var_x],
-                      'Gamma_out_minus_dp_'+var_y: evec_perp[var_y],
-    ##                  'fp_'+var_x: fp.point[var_x], 'fp_'+var_y: fp.point[var_y]
+        gen.eventstruct.setEventDir('Gamma_out_plus', ev_dirn)
+        gen.eventstruct.setEventDir('Gamma_out_minus', -ev_dirn)
+        gen.set(pars={'Gamma_out_plus_p_'+xname: p0_plus[xname],
+                      'Gamma_out_plus_p_'+yname: p0_plus[yname],
+                      'Gamma_out_plus_dp_'+xname: evec_perp[xname],
+                      'Gamma_out_plus_dp_'+yname: evec_perp[yname],
+                      'Gamma_out_minus_p_'+xname: p0_minus[xname],
+                      'Gamma_out_minus_p_'+yname: p0_minus[yname],
+                      'Gamma_out_minus_dp_'+xname: evec_perp[xname],
+                      'Gamma_out_minus_dp_'+yname: evec_perp[yname],
+    ##                  'fp_'+xname: fp.point[xname], 'fp_'+yname: fp.point[yname]
                       },
                 tdata = [0,tmax])
         if verboselevel>1:
@@ -3074,20 +3118,24 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
                 fignum=figure()
             else:
                 figure(fignum)
-            plot([p0_plus[var_x]-dxscaled*evec_perp[var_x],p0_plus[var_x]+dxscaled*evec_perp[var_x]],
-                 [p0_plus[var_y]-dxscaled*evec_perp[var_y],p0_plus[var_y]+dxscaled*evec_perp[var_y]], 'k-', linewidth=2)
-            plot([p0_minus[var_x]-dxscaled*evec_perp[var_x],p0_minus[var_x]+dxscaled*evec_perp[var_x]],
-                 [p0_minus[var_y]-dxscaled*evec_perp[var_y],p0_minus[var_y]+dxscaled*evec_perp[var_y]], 'k-', linewidth=2)
+            # plot event surfaces for gamma plus and minus exit events
+            plot([p0_plus[xname]-dsscaled*evec_perp[xname],p0_plus[xname]+dsscaled*evec_perp[xname]],
+                 [p0_plus[yname]-dsscaled*evec_perp[yname],p0_plus[yname]+dsscaled*evec_perp[yname]], 'k-', linewidth=2)
+            plot([p0_minus[xname]-dsscaled*evec_perp[xname],p0_minus[xname]+dsscaled*evec_perp[xname]],
+                 [p0_minus[yname]-dsscaled*evec_perp[yname],p0_minus[yname]+dsscaled*evec_perp[yname]], 'k-', linewidth=2)
             draw()
         check_other_pts = other_pts is not None
-        piece = {}
-        if ic_dx is None:
-            ic_dx = dxscaled
+        if ic_ds is None:
+            ic_ds = dsscaled
         else:
-            ic_dx = dx_scaled_2D(ic_dx, rel_scale)
+            ic_ds = dx_scaled_2D(ic_ds, rel_scale)
         if ic is None:
             ic = fp.point
             f_ic = -w_sgn * evec_other
+            dirn_fix = 1 # not used for this case
+            if verboselevel>0:
+                print("evec_other " + str(evec_other))
+                print("f_ic = " + str(f_ic))
             curve_len = 0
             # initial estimate x0 = a point close to f.p. along manifold with
             # opposite stability
@@ -3096,43 +3144,66 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
             # otherwise, assume zero
             if isinstance(ic, Pointset):
                 assert len(ic) == 1, "Only pass a length-1 pointset"
-                # guarantee curve_len > 0
+                # (guarantee curve_len > 0)
+                # BUG: for direction=-1 case, arc_len will be negative
+                # and index 0 will have the smallest arc_len, not the
+                # largest. Better not to use ic as Pointset option and
+                # fix arc_len outside of call
                 curve_len = abs(ic['arc_len'][0])
                 ic = ic[0]
             else:
                 curve_len = 0
-            f_ic = -w_sgn * gen.Rhs(0, ic, gen.pars)  # array
+            # ensure correct sign relative to starting point (if ic is None)
+            sgns_orig = sign(-w_sgn * evec_other)
+            f_ic_alpha = gen.Rhs(0, ic, gen.pars)  # array in alpha order
+            # f_ic here isn't normalized to length 1 like the case above that uses
+            # evec_other (which is already normalized)
+            f_ic = Point({xname: f_ic_alpha[xcoord_ix], yname: f_ic_alpha[ycoord_ix]})
+            sgns_f_ic = sign(f_ic)
+            if any(sgns_orig != sgns_f_ic):
+                dirn_fix = -1
+                f_ic = -f_ic
+            else:
+                dirn_fix = 1
+            if verboselevel>0:
+                print("f_ic = " + str(f_ic))
         for sgn in directions:
+            piece = {}
             if verboselevel>0:
                 print("Starting direction", sgn)
             # PREDICTION
-            x0_ic = ic+w_sgn*sgn*ic_dx*f_ic/norm(f_ic, normord)
+            x0_ic = ic+w_sgn*sgn*ic_ds*f_ic/norm(f_ic, normord)
             if verboselevel>1:
                 figure(fignum)
-                plot(x0_ic[var_x], x0_ic[var_y], 'go', linewidth=1)
+                # show starting point (initial estimate) as green circle
+                plot(x0_ic[xname], x0_ic[yname], 'go', linewidth=1)
             # put x0 initial estimate onto stable manifold
-            f = -w_sgn * gen.Rhs(0, x0_ic, gen.pars)  # array
-            norm_to_flow = get_perp(f/norm(f, normord))
+            f_alpha = dirn_fix * gen.Rhs(0, x0_ic, gen.pars)  # array in alpha order
+            f = Point({xname: f_alpha[xcoord_ix], yname: f_alpha[ycoord_ix]})
+            normf = norm(f, normord)
+            norm_to_flow = get_perp(f/normf)
             if verboselevel>1:
-                plot([x0_ic[var_x], x0_ic[var_x]+dxscaled*f[0]/norm(f,normord)],
-                     [x0_ic[var_y], x0_ic[var_y]+dxscaled*f[1]/norm(f,normord)],
+                # show flow direction from IC as solid red line
+                plot([x0_ic[xname], x0_ic[xname]+dsscaled*f[0]/normf],
+                     [x0_ic[yname], x0_ic[yname]+dsscaled*f[1]/normf],
                      'r-')
-                plot([x0_ic[var_x], x0_ic[var_x]+dxscaled*norm_to_flow[0]],
-                     [x0_ic[var_y], x0_ic[var_y]+dxscaled*norm_to_flow[1]],
+                # show normal to flow direction from IC as dotted red line
+                plot([x0_ic[xname], x0_ic[xname]+dsscaled*norm_to_flow[0]],
+                     [x0_ic[yname], x0_ic[yname]+dsscaled*norm_to_flow[1]],
                      'r:')
-            dx_perp_default = dx_perp
+            ds_perp_default = ds_perp
             # CORRECTION
-            while dx_perp > dx_perp_eps:
+            while ds_perp > ds_perp_eps:
                 try:
-                    x = onto_manifold(x0_ic, dx_perp, norm_to_flow,
+                    x = onto_manifold(x0_ic, ds_perp, norm_to_flow,
                                       dircode=integ_dircode)
                 except RuntimeError as e:
-                    dx_perp *= dx_perp_fac
+                    ds_perp *= ds_perp_fac
                 else:
                     break
-            if dx_perp <= dx_perp_eps:
-                # RuntimeError was raised and could not continue reducing dx_perp
-                print("dx_perp reached lower tolerance =", dx_perp_eps)
+            if ds_perp <= ds_perp_eps:
+                # RuntimeError was raised and could not continue reducing ds_perp
+                print("ds_perp reached lower tolerance =", ds_perp_eps)
                 print(e)
                 raise RuntimeError("Initial point did not converge")
             else:
@@ -3142,43 +3213,44 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
                 last_x = x
                 if verboselevel>0:
                     print("Initial point converged to (%.6f, %.6f)\n" % \
-                          (x[var_x], x[var_y]))
-            dx_perp = dx_perp_default
+                          (x[xname], x[yname]))
+            ds_perp = ds_perp_default
             last_f = f_ic
             # step backwards along flow
-            while curve_len < max_len and num_pts < max_pts:
+            while curve_len < max_arclen and num_pts < max_pts:
                 if verboselevel>0:
                     figure(fignum)
-                    plot(last_x[var_x], last_x[var_y], col+'.', linewidth=1)
-                if check_other_pts and sometrue([norm(last_x - pt, normord) < dx \
+                    plot(last_x[xname], last_x[yname], col+'.', linewidth=1)
+                if check_other_pts and sometrue([norm(last_x - pt, normord) < ds \
                                  for pt in other_pts]):
                     # we've hit a different fixed point (or other feature), so stop
                     break
-                f = -w_sgn * gen.Rhs(0, last_x, gen.pars)
+                f_alpha = dirn_fix * gen.Rhs(0, last_x, gen.pars) # array
+                f = Point({xname: f_alpha[xcoord_ix], yname: f_alpha[ycoord_ix]})
                 if all(sign(f) != sign(last_f)):
                     f = -f
                     # on other side of manifold so must keep stepping in the
                     # same direction, therefore switch signs!
                 # PREDICTION
-                x_ic = last_x + w_sgn*sgn*dxscaled*f/norm(f,normord)
+                x_ic = last_x + w_sgn*sgn*dsscaled*f/norm(f,normord)
                 last_f = f
                 if verboselevel>1:
                     print("\nStarting from point ", last_x)
-                    delta = w_sgn*sgn*dxscaled*f/norm(f,normord)
+                    delta = w_sgn*sgn*dsscaled*f/norm(f,normord)
                     print("Trying point ", x_ic, "in direction (%.6f, %.6f)\n" % (delta[0], delta[1]))
-                dx_perp = dx_perp_default
+                ds_perp = ds_perp_default
                 # CORRECTION
-                while dx_perp > dx_perp_eps:
+                while ds_perp > ds_perp_eps:
                     try:
-                        x = onto_manifold(x_ic, dx_perp, get_perp(f/norm(f,normord)),
+                        x = onto_manifold(x_ic, ds_perp, get_perp(f/norm(f,normord)),
                                           dircode=integ_dircode)
                     except RuntimeError as e:
-                        dx_perp *= 0.75
+                        ds_perp *= 0.75
                     else:
                         break
-                if dx_perp <= dx_perp_eps:
-                    # RuntimeError was raised and could not continue reducing dx_perp
-                    print("dx_perp reached lower tolerance =", dx_perp_eps)
+                if ds_perp <= ds_perp_eps:
+                    # RuntimeError was raised and could not continue reducing ds_perp
+                    print("ds_perp reached lower tolerance =", ds_perp_eps)
                     print(e)
                     break  # end while search
                 else:
@@ -3191,12 +3263,12 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
                     elif verboselevel>0:
                         print(".", end=' ')
                         sys.stdout.flush()
+            indepvar, piece_sorted = sortedDictLists(piece, byvalue=False)
+            manifold[w][sgn] = pointsToPointset(piece_sorted, indepvarname='arc_len',
+                                                indepvararray=indepvar, norm=normord)
         if verboselevel>0:
-            # finish the line
+            # finish the line on stdout
             print(" ")
-        indepvar, piece_sorted = sortedDictLists(piece, byvalue=False)
-        manifold[w] = pointsToPointset(piece_sorted, indepvarname='arc_len',
-                                       indepvararray=indepvar, norm=normord)
     gen.eventstruct['Gamma_out_plus'].activeFlag=False
     gen.eventstruct['Gamma_out_minus'].activeFlag=False
 ##    gen.eventstruct['fp_closest'].activeFlag=False
@@ -3205,67 +3277,76 @@ def find_saddle_manifolds(fp, dx=None, dx_gamma=None, dx_perp=None, tmax=None,
 
 
 def make_flow_normal_event(x, y, dxdt, dydt, targetlang, flatspec=None,
-                           fnspec=None, evtArgs=None):
-    """For 2D vector fields only.
+                               fnspec=None, evtArgs=None):
+        """Builds an event and event function helper dictionary to support
+        for detecting when flow is perpendicular to a given vector in 2D.
+        The reference vector is specified by parameters x0 and y0 at runtime.
 
-    Supply flatspec if built vector field using ModelConstructor tools,
-    otherwise specify funcspec argument.
-    """
-    x_par = x+'_normflow_p'
-    y_par = y+'_normflow_p'
+        The helper dict contains the event names, parameters that come
+        from variable names.
 
-    if fnspec is None:
-        if flatspec is None:
-            raise ValueError("Must supply one of funcspec or flatspec")
-        varnames=[]
-        parnames=[]
-        inputnames=[]
-        fnspecs={}
-    else:
-        if flatspec is not None:
-            raise ValueError("Must supply only one of funcspec or flatspec")
-        try:
-            varnames = fnspec['vars']
-        except KeyError:
-            varnames = []
-        try:
-            parnames = fnspec['pars']
-        except KeyError:
-            parnames = []
-        try:
-            inputnames = fnspec['inputs']
-        except KeyError:
-            inputnames = []
-        try:
-            fnspecs = fnspec['auxfns']
-        except KeyError:
-            fnspecs = {}
-    if evtArgs is None:
-        evtArgs = {'name': 'flow_normal_2D_evt',
-                   'eventtol': 1e-5,
-                   'eventdelay': 1e-4,
-                   'starttime': 0,
-                   'precise': True,
-                   'term': False}
-    else:
-        evtArgs['term'] = False
-        evtArgs['name'] = 'flow_normal_2D_evt'
-    v_dot_f = '(' + x_par + ' - ' + x + ') * (' + dxdt + ') + ' + \
-              '(' + y_par + ' - ' + y + ') * (' + dydt + ')'
-    norm_v = 'sqrt(' + x_par + '*' + x_par + '+' + y_par + '*' + y_par + ')'
-    norm_f = 'sqrt(pow((' + dydt + '),2) + pow((' + dxdt + '),2))'
-    flow_n_str = v_dot_f + '/(' + norm_v + '+' + norm_f + ')'
-    ev = Events.makeZeroCrossEvent(expr=flow_n_str,
-                                 dircode=0,
-                                 argDict=evtArgs,
-                                 targetlang=targetlang,
-                                 varnames=varnames,
-                                 parnames=parnames+[x_par,y_par],
-                                 inputnames=inputnames, fnspecs=fnspecs,
-                                 flatspec=flatspec)
-    ev_helper = {'event_names': {2:'flow_normal_2D_evt'}, # 2 for 2D
-                 'pars_to_vars': {x_par:x, y_par:y}}
-    return (ev, ev_helper)
+        For 2D vector fields only.
+
+        Supply flatspec if built vector field using ModelConstructor tools,
+        otherwise specify funcspec argument.
+        """
+        x_par = x+'_normflow_p'
+        y_par = y+'_normflow_p'
+
+        if fnspec is None:
+            if flatspec is None:
+                raise ValueError("Must supply one of funcspec or flatspec")
+            varnames=[]
+            parnames=[]
+            inputnames=[]
+            fnspecs={}
+        else:
+            if flatspec is not None:
+                raise ValueError("Must supply only one of funcspec or flatspec")
+            try:
+                varnames = fnspec['vars']
+            except KeyError:
+                varnames = []
+            try:
+                parnames = fnspec['pars']
+            except KeyError:
+                parnames = []
+            try:
+                inputnames = fnspec['inputs']
+            except KeyError:
+                inputnames = []
+            try:
+                fnspecs = fnspec['auxfns']
+            except KeyError:
+                fnspecs = {}
+        if evtArgs is None:
+            evtArgs = {'name': 'flow_normal_2D_evt',
+                       'eventtol': 1e-5,
+                       'eventdelay': 1e-4,
+                       'starttime': 0,
+                       'precise': True,
+                       'term': False}
+        else:
+            evtArgs['term'] = False
+            evtArgs['name'] = 'flow_normal_2D_evt'
+        v_dot_f = '((' + x_par + ' - ' + x + ') * (' + dxdt + ') + ' + \
+                  '(' + y_par + ' - ' + y + ') * (' + dydt + '))'
+        #norm_v = 'sqrt(' + x_par + '*' + x_par + '+' + y_par + '*' + y_par + ')'
+        #norm_f = 'sqrt(pow((' + dydt + '),2) + pow((' + dxdt + '),2))'
+        # the division by the norms is irrelevant when comparing the expression
+        # with zero.
+        flow_n_str = v_dot_f #+ '/(' + norm_v + '+' + norm_f + ')'
+        ev = Events.makeZeroCrossEvent(expr=flow_n_str,
+                                     dircode=0,
+                                     argDict=evtArgs,
+                                     targetlang=targetlang,
+                                     varnames=varnames,
+                                     parnames=parnames+[x_par,y_par],
+                                     inputnames=inputnames, fnspecs=fnspecs,
+                                     flatspec=flatspec)
+        ev_helper = {'event_names': {2:'flow_normal_2D_evt'}, # 2 for 2D
+                     'pars_to_vars': {x_par:x, y_par:y}}
+        return (ev, ev_helper)
 
 
 class phaseplane(object):
