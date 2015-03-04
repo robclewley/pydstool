@@ -3024,6 +3024,7 @@ def find_saddle_manifolds(fp, xname, ds=None, ds_gamma=None, ds_perp=None, tmax=
             if events['Gamma_out_minus'] is None:
                 if verboselevel>1:
                     pts=test.sample(coords=x.coordnames)
+                    print("Did not reach Gamma surfaces")
                     print("Last computed point was\n", pts[-1])
                     print("...after time", pts['t'][-1])
                     plot(pts[xname],pts[yname],'b-')
@@ -3038,10 +3039,13 @@ def find_saddle_manifolds(fp, xname, ds=None, ds_gamma=None, ds_perp=None, tmax=
                 # hit Gamma_out_plus
                 if verboselevel>1:
                     print("Reached Gamma plus at t=", events['Gamma_out_plus']['t'][0])
+                    print("Last computed point was\n", pts[-1])
+                    print("...after time", pts['t'][-1])
                 sgn = 1
             else:
                 if verboselevel>1:
                     pts=test.sample(coords=x.coordnames)
+                    print("Did not reach Gamma surfaces")
                     print("Last computed point was\n", pts[-1])
                     print("...after time", pts['t'][-1])
                     plot(pts[xname],pts[yname],'b-')
@@ -3180,12 +3184,12 @@ def find_saddle_manifolds(fp, xname, ds=None, ds_gamma=None, ds_perp=None, tmax=
             norm_to_flow = get_perp(f/normf)
             if verboselevel>1:
                 # show flow direction from IC as solid red line
-                plot([x0_ic[xname], x0_ic[xname]+dsscaled*f[0]/normf],
-                     [x0_ic[yname], x0_ic[yname]+dsscaled*f[1]/normf],
+                plot([x0_ic[xname], x0_ic[xname]+dsscaled*f[xname]/normf],
+                     [x0_ic[yname], x0_ic[yname]+dsscaled*f[yname]/normf],
                      'r-')
                 # show normal to flow direction from IC as dotted red line
-                plot([x0_ic[xname], x0_ic[xname]+dsscaled*norm_to_flow[0]],
-                     [x0_ic[yname], x0_ic[yname]+dsscaled*norm_to_flow[1]],
+                plot([x0_ic[xname], x0_ic[xname]+dsscaled*norm_to_flow[xname]],
+                     [x0_ic[yname], x0_ic[yname]+dsscaled*norm_to_flow[yname]],
                      'r:')
             ds_perp_default = ds_perp
             # CORRECTION
@@ -3234,7 +3238,7 @@ def find_saddle_manifolds(fp, xname, ds=None, ds_gamma=None, ds_perp=None, tmax=
                 if verboselevel>1:
                     print("\nStarting from point ", last_x)
                     delta = w_sgn*sgn*dsscaled*f/norm(f,normord)
-                    print("Trying point ", x_ic, "in direction (%.6f, %.6f)\n" % (delta[0], delta[1]))
+                    print("Trying point ", x_ic, "in direction (%.6f, %.6f)\n" % (delta[xname], delta[yname]))
                 ds_perp = ds_perp_default
                 # CORRECTION
                 while ds_perp > ds_perp_eps:
