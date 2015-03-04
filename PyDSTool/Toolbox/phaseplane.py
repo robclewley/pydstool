@@ -2902,7 +2902,8 @@ def find_saddle_manifolds(fp, xname, ds=None, ds_gamma=None, ds_perp=None, tmax=
                 event surfaces (can be a real scalar or a pair if not symmetric)
       ds_perp:  initial perturbation from the local linear sub-manifolds to
                 find starting points, computed in the direction of the eigenvalue.
-      tmax:     maximum time to compute a test trajectory before 'failing'
+      tmax:     maximum time to compute a test trajectory before 'failing' to find
+                the Gamma event surface.
       max_arclen:  maximum arc length to compute
       max_pts:  maximum number of points to compute on each sub-manifold branch
       ic / ic_ds:
@@ -2960,11 +2961,6 @@ def find_saddle_manifolds(fp, xname, ds=None, ds_gamma=None, ds_perp=None, tmax=
          E.g., if directions=(1,) and which = ('s',), returned structure looks like
             {'s': {1: <<pointset>>, -1: None}, 'u': {1: None, -1: None}}
 
-      Major limitation:
-       Note that ds_perp does NOT automatically update to use recent curvature
-       information, which would make most sense. Instead, it always uses the
-       eigenvector as a starting point, which will become increasingly inaccurate for
-       curved manifolds far from the fixed point! This may be fixed at a later date.
     """
     assert fp.classification == 'saddle' and not fp.degenerate
     if fp.evals[0] < 0:
@@ -3216,7 +3212,8 @@ def find_saddle_manifolds(fp, xname, ds=None, ds_gamma=None, ds_perp=None, tmax=
                           (x[xname], x[yname]))
             ds_perp = ds_perp_default
             last_f = f_ic
-            # step backwards along flow
+            # step backwards along local linear flow to predict next starting
+            # position on manifold
             while curve_len < max_arclen and num_pts < max_pts:
                 if verboselevel>0:
                     figure(fignum)
