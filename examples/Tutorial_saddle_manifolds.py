@@ -270,6 +270,7 @@ ode_sys.set(algparams={'magBound': 10000})
 def plot_manifold(man, which, style='k.-'):
     for sgn in (-1, 1):
         if man[which][sgn] is not None:
+            print("There were %i points in sub-manifold %s, direction %i" % (len(man[which][sgn]), which, sgn))
             plt.plot(man[which][sgn]['phi'], man[which][sgn]['nu'], style)
 
 saddle = fps[1]
@@ -295,17 +296,24 @@ manifold_parts = {
                                           coorddict=saddle.point)}
             }
 
-ode_sys.set(ics=saddle.point)
+ode_sys.set(ics=saddle.point, tdata=[0,60])
 
 verbose = 0
-max_arclen = 3
 max_pts = 600
 for which_man in ['s', 'u']:
     for dirn in [-1, 1]:
         man_part = manifold_parts[which_man][dirn]
         print("Starting manifold %s, direction %i"%(which_man, dirn))
+        ds_perp = 0.02 # initial value for stage 2
+        ds_gamma = 0.3 # initial value for stage 2
+        # for speed, and because of symmetry, only compute long arcs on one side
+        if dirn == 1:
+            max_arclen = 4
+        else:
+            max_arclen = 9
 
         while len(man_part) < max_pts and max(abs(man_part['arc_len'])) < max_arclen:
+            attempt_num = 0
             # Perform calculation in two stages. First stage is more accurate while we
             # are close to the saddle point
             if len(man_part) == 1:
@@ -327,6 +335,7 @@ for which_man in ['s', 'u']:
                     select = 0
                 part.indepvararray += man_part.indepvararray[select]
                 man_part.insert(part)
+                attempt_num = 1
             else:
                 # Stage two (called repeatedly until length while loop satisfied)
                 print("  Continuing in stage 2...")
@@ -338,18 +347,21 @@ for which_man in ['s', 'u']:
                     # in terms of Pointset order, so the "last" point computed will be
                     # at index 0
                     select = 0
+                attempt_num += 1
                 try:
-                    # groups of max_pts/2 at a time
-                    man_new = pp.find_saddle_manifolds(saddle, 'phi', ds=0.06, ds_gamma=0.05,
-                                ds_perp=0.08, tmax=40, max_arclen=max_arclen, eps=2e-5,
-                                ic=man_part[select], max_pts=int(float(max_pts)/2),
+                    # groups of max_pts/4 at a time
+                    man_new = pp.find_saddle_manifolds(saddle, 'phi', ds=0.06, ds_gamma=ds_gamma,
+                                ds_perp=ds_perp, tmax=40, max_arclen=max_arclen, eps=2e-5,
+                                ic=man_part[select], max_pts=int(max_pts/4.0),
                                 directions=(dirn,), ev_dirn=1,
                                 which=(which_man,), other_pts=[fps[0].point, fps[2].point],
                                 rel_scale=(1,1), verboselevel=verbose, fignum=1)
                 except RuntimeError:
                     # proceed with what we've got
                     print("Initial convergence error: Proceeding with what we've got!")
-                    break # while loop
+                    ds_perp *= 2
+                    ds_gamma *= 4
+                    break # to continue
                 else:
                     part = man_new[which_man][dirn]
                     part.indepvararray += man_part.indepvararray[select]
