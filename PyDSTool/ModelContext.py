@@ -872,7 +872,12 @@ class ModelInterface(dsInterface):
         #self.diagnostics = common.Diagnostics()
 
     def _get_initiator_cache(self, ics=None, t0=0):
-        """initiator is a ModelInterface or GeneratorInterface object"""
+        """
+        Return initating object for given initial conditions and start time.
+        For internal use only.
+        "initiator" is the ModelInterface or GeneratorInterface object that
+        will be chosen to begin an integration at the specified ICs and t0.
+        """
         if self._initiator_cache is None:
             if ics is None:
                 raise ValueError("Must pass initial conditions")
@@ -894,7 +899,7 @@ class ModelInterface(dsInterface):
         return (ics, t0, initiator)
 
     def set(self, key, value, ics=None, t0=0):
-        # ModelInterface.set: something is not good about this structure!
+        # set own conditions then propagate them down to sub-models
         self.model.set(**{key:value})
         ics, t0, initiator = self._get_initiator_cache(ics, t0)
 #        print "ModelInterface.set %s = %s for %s (type %s)"%(str(key), str(value), initiator.model.name, type(initiator))
