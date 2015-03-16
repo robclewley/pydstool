@@ -82,7 +82,7 @@ class Python(CodeGenerator):
             if auxname == 'Jacobian':
                 if not compareList(auxinfo[0], ['t'] + self.fspec.vars):
                     print(['t'] + self.fspec.vars)
-                    print("Auxinfo =" + auxinfo[0])
+                    print("Auxinfo =" + str(auxinfo[0]))
                     raise ValueError(
                         "Invalid argument list given in Jacobian.")
                 auxparlist = ["t", "x", "parsinps"]
@@ -128,7 +128,7 @@ class Python(CodeGenerator):
             elif auxname == 'Jacobian_pars':
                 if not compareList(auxinfo[0], ['t'] + self.fspec.pars):
                     print(['t'] + self.fspec.pars)
-                    print("Auxinfo =" + auxinfo[0])
+                    print("Auxinfo =" + str(auxinfo[0]))
                     raise ValueError(
                         "Invalid argument list given in Jacobian.")
                 auxparlist = ["t", "x", "parsinps"]
@@ -182,7 +182,7 @@ class Python(CodeGenerator):
             elif auxname == 'massMatrix':
                 if not compareList(auxinfo[0], ['t'] + self.fspec.vars):
                     print(['t'] + self.fspec.vars)
-                    print("Auxinfo =" + auxinfo[0])
+                    print("Auxinfo =" + str(auxinfo[0]))
                     raise ValueError(
                         "Invalid argument list given in Mass Matrix.")
                 auxparlist = ["t", "x", "parsinps"]
@@ -242,8 +242,8 @@ class Python(CodeGenerator):
                                         remain(protectednames, auxnames))
                 if badparnames != []:
                     print("Bad parameter names in auxiliary function %s: %r" % (auxname, badparnames))
-                    # print auxinfo[0]
-                    # print auxparlist
+                    # print(str(auxinfo[0]))
+                    # print(str(auxparlist))
                     raise ValueError("Cannot use protected names (including"
                                      " globally visible system parameters for auxiliary "
                                      "function arguments")
