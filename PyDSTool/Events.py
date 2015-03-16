@@ -603,6 +603,11 @@ class Event(object):
                                 "  event interval: " + str(self.eventinterval)
         return outputStr
 
+    def __eq__(self, other):
+        try:
+            return self._infostr(2) == other._infostr(2)
+        except AttributeError:
+            return False
 
     def info(self, verboselevel=1):
         print(self._infostr(verboselevel))
