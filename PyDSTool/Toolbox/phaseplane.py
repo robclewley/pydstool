@@ -71,8 +71,8 @@ _functions = ['find_nullclines', 'make_distance_to_line_auxfn',
               'find_fixedpoints', 'find_steadystates', 'find_equilibria',
               'get_perp', 'get_orthonormal', 'get_rotated', 'angle_to_vertical',
               'is_min_bracket', 'find_nearest_sample_points_by_angle',
-              'closest_perp_distance_between_splines',
-              'closest_perp_distance_between_sample_points',
+              'closest_perp_distance_between_splines', 'distance_to_line',
+              'closest_perp_distance_between_sample_points', 'get_bearing',
               'closest_perp_distance_on_spline', 'project_point',
               'line_intersection', 'find_saddle_manifolds', 'make_Jac',
               'plot_PP_vf', 'plot_PP_fps', 'show_PPs', 'get_PP']
@@ -89,10 +89,23 @@ __all__ = _functions + _classes + _features + ['plotter']
 # ----------------------------------------------------------------------------
 
 
+def distance_to_line(pt, line_pt_pair):
+    """
+    Returns perpendicular distance of point pt to a line given by
+    the pair of points in second argument
+    """
+    x = pt[0]
+    y = pt[1]
+    p, q = line_pt_pair
+    q0_m_p0 = q[0]-p[0]
+    q1_m_p1 = q[1]-p[1]
+    denom = sqrt(q0_m_p0*q0_m_p0 + q1_m_p1*q1_m_p1)
+    return (q0_m_p0*p[1]-q1_m_p1*p[0] - q0_m_p0*y + q1_m_p1*x)/denom
+
 class distance_to_pointset(object):
-    """First and second maximum and/or minimum distances of a point q
-    to a set of points, returning a dictionary keyed by 'min' and
-    'max' to dictionaries keyed by integers 1 and 2 (respectively).
+    """Finds first and second maximum and/or minimum distances of a
+    point q to a set of points, returning a dictionary keyed by 'min'
+    and 'max' to dictionaries keyed by integers 1 and 2 (respectively).
     The values of this dictionary are dictionaries of
       'd' -> distance
       'pos' -> index into pts
@@ -1309,6 +1322,7 @@ class Point2D(Point):
         else:
             self.addlabel(labels)
         self._normord = norm
+        self.coordnames = [xname, yname]
         self.coordtype = float
         self.dimension = 2
         self.coordarray = None  # Not implemented this way
@@ -1320,6 +1334,13 @@ class Point2D(Point):
 
     def __contains__(self, coord):
         return coord in (self.xname, self.yname)
+
+    def __copy__(self):
+            return Point2D(x=self.x, y=self.y, xname=self.xname,
+                           yname=self.yname, norm=self._normord,
+                           labels=self.labels)
+
+    copy = __copy__
 
     def todict(self, aslist=False):
         """Convert Point2D to a dictionary of array values (or of list with aslist=True)."""
@@ -1737,7 +1758,7 @@ class nullcline(object):
 
 
 def get_perp(v):
-    """Find perpendicular vector in 2D (assumes 2D input)"""
+    """Returns perpendicular vector in 2D (assumes 2D input)"""
     vperp=v.copy()  # ensures correct return type
     vperp[0] = v[1]
     vperp[1] = -v[0]
@@ -1750,12 +1771,26 @@ def get_orthonormal(v):
     vperp[1] = -v[0]
     return vperp/np.linalg.norm(vperp)
 
-def get_rotated(x, theta):
-    res = copy.copy(x) # ensure same type of result as input
-    z=(x[0]+x[1]*1j)*(cos(theta)+sin(theta)*1j)
+def get_rotated(v, theta):
+    """Returns 2D vector v through angle theta
+    """
+    res = copy.copy(v) # ensure same type of result as input
+    z=(v[0]+v[1]*1j)*(cos(theta)+sin(theta)*1j)
     res[0] = z.real
     res[1] = z.imag
     return res
+
+def get_bearing(v1, v2):
+    """Return relatve angle (in degrees) between two vectors
+    Sign of angle is relative to first argument.
+    Arguments are assumed to be 2D and have length 1
+    """
+    dp = np.dot(v1, v2)
+    rel_bearing = np.arccos(dp)/pi*180
+    if np.cross(v1, v2) > 0:
+        rel_bearing = -rel_bearing
+    return rel_bearing
+
 
 def filter_close_points(pts, eps, normord=2):
     """Remove points from iterable pts (e.g. array or Pointset)
