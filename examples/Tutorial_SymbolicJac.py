@@ -14,10 +14,11 @@ from PyDSTool import *
 y0 = Var('y0')
 y1 = Var('y1')
 y2 = Var('y2')
+p = Par('p')
 t = Var('t')
 
 # definitions of right-hand sides for each variable, as functions of all variables
-ydot0 = Fun(-0.04*y0 + 1e4*y1*y2, [y0, y1, y2], 'ydot0')
+ydot0 = Fun(-0.04*y0 + p*y1*y2, [y0, y1, y2], 'ydot0')
 ydot2 = Fun(3e7*y1*y1, [y0, y1, y2], 'ydot2')
 ydot1 = Fun(-ydot0(y0,y1,y2)-ydot2(y0,y1,y2), [y0, y1, y2], 'ydot1')
 
@@ -40,6 +41,7 @@ DSargs.varspecs = {y0: ydot0(y0,y1,y2),
                    y2: ydot2(y0,y1,y2),
                    y1: -ydot0(y0,y1,y2)-ydot2(y0,y1,y2)}
 DSargs.tdomain = [0.,1e20]
+DSargs.pars = {p: 1e4}
 DSargs.ics = {y0: 1.0, y1: 0., y2: 0.}
 DSargs.algparams = {'init_step':0.4, 'strictdt': True, 'stiff': True,
                     'rtol': 1e-4, 'atol': [1e-8,1e-14,1e-6]}
@@ -78,7 +80,6 @@ for t1 in tvals:
     else:
         t0 = t1
 
-
 print("\nCompare results with the output directly from the scipy_ode.py test")
 print("(up to the point where the terminal event was found).")
 print("The values from a test integration performed with scipy_ode.py " \
@@ -97,3 +98,10 @@ print("The values from a test integration performed with scipy_ode.py " \
 ## At t=400000000.0  y=[ 5.21215549e-006  2.08487297e-011  9.99994788e-001]
 ## At t=4000000000.0  y=[ 5.25335126e-007  2.10134087e-012  9.99999475e-001]
 ## At t=40000000000.0  y=[ 5.63729748e-008  2.25491907e-013  9.99999944e-001]
+
+# check that we can set ICs and params using symbolic objects
+testODE.set(ics={y0: 1.25}, pars={p: 1e4+1},
+            tdata=[0,1], algparams={'init_step': 0.1})
+
+# and this way
+traj2 = testODE.compute('test2', ics={y1: 0.01})

@@ -229,7 +229,8 @@ class MapSystem(discGen):
         #   'algparams', 'tdata', 'xdomain', 'inputs', 'pdomain']
         if 'ics' in kw:
             for k_temp, v in kw['ics'].items():
-                k = self._FScompatibleNames(k_temp)
+                # str() ensures that Symbolic objects can be passed
+                k = str(self._FScompatibleNames(k_temp))
                 if k in self.funcspec.vars+self.funcspec.auxvars:
                     self._xdatadict[k] = ensurefloat(v)
                 else:
@@ -267,7 +268,7 @@ class MapSystem(discGen):
             self.indepvariable.depdomain.set(self.tdata)
         if 'xdomain' in kw:
             for k_temp, v in kw['xdomain'].items():
-                k = self._FScompatibleNames(k_temp)
+                k = str(self._FScompatibleNames(k_temp))
                 if k in self.funcspec.vars+self.funcspec.auxvars:
                     if isinstance(v, _seq_types):
                         assert len(v) == 2, \
@@ -300,7 +301,7 @@ class MapSystem(discGen):
                     ev.xdomain[k] = v
         if 'pdomain' in kw:
             for k_temp, v in kw['pdomain'].items():
-                k = self._FScompatibleNames(k_temp)
+                k = str(self._FScompatibleNames(k_temp))
                 if k in self.funcspec.pars:
                     if isinstance(v, _seq_types):
                         assert len(v) == 2, \
@@ -334,7 +335,7 @@ class MapSystem(discGen):
             assert self.numpars > 0, ('No pars were declared for this '
                                       'model')
             for k_temp, v in kw['pars'].items():
-                k = self._FScompatibleNames(k_temp)
+                k = str(self._FScompatibleNames(k_temp))
                 if k in self.pars:
                     cval = self.parameterDomains[k].contains(v)
                     if self.checklevel < 3:

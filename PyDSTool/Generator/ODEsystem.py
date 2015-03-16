@@ -229,7 +229,8 @@ class ODEsystem(ctsGen):
         #   'algparams', 'tdata', 'xdomain', 'pdomain', 'inputs']
         if 'ics' in kw:
             for k_temp, v in kw['ics'].items():
-                k = self._FScompatibleNames(k_temp)
+                # str() ensures that Symbolic objects can be passed
+                k = str(self._FScompatibleNames(k_temp))
                 if k in self.funcspec.vars+self.funcspec.auxvars:
                     self._xdatadict[k] = ensurefloat(v)
                 else:
@@ -271,7 +272,7 @@ class ODEsystem(ctsGen):
             self.indepvariable.depdomain.set(self.tdata)
         if 'xdomain' in kw:
             for k_temp, v in kw['xdomain'].items():
-                k = self._FScompatibleNames(k_temp)
+                k = str(self._FScompatibleNames(k_temp))
                 if k in self.funcspec.vars+self.funcspec.auxvars:
                     if isinstance(v, _seq_types):
                         assert len(v) == 2, \
@@ -303,7 +304,7 @@ class ODEsystem(ctsGen):
                     ev.xdomain[k] = self.xdomain[k]
         if 'pdomain' in kw:
             for k_temp, v in kw['pdomain'].items():
-                k = self._FScompatibleNames(k_temp)
+                k = str(self._FScompatibleNames(k_temp))
                 if k in self.funcspec.pars:
                     if isinstance(v, _seq_types):
                         assert len(v) == 2, \
@@ -335,7 +336,7 @@ class ODEsystem(ctsGen):
                     ev.pdomain[k] = self.pdomain[k]
         if 'pars' in kw:
             for k_temp, v in kw['pars'].items():
-                k = self._FScompatibleNames(k_temp)
+                k = str(self._FScompatibleNames(k_temp))
                 if k in self.pars:
                     cval = self.parameterDomains[k].contains(v)
                     if self.checklevel < 3:
