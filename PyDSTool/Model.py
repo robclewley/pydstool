@@ -2728,6 +2728,8 @@ class HybridModel(Model):
 
         xdict = {}
         for xname, value in self.icdict.items():
+            # ensure string in case Symbolic
+            xname = str(xname)
             if xname not in self.allvars:
                 raise ValueError("Invalid variable name in initial "
                                    "conditions: " + xname)

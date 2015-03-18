@@ -52,16 +52,20 @@ class Python(CodeGenerator):
         protectednames = self.fspec.pars + self.fspec.inputs \
             + ['abs', 'pow', 'and', 'or', 'not', 'True', 'False'] \
             + self.fspec._protected_auxnames + auxnames \
-            + self.fspec._protected_scipynames + self.fspec._protected_specialfns \
-            + self.fspec._protected_macronames + self.fspec._protected_mathnames \
-            + self.fspec._protected_randomnames + self.fspec._protected_reusenames
+            + self.fspec._protected_numpynames \
+            + self.fspec._protected_scipynames \
+            + self.fspec._protected_specialfns \
+            + self.fspec._protected_macronames \
+            + self.fspec._protected_mathnames \
+            + self.fspec._protected_randomnames \
+            + self.fspec._protected_reusenames
         # checks for user-defined auxiliary fns
         # name map for fixing inter-auxfn references
         auxfn_namemap = {}
         specials_base = self.fspec.pars + self.fspec._protected_auxnames \
             + ['abs', 'pow', 'and', 'or', 'not', 'True', 'False'] \
             + auxnames + self.fspec._protected_scipynames \
-            + self.fspec._protected_specialfns \
+            + self.fspec._protected_numpynames + self.fspec._protected_specialfns \
             + self.fspec._protected_macronames + self.fspec._protected_mathnames \
             + self.fspec._protected_randomnames + self.fspec._protected_reusenames
         for auxname in auxnames:
@@ -438,9 +442,14 @@ class Python(CodeGenerator):
         allnames = self.fspec.vars + self.fspec.pars + self.fspec.inputs + self.fspec.auxvars \
             + ['abs', 'and', 'or', 'not', 'True', 'False'] \
             + self.fspec._protected_auxnames \
-            + self.fspec._protected_scipynames + self.fspec._protected_specialfns \
-            + self.fspec._protected_macronames + self.fspec._protected_mathnames \
-            + self.fspec._protected_randomnames + self.fspec._protected_reusenames
+            + self.fspec._protected_scipynames \
+            + self.fspec._protected_numpynames \
+            + self.fspec._protected_specialfns \
+            + self.fspec._protected_macronames \
+            + self.fspec._protected_mathnames \
+            + self.fspec._protected_randomnames \
+            + self.fspec._protected_symbolicnames \
+            + self.fspec._protected_reusenames
         allnames = remain(allnames, illegal)
         if dovars:
             if forexternal:
@@ -533,9 +542,13 @@ class Python(CodeGenerator):
         # symbol_ixs.
         allnames = self.fspec.vars + self.fspec.pars + self.fspec.inputs + self.fspec.auxvars \
             + ['abs'] + self.fspec._protected_auxnames \
-            + self.fspec._protected_scipynames + self.fspec._protected_specialfns \
-            + self.fspec._protected_macronames + self.fspec._protected_mathnames \
-            + self.fspec._protected_randomnames + self.fspec._protected_reusenames
+            + self.fspec._protected_scipynames \
+            + self.fspec._protected_numpynames \
+            + self.fspec._protected_specialfns \
+            + self.fspec._protected_macronames \
+            + self.fspec._protected_mathnames \
+            + self.fspec._protected_randomnames \
+            + self.fspec._protected_reusenames
         allnames = remain(allnames, illegal)
         if dovars:
             var_arrayixstr = dict(zip(self.fspec.vars, map(lambda i: str(i),
