@@ -1512,9 +1512,13 @@ class EvMapping(object):
             # parse assignments to use xdict, pdict if model was provided
             new_assignDict = {}
             if model is None:
+                # We have no ability to ensure FuncSpec-compatible naming
+                # without a Model.
+                # We can ensure names are recorded as strings, in case they
+                # come in as Symbolic Var or Par objects
                 try:
-                    vars = infodict['vars']
-                    pars = infodict['pars']
+                    vars = [str(v) for v in infodict['vars']]
+                    pars = [str(p) for p in infodict['pars']]
                 except:
                     raise ValueError("Must pass dictionary of 'vars' and 'pars'")
             else:
@@ -1524,7 +1528,13 @@ class EvMapping(object):
                 except:
                     raise ValueError("Must pass instantiated Model")
             for key, value in assignDict.items():
-                rhs = ModelSpec.QuantSpec('rhs', value)
+                # str() called in case value is itself a QuantSpec from
+                # a symbolic manipulation
+                key = str(key)
+                try:
+                    rhs = ModelSpec.QuantSpec('rhs', str(value.renderForCode()))
+                except AttributeError:
+                    rhs = ModelSpec.QuantSpec('rhs', str(value))
                 rhs_str = ''
                 for tok in rhs.parser.tokenized:
                     if tok in vars:
