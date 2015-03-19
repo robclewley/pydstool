@@ -20,9 +20,9 @@ double sin_t = sin(t);
 double ast = a*sin_t;
 
 f_[0] = k*w+ast*itable+myauxfn1(t, p_, wk_, xv_)*myauxfn2(w, p_, wk_, xv_)/(ast);
-f_[1] = 2*a+afn1call-w*expmt+3*z0**2+z1;
-f_[2] = 2*a+afn1call-w*expmt+3*z1**2+z2;
-f_[3] = 2*a+afn1call-w*expmt+3*z2**2+z0;
+f_[1] = 2*a+afn1call-w*expmt+3*pow(z0,2)+z1;
+f_[2] = 2*a+afn1call-w*expmt+3*pow(z1,2)+z2;
+f_[3] = 2*a+afn1call-w*expmt+3*pow(z2,2)+z0;
 
 /* Verbose code insert -- begin */
 fprintf('code inserted at end
