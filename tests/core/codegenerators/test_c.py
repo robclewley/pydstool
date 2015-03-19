@@ -187,7 +187,7 @@ def test_c_funcspec_for_ds_with_if_builtin():
     assert fs.spec[0].split('\n') == [
         'void vfieldfunc(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_){',
         '',
-        'f_[0] = __rhs_if(x<0,x,x**3, p_, wk_, xv_);',
+        'f_[0] = __rhs_if(x<0,x,pow(x,3), p_, wk_, xv_);',
         '',
         '}',
         '',
@@ -354,4 +354,25 @@ def test_c_funcspec_inserts_additional_code_in_vfield():
         'return pow(__x__,2)+p ;',
         '',
         '}'
+    ]
+
+
+def test_c_funspec_with_powers():
+    """Regression test for https://github.com/robclewley/pydstool/issues/90"""
+    args = {
+        'name': 'fs_with_powers',
+        'targetlang': 'c',
+        'vars': ['x', 'y'],
+        'varspecs': {'y': 'x', 'x': 'y + x**3 - x^4'},
+    }
+    fs = FuncSpec(args)
+    assert fs.spec[0].split('\n') == [
+        'void vfieldfunc(unsigned n_, unsigned np_, double t, double *Y_, double *p_, double *f_, unsigned wkn_, double *wk_, unsigned xvn_, double *xv_){',
+        '',
+        'f_[0] = y+pow(x,3)-pow(x,4);',
+        'f_[1] = x;',
+        '',
+        '}',
+        '',
+        '',
     ]

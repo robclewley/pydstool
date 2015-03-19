@@ -387,7 +387,7 @@ class C(CodeGenerator):
             assert type(
                 specstr) == str, "Specification for %s was not a string" % specname
             if any([pt in specstr for pt in ('^', '**')]):
-                specstr = convertPowers(specstr, 'pow')
+                self.fspec.varspecs[specname] = convertPowers(specstr, 'pow')
         # pre-process reused sub-expression dictionary to adapt for
         # known calling sequence in C
         reusestr, specupdated = self._processReusedC(specname_vars,
