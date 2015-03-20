@@ -759,6 +759,8 @@ class Event(object):
                 self.prevsign = sval
                 return result
 
+    def __hash__(self):
+        return hash((self.name, self._expr, self._funcstr))
 
     def searchForEvents(self, trange=None, dt=None, checklevel=2,
                         parDict=None, vars=None, inputs=None,
