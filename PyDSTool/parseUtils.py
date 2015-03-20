@@ -30,8 +30,10 @@ DO_DEC=True
 # ------------------------------------------------------------------------
 ### Protected names
 
-protected_scipynames = ['sign', 'mod']
-specialfns = ['airy', 'airye', 'ai_zeros', 'bi_zeros', 'ellipj',
+protected_numpynames = ['arcsin', 'arccos', 'arctan', 'arctan2',
+                           'arccosh', 'arcsinh', 'arctanh']
+# scipy special functions
+scipy_specialfns = ['airy', 'airye', 'ai_zeros', 'bi_zeros', 'ellipj',
             'ellipk', 'ellipkinc', 'ellipe', 'ellipeinc', 'jn',
             'jv', 'jve', 'yn', 'yv', 'yve', 'kn', 'kv', 'kve',
             'iv', 'ive', 'hankel1', 'hankel1e', 'hankel2',
@@ -79,9 +81,11 @@ specialfns = ['airy', 'airye', 'ai_zeros', 'bi_zeros', 'ellipj',
             'sici', 'spence', 'zeta', 'zetac', 'cbrt', 'exp10',
             'exp2', 'radian', 'cosdg', 'sindg', 'tandg', 'cotdg',
             'log1p', 'expm1', 'cosm1', 'round']
-protected_specialfns = ['special_'+s for s in specialfns]
+protected_scipynames = ['sign', 'mod']
+protected_specialfns = ['special_'+s for s in scipy_specialfns]
 protected_mathnames = [s for s in dir(math) if not s.startswith('__')]
-protected_randomnames = [s for s in dir(random) if not s.startswith('_')]  # yes, just single _
+protected_randomnames = [s for s in dir(random) if not s.startswith('_')] # yes, just single _
+protected_builtins = ['abs', 'pow', 'min', 'max', 'sum', 'and', 'not', 'or']
 # We add internal default auxiliary function names for use by
 # functional specifications.
 builtin_auxnames = ['globalindepvar', 'initcond', 'heav', 'if',
@@ -103,9 +107,12 @@ convert_power_reserved_keywords = ['del', 'for', 'if', 'is', 'raise',
 
 # 'abs' is defined in python core, so doesn't appear in math
 protected_allnames = protected_mathnames + protected_scipynames \
-                    + protected_specialfns + protected_randomnames \
+                    + protected_numpynames \
+                    + protected_specialfns \
+                    + protected_randomnames \
+                    + protected_numpynames \
                     + builtin_auxnames + protected_macronames \
-                    + ['abs', 'pow', 'min', 'max', 'sum']
+                    + protected_builtins
 
 # signature lengths for builtin auxiliary functions and macros, for
 # use by ModelSpec in eval() method (to create correct-signatured temporary
@@ -127,7 +134,8 @@ _functions = ['readArgs', 'findEndBrace', 'makeParList', 'joinStrs',
 
 _objects = ['protected_auxnamesDB', 'protected_allnames', 'protected_macronames',
             'protected_mathnames', 'protected_randomnames', 'builtin_auxnames',
-            'protected_scipynames', 'protected_specialfns', 'builtinFnSigInfo']
+            'protected_scipynames', 'protected_numpynames', 'protected_builtins',
+            'protected_specialfns', 'builtinFnSigInfo', 'scipy_specialfns']
 
 _classes = ['symbolMapClass', 'parserObject', 'auxfnDBclass']
 
@@ -888,6 +896,7 @@ class symbolMapClass(object):
             self.lookupDict = copy(symbolMap)
 
     def __call__(self, arg):
+        #print("symbolMapClass %s, with arg %s"%(self.lookupDict.items()[0], str(arg)))
         if isinstance(arg, str):
             if arg in self.lookupDict:
                 return self.lookupDict[arg]
@@ -1521,7 +1530,8 @@ class parserObject(object):
                             tokenized.append(snew)
                             if snew not in used:
                                 used.append(snew)
-                        elif s in protected_scipynames + protected_specialfns:
+                        elif s in protected_scipynames + protected_numpynames \
+                                 + protected_specialfns:
                             snew = symbolMap(s)
                             returnstr += snew
                             tokenized.append(snew)

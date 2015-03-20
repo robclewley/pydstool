@@ -71,18 +71,18 @@ from .utils import *
 from numpy import array, Inf, NaN, isfinite, mod, sum, float64, int32
 from numpy import sometrue, alltrue
 # replacements of math functions so that expr2fun etc. produce vectorizable math functions
-from numpy import arccos, arcsin, arctan, arctan2, arccosh, arcsinh, arctanh, ceil, cos, cosh
-from numpy import exp, fabs, floor, fmod, frexp, hypot, ldexp, log, log10, modf, power
-from numpy import sin, sinh, sqrt, tan, tanh
+from numpy import arccos, arcsin, arctan, arctan2, arccosh, arcsinh, arctanh, \
+     ceil, cos, cosh, exp, fabs, floor, fmod, frexp, hypot, ldexp, log, log10, \
+     modf, power, sin, sinh, sqrt, tan, tanh
 # for compatibility with numpy 1.0.X
 from math import degrees, radians
 # constants
 from math import pi, e
 
 from copy import copy, deepcopy
-import math, random, numpy
+import math, random, numpy, scipy, scipy.special
 
-# alternative names for inverse trig functions, to be supported by expr2fun, symbolic eval, etc.
+# alternative names for inverse trig functions, supported by expr2fun, symbolic eval, etc.
 asin = arcsin
 acos = arccos
 atan = arctan
@@ -100,9 +100,14 @@ math_globals = dict(zip(math_dir,[getattr(math, m) for m in math_dir]))
 math_globals['Inf'] = Inf
 math_globals['NaN'] = NaN
 
-# protected names come from parseUtils.py
+# protected (function) names come from parseUtils.py
+# (constants are all-caps and are filtered out)
+# Adds scipy special function names *without* 'special_' prefix
+# but does not include logical infix operators from builtins
 allmathnames = [a for a in protected_mathnames + protected_randomnames + \
-                ['abs', 'pow', 'min', 'max', 'sum'] if not a.isupper()]
+                protected_scipynames + protected_numpynames + \
+                scipy_specialfns if not a.isupper()] + \
+                ['abs', 'pow', 'min', 'max', 'sum']
 allmathnames_symbolic = [a.title() for a in allmathnames]
 
 # the definitions for the math names are made lower down in this file
@@ -145,12 +150,31 @@ for symb in allmathnames_symbolic:
 mathlookup = {}.fromkeys(protected_mathnames, 'math.')
 randomlookup = {}.fromkeys(protected_randomnames, 'random.')
 builtinlookup = {'abs': '', 'pow': '', 'max': '', 'min': '', 'sum': ''}
+numpylookup = {}.fromkeys(protected_numpynames, 'numpy.')
+scipylookup = {}.fromkeys(protected_scipynames, 'scipy.')
+scipylookup.update( {}.fromkeys(scipy_specialfns, 'scipy.special.') )
 modlookup = {}
 modlookup.update(mathlookup)
 modlookup.update(randomlookup)
 modlookup.update(builtinlookup)
+modlookup.update(scipylookup)
+modlookup.update(numpylookup)
 
 # only rename actual functions (or callable objects)
+
+# DEBUG VERSION
+#funcnames = []
+#for n in allmathnames:
+#    try:
+#        f = eval(modlookup[n]+n)
+#    except:
+#        print("Failed on", n)
+#        raise
+#    if hasattr(f, "__call__"):
+#        print(n)
+#        funcnames.append(n)
+
+# REGULAR VERSION
 funcnames = [n for n in allmathnames if hasattr(eval(modlookup[n]+n),
                                                 "__call__")]
 
@@ -670,6 +694,103 @@ class """+fn_name+"""_fn_wrapper(object):
     g = globals()
     g[cls.__name__] = cls
     return evalfunc
+
+def nonworking_call_to_metaclass():
+    # test call to new metaclass for expr2fun
+    kwargs = {'fn_name': fn_name,
+              'arglist_str': arglist_str,
+              'fspec_str': fspec_str}
+    if len(embed_funcs) > 0:
+        embed_func_strs = {}
+        for fname, (fnsig, fndef) in embed_funcs.items():
+            if len(fnsig) > 0:
+                embed_sig_str = ", " + ", ".join(fnsig)
+            else:
+                embed_sig_str = ""
+            embed_func_strs[fname] = (embed_sig_str, fndef)
+        kwargs["embed_funcs"] = embed_func_strs
+    kwargs['arglist'] = arglist
+    kwargs['_call_spec'] = fspec_str
+    kwargs['_namemap'] = h_map
+    kwargs['defs'] = defs
+    if dyn_keys != [] and for_funcspec:
+        # Don't make copy of the dict to allow automatic update.
+        # We don't need _pardict for non-funcspec definitions.
+        kwargs["_pardict"] = ensure_dynamic
+
+    #class Y(object):
+    #    __metaclass__ = fn_wrapper
+    return fn_wrapper(kwargs) #type(fn_name, (Y,), kwargs)
+
+# Not working
+class fn_wrapper(type):
+    def __init__(cls, kwargs):
+        call_str = """def _call(self%s):
+            print "In call"
+            return %s
+            """ % (kwargs["arglist_str"], kwargs["fspec_str"])
+        alt_call_str = """def _alt_call(self, keyed_arg):
+            return self.__call__(**filteredDict(self._namemap(keyed_arg), self._args))
+
+        """
+        print("__init__ of fn_wrapper")
+        six.exec_(call_str)
+        six.exec_(alt_call_str)
+        setattr(cls, "__call__", types.MethodType(locals()['_call'], cls))
+        setattr(cls, "alt_call", types.MethodType(locals()['_alt_call'], cls))
+        setattr(cls, "__name__", kwargs["fn_name"])
+        setattr(cls, "_namemap", kwargs["_namemap"])
+        setattr(cls, "_args", kwargs["arglist"])
+        setattr(cls, "_call_spec", kwargs["fspec_str"])
+        if "embed_funcs" in kwargs:
+            for embed_fname, (embed_sig_str, embed_fdef_str) in kwargs["embed_funcs"].items():
+                ef_str = """def %s(self%s):
+                return %s
+                """ % (embed_fname, embed_sig_str, embed_fdef_str)
+                six.exec_(ef_str)
+                ef = locals()[embed_fname]
+                setattr(cls, embed_fname, types.MethodType(ef, cls))
+        if "defs" in kwargs:
+            for def_key, def_val in kwargs["defs"].items():
+                setattr(cls, def_key, def_val)
+
+
+def old_expr2fun_final():
+    # !!! PERFORM MAGIC
+    def_str = """
+from __future__ import division
+class """+fn_name+"""_fn_wrapper(object):
+    __name__ = '""" + fn_name + """'
+    def __call__(self""" + arglist_str + """):
+        return """ + fspec_str + """
+
+    def alt_call(self, keyed_arg):
+        return self.__call__(**filteredDict(self._namemap(keyed_arg), self._args))
+"""
+    if len(embed_funcs) > 0:
+        for fname, (fnsig, fndef) in embed_funcs.items():
+            if len(fnsig) > 0:
+                embed_sig_str = ", " + ", ".join(fnsig)
+            else:
+                embed_sig_str = ""
+            def_str += "\n    def " + fname + "(self" + embed_sig_str + \
+                       "):\n        return " + fndef
+    try:
+        six.exec_(def_str)
+    except:
+        print("Problem defining function:")
+        raise
+    evalfunc = locals()['fn_wrapper']()
+    evalfunc.__dict__.update(defs)
+    if dyn_keys != [] and for_funcspec:
+        # Don't make copy of the dict to allow automatic update.
+        # We don't need _pardict for non-funcspec definitions.
+        evalfunc._pardict = ensure_dynamic
+    evalfunc._args = arglist
+    evalfunc._call_spec = fspec_str
+    evalfunc._namemap = h_map
+    return evalfunc
+
 
 
 def subs(qexpr, *bindings):

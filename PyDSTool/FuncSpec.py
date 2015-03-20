@@ -14,7 +14,7 @@ from .common import *
 from .parseUtils import *
 from .errors import *
 from .utils import info as utils_info
-from .Symbolic import QuantSpec
+from .Symbolic import QuantSpec, allmathnames_symbolic
 
 # Other imports
 from copy import copy, deepcopy
@@ -68,7 +68,10 @@ class FuncSpec(object):
         self._protected_mathnames = protected_mathnames
         self._protected_randomnames = protected_randomnames
         self._protected_scipynames = protected_scipynames
+        self._protected_numpynames = protected_numpynames
         self._protected_specialfns = protected_specialfns
+        self._protected_builtins = protected_builtins
+        self._protected_symbolicnames = allmathnames_symbolic
         # We add internal default auxiliary function names for use by
         # functional specifications.
         self._builtin_auxnames = builtin_auxnames
@@ -373,6 +376,7 @@ class FuncSpec(object):
         allnames = vars+pars+inputs+auxvars
         allprotectednames = self._protected_mathnames + \
                             self._protected_scipynames + \
+                            self._protected_numpynames + \
                             self._protected_specialfns + \
                             self._protected_randomnames + \
                             self._protected_auxnames + \
@@ -523,9 +527,11 @@ class FuncSpec(object):
                            + self._protected_randomnames \
                            + self._protected_auxnames \
                            + self._protected_scipynames \
+                           + self._protected_numpynames \
                            + self._protected_specialfns \
                            + self._protected_macronames \
-                           + ['abs', 'and', 'or', 'not', 'True', 'False']
+                           + self._protected_builtins \
+                           + ['True', 'False']
                 assert istr not in allnames, ('loop index in `for` macro '
                                               'must not be a reserved name')
                 assert alphabet_chars_RE.match(istr[0]) is not None, \
@@ -781,6 +787,16 @@ class FuncSpec(object):
                                 returnstr += 'scipy.'+s
                         else:
                             returnstr += 'scipy.'+s
+                    elif s in self._protected_numpynames:
+                        if len(returnstr) > 0:
+                            if returnstr[-1] == '.':
+                                # not a standalone name (e.g. may be a method call in an
+                                # embedded system)
+                                returnstr += s
+                            else:
+                                returnstr += 'numpy.'+s
+                        else:
+                            returnstr += 'numpy.'+s
                     elif s in self._protected_specialfns:
                         if self.targetlang != 'python':
                             print("Function %s is currently not supported "%s +
