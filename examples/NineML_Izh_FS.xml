@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NineML xmlns="http://nineml.net/9ML/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://nineml.net/9ML/1.0/schema/NineML_v1.0.xsd">
+  <ComponentClass name="IzhikevichClass">
+    <Parameter name="a" dimension="dimensionless"/>
+    <Parameter name="b" dimension="dimensionless"/>
+    <Parameter name="c" dimension="voltage"/>
+    <Parameter name="k" dimension="dimensionless"/>
+    <Parameter name="Vr" dimension="voltage"/>
+    <Parameter name="Vt" dimension="voltage"/>
+    <Parameter name="Vb" dimension="voltage"/>
+    <Parameter name="Vpeak" dimension="voltage"/>
+    <Parameter name="Cm" dimension="specificCapacitance"/>
+    <AnalogReducePort name="iSyn" dimension="current" operator="+"/>
+    <AnalogReceivePort name="iExt" dimension="current"/>
+    <AnalogSendPort name="U" dimension="dimensionless"/>
+    <AnalogSendPort name="V" dimension="voltage"/>
+    <EventSendPort name="spikeOutput" mode="send"/>
+    <Dynamics>
+      <StateVariable name="V" dimension="voltage"/>
+      <StateVariable name="U" dimension="dimensionless"/>
+      <Regime name="subthreshold">
+        <TimeDerivative variable="U">
+          <MathInline>a * (b * (V - Vb) ^ 3 - U)</MathInline>
+        </TimeDerivative>
+        <TimeDerivative variable="V">
+          <MathInline>dV</MathInline>
+        </TimeDerivative>
+        <OnCondition>
+          <Trigger>
+            <MathInline>V &gt; Vpeak</MathInline>
+          </Trigger>
+          <StateAssignment variable="V">
+            <MathInline>c</MathInline>
+          </StateAssignment>
+          <StateAssignment variable="U">
+            <MathInline>U</MathInline>
+          </StateAssignment>
+          <OutputEvent port="spikeOutput"/>
+        </OnCondition>
+        <OnCondition target_regime="subVb">
+          <Trigger>
+            <MathInline>V &lt; Vb</MathInline>
+          </Trigger>
+        </OnCondition>
+      </Regime>
+      <Regime name="subVb">
+        <TimeDerivative variable="U">
+          <MathInline>- U * a</MathInline>
+        </TimeDerivative>
+        <TimeDerivative variable="V">
+          <MathInline>dV</MathInline>
+        </TimeDerivative>
+        <OnCondition target_regime="subthreshold">
+          <Trigger>
+            <MathInline>V &gt; Vb</MathInline>
+          </Trigger>
+        </OnCondition>
+      </Regime>
+      <Alias name="dV">
+        <MathInline>(k * (V - Vr) * (V - Vt) - U + iSyn + iExt) / Cm</MathInline>
+      </Alias>
+    </Dynamics>
+  </ComponentClass>
+  <Component name="Izhikevich">
+    <Definition>IzhikevichClass</Definition>
+    <Property name="a">
+      <SingleValue>0.02</SingleValue>
+    </Property>
+    <Property name="b">
+      <SingleValue>0.25</SingleValue>
+    </Property>
+    <Property name="c" units="mV">
+      <SingleValue>-45.0</SingleValue>
+    </Property>
+    <Property name="k">
+      <SingleValue>1</SingleValue>
+    </Property>
+    <Property name="Vpeak" units="mV">
+      <SingleValue>25</SingleValue>
+    </Property>
+    <Property name="Vr" units="mV">
+      <SingleValue>-55</SingleValue>
+    </Property>
+    <Property name="Vb" units="mV">
+      <SingleValue>-55</SingleValue>
+    </Property>
+    <Property name="Vt" units="mV">
+      <SingleValue>-40</SingleValue>
+    </Property>
+    <Property name="Cm" units="uF">
+      <SingleValue>20</SingleValue>
+    </Property>
+  </Component>
+  <Dimension name="dimensionless"/>
+  <Dimension name="voltage" m="1" l="2" t="-3" i="-1"/>
+  <Dimension name="specificCapacitance" m="-1" l="-4" t="4" i="2"/>
+  <Dimension name="current" i="1"/>
+  <Unit symbol="mV" dimension="voltage" power="-3"/>
+  <Unit symbol="uF" dimension="specificCapacitance" power="-6"/>
+  <Unit symbol="pA" dimension="current" power="-12"/>
+</NineML>

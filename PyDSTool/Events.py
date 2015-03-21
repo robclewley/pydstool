@@ -253,7 +253,8 @@ class EventStruct(object):
                             eventlist=None):
         if eventlist is None:
             eventlist = self.query(['highlevel', 'active', 'notvarlinked'])
-        return [(n, e) for n, e in eventlist if e(t=tval, varDict=varDict, parDict=parDict)]
+        return [(n, e) for n, e in eventlist if e(t=tval, varDict=varDict,
+                                                  parDict=parDict)]
 
 
     def resetHighLevelEvents(self, t0, eventlist=None, state=None):
@@ -603,6 +604,11 @@ class Event(object):
                                 "  event interval: " + str(self.eventinterval)
         return outputStr
 
+    def __eq__(self, other):
+        try:
+            return self._infostr(2) == other._infostr(2)
+        except AttributeError:
+            return False
 
     def info(self, verboselevel=1):
         print(self._infostr(verboselevel))
@@ -753,6 +759,8 @@ class Event(object):
                 self.prevsign = sval
                 return result
 
+    def __hash__(self):
+        return hash((self.name, self._expr, self._funcstr))
 
     def searchForEvents(self, trange=None, dt=None, checklevel=2,
                         parDict=None, vars=None, inputs=None,
@@ -1126,12 +1134,16 @@ def makeZeroCrossEvent(expr, dircode, argDict, varnames=[], parnames=[],
         exprname = argDict['name']
     except KeyError:
         raise PyDSTool_KeyError("name key must be present in argDict")
-    # support ModelSpec definitions, so take str() of expr
-    expQS = QuantSpec('__ev_expr__', str(expr))
+    # support ModelSpec and Symbolic definitions, so take str() of expr
+    try:
+        expQS = QuantSpec('__ev_expr__', str(expr.renderForCode()))
+    except AttributeError:
+        expQS = QuantSpec('__ev_expr__', str(expr))
     # make copies of arguments to prevent defaults getting messed up
-    varnames = copy.copy(varnames)
-    parnames = copy.copy(parnames)
-    inputnames = copy.copy(inputnames)
+        # support ModelSpec and Symbolic definitions, so take str() of list elements
+    varnames = [str(v) for v in varnames]
+    parnames = [str(p) for p in parnames]
+    inputnames = [str(i) for i in inputnames]
     auxfns = copy.copy(fnspecs)
     auxVarDefMap = {}
     if flatspec is not None:
@@ -1216,9 +1228,6 @@ def makeZeroCrossEvent(expr, dircode, argDict, varnames=[], parnames=[],
             done = True
         else:
             expr = expr_new
-    # support ModelSpec definitions, so take str() of list elements
-    varnames = [str(v) for v in varnames]
-    parnames = [str(p) for p in parnames]
 ##    if inputnames != [] and targetlang != 'c':
 ##        raise NotImplementedError("Inputs to non C-based events are not "
 ##                                  "yet supported.")

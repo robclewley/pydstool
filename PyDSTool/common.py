@@ -3033,7 +3033,7 @@ class fit_function(object):
         else:
             if self.verbose:
                 def res_fn(p):
-                    print("\n%r" % p)
+                    print("\n%r" % (p,))
                     r = npy.concatenate((constraint(*p), (self.fn(xs, *p) - ys)*weight))
                     print("Residual = %f"%norm(r))
                     return r
@@ -3052,7 +3052,7 @@ class fit_function(object):
             print("Error at parameters %r" % pars_ic)
             raise
         if self.verbose:
-            print("Result: %r" % res)
+            print("Result: %r" % (res,))
         return res
 
     def fit(self, xs, ys, pars_ic=None, opts=None):

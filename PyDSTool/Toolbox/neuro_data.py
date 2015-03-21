@@ -580,15 +580,15 @@ class get_burst_spikes(ql_feature_node):
             if self.pars.verbose_level > 0:
                 print("\n Starting spike", spike_num+1)
             is_spike.super_pars.burst_coord = self.super_pars.burst_coord
-            # step back 10% of estimated period
+            # step back 20% of estimated period
             try:
-                is_spike.pars.width_tol = burst_est.ISIs[spike_num]*.9
+                is_spike.pars.width_tol = burst_est.ISIs[spike_num]*.8
             except IndexError:
                 # one fewer ISI than spike, so just assume last one is about
                 # the same
-                is_spike.pars.width_tol = burst_est.ISIs[spike_num-1]*.9
+                is_spike.pars.width_tol = burst_est.ISIs[spike_num-1]*.8
             is_spike.pars.tlo = burst_est.t[spike_ix] - \
-                    is_spike.pars.width_tol / 2.
+                    is_spike.pars.width_tol #/ 2.
             if self.pars.verbose_level > 0:
                 print("new tlo =", is_spike.pars.tlo)
             # would prefer to work this out self-consistently...
@@ -619,8 +619,13 @@ class get_burst_peak_env(qt_feature_leaf):
                                         self.super_pars.burst_coord, peak_t,
                                         self.super_pars.ref_burst_pts_resampled.indepvarname,
                                         discrete=False)
-        ref_env_ts = npy.linspace(peak_t[0], peak_t[-1],
+        # discrete option false yields error if only one spike found, but error is cryptic!
+
+        if len(peak_t) > 1:
+            ref_env_ts = npy.linspace(peak_t[0], peak_t[-1],
                                             self.pars.num_samples)
+        else:
+            ref_env_ts = npy.array(peak_t)
         self.pars.ref_peak_vals = self.ref_traj(ref_env_ts,
                                    self.super_pars.burst_coord)[0]
 
@@ -915,7 +920,8 @@ class estimate_spiking(object):
         self.burst_off = (burst_off_ix, t[burst_off_ix])
         self.burst_duration = t[burst_off_ix] - t[burst_on_ix]
         # retain only values larger than 25% of max for actual spikes
-        x_filt_th = npy.asarray(x_filt>(0.25*max_x),int)*x_filt
+        # FAILING: temp switch off
+        x_filt_th = x_filt_mask #npy.asarray(x_filt>(0.25*max_x),int)*x_filt
         # find each spike by group of positive values
         # eliminating each afterwards (separated by zeros)
         spike_ixs = []

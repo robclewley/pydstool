@@ -138,7 +138,8 @@ class EmbeddedSysGen(ctsGen):
         #   ['pars', 'tdomain', 'xdomain', 'pdomain']
         if 'xdomain' in kw:
             for k_temp, v in kw['xdomain'].items():
-                k = self._FScompatibleNames(k_temp)
+                # str() ensures that Symbolic objects can be passed
+                k = str(self._FScompatibleNames(k_temp))
                 if k in self.xdomain.keys():
                     if isinstance(v, _seq_types):
                         assert len(v) == 2, \
@@ -163,7 +164,7 @@ class EmbeddedSysGen(ctsGen):
                                       'singletons')
         if 'pdomain' in kw:
             for k_temp, v in kw['pdomain'].items():
-                k = self._FScompatibleNames(k_temp)
+                k = str(self._FScompatibleNames(k_temp))
                 if k in self.pars.keys():
                     if isinstance(v, _seq_types):
                         assert len(v) == 2, \
@@ -215,7 +216,7 @@ class EmbeddedSysGen(ctsGen):
         self.indepvariable.depdomain.set(self.tdata)
         if 'ics' in kw:
             for k_temp, v in kw['ics'].items():
-                k = self._FScompatibleNames(k_temp)
+                k = str(self._FScompatibleNames(k_temp))
                 if k in self.xdomain.keys():
                     self._xdatadict[k] = ensurefloat(v)
                 else:
@@ -226,7 +227,7 @@ class EmbeddedSysGen(ctsGen):
                 raise ValueError('No pars were declared for this object'
                                    ' at initialization.')
             for k_temp, v in kw['pars'].items():
-                k = self._FScompatibleNames(k_temp)
+                k = str(self._FScompatibleNames(k_temp))
                 if k in self.pars:
                     cval = self.parameterDomains[k].contains(v)
                     if self.checklevel < 3:

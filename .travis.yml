@@ -19,19 +19,23 @@ matrix:
 
 before_install:
     - sudo apt-get update -qq
-    - sudo apt-get install -qq liblapack-dev libatlas-dev libatlas-base-dev gfortran swig
-    - pip install --use-wheel pytest pytest-xdist six mock
-    - export PIP_CMD='pip install --use-wheel'
+    - sudo apt-get install -qq gfortran swig
+
+    # Use miniconda. Taken from https://gist.github.com/dan-blanchard/7045057
+    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    - chmod +x miniconda.sh
+    - ./miniconda.sh -b
+    - export PATH=/home/travis/miniconda/bin:$PATH
+    - conda update --yes conda
 
 install:
-    - $PIP_CMD $NUMPY_SPEC
-    - $PIP_CMD $SCIPY_SPEC
-    - if [ "${COVERAGE}" == "yes" ]; then pip install coverage coveralls; fi
+    - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas $NUMPY_SPEC $SCIPY_SPEC pytest six mock
+    - if [ "${COVERAGE}" == "yes" ]; then conda install --yes -c dan_blanchard coverage python-coveralls; fi
 
 script:
     - if [ "${COVERAGE}" == "yes" ]; then sed -i'' -e 's/--boxed//g' pytest.ini && coverage run --source=PyDSTool setup.py test -q; else python setup.py test; fi
 
 after_success:
-    - if [ "${COVERAGE}" == "yes" ]; then coveralls; fi
+    - if [ "${COVERAGE}" == "yes" ]; then coveralls --config_file .coveragerc; fi
 
 cache: apt
