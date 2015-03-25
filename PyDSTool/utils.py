@@ -10,9 +10,11 @@ from .common import *
 from .parseUtils import joinStrs
 from PyDSTool.core.context_managers import RedirectStdout
 
+# !! Replace use of these named imports with np.<X>
 from numpy import Inf, NaN, isfinite, less, greater, sometrue, alltrue, \
      searchsorted, take, argsort, array, swapaxes, asarray, zeros, transpose, \
      float64, int32, argmin, ndarray, concatenate
+import numpy as np
 from numpy.linalg import norm
 from scipy.optimize import minpack, zeros
 try:
