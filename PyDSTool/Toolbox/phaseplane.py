@@ -2591,6 +2591,12 @@ class plotter_2D(object):
             pp.ylim( self.y_dom )
         pp.draw()
 
+    def clear(self):
+        if not self.do_display:
+            return
+        pp.figure(self.curr_fig)
+        pp.clf()
+
     def plot_nullcline(self, nullc, style, lw=1, N=100, marker='', figname=None):
         if not self.do_display:
             return
