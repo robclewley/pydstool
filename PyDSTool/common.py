@@ -411,15 +411,26 @@ class args(object):
     def __init__(self, **kw):
         self.__dict__ = kw
 
-    def _infostr(self, verbose=1, attributeTitle='args'):
+    def _infostr(self, verbose=1, attributeTitle='args',
+                 ignore_underscored=False):
         # removed offset=0 from arg list
         if len(self.__dict__) > 0:
             res = "%s ("%attributeTitle
             for k, v in self.__dict__.items():
-                try:
-                    istr = v._infostr(verbose-1) #, offset+2)
-                except AttributeError:
-                    istr = str(v)
+                if k[0] == '_' and ignore_underscored:
+                    continue
+                if verbose == 0:
+                    # don't resolve any deeper
+                    if hasattr(v, 'name'):
+                        name = ' ' + v.name
+                    else:
+                        name = ''
+                    istr = str(type(v)) + name
+                else:
+                    try:
+                        istr = v._infostr(verbose-1) #, offset+2)
+                    except AttributeError:
+                        istr = str(v)
                 res += "\n%s%s = %s,"%(" ",k,istr)
                 # was " "*offset
             # skip last comma
