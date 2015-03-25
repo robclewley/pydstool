@@ -4,6 +4,7 @@
 
 import contextlib
 import functools
+from io import UnsupportedOperation
 import os
 import sys
 
@@ -30,6 +31,8 @@ def _stdchannel_redirected(stdchannel, dest_filename, mode='w'):
             dest_file = open(dest_filename, mode)
             os.dup2(dest_file.fileno(), stdchannel.fileno())
             yield
+    except UnsupportedOperation:
+        yield iter([None])
     finally:
         if oldstdchannel is not None:
             os.dup2(oldstdchannel, stdchannel.fileno())
