@@ -1861,6 +1861,7 @@ class NonHybridModel(Model):
           asarray  (Bool, optional, default False) If true, will return an array
                    in state name alphabetical order, else a Point
         """
+        ds = list(self.registry.values())[0]
         fscm = ds._FScompatibleNames
         fscmInv = ds._FScompatibleNamesInv
         x_fs = filteredDict(fscm(xdict), ds.get('funcspec').vars)
