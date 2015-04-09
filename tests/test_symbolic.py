@@ -373,3 +373,14 @@ def test_symbolic():
     print("F(3,2,Sin(x0))) = [3*Sin(x0),15,Pow(Sin(x0),0.5)] ...")
     print("  ... even though x0 is a bound name inside definition of F")
     assert str(F(3,2,Sin(x0)))=='[3*Sin(x0),15,Pow(Sin(x0),0.5)]'
+
+    # moved from test_symbolic_diff.py
+    p0 = Var('p0')
+    p1 = Var('p1')
+
+    pv = Var([p0, p1], 'p')
+    assert str(pv()) == '[p0,p1]'
+    assert str(pv.eval()) == '[p0,p1]'
+
+    u = Var('Pi/(2*Sin(Pi*t/2))', 'u')
+    assert u.eval(t=1).tonumeric() == pi / 2

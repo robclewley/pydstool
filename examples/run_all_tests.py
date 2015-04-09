@@ -83,7 +83,6 @@ param_est_C_list = [
 
 # Symbolic differentiation module
 symbolic_list = [
-    'Symbolic_Diff_test',
     'Tutorial_SymbolicJac'
     ]
 
