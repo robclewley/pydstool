@@ -17,13 +17,19 @@ local:
 	@python setup.py install --user
 
 
-.PHONY: examples test
+.PHONY: examples test cov
 
 examples:
 	@cd examples && python run_all_tests.py
 
 test: clean
 	@python setup.py test
+
+
+cov:
+	@sed -i'.bak' -e 's/ --boxed//' pytest.ini
+	@py.test --cov PyDSTool --cov-report html --cov-config .coveragerc
+	@mv -f pytest.ini.bak pytest.ini
 
 
 .PHONY: _tags dev undev
@@ -49,6 +55,8 @@ clean:
 	-@find . -path ./.tox -prune -o -type f -name "*.so" -exec rm -f {} \;
 	-@find . -path ./.tox -prune -o -type f -name "*module.c" -exec rm -rf {} \;
 	-@find . \( -name "temp*.pkl" -o -name "fort.*" -o -name "tvals.dat" -o -name "varvals.dat" -o -name "vanderPol.dat" \) -delete
+	-@find . -maxdepth 1 -type d -name "build" -exec rm -rf {} \;
+	-@find . -maxdepth 1 -name "htmlcov" -exec rm -rf {} \;
 
 distclean: clean
 	@python setup.py clean --all
