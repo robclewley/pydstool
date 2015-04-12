@@ -43,7 +43,7 @@ from math import pi as PI
 from copy import copy
 
 #####
-_classes = ['IterationError', 'Struct']
+_classes = ['IterationError']
 
 _functions = ['iszero', 'isnotzero', 'todict', 'tocoords', 'jac', 'hess',
               'hess3', 'bilinearform', 'trilinearform', 'ijtoind', 'indtoij',
@@ -59,14 +59,6 @@ FLOQ_TOL = 0.01
 class IterationError(Exception):
     pass
 
-class Struct(object):
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
-
-    def __repr__(self):
-        attributes = [attr for attr in dir(self) if attr[0] != '_']
-        string = 'Struct(' + ', '.join(attributes) + ')'
-        return string
 
 iszero = lambda x, y: x*y < 0
 isnotzero = lambda x, y: x*y > 0
