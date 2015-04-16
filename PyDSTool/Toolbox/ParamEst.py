@@ -38,7 +38,7 @@ import sys, traceback
 import operator
 
 from numpy import linspace, array, arange, zeros, sum, power, \
-     swapaxes, asarray, ones, alltrue, concatenate, rank, ravel, argmax, \
+     swapaxes, asarray, ones, alltrue, concatenate, ravel, argmax, \
      argmin, argsort, float, sign
 import numpy as np
 

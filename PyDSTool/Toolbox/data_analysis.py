@@ -196,7 +196,7 @@ def log_distances(m, sampleix=0, doplot=True, quiet=True, logv=None,
     npts = size(m,0)
     assert sampleix >= 0
     d = zeros((npts-1,), 'd')
-    if rank(m) == 3:
+    if npy.ndim(m) == 3:
         for i in range(npts):
             if sampleix != i:
                 try:
@@ -205,7 +205,7 @@ def log_distances(m, sampleix=0, doplot=True, quiet=True, logv=None,
                     # catch case when index is too large for npts-1
                     # so use the empty i=pix position (ordering doesn't matter)
                     d[sampleix] = norm(m[sampleix,:,:]-m[i,:,:])
-    elif rank(m) == 2:
+    elif npy.ndim(m) == 2:
         for i in range(npts):
             if sampleix != i:
                 try:
@@ -267,7 +267,7 @@ def log_distances_with_D(m, sampleix, logv=None, return_ixs=False):
     # do in two stages: ix 0->sampleix, sampleix+1->npts-1
     # but offset second stage indices in dk so there's a total of n-1
     # this is basically a slightly unrolled loop to make it a little faster
-    if rank(m) == 3:
+    if npy.ndim(m) == 3:
         for i in range(sampleix):
             dk[i] = norm(m[sampleix,:,:]-m[i,:,:])
             if dk[i] in d_inv:
@@ -321,7 +321,7 @@ def log_distances_with_D(m, sampleix, logv=None, return_ixs=False):
                 d_inv[u[0]] = i
             else:
                 d_inv[dk[ki]] = i
-    elif rank(m) == 2:
+    elif npy.ndim(m) == 2:
         for i in range(sampleix):
             dk[i] = norm(m[sampleix,:]-m[i,:])
             if dk[i] in d_inv:

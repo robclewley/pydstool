@@ -18,7 +18,7 @@ from PyDSTool.Toolbox.ParamEst import *
 from scipy.linalg import norm, eig, eigvals, svd, svdvals
 
 from numpy import linspace, array, arange, zeros, sum, power, \
-     swapaxes, asarray, ones, alltrue, concatenate, rank, ravel, argmax
+     swapaxes, asarray, ones, alltrue, concatenate, ravel, argmax
 import math, types
 from copy import copy, deepcopy
 

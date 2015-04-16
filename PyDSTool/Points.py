@@ -20,11 +20,12 @@ from .parseUtils import symbolMapClass, mapNames
 ## Other imports
 from numpy import Inf, NaN, isfinite, array2string, r_, c_, \
     less, greater, linalg, shape, array, argsort, savetxt, \
-    take, zeros, transpose, resize, indices, concatenate, rank, isscalar
+    take, zeros, transpose, resize, indices, concatenate, isscalar
 
 from numpy import complex, complexfloating, int, integer, \
      float, floating, float64, complex128, int32
 from numpy import any, all, alltrue, sometrue, ndarray
+import numpy as npy
 
 
 import sys
@@ -144,8 +145,8 @@ class Point(object):
             coordvalues = array(vals, ctype)
         elif 'coordarray' in kw:
             vals = kw['coordarray']
-            if rank(vals) > 1:
-                raise ValueError("Invalid rank for coordinate array: %i" % rank(vals))
+            if npy.ndim(vals) > 1:
+                raise ValueError("Invalid rank for coordinate array: %i" % npy.ndim(vals))
             if len(vals) == 0:
                 raise ValueError('Values sequence must be nonempty')
 
@@ -180,7 +181,7 @@ class Point(object):
             print(msg)
             raise ValueError("Mismatch between number of coordnames and "
                              "dimension of data")
-        r = rank(coordvalues)
+        r = npy.ndim(coordvalues)
         if r == 1:
             self.coordarray = coordvalues
         elif r == 0:
@@ -648,7 +649,7 @@ class Pointset(Point):
             elif isinstance(vals, ndarray):
                 # call 'array' constructor to ensure copy is made in case
                 # either array is independently changed.
-                if rank(vals) in [0,2]:
+                if npy.ndim(vals) in [0,2]:
                     self.indepvararray = array(vals.ravel())
                 else:
                     self.indepvararray = array(vals)
@@ -676,7 +677,7 @@ class Pointset(Point):
             except KeyError:
                 raise TypeError('Independent variable type '
                                     '%s not valid'%self.indepvararray.dtype)
-            r=rank(self.indepvararray)
+            r = npy.ndim(self.indepvararray)
             if r == 1:
                 pass
             elif r == 0:
@@ -741,7 +742,7 @@ class Pointset(Point):
                         raise ValueError('All coordinate arrays must have same length')
                 datalist.append(xs)
             self.coordarray = array(datalist, self.coordtype)
-            r = rank(self.coordarray)
+            r = npy.ndim(self.coordarray)
             if r == 2:
                 pass
             elif r == 1:
@@ -766,7 +767,7 @@ class Pointset(Point):
             # calling 'array' constructor creates a copy if original or new
             # array is altered
             array_temp = array(kw['coordarray'], self.coordtype)
-            r = rank(array_temp)
+            r = npy.ndim(array_temp)
             if r == 2:
                 self.coordarray = array_temp
             elif r == 1:
@@ -2273,9 +2274,9 @@ def arrayToPointset(a, vnames=None, ia=None, iname=""):
     Coordinate (and independent variable) names are optional: the defaults are
     the array indices (and 't' for the independent variable).
     """
-    if rank(a) > 2:
+    if npy.ndim(a) > 2:
         raise ValueError("Cannot convert arrays of rank > 2")
-    if rank(a) == 0:
+    if npy.ndim(a) == 0:
         raise ValueError("Cannot convert arrays of rank 0")
     if vnames is None:
         vnames = [str(i) for i in range(shape(a)[0])]
