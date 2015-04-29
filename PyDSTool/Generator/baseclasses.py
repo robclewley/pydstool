@@ -968,7 +968,12 @@ class Generator(object):
         try:
             assert self.funcspec
             assert self.dimension > 0
-            assert len(self.variables) == self.dimension + len(self.funcspec.auxvars)
+            try:
+                num_auxvars = len(self.funcspec.auxvars)
+            except AttributeError:
+                # no auxvars
+                num_auxvars = 0
+            assert len(self.variables) == self.dimension + num_auxvars
             # don't assert self.pars because not all systems need them
             assert self.indepvariable.name == 't'
             assert self.checklevel in range(4)
@@ -993,7 +998,11 @@ class Generator(object):
             # (unnecessary for dictionary version of FuncSpec)
             if isinstance(self.funcspec, FuncSpec):
                 varnames = list(self.variables.keys())
-                fsvars = self.funcspec.vars + self.funcspec.auxvars
+                try:
+                    auxvars = self.funcspec.auxvars
+                except AttributeError:
+                    auxvars = []
+                fsvars = self.funcspec.vars + auxvars
                 if len(varnames) > 1:
                     varnames.sort()
                     fsvars.sort()
