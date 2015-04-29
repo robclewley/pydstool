@@ -12,6 +12,7 @@ from numpy.linalg import norm
 from numpy.testing.utils import assert_approx_equal, assert_allclose, assert_almost_equal
 
 from PyDSTool import Diff, DiffStr, Var, Pow, QuantSpec, Par, Fun, Exp, Sin, expr2fun, remain
+from PyDSTool.Toolbox.phaseplane import prepJacobian
 
 
 def test_diffstr():
