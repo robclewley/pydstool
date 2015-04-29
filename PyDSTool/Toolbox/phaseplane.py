@@ -46,7 +46,7 @@ except ImportError:
 
 from scipy.interpolate import UnivariateSpline, InterpolatedUnivariateSpline
 from scipy.optimize import fsolve, minpack
-from scipy.optimize import minpack, zeros
+from scipy.optimize import root, zeros
 try:
     newton_meth = minpack.newton
 except AttributeError:
@@ -75,7 +75,8 @@ _functions = ['find_nullclines', 'make_distance_to_line_auxfn',
               'closest_perp_distance_between_sample_points', 'get_bearing',
               'closest_perp_distance_on_spline', 'project_point',
               'line_intersection', 'find_saddle_manifolds', 'make_Jac',
-              'plot_PP_vf', 'plot_PP_fps', 'show_PPs', 'get_PP']
+              'plot_PP_vf', 'plot_PP_fps', 'show_PPs', 'get_PP', 'distfun',
+              'find_pt_2D', 'find_pt_nophase_2D', 'dist', 'dist_vectorized']
 
 _classes = ['distance_to_pointset', 'mesh_patch_2D', 'dx_scaled_2D',
             'phaseplane', 'fixedpoint_nD', 'fixedpoint_2D', 'nullcline',
@@ -88,10 +89,95 @@ __all__ = _functions + _classes + _features + ['plotter']
 
 # ----------------------------------------------------------------------------
 
+distfun = lambda x,y,x1,y1: sqrt((x-x1)*(x-x1)+(y-y1)*(y-y1))
+
+def find_pt_nophase_2D(pts, pt, eps=0.1, N_phases=20):
+    try_phases = np.linspace(0, 1, N_phases)
+    data = None
+    min_d = 1000
+    best_data = None
+    for phase in try_phases:
+        #print phase
+        try:
+            data = find_pt_2D(pts, pt, phase, tol=1.0/N_phases, eps=eps)
+        except ValueError:
+            continue
+        else:
+            # found something
+            if data[1] < min_d:
+                best_data = data
+                min_d = data[1]
+    if best_data is None:
+        raise ValueError("No point found")
+    else:
+        return best_data
+
+
+def find_pt_2D(pts, pt, phase, tol=0.2, eps=0.1):
+    """
+    Find closest point in time-parameterized Pointset 'pts'
+    to the given 'pt' of type Point({xname: xval, yname: yval})
+    (or Point2D) and approximate phase in (0,1) fraction
+    of the whole trajectory.
+
+    Optional tolerance fraction of #pts around phase
+    guess to seek in (default 20%=0.2).
+
+    Optional epsilon tolerance is the minimum distance
+    from the desired point that target point must be.
+    """
+    xnames = pt.coordnames
+    xvals = pt.coordarray
+    n = len(pts)
+    ixtol = int(tol*n)
+    tguess = phase * pts['t'][-1]
+    ixguess = pts.find(tguess, 0)
+    ixlo = max(0, ixguess - ixtol)
+    ixhi = min(n, ixguess + ixtol)
+    new_pts = pts[ixlo:ixhi]
+    ix1 = find(new_pts[xnames[0]], xvals[0])
+    ix2 = find(new_pts[xnames[1]], xvals[1])
+    d1 = distfun(new_pts[ix1][xnames[0]], new_pts[ix1][xnames[1]],
+                 xvals[0], xvals[1])
+    d2 = distfun(new_pts[ix2][xnames[0]], new_pts[ix2][xnames[1]],
+                 xvals[0], xvals[1])
+    if d1 < eps and d2 > eps:
+        return ix1+ixlo, d1, new_pts[ix1]
+    if d2 < eps and d1 > eps:
+        return ix2+ixlo, d2, new_pts[ix2]
+    if d1 < eps and d2 < eps:
+        if d1 < d2:
+            return ix1+ixlo, d1, new_pts[ix1]
+        else:
+            return ix2+ixlo, d2, new_pts[ix2]
+    else:
+        #print("findpt data was", (ix1, ix2), (d1, d2), (new_pts[ix1][xnames[0]], new_pts[ix1][xnames[1]]),
+        #      (new_pts[ix2][xnames[0]], new_pts[ix2][xnames[1]]))
+        #print '\n'
+        raise ValueError("No match found to within eps=%.3f"%eps)
+
+
+def dist_vectorized(p1, p2vec, coordnames=None):
+    """
+    Vector of L2 distances between one point and one sequence of points,
+    assumed to have same dimension unless optional tuple of coord names
+    provided.
+    """
+    if coordnames is None:
+        return np.array([np.linalg.norm(np.asarray(p1)-p) for p in p2vec])
+    else:
+        return np.array([np.linalg.norm(np.asarray(p1)-p) for p in p2vec[coordnames]])
+
+def dist(p1, p2):
+    """
+    L2 distance between two points assumed to have same dimension
+    """
+    return np.linalg.norm(np.asarray(p2)-np.asarray(p1))
+
 
 def distance_to_line(pt, line_pt_pair):
     """
-    Returns perpendicular distance of point pt to a line given by
+    Returns perpendicular distance of point 'pt' to a line given by
     the pair of points in second argument
     """
     x = pt[0]
@@ -1258,8 +1344,14 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1000, eps=1e-8,
     fp_listdict = []
     d_posns = base_n_counter(n,D)
     xtol = eps/10.
+    def array_to_point(a):
+        return Point(dict(zip(x0_names,a)))
     for dummy_ix in range(n**D):
         x0 = array([x0_coords[i][d_posns[i]] for i in range(D)])
+        # TEST
+        #sol = root(Rhs_wrap, x0, (t,gen.pars), method='hybr',
+        #           jac=fprime, options={'xtol':xtol})
+        #print(dummy_ix, sol.success, sol.x)
         res = fsolve(Rhs_wrap,x0,(t,gen.pars),xtol=xtol,
                           fprime=fprime,full_output=True)
         xinf_val = res[0]
@@ -1268,7 +1360,10 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1000, eps=1e-8,
         # treat f.p.s within epsilon (2-norm) of each other as identical
         if alltrue(isfinite(xinf_val)):
             if len(fps) == 0 or not sometrue([norm(fp-xinf_val)<eps for fp in fps]):
-                ok = res[2]==1
+                # treat as successful if integer flag = 1 for actual success
+                # or if maxfev reached but residual in f(fp) < eps
+                f_residual = norm(Rhs_wrap(array_to_point(res[0]),t,gen.pars))
+                ok = res[2]==1 or (res[2]==2 and f_residual < eps)
                 # check that bounds were met
                 if ok:
                     for ix, xname in enumerate(x0_names):
@@ -1325,7 +1420,7 @@ class Point2D(Point):
         self.coordnames = [xname, yname]
         self.coordtype = float
         self.dimension = 2
-        self.coordarray = None  # Not implemented this way
+        self.coordarray = np.array((self.x, self.y), float)
 
     def mapNames(self, themap):
         self.xname = themap(self.xname)
@@ -1361,13 +1456,13 @@ class Point2D(Point):
                      norm=self._normord,
                      labels=self.labels)
 
-    def get(self, coord, d=None):
+    def get(self, coord, default_val=None):
         if coord == self.xname:
             return self.x
         elif coord == self.yname:
             return self.y
         else:
-            return d
+            return default_val
 
     def __len__(self):
         return 2
@@ -1400,12 +1495,14 @@ class Point2D(Point):
     def has_key(self, k):
         return k in (self.xname, self.yname)
 
-    def __getitem__(self, ix):
-        if ix == 0:
+    def __getitem__(self, elt):
+        if elt in self.coordnames:
+            return self.get(elt)
+        elif elt == 0:
             return self.x
-        elif ix == 1:
+        elif elt == 1:
             return self.y
-        elif isinstance(ix, slice):
+        elif isinstance(elt, slice):
             return (self.x, self.y)
         else:
             raise StopIteration #IndexError("Index out of range")
@@ -2495,6 +2592,12 @@ class plotter_2D(object):
         if self.y_dom is not None:
             pp.ylim( self.y_dom )
         pp.draw()
+
+    def clear(self):
+        if not self.do_display:
+            return
+        pp.figure(self.curr_fig)
+        pp.clf()
 
     def plot_nullcline(self, nullc, style, lw=1, N=100, marker='', figname=None):
         if not self.do_display:
