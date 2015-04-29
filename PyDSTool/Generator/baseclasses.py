@@ -1022,6 +1022,16 @@ class Generator(object):
                         assert inputnames == fsinputs
             else:
                 assert len(self.funcspec) == self.dimension
+            # check that all aux function specs in events made it into funcspec
+            # (situation not caught on Vode, and leads to weird errors with C
+            # integrators) -- only check names, not definitions
+            fnspecs = self.funcspec.auxfns.keys()
+            for ename, ev in self.eventstruct.events.items():
+                for fname in remain(ev._fnspecs.keys(), ('if', 'initcond', 'heav',
+                                        'globalindepvar', 'getindex', 'getbound')):
+                    assert fname in fnspecs, "All aux functions from events " + \
+                               "must be declared to FuncSpec too"
+
         except:
             print('Invalid system specification')
             raise
@@ -1399,6 +1409,7 @@ class ctsGen(Generator):
         # only check that domain is cts, range may be a finite subset of points
         assert isinputcts(self.indepvariable), ("self.indepvariable must be continuously-"
                                          "defined for this class")
+        Generator.validateSpec(self)
 
     def __del__(self):
         Generator.__del__(self)
@@ -1411,6 +1422,7 @@ class discGen(Generator):
     def validateSpec(self):
         assert isdiscrete(self.indepvariable), ("self.indepvariable must be discretely-"
                                          "defined for this class")
+        Generator.validateSpec(self)
 
     def __del__(self):
         Generator.__del__(self)
