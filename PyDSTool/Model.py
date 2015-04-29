@@ -1718,8 +1718,10 @@ class NonHybridModel(Model):
         """
         # get Generator as 'ds'
         ds = list(self.registry.values())[0]
-        fscm = ds._FScompatibleNames
-        fscmInv = ds._FScompatibleNamesInv
+        # filer to ensure only variable names get transformed
+        fscm_dict = filteredDict(ds._FScompatibleNames.lookupDict, xdict.keys())
+        fscm = symbolMapClass(fscm_dict)
+        fscmInv = fscm.inverse()
         vars = ds.get('funcspec').vars   # FS compatible
         x_fs = filteredDict(fscm(xdict), vars)
         # in case ds i.c.'s are different or not set yet (NaN's)
