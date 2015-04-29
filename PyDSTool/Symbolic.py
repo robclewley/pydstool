@@ -806,7 +806,7 @@ def subs(qexpr, *bindings):
         qtemp = copy(qexpr)
         varname = ""
     for b in bindings:
-        if isinstance(b, list):
+        if isinstance(b, (list, tuple)):
             # in case called from a function when the bindings
             # cannot be unravelled in the call arguments
             for bentry in b:
@@ -879,14 +879,68 @@ def _generate_subderivatives(symbols, fnspecs):
 
 
 def prepJacobian(varspecs, coords, fnspecs=None, max_iter_depth=20):
-    """Returns a symbolic Jacobian and updated function specs to support
+    """Returns a symbolic Jacobian Var and updated function specs to support
     its definition from variable specifications. Only makes the Jacobian
     with respect to the named coordinates, which will be sorted into
-    alphabetical order.
+    alphabetical order. The *varspecs* specifications can be a dictionary
+    or a Symbolic Fun(ction) object of the coordinate variables given by
+    *coords* (and additional variables that will be ignored). The function
+    may have one additional and first argument for 't' if the system is
+    non-autonomous.
 
+    Coordinates will be rearranged into alphabetically sorted order.
     """
-    need_specs = filteredDict(varspecs, coords)
+    coords = list(coords) # in case of tuple or other immutable sequence
     coords.sort()
+    if isinstance(varspecs, Fun):
+        # either dim == number of coords or one fewer if 't' is included in
+        # the function signature, which should be the last argument anyway
+        D = varspecs.dim
+        siglen = len(varspecs.signature)
+        if siglen in (D, D + 1):
+            if D == len(coords):
+                # ensure coords and relevant signature elements are the same
+                if siglen == D+1:
+                    offset = 1
+                else:
+                    offset = 0
+                coords_sigorder = varspecs.signature[offset:]
+                try:
+                    ix_map = dict(zip(coords,[coords_sigorder.index(c) for c in coords]))
+                except:
+                    raise ValueError("Incompatible coords with function sig")
+                coords_sigorder.sort()
+                if coords_sigorder != coords:
+                    raise ValueError("Incompatible coords with function sig")
+                else:
+                    new_varspecs = {}
+                    for co in coords:
+                        new_varspecs[co] = varspecs.fromvector(ix_map[co])
+            elif D > len(coords):
+                # only a subset were chosen
+                # ensure each coord given is in signature
+                new_varspecs = {}
+                for co in coords:
+                    try:
+                        ix = varspecs.signature.index(co)
+                    except ValueError:
+                        raise ValueError("Incompatible coords with function sig")
+                    else:
+                        new_varspecs[co] = varspecs.fromvector(ix)
+            else:
+                raise ValueError("Mismatch of function dimension and coords")
+        else:
+            raise ValueError("Incompatible Function type for Jacobian")
+        if siglen == D+1:
+            # check that non-coord (usually 't') is first
+            if varspecs.signature[0] in coords:
+                raise ValueError("Cannot have coordinate variable first in Jac sig")
+        # keep record of old Fun
+        fun_var = varspecs
+        # overwrite with actual dictionary
+        varspecs = need_specs = new_varspecs
+    else:
+        need_specs = filteredDict(varspecs, coords)
     jac = Diff(sortedDictValues(need_specs), coords)
     free = jac.freeSymbols
     if fnspecs is None:
