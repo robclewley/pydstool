@@ -250,3 +250,14 @@ def test_nested_functions_diff():
     assert abs(norm(f(0, -50, 0.2)) - 8.565615) < 1e-6
     # alternative usage syntax
     assert abs(norm(f(**{'t': 0, 'v': -50, 'm': 0.2})) - 8.565615) < 1e-6
+
+
+def test_prep_Jacobian():
+    vf1 = Fun(['-3*x+y*y', '-y/2'], ('x', 'y'), name='f')
+    vf2 = Fun(['-3*x+y*y+sin(t)', '-y/2+x*cos(t)'], ('t', 'x', 'y'), name='f')
+
+    J1, fs1 = prepJacobian(vf1, ('x','y'))
+    J2, fs2 = prepJacobian(vf2, ('y','x')) # order of x, y don't matter
+
+    assert str(J1) == '[[-3,2*y],[0,-0.5]]'
+    assert str(J2) == '[[-3,2*y],[Cos(t),-0.5]]'
