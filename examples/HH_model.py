@@ -155,5 +155,5 @@ if __name__=='__main__':
     plotData2['v'] += 10  # could have plotted plotData2['v']+10
     plotData3['v'] += 10
     vline2 = plt.plot(plotData2['t'], plotData2['v'])
-    vline3 = plt.plot(plotData3['t'], plotData3['v'])
+    vline3 = plt.plot(plotData3['t'], plotData3['v']-10)
     plt.show()
