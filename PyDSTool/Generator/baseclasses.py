@@ -966,11 +966,11 @@ class Generator(object):
 
     def validateSpec(self):
         try:
+            assert self.funcspec
             assert self.dimension > 0
-            assert len(self.variables) == self.dimension
+            assert len(self.variables) == self.dimension + len(self.funcspec.auxvars)
             # don't assert self.pars because not all systems need them
             assert self.indepvariable.name == 't'
-            assert self.funcspec
             assert self.checklevel in range(4)
             #  check that all names in individual dicts are all in _registry
             if self.pars:
@@ -993,7 +993,7 @@ class Generator(object):
             # (unnecessary for dictionary version of FuncSpec)
             if isinstance(self.funcspec, FuncSpec):
                 varnames = list(self.variables.keys())
-                fsvars = self.funcspec.vars
+                fsvars = self.funcspec.vars + self.funcspec.auxvars
                 if len(varnames) > 1:
                     varnames.sort()
                     fsvars.sort()
