@@ -5,16 +5,16 @@ from __future__ import absolute_import, print_function
 
 import os
 
-from distutils.util import get_platform
-
 from .errors import *
 from .common import *
 from .parseUtils import joinStrs
 from PyDSTool.core.context_managers import RedirectStdout
 
+# !! Replace use of these named imports with np.<X>
 from numpy import Inf, NaN, isfinite, less, greater, sometrue, alltrue, \
      searchsorted, take, argsort, array, swapaxes, asarray, zeros, transpose, \
      float64, int32, argmin, ndarray, concatenate
+import numpy as np
 from numpy.linalg import norm
 from scipy.optimize import minpack, zeros
 try:
@@ -38,7 +38,7 @@ _functions = ['intersect', 'remain', 'union', 'cartesianProduct',
               'findClosestArray', 'findClosestPointIndex', 'find',
               'makeMfileFunction', 'make_RHS_wrap', 'make_Jac_wrap',
               'progressBar', 'distutil_destination', 'architecture',
-              'extra_arch_arg']
+              'extra_arch_arg', 'arclength']
 
 _mappings = ['_implicitSolveMethods', '_1DimplicitSolveMethods']
 
@@ -563,6 +563,9 @@ def progressBar(i, total, width=50):
     percent = float(i)/total
     dots = int(percent*width)
     progress = str('[').ljust(dots+1, '-')
+    #os.system('cls' if os.name=='nt' else 'clear')
+    #if percent > 0:
+    #    sys.stdout.write('\b'*total)
     sys.stdout.write('\r'+progress.ljust(width, ' ')+str('] %.2f%%' % (percent*100.)))
     sys.stdout.flush()
 
@@ -688,6 +691,16 @@ def cartesianProduct(a, b):
         ret.extend([(i, j) for j in b])
     return ret
 
+def arclength(pts):
+    """
+    Return array of L2 arclength progress along parameterized pointset
+    in all the dimensions of the pointset
+    """
+    x0 = pts[0]
+    arclength = np.zeros(len(pts))
+    for i, x in enumerate(pts[1:]):
+        arclength[i+1] = np.linalg.norm(x - pts[i]) + arclength[i]
+    return arclength
 
 
 # ------------------------
@@ -707,9 +720,11 @@ def distutil_destination():
     if osname == 'linux':
         destdir = 'src.'+osname+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
     elif osname in ['darwin', 'freebsd']:
-        # use the same version string as numpy.distutils.core.setup used by ContClass.CompileAutoLib
-        osver = get_platform() 
-        destdir = 'src.' + osver + '-' +pyname[0] + '.' + pyname[1]
+        osver = platform.mac_ver()[0].split('.')
+        if int(scipy.__version__.split('.')[1]) > 5 and len(osver)>1 and osver != ['']:
+            destdir = 'src.macosx-'+osver[0]+'.'+osver[1]+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
+        else:
+            destdir = 'src.'+osname+'-'+platform.release()+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
     elif osname == 'windows':
         destdir = 'src.win32-'+pyname[0]+'.'+pyname[1]
     else:
