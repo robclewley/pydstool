@@ -1022,7 +1022,10 @@ class ModelConstructor(object):
     def createJac(self):
         for g in self._generators:
             if self.withJac[g]:
-                gspec = self._generators[g].modelspec
+                try:
+                    gspec = self._generators[g].modelspec
+                except AttributeError:
+                    gspec = self._generators[g]['modelspec']
                 # haven't made generator yet so don't know which are the
                 # regular RHS variables
                 candidate_vars = gspec.funcSpecDict['vars']  # Quantity objects
