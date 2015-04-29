@@ -368,7 +368,7 @@ class Vode_ODEsystem(ODEsystem):
                 break
             last_t = solver.t   # a record of previous time for use by event detector
             try:
-                errcode = solver.integrate(new_t)
+                y_ignored = solver.integrate(new_t)
             except:
                 print("Error calling right hand side function:")
                 self.showSpec()
@@ -798,7 +798,7 @@ class Vode_ODEsystem(ODEsystem):
         self.diagnostics.outputStats = {'last_step': dt,
                             'num_fcns': num_points,
                             'num_steps': num_points,
-                            'errorStatus': errcode
+                            'errorStatus': solver._integrator.success
                             }
         if solver.successful():
             #self.validateSpec()
@@ -833,8 +833,9 @@ class Vode_ODEsystem(ODEsystem):
                               modelEventStructs=self.eventstruct)
         else:
             try:
+                errcode = solver._integrator.success  # integer
                 self.diagnostics.errors.append((E_COMPUTFAIL, (solver.t,
-                                    self.diagnostics._errorcodes[errcode])))
+                         self.diagnostics._errorcodes[errcode])))
             except TypeError:
                 # e.g. when errcode has been used to return info list
                 print("Error information: %d" % errcode)
