@@ -458,10 +458,8 @@ class Python(CodeGenerator):
                 aux_arrayixstr = dict(zip(self.fspec.auxvars,
                                           ["'" + v + "'" for v in self.fspec.auxvars]))
             else:
-                var_arrayixstr = dict(zip(self.fspec.vars, map(lambda i: str(i),
-                                                          range(len(self.fspec.vars)))))
-                aux_arrayixstr = dict(zip(self.fspec.auxvars, map(lambda i: str(i),
-                                                             range(len(self.fspec.auxvars)))))
+                var_arrayixstr = dict([(v,str(i)) for i, v in enumerate(self.fspec.vars)])
+                aux_arrayixstr = dict([(v,str(i)) for i, v in enumerate(self.fspec.auxvars)])
         else:
             var_arrayixstr = {}
             aux_arrayixstr = {}
@@ -486,9 +484,7 @@ class Python(CodeGenerator):
                     parsinps_names = self.fspec.pars + self.fspec.inputs
                 else:
                     parsinps_names = self.fspec.pars
-                parsinps_arrayixstr = dict(zip(parsinps_names,
-                                               map(lambda i: str(i),
-                                                   range(len(parsinps_names)))))
+                parsinps_arrayixstr = dict([(p,str(i)) for i, p in enumerate(parsinps_names)])
         else:
             parsinps_names = []
             parsinps_arrayixstr = {}
@@ -498,8 +494,8 @@ class Python(CodeGenerator):
         specname_count = 0
         for specname in specnames:
             specstr = specdict[specname]
-            assert type(
-                specstr) == str, "Specification for %s was not a string" % specname
+            assert isinstance(specstr, str), \
+                   "Specification for %s was not a string" % specname
             if not noreturndefs:
                 specstr_lang += _indentstr + \
                     resname + str(specname_count) + ' = '
