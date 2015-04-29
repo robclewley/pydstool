@@ -5,6 +5,8 @@ from __future__ import absolute_import, print_function
 
 import os
 
+from distutils.util import get_platform
+
 from .errors import *
 from .common import *
 from .parseUtils import joinStrs
@@ -563,9 +565,6 @@ def progressBar(i, total, width=50):
     percent = float(i)/total
     dots = int(percent*width)
     progress = str('[').ljust(dots+1, '-')
-    #os.system('cls' if os.name=='nt' else 'clear')
-    #if percent > 0:
-    #    sys.stdout.write('\b'*total)
     sys.stdout.write('\r'+progress.ljust(width, ' ')+str('] %.2f%%' % (percent*100.)))
     sys.stdout.flush()
 
@@ -720,11 +719,9 @@ def distutil_destination():
     if osname == 'linux':
         destdir = 'src.'+osname+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
     elif osname in ['darwin', 'freebsd']:
-        osver = platform.mac_ver()[0].split('.')
-        if int(scipy.__version__.split('.')[1]) > 5 and len(osver)>1 and osver != ['']:
-            destdir = 'src.macosx-'+osver[0]+'.'+osver[1]+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
-        else:
-            destdir = 'src.'+osname+'-'+platform.release()+'-'+machinename+'-'+pyname[0] + '.' + pyname[1]
+        # use the same version string as numpy.distutils.core.setup used by ContClass.CompileAutoLib
+        osver = get_platform()
+        destdir = 'src.' + osver + '-' +pyname[0] + '.' + pyname[1]
     elif osname == 'windows':
         destdir = 'src.win32-'+pyname[0]+'.'+pyname[1]
     else:
