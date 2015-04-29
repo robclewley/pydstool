@@ -252,6 +252,15 @@ mb_0 = Fun(Diff(mb, 'v'), ['v'], 'mb_0')
 func_ma_1_spec = (['p', 'v'], str(ma_1.spec))
 func_mb_0_spec = (['v'], str(mb_0.spec))
 
+vf1 = Fun(['-3*x+y*y', '-y/2'], ('x', 'y'), name='f')
+vf2 = Fun(['-3*x+y*y+sin(t)', '-y/2+x*cos(t)'], ('t', 'x', 'y'), name='f')
+
+J1, fs1 = prepJacobian(vf1, ('x','y'))
+J2, fs2 = prepJacobian(vf2, ('y','x')) # order of x, y don't matter
+
+assert str(J1) == '[[-3,2*y],[0,-0.5]]'
+assert str(J2) == '[[-3,2*y],[Cos(t),-0.5]]'
+
 # artificial example to introduce time dependence
 rhs_m = 'exp(-2*t)*(100-v) + ma(1, v)*(1-m)-mb(v)*m'
 jac_part = Diff(rhs_m, ['v', 'm'])
