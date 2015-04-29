@@ -1456,13 +1456,13 @@ class Point2D(Point):
                      norm=self._normord,
                      labels=self.labels)
 
-    def get(self, coord, d=None):
+    def get(self, coord, default_val=None):
         if coord == self.xname:
             return self.x
         elif coord == self.yname:
             return self.y
         else:
-            return d
+            return default_val
 
     def __len__(self):
         return 2
@@ -1495,12 +1495,14 @@ class Point2D(Point):
     def has_key(self, k):
         return k in (self.xname, self.yname)
 
-    def __getitem__(self, ix):
-        if ix == 0:
+    def __getitem__(self, elt):
+        if elt in self.coordnames:
+            return self.get(elt)
+        elif elt == 0:
             return self.x
-        elif ix == 1:
+        elif elt == 1:
             return self.y
-        elif isinstance(ix, slice):
+        elif isinstance(elt, slice):
             return (self.x, self.y)
         else:
             raise StopIteration #IndexError("Index out of range")
