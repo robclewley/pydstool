@@ -8,7 +8,6 @@ from PyDSTool.Generator import ODEsystem as ODEsystem
 from .baseclasses import Generator, theGenSpecHelper, _pollInputs
 from PyDSTool.utils import *
 from PyDSTool.common import *
-from PyDSTool.scipy_ode import ode
 
 # Other imports
 from numpy import Inf, NaN, isfinite, sometrue, alltrue, sign, all, any, \
@@ -21,6 +20,7 @@ except ImportError:
 import math, random
 from copy import copy, deepcopy
 import os, platform, shutil, sys, gc
+from scipy.integrate import ode
 
 # PSYCO FUNCTIONS DON'T WORK AS VODE CALLBACK FUNCTIONS!
 #try:
@@ -163,7 +163,7 @@ class Vode_ODEsystem(ODEsystem):
             dt = self.algparams['init_step']
         # speed up repeated access to solver by making a temp name for it
         solver = self._solver
-        if solver._integrator is None:
+        if getattr(solver, '_integrator', None) is None:
             # Banded Jacobians not yet supported
             #
             # start a new integrator, because method may have been
