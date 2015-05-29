@@ -6,6 +6,7 @@ from __future__ import absolute_import, print_function
 import os
 
 from distutils.util import get_platform
+from numpy.distutils import misc_util
 
 from .errors import *
 from .common import *
@@ -756,11 +757,4 @@ def extra_arch_arg(arglist):
 
 
 def get_lib_extension():
-    this = platform.system()
-    if this == 'Windows':
-        return ".pyd"
-    elif this not in ['Linux', 'IRIX', 'Solaris', 'SunOS', 'MacOS', 'Darwin', 'FreeBSD']:
-        print("Shared library extension not tested on this platform.")
-        print("If this process fails please report the errors to the")
-        print("developers.")
-    return ".so"
+    return misc_util.get_shared_lib_extension()
