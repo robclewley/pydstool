@@ -14,6 +14,8 @@ Version 0.90.2 06 Jul 2015
  - find_fixedpoints has improved behavior when point is only slowly converging but already within tolerance
  - Added coordarray attribute and ability to index by variable name to Point2D class for better compatibility with regular Point
  - find_saddle_manifolds behavior improved
+ 
+Thanks to Fabrice Silva and 'tensionhead' for contributing patches
 
 Version 0.90.1 10 Dec 2014
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
