@@ -3,9 +3,17 @@ Release notes: Highlights of new features
 For last changes see http://github.com/robclewley/pydstool
 
 
+Version 0.90.2 06 Jul 2015
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Fixed stdout redirection bug, when running inside ipython shell (#98)
+* Fixed bug with powers handling in C code generation (#90)
+
+Version 0.90.1 10 Dec 2014
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Removed API docs from the repository (#78)
+
 Version 0.90.0 02 Dec 2014
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 * Added support for Python 3.3+
 * Added support for Python setuptools
 * Fixed Dopri/Radau bug on 64-bit platforms
