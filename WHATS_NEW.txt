@@ -10,10 +10,10 @@ Version 0.90.2 06 Jul 2015
 * Minor fixes and improvements to prepJacobian, e.g. can now provide Fun-based definitions
 * Update to properly support symbolic names in DS args
 * Many phaseplane toolbox improvements:
- - Added phaseplane utility functions: get_bearing, distance_to_line, find_pt_2D, find_pt_nophase_2D, dist, dist_vectorized
- - find_fixedpoints has improved behavior when point is only slowly converging but already within tolerance
- - Added coordarray attribute and ability to index by variable name to Point2D class for better compatibility with regular Point
- - find_saddle_manifolds behavior improved
+     - Added phaseplane utility functions: get_bearing, distance_to_line, find_pt_2D, find_pt_nophase_2D, dist, dist_vectorized
+     - find_fixedpoints has improved behavior when point is only slowly converging but already within tolerance
+     - Added coordarray attribute and ability to index by variable name to Point2D class for better compatibility with regular Point
+     - find_saddle_manifolds behavior improved
  
 Thanks to Fabrice Silva and 'tensionhead' for contributing patches
 
