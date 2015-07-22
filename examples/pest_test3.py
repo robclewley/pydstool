@@ -188,8 +188,7 @@ print('Goal values are vl =', par_args_HH_goal['vl'], ', gl = ', \
 ##pest_pars = LMpest(freeParams=['vl', 'gl'],
 ##                 testModel=HH_test_model,
 ##                 context=pest_context,
-##                 verbose_level=2,
-##                 usePsyco=False
+##                 verbose_level=2
 ##                )
 ##
 ##start = clock()

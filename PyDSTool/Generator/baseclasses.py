@@ -16,13 +16,6 @@ from numpy import Inf, NaN, isfinite, sometrue, alltrue
 import math, random
 import os
 from copy import copy, deepcopy
-try:
-    # use pscyo JIT byte-compiler optimization, if available
-    import psyco
-    HAVE_PSYCO = True
-except ImportError:
-    HAVE_PSYCO = False
-
 # -----------------------------------------------------------------------------
 
 __all__ = ['ctsGen', 'discGen', 'theGenSpecHelper', 'Generator',

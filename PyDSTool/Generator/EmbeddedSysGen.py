@@ -12,12 +12,6 @@ from numpy import Inf, NaN, isfinite, sometrue, alltrue, array, arange, \
      transpose, shape
 import math, random
 from copy import copy, deepcopy
-try:
-    # use pscyo JIT byte-compiler optimization, if available
-    import psyco
-    HAVE_PSYCO = True
-except ImportError:
-    HAVE_PSYCO = False
 
 
 class EmbeddedSysGen(ctsGen):

@@ -22,15 +22,6 @@ from copy import copy, deepcopy
 import os, platform, shutil, sys, gc
 from scipy.integrate import ode
 
-# PSYCO FUNCTIONS DON'T WORK AS VODE CALLBACK FUNCTIONS!
-#try:
-#    # use psyco JIT byte-compiler optimization, if available
-#    import psyco
-#    HAVE_PSYCO = True
-#except ImportError:
-#    HAVE_PSYCO = False
-HAVE_PSYCO = False
-
 
 class Vode_ODEsystem(ODEsystem):
     """Wrapper for VODE, from SciPy.
@@ -78,7 +69,7 @@ class Vode_ODEsystem(ODEsystem):
 
     def addMethods(self):
         # override to add _solver function
-        ODEsystem.addMethods(self, usePsyco=False)
+        ODEsystem.addMethods(self)
         if self.haveJacobian():
             self._solver = ode(getattr(self,self.funcspec.spec[1]),
                             getattr(self,self.funcspec.auxfns["Jacobian"][1]))
