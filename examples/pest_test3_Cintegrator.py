@@ -188,8 +188,7 @@ pest1, opt = make_opt(pnames, residual_fn_context, HH_test_model, pest_context,
 #pest_pars = LMpest(freeParams=['vl', 'gl'],
 #                 testModel=HH_test_model,
 #                 context=pest_context,
-#                 verbose_level=2,
-#                 usePsyco=True
+#                 verbose_level=2
 #                )
 
 start = clock()

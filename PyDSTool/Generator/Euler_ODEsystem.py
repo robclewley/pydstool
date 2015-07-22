@@ -21,13 +21,6 @@ import numpy as np
 from copy import copy, deepcopy
 import os, platform, shutil, sys, gc
 
-try:
-    # use psyco JIT byte-compiler optimization, if available
-    import psyco
-    HAVE_PSYCO = True
-except ImportError:
-    HAVE_PSYCO = False
-
 
 class euler_solver(object):
     def __init__(self, rhs):
@@ -94,7 +87,7 @@ class Euler_ODEsystem(ODEsystem):
 
     def addMethods(self):
         # override to add _solver function
-        ODEsystem.addMethods(self, usePsyco=HAVE_PSYCO)
+        ODEsystem.addMethods(self)
         # Jacobian ignored
         self._solver = euler_solver(getattr(self,self.funcspec.spec[1]))
         self._funcreg['_solver'] = ('self', 'euler_solver(getattr(self,' \

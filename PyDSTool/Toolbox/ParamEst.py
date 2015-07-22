@@ -44,14 +44,6 @@ import numpy as np
 
 import math, types
 from copy import copy, deepcopy
-
-try:
-    # use psyco JIT byte-compiler optimization, if available
-    import psyco
-    HAVE_PSYCO = True
-except ImportError:
-    HAVE_PSYCO = False
-
 # ------------------------------------------------------------------------
 
 _pest_classes = ['ParamEst', 'LMpest', 'BoundMin', 'residual_fn_context',
@@ -716,8 +708,7 @@ class ParamEst(Utility):
 
     def __init__(self, **kw):
         self.needKeys = ['freeParams', 'testModel', 'context']
-        self.optionalKeys = ['verbose_level', 'usePsyco',
-                             'residual_fn', 'extra_pars']
+        self.optionalKeys = ['verbose_level', 'residual_fn', 'extra_pars']
         try:
             self.context = kw['context']
             if isinstance(kw['freeParams'], list):
@@ -736,14 +727,6 @@ class ParamEst(Utility):
         except KeyError:
             raise PyDSTool_KeyError('Incorrect argument keys passed')
         self.foundKeys = len(self.needKeys)   # lazy way to achieve this!
-        if 'usePsyco' in kw:
-            if HAVE_PSYCO and kw['usePsyco']:
-                self.usePsyco = True
-            else:
-                self.usePsyco = False
-            self.foundKeys += 1
-        else:
-            self.usePsyco = False
         if 'residual_fn' in kw:
             self.setFn(kw['residual_fn'])
             self.foundKeys += 1
@@ -807,8 +790,6 @@ class ParamEst(Utility):
         self.fn = fn
         # reciprocal reference
         self.fn.pest = self
-        if self.usePsyco:
-            psyco.bind(self.fn)
 
 
     def evaluate(self, extra_record_info=None):

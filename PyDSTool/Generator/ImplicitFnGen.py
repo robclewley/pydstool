@@ -13,12 +13,6 @@ from numpy import Inf, NaN, isfinite, sometrue, alltrue, array, \
 import math, random
 from copy import copy, deepcopy
 import six
-try:
-    # use pscyo JIT byte-compiler optimization, if available
-    import psyco
-    HAVE_PSYCO = True
-except ImportError:
-    HAVE_PSYCO = False
 
 
 class ImplicitFnGen(ctsGen):

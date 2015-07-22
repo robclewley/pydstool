@@ -179,8 +179,7 @@ print('Goal values are gna =', par_args_HH_goal['gna'], ', gl =', \
 pest_pars = LMpest(freeParams=['gna', 'gl'],
                  testModel=HH_test_model,
                  context=pest_context,
-                 verbose_level=2,
-                 usePsyco=False
+                 verbose_level=2
                 )
 
 # In case finite difference stepsize needs adjusting

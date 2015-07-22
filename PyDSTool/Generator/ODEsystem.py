@@ -17,13 +17,6 @@ import math, random
 import types
 from copy import copy, deepcopy
 import six
-try:
-    # use pscyo JIT byte-compiler optimization, if available
-    import psyco
-    HAVE_PSYCO = True
-except ImportError:
-    HAVE_PSYCO = False
-
 
 
 class ODEsystem(ctsGen):
@@ -100,9 +93,8 @@ class ODEsystem(ctsGen):
         return continue_integ
 
 
-    def addMethods(self, usePsyco=False):
-        """Add Python-specific functions to this object's methods,
-        accelerating them with psyco, if it is available."""
+    def addMethods(self):
+        """Add Python-specific functions to this object's methods."""
 
         # Add the auxiliary function specs to this Generator's namespace
         for auxfnname in self.funcspec._pyauxfns:
@@ -130,14 +122,6 @@ class ODEsystem(ctsGen):
                 except KeyError:
                     # not a user-defined aux fn
                     pass
-            # bind all the auxfns here
-            if HAVE_PSYCO and usePsyco:
-                psyco.bind(getattr(self, fninfo[1]))
-                try:
-                    psyco.bind(self.auxfns[auxfnname])
-                except KeyError:
-                    # not a user-defined aux fn
-                    pass
         # Add the spec function to this Generator's namespace if
         # target language is python (otherwise integrator exposes it anyway)
         if self.funcspec.targetlang == 'python':
@@ -149,8 +133,6 @@ class ODEsystem(ctsGen):
                 raise
             self._funcreg[fninfo[1]] = ('self', fninfo[0])
             setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
-            if HAVE_PSYCO and usePsyco:
-                psyco.bind(getattr(self, fninfo[1]))
             # Add the auxiliary spec function (if present) to this
             # Generator's namespace
             if self.funcspec.auxspec != '':
@@ -162,8 +144,6 @@ class ODEsystem(ctsGen):
                     raise
                 self._funcreg[fninfo[1]] = ('self', fninfo[0])
                 setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
-                if HAVE_PSYCO and usePsyco:
-                    psyco.bind(getattr(self, fninfo[1]))
 
 
     def haveJacobian(self):

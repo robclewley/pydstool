@@ -21,11 +21,6 @@ from numpy import Inf, NaN, isfinite, sometrue, alltrue, array, transpose, \
 import math, random, types
 from copy import copy, deepcopy
 import six
-try:
-    import psyco
-    HAVE_PSYCO = True
-except ImportError:
-    HAVE_PSYCO = False
 
 
 class MapSystem(discGen):
@@ -109,14 +104,6 @@ class MapSystem(discGen):
                 except KeyError:
                     # not a user-defined aux fn
                     pass
-            # bind all the auxfns here
-            if HAVE_PSYCO:
-                psyco.bind(getattr(self, fninfo[1]))
-                try:
-                    psyco.bind(self.auxfns[auxfnname])
-                except KeyError:
-                    # not a user-defined aux fn
-                    pass
         if self.funcspec.targetlang == 'python':
             # Add the spec function to this Generator's namespace
             fninfo = self.funcspec.spec
@@ -131,8 +118,6 @@ class MapSystem(discGen):
                 raise
             self._funcreg[fninfo[1]] = ('self', fnstr)
             setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
-            if HAVE_PSYCO and not self._solver:
-                psyco.bind(getattr(self, fninfo[1]))
             # Add the auxiliary spec function (if present) to this
             # Generator's namespace
             if self.funcspec.auxspec != '':
@@ -148,8 +133,6 @@ class MapSystem(discGen):
                     raise
                 self._funcreg[fninfo[1]] = ('self', fnstr)
                 setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
-                if HAVE_PSYCO and not self._solver:
-                    psyco.bind(getattr(self, fninfo[1]))
 
 
     # Method for pickling protocol (setstate same as default)
