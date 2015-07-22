@@ -654,31 +654,16 @@ def compareNumTypes(t1, t2):
 def filteredDict(d, keys, neg=False):
     """returns filtered dictionary containing specified keys,
     or *not* containing the specified keys if option neg=True."""
-    out_d = {}
-    if neg:
-        out_keys = remain(d.keys(), keys)
-    else:
-        out_keys = keys
-    for k in out_keys:
-        try:
-            out_d[k] = d[k]
-        except KeyError:
-            pass
-    return out_d
+
+    guard = (lambda k: k not in keys) if neg else (lambda k: k in keys)
+    return {k: d[k] for k in d if guard(k)}
 
 
-def concatStrDict(d, order=[]):
+def concatStrDict(d, order=None):
     """Concatenates all entries of a dictionary (assumed to be
     lists of strings), in optionally specified order."""
-    retstr = ''
-    if d != {}:
-        if order == []:
-            order = list(d.keys())
-        for key in order:
-            itemlist = d[key]
-            for strlist in itemlist:
-                retstr += ''.join(strlist)
-    return retstr
+
+    return ''.join([''.join(d[k]) for k in (order or d.keys())])
 
 
 def copyVarDict(vardict, only_cts=False):
