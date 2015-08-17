@@ -656,7 +656,7 @@ def filteredDict(d, keys, neg=False):
     or *not* containing the specified keys if option neg=True."""
 
     guard = (lambda k: k not in keys) if neg else (lambda k: k in keys)
-    return {k: d[k] for k in d if guard(k)}
+    return {k: d[k] for k in d.keys() if guard(k)}
 
 
 def concatStrDict(d, order=None):

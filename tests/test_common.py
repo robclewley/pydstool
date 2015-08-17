@@ -13,6 +13,8 @@ from PyDSTool.common import (
     makeSeqUnique,
 )
 
+from PyDSTool.Points import Point
+
 
 def test_isUniqueSeq_returns_true_for_empty_list():
     assert isUniqueSeq([])
@@ -64,6 +66,13 @@ def test_filteredDict_works_as_expected_when_key_is_absent():
     d = {'x': 1, 'y': 2, 'z': 3}
     assert {} == filteredDict(d, ['w'])
     assert d == filteredDict(d, ['w'], neg=True)
+
+
+def test_filteredDict_works_as_expected_for_Point():
+    p = Point({'x': 1, 'y': 2, 'z': 3})
+    assert {} == filteredDict(p, ['w'])
+    assert {'x': 1, 'y': 2} == filteredDict(p, ['x', 'y'])
+    assert {'z': 3} == filteredDict(p, ['x', 'y'], neg=True)
 
 
 def test_concatStrDict_for_empty_dict():
