@@ -64,9 +64,9 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
     sigs = {}
 
     while not done:
-        done = all([a.lhs in sigs for a in c.aliases])
+        done = all([str(a.lhs) in sigs for a in c.aliases])
         for a in c.aliases:
-            deps = list(a.rhs_names)
+            deps = list(str(s) for s in a.rhs_symbols)
             resolved = True
             fnlist = []
             sig = []
@@ -77,29 +77,29 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
                     fnlist.append(d)
                 elif d in vars:
                     sig.append(d)
-            dependencies[a.lhs] = fnlist
+            dependencies[str(a.lhs)] = fnlist
             if resolved:
                 for f in fnlist:
                     sig.extend(sigs[f])
-                sigs[a.lhs] = makeSeqUnique(list(sig))
+                sigs[str(a.lhs)] = makeSeqUnique(list(sig))
 
     # Quantity types
     declare_fns = []
 
     for a in c.aliases:
-        sig = sigs[a.lhs]
-        fnspec = QuantSpec(a.lhs, a.rhs)
+        sig = sigs[str(a.lhs)]
+        fnspec = QuantSpec(str(a.lhs), a.rhs_str)
         fnspec.mapNames({'heaviside': 'heav'})
         # add arguments to the function calls
-        for f in dependencies[a.lhs]:
+        for f in dependencies[str(a.lhs)]:
             fi_list = [i for i in range(len(fnspec.parser.tokenized)) if fnspec.parser.tokenized[i] == f]
             offset = 0
             for fi in fi_list:
                 arg_spec = QuantSpec('args', '(' + ','.join(sigs[f]) + ')')
                 new_defstr = ''.join(fnspec[:fi+1+offset]) + str(arg_spec) + ''.join(fnspec[fi+1+offset:])
-                fnspec = QuantSpec(a.lhs, new_defstr)
+                fnspec = QuantSpec(str(a.lhs), new_defstr)
                 offset += len(arg_spec.parser.tokenized)
-        declare_fns.append(Fun(str(fnspec), sig, name=a.lhs))
+        declare_fns.append(Fun(str(fnspec), sig, name=str(a.lhs)))
 
     declare_pars = [Par(p) for p in pars]
 
@@ -187,7 +187,7 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
             raise NotImplementedError("Non-transition events not yet implemented")
 
         for e in r.on_conditions:
-            defq = QuantSpec('rhs', e.trigger.rhs)
+            defq = QuantSpec('rhs', e.trigger.rhs_str)
             toks = defq.parser.tokenized
             if '=' in toks:
                 ix = toks.index('=')
@@ -232,7 +232,7 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
                                 flatspec=reg_spec.flatSpec))
                 edict = {}
                 for s in e.state_assignments:
-                    edict[s.lhs] = s.rhs
+                    edict[str(s.lhs)] = s.rhs_str
                 if is_hybrid:
                     edict['regime_'] = str(reg_name_to_ix[reg_target])
                 if len(edict) == 0:
@@ -291,7 +291,7 @@ def get_regime_model(r, fns, sigs):
         for a in atoms:
             if a != 't':
                 vname = a
-        varspec = QuantSpec('D_'+vname, dx.rhs)
+        varspec = QuantSpec('D_'+vname, dx.rhs_str)
         fns_used = intersect(varspec.freeSymbols, fns)
         for f in fns_used:
             fi = varspec.parser.tokenized.index(f)
