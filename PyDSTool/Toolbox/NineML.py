@@ -30,7 +30,7 @@ __all__ = _functions + _classes + _features
 # ----------------------------------------------------------------------------
 
 try:
-    import nineml.abstraction_layer as al
+    import nineml.abstraction as al
 except ImportError:
     raise ImportError("NineML python API is needed for this toolbox to work")
 

@@ -1,8 +1,9 @@
 from __future__ import print_function
 
-from PyDSTool import *
-import nineml.abstraction_layer as al
-from PyDSTool.Toolbox.NineML import *
+from PyDSTool import *  # @UnusedWildImport
+from nineml import abstraction as al
+from nineml import units as un
+from PyDSTool.Toolbox.NineML import *  # @UnusedWildImport
 import nineml
 
 
@@ -12,16 +13,16 @@ def get_HH_component():
     See http://phobos.incf.ki.se/src_rst/examples/examples_al_python.html#example-hh
     """
     aliases = [
-        "q10 := 3.0**((celsius - 6.3)/10.0)",  # temperature correction factor
-        "alpha_m := -0.1*(V+40.0)/(exp(-(V+40.0)/10.0) - 1.0)",  # m
-        "beta_m := 4.0*exp(-(V+65.0)/18.0)",
+        "q10 := 3.0**((celsius - qfactor)/tendegrees)",  # temperature correction factor @IgnorePep8
+        "alpha_m := alpha_m_A*(V-alpha_m_V0)/(exp(-(V-alpha_m_V0)/alpha_m_K) - 1.0)",  # m
+        "beta_m := beta_m_A*exp(-(V-beta_m_V0)/beta_m_K)",
         "mtau := 1/(q10*(alpha_m + beta_m))",
         "minf := alpha_m/(alpha_m + beta_m)",
         "alpha_h := 0.07*exp(-(V+65.0)/20.0)",               # h
         "beta_h := 1.0/(exp(-(V+35)/10.0) + 1.0)",
         "htau := 1.0/(q10*(alpha_h + beta_h))",
         "hinf := alpha_h/(alpha_h + beta_h)",
-        "alpha_n := -0.01*(V+55.0)/(exp(-(V+55.0)/10.0) - 1.0)", # n
+        "alpha_n := -0.01*(V+55.0)/(exp(-(V+55.0)/10.0) - 1.0)",  # n
         "beta_n := 0.125*exp(-(V+65.0)/80.0)",
         "ntau := 1.0/(q10*(alpha_n + beta_n))",
         "ninf := alpha_n/(alpha_n + beta_n)",
@@ -36,19 +37,52 @@ def get_HH_component():
         "dm/dt = (minf-m)/mtau",
         "dh/dt = (hinf-h)/htau",
         "dV/dt = (ina + ik + il + Isyn)/C",
-        transitions=al.On("V > theta",do=al.SpikeOutputEvent() )
+        transitions=al.On("V > theta", do=al.SpikeOutputEvent())
     )
 
     # the rest are not "parameters" but aliases, assigned vars, state vars,
     # indep vars, analog_analog_ports, etc.
-    parameters = ['el', 'C', 'ek', 'ena', 'gkbar', 'gnabar', 'theta', 'gl', 'celsius']
+    parameters = [
+        al.Parameter('el', un.voltage),
+        al.Parameter('C', un.capacitance),
+        al.Parameter('ek', un.voltage),
+        al.Parameter('ena', un.voltage),
+        al.Parameter('gkbar', un.conductance),
+        al.Parameter('gnabar', un.conductance),
+        al.Parameter('theta', un.voltage),
+        al.Parameter('gl', un.conductance),
+        al.Parameter('celsius', un.temperature)]
 
-    analog_ports = [al.AnalogSendPort("V"), al.AnalogReducePort("Isyn",reduce_op="+")]
+    constants = [
+        al.Constant('qfactor', 6.3, un.degC),
+        al.Constant('tendegrees', 10.0, un.degC),
+        al.Constant('alpha_m_A', -0.1, un.unitless / (un.ms * un.mV)),
+        al.Constant('alpha_m_V0', -40.0, un.mV),
+        al.Constant('alpha_m_K', 10.0, un.mV),
+        al.Constant('beta_m_A', 4.0, un.unitless / (un.ms * un.mV)),
+        al.Constant('beta_m_V0', -65.0, un.mV),
+        al.Constant('beta_m_K', 18.0, un.mV),
+        al.Constant('alpha_h_A', 0.07, un.unitless / (un.ms * un.mV)),
+        al.Constant('alpha_h_V0', -65.0, un.mV),
+        al.Constant('alpha_h_K', 20.0, un.mV),
+        al.Constant('beta_h_A', 1.0, un.unitless / (un.ms * un.mV)),
+        al.Constant('beta_h_V0', -35.0, un.mV),
+        al.Constant('beta_h_K', 10.0, un.mV),
+        al.Constant('alpha_n_A', -0.01, un.unitless / (un.ms * un.mV)),
+        al.Constant('alpha_n_V0', -55.0, un.mV),
+        al.Constant('alpha_n_K', 10.0, un.mV),
+        al.Constant('beta_n_A', 0.125, un.unitless / (un.ms * un.mV)),
+        al.Constant('beta_n_V0', -65.0, un.mV),
+        al.Constant('beta_n_K', 80.0, un.mV)]
+
+    analog_ports = [al.AnalogSendPort("V"), al.AnalogReducePort("Isyn",
+                                                                operator="+")]
 
     c1 = al.DynamicsClass("HodgkinHuxley",
                           parameters=parameters,
                           regimes=(hh_regime,),
                           aliases=aliases,
+                          constants=constants,
                           analog_ports=analog_ports)
     return c1
 
@@ -67,7 +101,7 @@ def get_Izh_component():
     )
 
     ports = [al.AnalogSendPort("V"),
-             al.AnalogReducePort("Isyn", reduce_op="+")]
+             al.AnalogReducePort("Isyn", operator="+")]
 
     c1 = al.DynamicsClass(
         name="Izhikevich",
@@ -82,7 +116,7 @@ def get_Izh_FS_component():
     Load Fast spiking Izhikevich XML definition from file and parse into
     Abstraction Layer of Python API.
     """
-    return nineml.read('NineML_Izh_FS.xml')['IzhikevichClass']
+    return nineml.read('NineML_Izh_FS.xml')['IzhikevichFS']
 
 def get_aeIF_component():
     """
@@ -132,7 +166,7 @@ def get_aeIF_component():
                                                to="subthresholdregime"),
                                 )
                                ],
-                         analog_ports=[al.AnalogReducePort("Isyn", reduce_op="+")]
+                         analog_ports=[al.AnalogReducePort("Isyn", operator="+")]
                      )
 
     return aeIF
@@ -141,8 +175,8 @@ def get_aeIF_component():
 def get_compound_component():
     """Cannot yet be implemented in PyDSTool
     """
-    from nineml.abstraction_layer.testing_utils import RecordValue
-    from nineml.abstraction_layer import DynamicsClass, Regime, On, OutputEvent, AnalogSendPort, AnalogReducePort
+    from nineml.abstraction.testing_utils import RecordValue
+    from nineml.abstraction import DynamicsClass, Regime, On, OutputEvent, AnalogSendPort, AnalogReducePort
 
     emitter = DynamicsClass(
             name='EventEmitter',
@@ -178,7 +212,7 @@ def get_compound_component():
             regimes=[Regime('dV/dt = (iInj + (E-V)*gL )/Cm'), ],
             aliases=['iIn := iInj'],
             analog_ports=[AnalogSendPort('V'),
-                          AnalogReducePort('iInj', reduce_op='+')],
+                          AnalogReducePort('iInj', operator='+')],
         )
 
     combined_comp = DynamicsClass(name='Comp1',
