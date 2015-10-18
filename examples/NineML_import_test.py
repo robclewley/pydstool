@@ -1,34 +1,35 @@
 from __future__ import print_function
 
 from PyDSTool import *  # @UnusedWildImport
-from nineml import abstraction as al
 from nineml import units as un
 from PyDSTool.Toolbox.NineML import *  # @UnusedWildImport
+from nineml import abstraction as al  # @Reimport
 import nineml
 
 
 def get_HH_component():
     """A Hodgkin-Huxley single neuron model.
     Written by Andrew Davison.
-    See http://phobos.incf.ki.se/src_rst/examples/examples_al_python.html#example-hh
+    See http://phobos.incf.ki.se/src_rst/
+              examples/examples_al_python.html#example-hh
     """
     aliases = [
         "q10 := 3.0**((celsius - qfactor)/tendegrees)",  # temperature correction factor @IgnorePep8
-        "alpha_m := alpha_m_A*(V-alpha_m_V0)/(exp(-(V-alpha_m_V0)/alpha_m_K) - 1.0)",  # m
+        "alpha_m := alpha_m_A*(V-alpha_m_V0)/(exp(-(V-alpha_m_V0)/alpha_m_K) - 1.0)",  # @IgnorePep8
         "beta_m := beta_m_A*exp(-(V-beta_m_V0)/beta_m_K)",
-        "mtau := 1/(q10*(alpha_m + beta_m))",
+        "mtau := 1.0/(q10*(alpha_m + beta_m))",
         "minf := alpha_m/(alpha_m + beta_m)",
-        "alpha_h := 0.07*exp(-(V+65.0)/20.0)",               # h
-        "beta_h := 1.0/(exp(-(V+35)/10.0) + 1.0)",
+        "alpha_h := alpha_h_A*exp(-(V-alpha_h_V0)/alpha_h_K)",
+        "beta_h := beta_h_A/(exp(-(V-beta_h_V0)/beta_h_K) + 1.0)",
         "htau := 1.0/(q10*(alpha_h + beta_h))",
         "hinf := alpha_h/(alpha_h + beta_h)",
-        "alpha_n := -0.01*(V+55.0)/(exp(-(V+55.0)/10.0) - 1.0)",  # n
-        "beta_n := 0.125*exp(-(V+65.0)/80.0)",
+        "alpha_n := alpha_n_A*(V-alpha_n_V0)/(exp(-(V-alpha_n_V0)/alpha_n_K) - 1.0)",  # @IgnorePep8
+        "beta_n := beta_n_A*exp(-(V-beta_n_V0)/beta_n_K)",
         "ntau := 1.0/(q10*(alpha_n + beta_n))",
         "ninf := alpha_n/(alpha_n + beta_n)",
-        "gna := gnabar*m*m*m*h",                       #
+        "gna := gnabar*m*m*m*h",
         "gk := gkbar*n*n*n*n",
-        "ina := gna*(ena - V)",                 # currents
+        "ina := gna*(ena - V)",
         "ik := gk*(ek - V)",
         "il := gl*(el - V )"]
 
@@ -39,6 +40,12 @@ def get_HH_component():
         "dV/dt = (ina + ik + il + Isyn)/C",
         transitions=al.On("V > theta", do=al.SpikeOutputEvent())
     )
+
+    state_variables = [
+        al.StateVariable('V', un.voltage),
+        al.StateVariable('m', un.dimensionless),
+        al.StateVariable('n', un.dimensionless),
+        al.StateVariable('h', un.dimensionless)]
 
     # the rest are not "parameters" but aliases, assigned vars, state vars,
     # indep vars, analog_analog_ports, etc.
@@ -53,33 +60,58 @@ def get_HH_component():
         al.Parameter('gl', un.conductance),
         al.Parameter('celsius', un.temperature)]
 
+    # These should really be parameters rather than constants, but just to
+    # match previous definitions they are implemented as constants.
     constants = [
         al.Constant('qfactor', 6.3, un.degC),
         al.Constant('tendegrees', 10.0, un.degC),
         al.Constant('alpha_m_A', -0.1, un.unitless / (un.ms * un.mV)),
         al.Constant('alpha_m_V0', -40.0, un.mV),
         al.Constant('alpha_m_K', 10.0, un.mV),
-        al.Constant('beta_m_A', 4.0, un.unitless / (un.ms * un.mV)),
+        al.Constant('beta_m_A', 4.0, un.unitless / un.ms),
         al.Constant('beta_m_V0', -65.0, un.mV),
         al.Constant('beta_m_K', 18.0, un.mV),
-        al.Constant('alpha_h_A', 0.07, un.unitless / (un.ms * un.mV)),
+        al.Constant('alpha_h_A', 0.07, un.unitless / un.ms),
         al.Constant('alpha_h_V0', -65.0, un.mV),
         al.Constant('alpha_h_K', 20.0, un.mV),
-        al.Constant('beta_h_A', 1.0, un.unitless / (un.ms * un.mV)),
+        al.Constant('beta_h_A', 1.0, un.unitless / un.ms),
         al.Constant('beta_h_V0', -35.0, un.mV),
         al.Constant('beta_h_K', 10.0, un.mV),
         al.Constant('alpha_n_A', -0.01, un.unitless / (un.ms * un.mV)),
         al.Constant('alpha_n_V0', -55.0, un.mV),
         al.Constant('alpha_n_K', 10.0, un.mV),
-        al.Constant('beta_n_A', 0.125, un.unitless / (un.ms * un.mV)),
+        al.Constant('beta_n_A', 0.125, un.unitless / un.ms),
         al.Constant('beta_n_V0', -65.0, un.mV),
         al.Constant('beta_n_K', 80.0, un.mV)]
+    
+    constants = [
+        ul.Property('qfactor', 6.3, un.degC),
+        ul.Property('tendegrees', 10.0, un.degC),
+        ul.Property('alpha_m_A', -0.1, un.unitless / (un.ms * un.mV)),
+        ul.Property('alpha_m_V0', -40.0, un.mV),
+        ul.Property('alpha_m_K', 10.0, un.mV),
+        ul.Property('beta_m_A', 4.0, un.unitless / un.ms),
+        ul.Property('beta_m_V0', -65.0, un.mV),
+        ul.Property('beta_m_K', 18.0, un.mV),
+        ul.Property('alpha_h_A', 0.07, un.unitless / un.ms),
+        ul.Property('alpha_h_V0', -65.0, un.mV),
+        ul.Property('alpha_h_K', 20.0, un.mV),
+        ul.Property('beta_h_A', 1.0, un.unitless / un.ms),
+        ul.Property('beta_h_V0', -35.0, un.mV),
+        ul.Property('beta_h_K', 10.0, un.mV),
+        ul.Property('alpha_n_A', -0.01, un.unitless / (un.ms * un.mV)),
+        ul.Property('alpha_n_V0', -55.0, un.mV),
+        ul.Property('alpha_n_K', 10.0, un.mV),
+        ul.Property('beta_n_A', 0.125, un.unitless / un.ms),
+        ul.Property('beta_n_V0', -65.0, un.mV),
+        ul.Property('beta_n_K', 80.0, un.mV)]
 
-    analog_ports = [al.AnalogSendPort("V"), al.AnalogReducePort("Isyn",
-                                                                operator="+")]
+    analog_ports = [al.AnalogSendPort("V", un.voltage),
+                    al.AnalogReducePort("Isyn", un.current, operator="+")]
 
     c1 = al.DynamicsClass("HodgkinHuxley",
                           parameters=parameters,
+                          state_variables=state_variables,
                           regimes=(hh_regime,),
                           aliases=aliases,
                           constants=constants,
