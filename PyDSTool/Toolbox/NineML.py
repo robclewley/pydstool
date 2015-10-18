@@ -207,7 +207,7 @@ def get_nineml_model(c, model_name, target='Vode', extra_args=None,
             else:
                 raise ValueError("Event type not implemented!")
             new_defstr = ''.join(toks[:ix]) + '-' + '(' + ''.join(toks[ix+1:]) + ')'
-            evnames = [eo.port_name for eo in e.event_outputs]
+            evnames = [oe.port_name for oe in e.output_events]
             if evnames == []:
                 # no outputs, must create an event name based on LHS of trigger condition
                 if "".join(toks[:ix]) == 't':
