@@ -154,6 +154,7 @@ def get_Izh_FS_component():
             al.Parameter('Cm', un.capacitance)],
         analog_ports=[
             al.AnalogReducePort('iSyn', un.current, operator="+"),
+            al.AnalogReducePort('iExt', un.current, operator="+"),
             al.AnalogSendPort('U', un.current),
             al.AnalogSendPort('V', un.voltage)],
         event_ports=[
@@ -175,7 +176,7 @@ def get_Izh_FS_component():
                 'dV/dt = V_deriv',
                 transitions=[al.On('V > Vb', to="subthreshold")],
                 name="subVb")],
-        aliases=["V_deriv := (k * (V - Vr) * (V - Vt) - U + iSyn) / Cm"])
+        aliases=["V_deriv := (k * (V - Vr) * (V - Vt) - U + iExt + iSyn) / Cm"])  # @IgnorePep8
     return izhi_fs
 
 
@@ -460,10 +461,9 @@ def test_Izh_FS(Iexts=None):
     c = get_Izh_FS_component()
 
     # Convert to PyDSTool.ModelSpec and create HybridModel object
-    # Provide extra parameters iSyn and iExt which are missing from
-    # component definition in absence of any synaptic inputs coupled
-    # to the model membrane
-    izh = get_nineml_model(c, 'izh_9ML', extra_args=[Par('iExt'), Par('iSyn')],
+    # Provide extra parameter Isyn which is missing from component definition
+    # in absence of any synaptic inputs coupled to the model membrane
+    izh = get_nineml_model(c, 'izh_9ML', extra_args=[Par('iSyn'), Par('iExt')],
                             max_t=100)
 
     if Iexts is None:
@@ -479,12 +479,12 @@ def test_Izh_FS(Iexts=None):
 
     for Iext in Iexts:
         izh.set(pars={'iExt': Iext})
-        name = 'iExt=%.1f'%(float(Iext))
+        name = 'Iext=%.1f' % (float(Iext))
         izh.compute(name, verboselevel=0)
         pts = izh.sample(name)
         evs = izh.getTrajEventTimes(name)['spikeOutput']
         ISIs = np.diff(evs)
-        print("iExt =", Iext, ":")
+        print("Iext =", Iext, ":")
         print("  Mean ISI = %.3f, variance = %.6f" % (np.mean(ISIs), np.var(ISIs)))
 
         Vp = izh.query('pars')['Vpeak']
@@ -532,20 +532,17 @@ def test_compound():
 # ==========
 
 
-
 print("Testing Hodgkin Huxley cell model")
-#test_HH()
+test_HH()
 
 print("Testing adaptive Integrate and Fire cell model")
-#test_aeIF()
+test_aeIF()
 
 #print("Testing compound cell model")
 #test_compound()
 
 print("Testing basic Izhikevich cell model")
-#test_Izh()
-
-fs = nineml.read('NineML_Izh_FS.xml')
+test_Izh()
 
 print("Testing Izhikevich fast spiking cell model from XML import")
 print("   at three input current levels")
