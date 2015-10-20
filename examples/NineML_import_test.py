@@ -83,7 +83,7 @@ def get_HH_component():
     analog_ports = [al.AnalogSendPort("V", un.voltage),
                     al.AnalogReducePort("Isyn", un.current, operator="+")]
 
-    c1 = al.DynamicsClass("HodgkinHuxley",
+    c1 = al.Dynamics("HodgkinHuxley",
                           parameters=parameters,
                           state_variables=state_variables,
                           regimes=(hh_regime,),
@@ -124,7 +124,7 @@ def get_Izh_component():
         al.StateVariable('V', un.voltage),
         al.StateVariable('U', un.voltage / un.time)]
 
-    c1 = al.DynamicsClass(
+    c1 = al.Dynamics(
         name="Izhikevich",
         parameters=parameters,
         state_variables=state_variables,
@@ -140,7 +140,7 @@ def get_Izh_FS_component():
     Load Fast spiking Izhikevich XML definition from file and parse into
     Abstraction Layer of Python API.
     """
-    izhi_fs = al.DynamicsClass(
+    izhi_fs = al.Dynamics(
         name='IzhikevichFS',
         parameters=[
             al.Parameter('a', un.per_time),
@@ -205,7 +205,7 @@ def get_aeIF_component():
     ## tau_w   # adaptation time constant
     ## a, b    # adaptation parameters [muS, nA]
     """
-    aeIF = al.DynamicsClass(
+    aeIF = al.Dynamics(
         name="aeIF",
         parameters=[
             al.Parameter('C_m', un.capacitance),
@@ -244,9 +244,9 @@ def get_compound_component():
     """Cannot yet be implemented in PyDSTool
     """
     from nineml.abstraction.testing_utils import RecordValue
-    from nineml.abstraction import DynamicsClass, Regime, On, OutputEvent, AnalogSendPort, AnalogReducePort
+    from nineml.abstraction import Dynamics, Regime, On, OutputEvent, AnalogSendPort, AnalogReducePort
 
-    emitter = DynamicsClass(
+    emitter = Dynamics(
             name='EventEmitter',
             parameters=['cyclelength'],
             regimes=[
@@ -255,7 +255,7 @@ def get_compound_component():
                         't > tchange + cyclelength', do=[OutputEvent('emit'), 'tchange=t'])),
             ])
 
-    ev_based_cc = DynamicsClass(
+    ev_based_cc = Dynamics(
             name='EventBasedCurrentClass',
             parameters=['dur', 'i'],
             analog_ports=[AnalogSendPort('I')],
@@ -269,12 +269,12 @@ def get_compound_component():
             ]
         )
 
-    pulsing_emitter = DynamicsClass(name='pulsing_cc',
+    pulsing_emitter = Dynamics(name='pulsing_cc',
                                          subnodes={'evs': emitter, 'cc': ev_based_cc},
                                          portconnections=[('evs.emit', 'cc.inputevent')]
                                          )
 
-    nrn = DynamicsClass(
+    nrn = Dynamics(
             name='LeakyNeuron',
             parameters=['Cm', 'gL', 'E'],
             regimes=[Regime('dV/dt = (iInj + (E-V)*gL )/Cm'), ],
@@ -283,7 +283,7 @@ def get_compound_component():
                           AnalogReducePort('iInj', operator='+')],
         )
 
-    combined_comp = DynamicsClass(name='Comp1',
+    combined_comp = Dynamics(name='Comp1',
                                        subnodes={
                                        'nrn': nrn,  'cc1': pulsing_emitter, 'cc2': pulsing_emitter},
                                        portconnections=[('cc1.cc.I', 'nrn.iInj'),

@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 
 
 def test_HH():
-    c = ninemlcatalog.lookup('/neuron/HodgkinHuxley/HodgkinHuxley')
+    c = ninemlcatalog.lookup('/neuron/HodgkinHuxley', 'HodgkinHuxley')
 
     # Convert to PyDSTool.ModelSpec and create NonHybridModel object
     # Provide extra parameter Isyn which is missing from component definition
@@ -66,7 +66,7 @@ def test_HH():
 
 def test_aeIF():
     """Adaptive Integrate and Fire"""
-    c = ninemlcatalog.lookup('/neuron/AdaptiveExpIntegrateAndFire/'
+    c = ninemlcatalog.lookup('/neuron/AdaptiveExpIntegrateAndFire',
                              'AdaptiveExpIntegrateAndFire')
 
     # Convert to PyDSTool.ModelSpec and create HybridModel object
@@ -111,7 +111,7 @@ def test_aeIF():
 
 def test_Izh():
     """Basic Izhikevich hybrid model"""
-    c = ninemlcatalog.lookup('/neuron/Izhikevich/Izhikevich')
+    c = ninemlcatalog.lookup('/neuron/Izhikevich', 'Izhikevich')
 
     # Convert to PyDSTool.ModelSpec and create HybridModel object
     # Provide extra parameter Isyn which is missing from component definition
@@ -150,7 +150,7 @@ def test_Izh():
 
 def test_Izh_FS(Iexts=None):
     """Izhikevich Fast Spiker model"""
-    c = ninemlcatalog.lookup('/neuron/Izhikevich/IzhikevichFastSpiking')
+    c = ninemlcatalog.lookup('/neuron/Izhikevich', 'IzhikevichFastSpiking')
 
     # Convert to PyDSTool.ModelSpec and create HybridModel object
     # Provide extra parameter Isyn which is missing from component definition
