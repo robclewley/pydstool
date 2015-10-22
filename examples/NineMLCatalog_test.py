@@ -10,45 +10,18 @@ from matplotlib import pyplot as plt
 
 
 def test_HH():
-    c = ninemlcatalog.lookup('/neuron/HodgkinHuxley', 'HodgkinHuxley')
+    cc = ninemlcatalog.load('/neuron/HodgkinHuxley', 'HodgkinHuxley')
+    comp = ninemlcatalog.load('neuron/HodgkinHuxley', 'SampleHodgkinHuxley')
 
     # Convert to PyDSTool.ModelSpec and create NonHybridModel object
     # Provide extra parameter Isyn which is missing from component definition
     # in absence of any synaptic inputs coupled to the model membrane
-    HHmodel = get_nineml_model(c, 'HH_9ML', extra_args=[Par('iSyn')])
+    HHmodel = get_nineml_model(cc, 'HH_9ML', extra_args=[Par('isyn')])
 
-    HHmodel.set(pars={'C': 1.0,
-                      'iSyn': 20.0,
-                      'celsius': 20.0,
-                      'ek': -90,
-                      'el': -65,
-                      'ena': 80,
-                      'gkbar': 30.0,
-                      'gl': 0.3,
-                      'gnabar': 130.0,
-                      'v_threshold': -40.0,
-                      'qfactor': 6.3,
-                      'tendegrees': 10.0,
-                      'm_alpha_A': -0.1,
-                      'm_alpha_V0': -40.0,
-                      'm_alpha_K': 10.0,
-                      'm_beta_A': 4.0,
-                      'm_beta_V0': -65.0,
-                      'm_beta_K': 18.0,
-                      'h_alpha_A': 0.07,
-                      'h_alpha_V0': -65.0,
-                      'h_alpha_K': 20.0,
-                      'h_beta_A': 1.0,
-                      'h_beta_V0': -35.0,
-                      'h_beta_K': 10.0,
-                      'n_alpha_A': -0.01,
-                      'n_alpha_V0': -55.0,
-                      'n_alpha_K': 10.0,
-                      'n_beta_A': 0.125,
-                      'n_beta_V0': -65.0,
-                      'n_beta_K': 80.0},
-                ics={'V': -70, 'm': 0.1, 'n': 0, 'h': 0.9},
-                tdata=[0, 15])
+    pars = dict((p.name, p.value) for p in comp.properties)
+    pars['isyn'] = 20.0
+    ics = dict((i.name, i.value) for i in comp.initial_values)
+    HHmodel.set(pars=pars, ics=ics, tdata=[0, 15])
 
     HHmodel.compute('HHtest', force=True)
     pts = HHmodel.sample('HHtest')
@@ -66,32 +39,22 @@ def test_HH():
 
 def test_aeIF():
     """Adaptive Integrate and Fire"""
-    c = ninemlcatalog.lookup('/neuron/AdaptiveExpIntegrateAndFire',
-                             'AdaptiveExpIntegrateAndFire')
+    cc = ninemlcatalog.load('/neuron/AdaptiveExpIntegrateAndFire',
+                            'AdaptiveExpIntegrateAndFire')
+    comp = ninemlcatalog.load('/neuron/AdaptiveExpIntegrateAndFire',
+                              'SampleAdaptiveExpIntegrateAndFire')
 
     # Convert to PyDSTool.ModelSpec and create HybridModel object
     # Provide extra parameter Isyn which is missing from component definition
     # in absence of any synaptic inputs coupled to the model membrane
-    aeIF = get_nineml_model(c, 'aeIF_9ML', extra_args=[Par('Isyn')],
+    aeIF = get_nineml_model(cc, 'aeIF_9ML', extra_args=[Par('Isyn')],
                             max_t=100)
 
-    aeIF.set(pars=dict(
-        C_m=1,
-        g_L=0.1,
-        E_L=-65,
-        Delta=1,
-        V_T=-58,
-        S=0.1,
-        tspike=0.5,
-        trefractory=0.25,
-        tau_w=4,
-        a=1,
-        b=2,
-        Isyn=5))
-
-    aeIF.set(ics={'V': -70, 'w': 0.1, 'regime_': 0},
-             tdata=[0, 30],
-             algparams={'init_step': 0.04})
+    pars = dict((p.name, p.value) for p in comp.properties)
+    pars['Isyn'] = 5.0
+    ics = dict((i.name, i.value) for i in comp.initial_values)
+    ics['regime_'] = 0
+    aeIF.set(pars=pars, ics=ics, tdata=[0, 30], algparams={'init_step': 0.04})
 
     aeIF.compute('test', verboselevel=0)
 
@@ -111,19 +74,20 @@ def test_aeIF():
 
 def test_Izh():
     """Basic Izhikevich hybrid model"""
-    c = ninemlcatalog.lookup('/neuron/Izhikevich', 'Izhikevich')
+    cc = ninemlcatalog.load('/neuron/Izhikevich', 'Izhikevich')
+    comp = ninemlcatalog.load('/neuron/Izhikevich', 'SampleIzhikevich')
 
     # Convert to PyDSTool.ModelSpec and create HybridModel object
     # Provide extra parameter Isyn which is missing from component definition
     # in absence of any synaptic inputs coupled to the model membrane
-    izh = get_nineml_model(c, 'izh_9ML', extra_args=[Par('Isyn')],
-                            max_t=100)
+    izh = get_nineml_model(cc, 'izh_9ML', extra_args=[Par('Isyn')],
+                           max_t=100)
 
-    izh.set(pars=dict(a=0.2, b=0.025, c=-75, d=0.2, theta=-50,
-                      Isyn=20, alpha=0.04, beta=5, zeta=140.0, C_m=1.0))
-    izh.set(ics={'V': -70, 'U': -1.625, 'regime_': 0},
-             tdata=[0, 80],
-             algparams={'init_step': 0.04})
+    pars = dict((p.name, p.value) for p in comp.properties)
+    pars['Isyn'] = 20.0
+    ics = dict((i.name, i.value) for i in comp.initial_values)
+    ics['regime_'] = 0
+    izh.set(pars=pars, ics=ics, tdata=[0, 80], algparams={'init_step': 0.04})
 
     izh.compute('test', verboselevel=0)
 
@@ -148,36 +112,36 @@ def test_Izh():
 # ========
 
 
-def test_Izh_FS(Iexts=None):
+def test_Izh_FS(iSyns=None):
     """Izhikevich Fast Spiker model"""
-    c = ninemlcatalog.lookup('/neuron/Izhikevich', 'IzhikevichFastSpiking')
+    if iSyns is None:
+        iSyns = [200]
+
+    cc = ninemlcatalog.load('/neuron/Izhikevich', 'IzhikevichFastSpiking')
+    comp = ninemlcatalog.load('/neuron/Izhikevich',
+                              'SampleIzhikevichFastSpiking')
 
     # Convert to PyDSTool.ModelSpec and create HybridModel object
     # Provide extra parameter Isyn which is missing from component definition
     # in absence of any synaptic inputs coupled to the model membrane
-    izh = get_nineml_model(c, 'izh_9ML', extra_args=[Par('iSyn'), Par('iExt')],
-                            max_t=100)
-
-    if Iexts is None:
-        Iexts = [200]
-
-    izh.set(pars=dict(a=0.2, b=0.025, c=-45, k=1, Vpeak=25,
-                      Vb=-55, Cm=20, Vr=-55, Vt=-40))
+    izh = get_nineml_model(cc, 'izh_FS_9ML', extra_args=[Par('iSyn')],
+                           max_t=100)
+    pars = dict((p.name, p.value) for p in comp.properties)
+    ics = dict((i.name, i.value) for i in comp.initial_values)
+    ics['regime_'] = 0
     # set starting regime to be sub-threshold (PyDSTool will check consistency
     # with V initial condition)
-    izh.set(ics={'V': -65, 'U': -1.625, 'regime_': 0},
-             tdata=[0, 80],
-             algparams={'init_step': 0.03})
+    izh.set(pars=pars, ics=ics, tdata=[0, 80], algparams={'init_step': 0.03})
 
-    for Iext in Iexts:
-        izh.set(pars={'iExt': Iext})
-        name = 'Iext=%.1f' % (float(Iext))
+    for iSyn in iSyns:
+        izh.set(pars={'iSyn': iSyn})
+        name = 'iSyn=%.1f' % (float(iSyn))
         izh.compute(name, verboselevel=0)
         pts = izh.sample(name)
         evs = izh.getTrajEventTimes(name)['spikeOutput']
         ISIs = np.diff(evs)
-        print("Iext ={}:\n  Mean ISI = {}, variance = {}"
-              .format(Iext, np.mean(ISIs), np.var(ISIs)))
+        print("iSyn ={}:\n  Mean ISI = {}, variance = {}"
+              .format(iSyn, np.mean(ISIs), np.var(ISIs)))
 
         Vp = izh.query('pars')['Vpeak']
         plt.figure(6)
