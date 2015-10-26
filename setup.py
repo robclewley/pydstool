@@ -7,8 +7,8 @@ For the easiest installation just type::
 
     python setup.py install
 
-(root privileges probably required). If you'd like to install only for local user,
-type the following to install PyDSTool::
+(root privileges probably required). If you'd like to install only for local
+user, type the following to install PyDSTool::
 
     python setup.py install --user
 
@@ -50,10 +50,14 @@ class clean(Command):
         pass
 
     def run(self):
-        import os
         os.system(
-            "rm -fr ./*.pyc ./*~ ./*/*.pyc ./*/*~ ./*/*/*.pyc ./*/*/*~ ./*/*/*.so ./PyDSTool/tests/auto_temp ./PyDSTool/tests/dopri853_temp ./PyDSTool/tests/radau5_temp ./PyDSTool/tests/dop853* ./PyDSTool/tests/radau5* ./PyDSTool/tests/*.pkl ./PyDSTool/tests/fort.9")
-        os.system("rm -rf tests/radau5_temp tests/dopri853_temp radau5_temp dopri853_temp")
+            "rm -fr ./*.pyc ./*~ ./*/*.pyc ./*/*~ ./*/*/*.pyc ./*/*/*~ "
+            "./*/*/*.so ./PyDSTool/tests/auto_temp "
+            "./PyDSTool/tests/dopri853_temp ./PyDSTool/tests/radau5_temp "
+            "./PyDSTool/tests/dop853* ./PyDSTool/tests/radau5* "
+            "./PyDSTool/tests/*.pkl ./PyDSTool/tests/fort.9")
+        os.system("rm -rf tests/radau5_temp tests/dopri853_temp radau5_temp "
+                  "dopri853_temp")
         os.system("rm -fr build")
         os.system("rm -fr dist")
         # os.system("rm -fr doc/_build")
@@ -69,7 +73,6 @@ class PyTest(TestCommand):
         # import here, cause outside the eggs aren't loaded
         import pytest
         errno = pytest.main(self.test_args)
-        import os
         os.system("rm -rf dop853_temp radau5_temp auto_temp")
         sys.exit(errno)
 
