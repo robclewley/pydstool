@@ -62,9 +62,8 @@ class clean(Command):
 class PyTest(TestCommand):
 
     def finalize_options(self):
+        self.test_suite = 'tests'
         TestCommand.finalize_options(self)
-        self.test_args = [a for a in self.test_args if a is not None]
-        self.test_suite = True
 
     def run_tests(self):
         # import here, cause outside the eggs aren't loaded
