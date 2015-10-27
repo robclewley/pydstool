@@ -1,33 +1,35 @@
 from __future__ import print_function
 
-from PyDSTool import *
-import nineml.abstraction_layer as al
-from PyDSTool.Toolbox.NineML import *
+from PyDSTool import *  # @UnusedWildImport
+from nineml import units as un
+from PyDSTool.Toolbox.NineML import *  # @UnusedWildImport
+from nineml import abstraction as al  # @Reimport
 import nineml
 
 
 def get_HH_component():
     """A Hodgkin-Huxley single neuron model.
     Written by Andrew Davison.
-    See http://phobos.incf.ki.se/src_rst/examples/examples_al_python.html#example-hh
+    See http://phobos.incf.ki.se/src_rst/
+              examples/examples_al_python.html#example-hh
     """
     aliases = [
-        "q10 := 3.0**((celsius - 6.3)/10.0)",  # temperature correction factor
-        "alpha_m := -0.1*(V+40.0)/(exp(-(V+40.0)/10.0) - 1.0)",  # m
-        "beta_m := 4.0*exp(-(V+65.0)/18.0)",
-        "mtau := 1/(q10*(alpha_m + beta_m))",
+        "q10 := 3.0**((celsius - qfactor)/tendegrees)",  # temperature correction factor @IgnorePep8
+        "alpha_m := alpha_m_A*(V-alpha_m_V0)/(exp(-(V-alpha_m_V0)/alpha_m_K) - 1.0)",  # @IgnorePep8
+        "beta_m := beta_m_A*exp(-(V-beta_m_V0)/beta_m_K)",
+        "mtau := 1.0/(q10*(alpha_m + beta_m))",
         "minf := alpha_m/(alpha_m + beta_m)",
-        "alpha_h := 0.07*exp(-(V+65.0)/20.0)",               # h
-        "beta_h := 1.0/(exp(-(V+35)/10.0) + 1.0)",
+        "alpha_h := alpha_h_A*exp(-(V-alpha_h_V0)/alpha_h_K)",
+        "beta_h := beta_h_A/(exp(-(V-beta_h_V0)/beta_h_K) + 1.0)",
         "htau := 1.0/(q10*(alpha_h + beta_h))",
         "hinf := alpha_h/(alpha_h + beta_h)",
-        "alpha_n := -0.01*(V+55.0)/(exp(-(V+55.0)/10.0) - 1.0)", # n
-        "beta_n := 0.125*exp(-(V+65.0)/80.0)",
+        "alpha_n := alpha_n_A*(V-alpha_n_V0)/(exp(-(V-alpha_n_V0)/alpha_n_K) - 1.0)",  # @IgnorePep8
+        "beta_n := beta_n_A*exp(-(V-beta_n_V0)/beta_n_K)",
         "ntau := 1.0/(q10*(alpha_n + beta_n))",
         "ninf := alpha_n/(alpha_n + beta_n)",
-        "gna := gnabar*m*m*m*h",                       #
+        "gna := gnabar*m*m*m*h",
         "gk := gkbar*n*n*n*n",
-        "ina := gna*(ena - V)",                 # currents
+        "ina := gna*(ena - V)",
         "ik := gk*(ek - V)",
         "il := gl*(el - V )"]
 
@@ -36,53 +38,147 @@ def get_HH_component():
         "dm/dt = (minf-m)/mtau",
         "dh/dt = (hinf-h)/htau",
         "dV/dt = (ina + ik + il + Isyn)/C",
-        transitions=al.On("V > theta",do=al.SpikeOutputEvent() )
+        transitions=al.On("V > theta", do=al.SpikeOutputEvent())
     )
+
+    state_variables = [
+        al.StateVariable('V', un.voltage),
+        al.StateVariable('m', un.dimensionless),
+        al.StateVariable('n', un.dimensionless),
+        al.StateVariable('h', un.dimensionless)]
 
     # the rest are not "parameters" but aliases, assigned vars, state vars,
     # indep vars, analog_analog_ports, etc.
-    parameters = ['el', 'C', 'ek', 'ena', 'gkbar', 'gnabar', 'theta', 'gl', 'celsius']
+    parameters = [
+        al.Parameter('el', un.voltage),
+        al.Parameter('C', un.capacitance),
+        al.Parameter('ek', un.voltage),
+        al.Parameter('ena', un.voltage),
+        al.Parameter('gkbar', un.conductance),
+        al.Parameter('gnabar', un.conductance),
+        al.Parameter('theta', un.voltage),
+        al.Parameter('gl', un.conductance),
+        al.Parameter('celsius', un.temperature),
+        al.Parameter('qfactor', un.temperature),
+        al.Parameter('tendegrees', un.temperature),
+        al.Parameter('alpha_m_A', un.dimensionless / (un.time * un.voltage)),
+        al.Parameter('alpha_m_V0', un.voltage),
+        al.Parameter('alpha_m_K', un.voltage),
+        al.Parameter('beta_m_A', un.dimensionless / un.time),
+        al.Parameter('beta_m_V0', un.voltage),
+        al.Parameter('beta_m_K', un.voltage),
+        al.Parameter('alpha_h_A', un.dimensionless / un.time),
+        al.Parameter('alpha_h_V0', un.voltage),
+        al.Parameter('alpha_h_K', un.voltage),
+        al.Parameter('beta_h_A', un.dimensionless / un.time),
+        al.Parameter('beta_h_V0', un.voltage),
+        al.Parameter('beta_h_K', un.voltage),
+        al.Parameter('alpha_n_A', un.dimensionless / (un.time * un.voltage)),
+        al.Parameter('alpha_n_V0', un.voltage),
+        al.Parameter('alpha_n_K', un.voltage),
+        al.Parameter('beta_n_A', un.dimensionless / un.time),
+        al.Parameter('beta_n_V0', un.voltage),
+        al.Parameter('beta_n_K', un.voltage)]
 
-    analog_ports = [al.AnalogSendPort("V"), al.AnalogReducePort("Isyn",reduce_op="+")]
+    analog_ports = [al.AnalogSendPort("V", un.voltage),
+                    al.AnalogReducePort("Isyn", un.current, operator="+")]
 
-    c1 = al.DynamicsClass("HodgkinHuxley",
+    c1 = al.Dynamics("HodgkinHuxley",
                           parameters=parameters,
+                          state_variables=state_variables,
                           regimes=(hh_regime,),
                           aliases=aliases,
                           analog_ports=analog_ports)
     return c1
 
+
 def get_Izh_component():
     subthreshold_regime = al.Regime(
         name="subthreshold_regime",
         time_derivatives=[
-            "dV/dt = 0.04*V*V + 5*V + 140.0 - U + Isyn",
+            "dV/dt = alpha*V*V + beta*V + zeta - U + Isyn / C_m",
             "dU/dt = a*(b*V - U)", ],
 
         transitions=[al.On("V > theta",
                            do=["V = c",
-                                   "U =  U+ d",
-                                   al.OutputEvent('spike'), ],
+                               "U =  U+ d",
+                               al.OutputEvent('spike')],
                            to='subthreshold_regime')]
     )
 
-    ports = [al.AnalogSendPort("V"),
-             al.AnalogReducePort("Isyn", reduce_op="+")]
+    ports = [al.AnalogSendPort("V", un.voltage),
+             al.AnalogReducePort("Isyn", un.current, operator="+")]
 
-    c1 = al.DynamicsClass(
+    parameters = [
+        al.Parameter('theta', un.voltage),
+        al.Parameter('a', un.per_time),
+        al.Parameter('b', un.per_time),
+        al.Parameter('c', un.voltage),
+        al.Parameter('d', un.voltage / un.time),
+        al.Parameter('C_m', un.capacitance),
+        al.Parameter('alpha', un.dimensionless / (un.voltage * un.time)),
+        al.Parameter('beta', un.per_time),
+        al.Parameter('zeta', un.voltage / un.time)]
+
+    state_variables = [
+        al.StateVariable('V', un.voltage),
+        al.StateVariable('U', un.voltage / un.time)]
+
+    c1 = al.Dynamics(
         name="Izhikevich",
+        parameters=parameters,
+        state_variables=state_variables,
         regimes=[subthreshold_regime],
         analog_ports=ports
 
     )
     return c1
 
+
 def get_Izh_FS_component():
     """
     Load Fast spiking Izhikevich XML definition from file and parse into
     Abstraction Layer of Python API.
     """
-    return nineml.read('NineML_Izh_FS.xml')['IzhikevichClass']
+    izhi_fs = al.Dynamics(
+        name='IzhikevichFS',
+        parameters=[
+            al.Parameter('a', un.per_time),
+            al.Parameter('b', un.conductance / (un.voltage ** 2)),
+            al.Parameter('c', un.voltage),
+            al.Parameter('k', un.conductance / un.voltage),
+            al.Parameter('Vr', un.voltage),
+            al.Parameter('Vt', un.voltage),
+            al.Parameter('Vb', un.voltage),
+            al.Parameter('Vpeak', un.voltage),
+            al.Parameter('Cm', un.capacitance)],
+        analog_ports=[
+            al.AnalogReducePort('iSyn', un.current, operator="+"),
+            al.AnalogReducePort('iExt', un.current, operator="+"),
+            al.AnalogSendPort('U', un.current),
+            al.AnalogSendPort('V', un.voltage)],
+        event_ports=[
+            al.EventSendPort("spikeOutput")],
+        state_variables=[
+            al.StateVariable('V', un.voltage),
+            al.StateVariable('U', un.current)],
+        regimes=[
+            al.Regime(
+                'dU/dt = a * (b * pow(V - Vb, 3) - U)',
+                'dV/dt = V_deriv',
+                transitions=[
+                    al.On('V > Vpeak',
+                          do=['V = c', al.OutputEvent('spikeOutput')],
+                          to='subthreshold')],
+                name="subthreshold"),
+            al.Regime(
+                'dU/dt = - U * a',
+                'dV/dt = V_deriv',
+                transitions=[al.On('V > Vb', to="subthreshold")],
+                name="subVb")],
+        aliases=["V_deriv := (k * (V - Vr) * (V - Vt) - U + iExt + iSyn) / Cm"])  # @IgnorePep8
+    return izhi_fs
+
 
 def get_aeIF_component():
     """
@@ -109,42 +205,48 @@ def get_aeIF_component():
     ## tau_w   # adaptation time constant
     ## a, b    # adaptation parameters [muS, nA]
     """
-    parameters = ['C_m', 'g_L', 'E_L', 'Delta', 'V_T', 'S',
-                  'trefractory', 'tspike', 'tau_w', 'a', 'b']
-
-    aeIF = al.DynamicsClass("aeIF",
-                     regimes=[
-                         al.Regime(
-                                name="subthresholdregime",
-                                time_derivatives = [
-                                    "dV/dt = -g_L*(V-E_L)/C_m + Isyn/C_m + g_L*Delta*exp((V-V_T)/Delta-w/S)/C_m",
-                                    "dw/dt = (a*(V-E_L)-w)/tau_w", ],
-                                transitions=al.On("V > V_T",
-                                               do=["V = E_L",
-                                                   "w = w + b",
-                                                   al.OutputEvent('spikeoutput')],
-                                               to="refractoryregime"),
-                                ),
-
-                         al.Regime(
-                                name="refractoryregime",
-                                transitions=al.On("t>=tspike+trefractory",
-                                               to="subthresholdregime"),
-                                )
-                               ],
-                         analog_ports=[al.AnalogReducePort("Isyn", reduce_op="+")]
-                     )
-
+    aeIF = al.Dynamics(
+        name="aeIF",
+        parameters=[
+            al.Parameter('C_m', un.capacitance),
+            al.Parameter('g_L', un.conductance),
+            al.Parameter('E_L', un.voltage),
+            al.Parameter('Delta', un.voltage),
+            al.Parameter('V_T', un.voltage),
+            al.Parameter('S'),
+            al.Parameter('trefractory', un.time),
+            al.Parameter('tspike', un.time),
+            al.Parameter('tau_w', un.time),
+            al.Parameter('a', un.dimensionless / un.voltage),
+            al.Parameter('b')],
+        state_variables=[
+            al.StateVariable('V', un.voltage),
+            al.StateVariable('w')],
+        regimes=[
+            al.Regime(
+                name="subthresholdregime",
+                time_derivatives=[
+                    "dV/dt = -g_L*(V-E_L)/C_m + Isyn/C_m + g_L*Delta*exp((V-V_T)/Delta-w/S)/C_m",  # @IgnorePep8
+                    "dw/dt = (a*(V-E_L)-w)/tau_w", ],
+                transitions=al.On("V > V_T",
+                                  do=["V = E_L", "w = w + b",
+                                      al.OutputEvent('spikeoutput')],
+                                  to="refractoryregime")),
+            al.Regime(
+                name="refractoryregime",
+                transitions=al.On("t>=tspike+trefractory",
+                                  to="subthresholdregime"))],
+        analog_ports=[al.AnalogReducePort("Isyn", un.current, operator="+")])
     return aeIF
 
 
 def get_compound_component():
     """Cannot yet be implemented in PyDSTool
     """
-    from nineml.abstraction_layer.testing_utils import RecordValue
-    from nineml.abstraction_layer import DynamicsClass, Regime, On, OutputEvent, AnalogSendPort, AnalogReducePort
+    from nineml.abstraction.testing_utils import RecordValue
+    from nineml.abstraction import Dynamics, Regime, On, OutputEvent, AnalogSendPort, AnalogReducePort
 
-    emitter = DynamicsClass(
+    emitter = Dynamics(
             name='EventEmitter',
             parameters=['cyclelength'],
             regimes=[
@@ -153,7 +255,7 @@ def get_compound_component():
                         't > tchange + cyclelength', do=[OutputEvent('emit'), 'tchange=t'])),
             ])
 
-    ev_based_cc = DynamicsClass(
+    ev_based_cc = Dynamics(
             name='EventBasedCurrentClass',
             parameters=['dur', 'i'],
             analog_ports=[AnalogSendPort('I')],
@@ -167,21 +269,21 @@ def get_compound_component():
             ]
         )
 
-    pulsing_emitter = DynamicsClass(name='pulsing_cc',
+    pulsing_emitter = Dynamics(name='pulsing_cc',
                                          subnodes={'evs': emitter, 'cc': ev_based_cc},
                                          portconnections=[('evs.emit', 'cc.inputevent')]
                                          )
 
-    nrn = DynamicsClass(
+    nrn = Dynamics(
             name='LeakyNeuron',
             parameters=['Cm', 'gL', 'E'],
             regimes=[Regime('dV/dt = (iInj + (E-V)*gL )/Cm'), ],
             aliases=['iIn := iInj'],
             analog_ports=[AnalogSendPort('V'),
-                          AnalogReducePort('iInj', reduce_op='+')],
+                          AnalogReducePort('iInj', operator='+')],
         )
 
-    combined_comp = DynamicsClass(name='Comp1',
+    combined_comp = Dynamics(name='Comp1',
                                        subnodes={
                                        'nrn': nrn,  'cc1': pulsing_emitter, 'cc2': pulsing_emitter},
                                        portconnections=[('cc1.cc.I', 'nrn.iInj'),
@@ -232,7 +334,27 @@ def test_HH():
                       'gkbar': 30.0,
                       'gl': 0.3,
                       'gnabar': 130.0,
-                      'theta': -40.0},
+                      'theta': -40.0,
+                      'qfactor': 6.3,
+                      'tendegrees': 10.0,
+                      'alpha_m_A': -0.1,
+                      'alpha_m_V0': -40.0,
+                      'alpha_m_K': 10.0,
+                      'beta_m_A': 4.0,
+                      'beta_m_V0': -65.0,
+                      'beta_m_K': 18.0,
+                      'alpha_h_A': 0.07,
+                      'alpha_h_V0': -65.0,
+                      'alpha_h_K': 20.0,
+                      'beta_h_A': 1.0,
+                      'beta_h_V0': -35.0,
+                      'beta_h_K': 10.0,
+                      'alpha_n_A': -0.01,
+                      'alpha_n_V0': -55.0,
+                      'alpha_n_K': 10.0,
+                      'beta_n_A': 0.125,
+                      'beta_n_V0': -65.0,
+                      'beta_n_K': 80.0},
                 ics={'V': -70, 'm': 0.1, 'n': 0, 'h': 0.9},
                 tdata=[0,15])
 
@@ -306,7 +428,7 @@ def test_Izh():
                             max_t=100)
 
     izh.set(pars=dict(a=0.2, b=0.025, c=-75, d=0.2, theta=-50,
-                      Isyn=20))
+                      Isyn=20, alpha=0.04, beta=5, zeta=140.0, C_m=1.0))
     izh.set(ics={'V': -70, 'U': -1.625, 'regime_': 0},
              tdata=[0, 80],
              algparams={'init_step': 0.04})
@@ -333,15 +455,15 @@ def test_Izh():
 
 # ========
 
+
 def test_Izh_FS(Iexts=None):
     """Izhikevich Fast Spiker model"""
     c = get_Izh_FS_component()
 
     # Convert to PyDSTool.ModelSpec and create HybridModel object
-    # Provide extra parameters iSyn and iExt which are missing from
-    # component definition in absence of any synaptic inputs coupled
-    # to the model membrane
-    izh = get_nineml_model(c, 'izh_9ML', extra_args=[Par('iExt'), Par('iSyn')],
+    # Provide extra parameter Isyn which is missing from component definition
+    # in absence of any synaptic inputs coupled to the model membrane
+    izh = get_nineml_model(c, 'izh_9ML', extra_args=[Par('iSyn'), Par('iExt')],
                             max_t=100)
 
     if Iexts is None:
@@ -357,12 +479,12 @@ def test_Izh_FS(Iexts=None):
 
     for Iext in Iexts:
         izh.set(pars={'iExt': Iext})
-        name = 'iExt=%.1f'%(float(Iext))
+        name = 'Iext=%.1f' % (float(Iext))
         izh.compute(name, verboselevel=0)
         pts = izh.sample(name)
         evs = izh.getTrajEventTimes(name)['spikeOutput']
         ISIs = np.diff(evs)
-        print("iExt =", Iext, ":")
+        print("Iext =", Iext, ":")
         print("  Mean ISI = %.3f, variance = %.6f" % (np.mean(ISIs), np.var(ISIs)))
 
         Vp = izh.query('pars')['Vpeak']
@@ -380,7 +502,6 @@ def test_Izh_FS(Iexts=None):
         plt.ylabel('U')
         plt.legend()
     plt.title('Izhikevich FS model')
-
 
 
 def test_compound():
@@ -411,20 +532,17 @@ def test_compound():
 # ==========
 
 
-
 print("Testing Hodgkin Huxley cell model")
-#test_HH()
+test_HH()
 
 print("Testing adaptive Integrate and Fire cell model")
-#test_aeIF()
+test_aeIF()
 
 #print("Testing compound cell model")
 #test_compound()
 
 print("Testing basic Izhikevich cell model")
-#test_Izh()
-
-fs = nineml.read('NineML_Izh_FS.xml')
+test_Izh()
 
 print("Testing Izhikevich fast spiking cell model from XML import")
 print("   at three input current levels")
