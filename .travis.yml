@@ -4,26 +4,27 @@ matrix:
         - python: 3.4
           env:
             - NUMPY_SPEC=numpy
-            - SCIPY_SPEC=scipy
+            - SCIPY_SPEC="scipy<0.17"
             - COVERAGE="no"
         - python: 3.3
           env:
             - NUMPY_SPEC=numpy
-            - SCIPY_SPEC=scipy
+            - SCIPY_SPEC="scipy<0.17"
             - COVERAGE="no"
         - python: 2.7
           env:
             - NUMPY_SPEC=numpy
-            - SCIPY_SPEC=scipy
+            - SCIPY_SPEC="scipy<0.17"
             - COVERAGE="yes"
 
 before_install:
     # Use miniconda. Taken from https://gist.github.com/dan-blanchard/7045057
     - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
     - chmod +x miniconda.sh
-    - ./miniconda.sh -b
-    - export PATH=/home/travis/miniconda2/bin:$PATH
+    - ./miniconda.sh -b -p $HOME/miniconda
+    - export PATH=$HOME/miniconda/bin:$PATH
     - conda update --yes conda
+    - conda install --yes gcc
 
 install:
     - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas $NUMPY_SPEC $SCIPY_SPEC pytest six mock
@@ -42,5 +43,4 @@ sudo: false
 addons:
     apt:
       packages:
-        - gfortran
         - swig
