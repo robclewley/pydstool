@@ -59,9 +59,10 @@ class CompiledMixin:
     def modname(self):
         return self._builder.modname
 
-    def makeLibSource(self, include=[], fname=None):
+    def makeLibSource(self, include=None, fname=None):
         """makeLibSource generates the C source for the vector field specification.
         It should be called only once per vector field."""
+        include = include or []
 
         code = self.funcspec.generate_user_module(
             self.eventstruct,
@@ -89,10 +90,13 @@ class CompiledMixin:
         print("Try asking the Python developers to make a working module")
         print("unimport function!")
 
-    def makeLib(self, libsources=[], libdirs=[], include=[]):
+    def makeLib(self, libsources=None, libdirs=None, include=None):
         """makeLib calls makeLibSource and then the compileLib method.
         To postpone compilation of the source to a DLL, call makeLibSource()
         separately."""
+        libsources = libsources or []
+        libdirs = libdirs or []
+        include = include or []
 
         if self._solver is not None:
             self.forceLibRefresh()
