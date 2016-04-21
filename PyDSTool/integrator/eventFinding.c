@@ -3,10 +3,10 @@
  *            EVENT FINDING
  **************************************
  **************************************/
-
 #include "eventFinding.h"
 
 double dummyevent(unsigned n, double x, double *y, double *p) {
+    return 0.0;
 }
 
 /* Takes IData struct (global), previous integrated time point, current integrated time
@@ -70,9 +70,6 @@ int DetectEvents(IData *GS, double xold, double x, double *y, int *irtrn, int *t
      event's index */
   if( FirstTerm >= 0 ) {
     *irtrn = -5; /* Set Terminal event code */
-
-    /* Index into Events of the soonest terminal event found */
-    EvtIdx = GS->gCheckableEvents[GS->gTermIndices[FirstTerm]];
 
     /* Count of any terminal event should always be 0, but check anyway */
     EvtCt = GS->gCheckableEventCounts[GS->gTermIndices[FirstTerm]];
@@ -195,8 +192,6 @@ int DetectEvents(IData *GS, double xold, double x, double *y, int *irtrn, int *t
 
   /* Add in the terminal event, at the end of the trajectory points array, if necessary */
   if( FirstTerm >= 0 ) {
-    /* Index into Events of the soonest terminal event found */
-    EvtIdx = GS->gCheckableEvents[GS->gTermIndices[FirstTerm]];
     /* Count of any terminal event should always be 0, but check anyway */
     EvtCt = GS->gCheckableEventCounts[GS->gTermIndices[FirstTerm]];
 
@@ -226,7 +221,6 @@ int DetectEvents(IData *GS, double xold, double x, double *y, int *irtrn, int *t
    last found event; (2) if that's ok, then whether a given event
    occurred */
 int CheckEventFctn(IData *GS, double xold, int idx, int count, int CheckIdx) {
-  int j;
   int found = 0; /* Default that there was no event found */
   double PrevTime = 0.0;
   double x = 0.0;
@@ -292,7 +286,7 @@ int FindEvent(IData *GS, int evtIdx, double xold) {
   */
 
   double dx, jdx, targetval, oldval, newval;
-  unsigned ii, i,j;
+  unsigned i,j;
   int eventsign;
 
   /* Don't check if first point */
@@ -406,7 +400,7 @@ int FindEvent(IData *GS, int evtIdx, double xold) {
 void BinSearch(IData *GS, int evtIdx, double x1, double x2, double v1, double v2,
 		 double vo) {
   unsigned safecnt=0, i;
-  double x3, v3, r;
+  double x3, v3;
 
   while ( safecnt++ < GS->gMaxBisect[evtIdx]) {
      /* NB: 1e-9 may be arbitary limit to be set elsewhere */

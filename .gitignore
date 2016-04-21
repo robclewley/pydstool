@@ -19,3 +19,4 @@ PyDSTool.egg-info/
 .pydevproject
 .settings
 .DS_Store
+*.o

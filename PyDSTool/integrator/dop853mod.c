@@ -28,7 +28,7 @@ PyObject* Integrate(double *ic, double t, double hinit,
 		    double fac1, double fac2, double beta,
 		    int verbose, int calcAux, int calcSpecTimes,
 		    int checkBounds, int boundCheckMaxSteps, double *magBound) {
-  int i, j;
+  int i;
   double stats[4];
   double hlast = -1;
   int idid = 0;                   /* return code from dop853 */
@@ -53,7 +53,7 @@ PyObject* Integrate(double *ic, double t, double hinit,
     gIData->gIC[i] = ic[i];
   }
 
-  import_array();
+  _init_numpy();
 
 
   if( verbose == 1 )

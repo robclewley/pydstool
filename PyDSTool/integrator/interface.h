@@ -1,6 +1,8 @@
 #ifndef __INTERFACE__
 #define __INTERFACE__
 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+
 #include <math.h>
 #include <stdio.h>
 #include <limits.h>
@@ -8,7 +10,7 @@
 #include "memory.h"
 #include <string.h>
 #include <assert.h>
-#include "Python.h"
+#include <Python.h>
 
 #include <numpy/arrayobject.h>
 #include "integration.h"
@@ -54,6 +56,12 @@ PyObject* JacobianP(double t, double *x, double *p);
 PyObject* AuxFunc(double t, double *x, double *p);
 
 PyObject* MassMatrix(double t, double *x, double *p);
+
+#if (PY_VERSION_HEX < 0x03000000)
+void _init_numpy(void);
+#else
+int _init_numpy(void);
+#endif
 
 
 #endif

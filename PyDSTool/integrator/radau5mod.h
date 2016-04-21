@@ -9,7 +9,7 @@
 #include "memory.h"
 #include <string.h>
 #include <assert.h>
-#include "Python.h"
+#include <Python.h>
 #include <numpy/arrayobject.h>
 #include "radau5.h"
 #include "vfield.h"

@@ -12,8 +12,6 @@
 
 int InitializeBasic( IData *GS, int PhaseDim, int ParamDim, int nAux, int nEvents, 
 		     int nExtInputs, int HasJac, int HasJacP, int HasMass, int extraSize) {
-  int i;
-
   assert( GS );
   /* Check to see if we're already basically initialized; if so, check that we 
      haven't changed dimensions (we assume we're PyMem_Malloc'd here) */
@@ -106,7 +104,7 @@ int InitializeBasic( IData *GS, int PhaseDim, int ParamDim, int nAux, int nEvent
    been freed.)
 */
 
-int CleanupBasic( IData *GS ) {
+void CleanupBasic( IData *GS ) {
 
   if( GS != NULL ) {
     
@@ -143,15 +141,13 @@ int CleanupBasic( IData *GS ) {
 
     GS->isInitBasic = 0;
   }
-
-  return SUCCESS;
 }
 
 int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0, double gTime, 
 		  double *GlobalTime0, double tstart, double tend,
 		  int refine, int nSpecTimes, double *specTimes, double *upperBounds, double *lowerBounds) {
 
-  int i, j;
+  int i;
 
   assert( GS );
 
@@ -290,7 +286,7 @@ int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0
   return SUCCESS;
 }
 
-int CleanupRunParams( IData *GS ) {
+void CleanupRunParams( IData *GS ) {
 
   int i;
   
@@ -320,13 +316,12 @@ int CleanupRunParams( IData *GS ) {
   GS->refine = 0;
 
   GS->isInitRunParams = 0;
-  return SUCCESS;
 }
 
 int InitIntegData( IData *GS,  int Maxpts, double *atol, double *rtol, 
 		   ContSolFunType ContSolFun) {
 
-  int i,j;
+  int i;
 
   /* Check that InitIntegData is being called in the right order? */
   assert(GS->isInitBasic == 1);
@@ -420,8 +415,8 @@ int InitIntegData( IData *GS,  int Maxpts, double *atol, double *rtol,
   return SUCCESS;
 }
 
-int CleanupIData( IData *GS ) {
-  int i,j;
+void CleanupIData( IData *GS ) {
+  int i;
 
   if( GS != NULL ) {
    
@@ -497,8 +492,6 @@ int CleanupIData( IData *GS ) {
 
     GS->isInitIntegData = 0;
   }
-
-  return SUCCESS;
 }
 
 int InitializeExtInputs( IData *GS, int nExtInputs, int *extInputLens, double *extInputVals,
@@ -608,7 +601,7 @@ int InitializeExtInputs( IData *GS, int nExtInputs, int *extInputLens, double *e
   return SUCCESS;  
 }
 
-int CleanupExtInputs( IData *GS ) {
+void CleanupExtInputs( IData *GS ) {
   int i;
 
   if( GS != NULL ) {
@@ -653,8 +646,6 @@ int CleanupExtInputs( IData *GS ) {
 
     GS->isInitExtInputs = 0;
   }
-
-  return SUCCESS;
 }
 
 int InitializeEvents( IData *GS, int Maxevtpts, int *EventActive, int *EventDir, int *EventTerm,
@@ -770,7 +761,7 @@ int InitializeEvents( IData *GS, int Maxevtpts, int *EventActive, int *EventDir,
   /*  If there are some active events, we will PyMem_Malloc space 
       for them and record where they are */
   if( GS->haveActive > 0 ) {
-    int j, k;
+    int j;
 
     /* PyMem_Malloc space for flag that we found this event on the last
        call to detect events */
@@ -883,7 +874,7 @@ int InitializeEvents( IData *GS, int Maxevtpts, int *EventActive, int *EventDir,
   return SUCCESS;  
 }
 
-int CleanupEvents( IData *GS ) {
+void CleanupEvents( IData *GS ) {
   int i, j;
  
   if( GS != NULL ) {
@@ -1015,12 +1006,10 @@ int CleanupEvents( IData *GS ) {
 
     GS->isInitEvents = 0;
   }
-
-  return SUCCESS;
 }
 
-int CleanupAll( IData *GS, double *ICs, double **Bds ) {
-  int result = FAILURE, i = 0;
+void CleanupAll( IData *GS, double *ICs, double **Bds ) {
+  int i = 0;
  
   if( Bds != NULL ) {
     for( i = 0; i < 2; i++ ) {
@@ -1039,17 +1028,15 @@ int CleanupAll( IData *GS, double *ICs, double **Bds ) {
   }
 
   if( GS != NULL ) {
-    result = CleanupRunParams( GS );
-    result = CleanupExtInputs( GS );
-    result = CleanupEvents( GS );
-    result = CleanupIData( GS );
-    result = CleanupBasic( GS );
+    CleanupRunParams( GS );
+    CleanupExtInputs( GS );
+    CleanupEvents( GS );
+    CleanupIData( GS );
+    CleanupBasic( GS );
 
     PyMem_Free(GS);
     GS = NULL;
  }
-
-  return result;
 }
 
 int SetContParams( IData *GS, double tend, double *pars, double **Bds, double *upperBounds, double *lowerBounds ) {

@@ -1,11 +1,13 @@
 #ifndef __MEMORY__
 #define __MEMORY__
 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+
 #include "integration.h"
 #include "vfield.h"
 #include "events.h"
 #include <stdio.h>
-#include "Python.h"
+#include <Python.h>
 #include <numpy/arrayobject.h>
 
 #define FAILURE 0
@@ -15,32 +17,32 @@
 int InitializeBasic( IData *GS, int PhaseDim, int ParamDim, int nAux, int nEvents, int nExtInputs, 	     
 		     int HasJac, int HasJacP, int HasMass, int extraSize);
 
-int CleanupBasic( IData *GS );
+void CleanupBasic( IData *GS );
 
 int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0, double gTime, 
 		  double *GlobalTime0, double tstart, double tend,
 		  int refine, int nSpecTimes, double *specTimes, 
 		  double *upperBounds, double *lowerBounds );
 
-int CleanupRunParams( IData *GS );
+void CleanupRunParams( IData *GS );
 
 int InitIntegData( IData *GS,  int Maxpts, double *atol, double *rtol, 
 		   ContSolFunType ContSolFun);
 
-int CleanupIData( IData *GS );
+void CleanupIData( IData *GS );
 
 int InitializeEvents( IData *GS, int Maxevtpts, int *EventActive, int *EventDir, int *EventTerm,
 		      double *EventInterval, double *EventDelay, double *EventTol,
 		      int *Maxbisect, double EventNearCoef );
 
-int CleanupEvents( IData *GS );
+void CleanupEvents( IData *GS );
 
 int InitializeExtInputs( IData *GS, int nExtInputs, int *extInputLens, double *extInputVals,
 			 double *extInputTimes );
 
-int CleanupExtInputs( IData *GS );
+void CleanupExtInputs( IData *GS );
 
-int CleanupAll( IData *GS, double *ICs, double **Bds);
+void CleanupAll( IData *GS, double *ICs, double **Bds);
 
 int SetContParams( IData *GS, double tend, double *pars, 
 		   double **Bds, double *upperBounds, double *lowerBounds);

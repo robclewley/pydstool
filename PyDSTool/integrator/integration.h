@@ -1,10 +1,12 @@
 #ifndef __INTEGRATION__
 #define __INTEGRATION__
 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+
 #include "vfield.h"
 #include "events.h"
 #include <stdio.h>
-#include "Python.h"
+#include <Python.h>
 #include <math.h>
 #include <numpy/arrayobject.h>
 

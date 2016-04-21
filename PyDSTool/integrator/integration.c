@@ -56,7 +56,6 @@ void AuxVarCalc( IData *GS ) {
    Increments the global point counter */
 void OutputPoint( IData *GS, double t, double *y ) {
   int i, j;
-  int skipPoint = 0;
   int insertSpecPoints = 0;
   int addSpecIdx = 0;
 
@@ -152,7 +151,6 @@ void SavePoints(IData *GS, int TotEvents, int foundTerm) {
   /* Negative TotEvents means a terminal event was found */
   if( TotEvents < 0 ) {
     TotEvents = -TotEvents;
-    term = 1;
   }
   term = foundTerm;
 
@@ -180,7 +178,6 @@ void SavePoints(IData *GS, int TotEvents, int foundTerm) {
       } 
     } 
     else {
-      int k = 0; 
       /* Merge the event points and refinement points */
       while ( i + j < TotEvents + GS->refine ) { 
 	/* If there are no more event points to include, or if the current refinement
@@ -231,7 +228,7 @@ void FillCurrentExtInputValues( IData *GS, double t ) {
 
 
 double GetCurrentExtInputValue( IData *GS, double t, int idx ) {
-  int i, curidx = 0;
+  int curidx = 0;
 
 
   /* If there is only one time point for the external input, then return its 

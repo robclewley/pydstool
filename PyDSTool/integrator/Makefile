@@ -28,17 +28,8 @@ unixify:
 NUMPY_INCLUDE=$(shell python -c "import numpy; print(numpy.get_include())")
 PYTHON_INCLUDE=$(shell python -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())")
 
-CFLAGS += -std=c99
-
-# not yet true, just to suppress warning
-CFLAGS += -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
-
-ifdef USE_CLANG
-	CC=/usr/bin/clang
-	CFLAGS += -Wno-return-type
-else
-	CC=cc
-endif
+CFLAGS += -std=c99 -Wall -Wno-unused-function
+CC=cc
 
 COMMON_SRC = \
 	integration.c \

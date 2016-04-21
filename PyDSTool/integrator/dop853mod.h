@@ -9,13 +9,14 @@
 #include "memory.h"
 #include <string.h>
 #include <assert.h>
-#include "Python.h"
+#include <Python.h>
 #include <numpy/arrayobject.h>
 #include "dop853.h"
 #include "vfield.h"
 #include "events.h"
 #include "integration.h"
 #include "eventFinding.h"
+#include "interface.h"
 
 /* Call solout with dense output on every iteration */
 #define DENSE_OUTPUT_CALL 2

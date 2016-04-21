@@ -165,7 +165,7 @@ static int dopcor (unsigned n, FcnEqDiff fcn, double x, double* y, double *pars,
 		   int boundmaxsteps, double *magbound, StepAdjuster adjust_h)
 {
   double   facold, expo1, fac, facc1, facc2, fac11, posneg, xph;
-  double   atoli, rtoli, hlamb, err, sk, hnew, yd0, ydiff, bspl;
+  double   atoli, rtoli, hlamb, err, sk, hnew, ydiff, bspl;
   double   stnum, stden, sqr, err2, erri, deno;
   int      iasti, iord, irtrn, reject, last, nonsti;
   unsigned i, j;
@@ -987,7 +987,7 @@ int dop853
 /* dense output function */
 double contd8 (unsigned ii, double x)
 {
-  unsigned i, j;
+  unsigned i;
   double   s, s1;
 
   i = UINT_MAX;

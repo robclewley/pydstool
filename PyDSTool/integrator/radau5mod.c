@@ -33,7 +33,7 @@ PyObject* Integrate(double *ic, double t, double hinit, double hmax,
 		    int DAEstructureM1, int DAEstructureM2,
 		    int useJac, int useMass, int verbose,
 		    int calcAux, int calcSpecTimes) {
-  int i, j;
+  int i;
   double stats[7];
   double hlast = -1;
   int idid = 0;                   /* Return code from radau5. Codes are:
@@ -86,7 +86,7 @@ PyObject* Integrate(double *ic, double t, double hinit, double hmax,
   if( verbose == 1 )
     ErrOut = stderr;
 
-  import_array();
+  _init_numpy();
 
 
   phaseDim = gIData->phaseDim;

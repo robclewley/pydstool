@@ -11,14 +11,22 @@ extern double *gICs;
 extern double globalt0;
 extern double **gBds;
 
+#if (PY_VERSION_HEX < 0x03000000)
+void _init_numpy(void)
+#else
+int _init_numpy(void)
+#endif
+{
+    import_array();
+}
+
 PyObject* Vfield(double t, double *x, double *p) {
   PyObject *OutObj = NULL;
   PyObject *PointsOut = NULL;
   
   double *ftemp = NULL;
-  int i; 
 
-  import_array();
+  _init_numpy();
 
   if( (gIData == NULL) || (gIData->isInitBasic == 0) ) {
     Py_INCREF(Py_None);
@@ -61,9 +69,9 @@ PyObject* Jacobian(double t, double *x, double *p) {
   PyObject *JacOut = NULL;
 
   double *jactual = NULL, **jtemp = NULL;
-  int i, j, n;
+  int i, n;
 
-  import_array();
+  _init_numpy();
 
   if( (gIData == NULL) || (gIData->isInitBasic == 0) || (gIData->hasJac == 0) ) {
     Py_INCREF(Py_None);
@@ -118,9 +126,9 @@ PyObject* JacobianP(double t, double *x, double *p) {
   PyObject *JacPOut = NULL;
 
   double *jactual = NULL, **jtemp = NULL;
-  int i, j, n, m;
+  int i, n, m;
 
-  import_array();
+  _init_numpy();
 
   if( (gIData == NULL) || (gIData->isInitBasic == 0) 
       || (gIData->hasJacP == 0) || (gIData->paramDim == 0) ) {
@@ -175,9 +183,8 @@ PyObject* AuxFunc(double t, double *x, double *p) {
   PyObject *AuxOut = NULL;
   
   double *ftemp = NULL;
-  int i; 
 
-  import_array();
+  _init_numpy();
 
   if( (gIData == NULL) || (gIData->isInitBasic == 0) || (gIData->nAuxVars == 0) ) {
     Py_INCREF(Py_None);
@@ -223,9 +230,9 @@ PyObject* MassMatrix(double t, double *x, double *p) {
   PyObject *MassOut = NULL;
 
   double *mmactual = NULL, **mmtemp = NULL;
-  int i, j, n;
+  int i, n;
 
-  import_array();
+  _init_numpy();
   
   if( (gIData == NULL) || (gIData->isInitBasic == 0) || (gIData->hasMass == 0) ) {
     Py_INCREF(Py_None);
@@ -490,78 +497,45 @@ PyObject* SetContParameters(double tend, double *pars, double *upperBounds, doub
 
 PyObject* CleanUp( void ) {
   PyObject *OutObj = NULL;
-  
-  if( CleanupAll( gIData, gICs, gBds ) ) {
-    gIData = NULL; gICs = NULL; gBds = NULL;
-    OutObj = Py_BuildValue("(i)", 1);
-    assert(OutObj);
-  }
-  else {
-    OutObj = Py_BuildValue("(i)", 0);
-    assert(OutObj);
-  }
+  CleanupAll( gIData, gICs, gBds );
+  gIData = NULL;
+  gICs = NULL;
+  gBds = NULL;
+  OutObj = Py_BuildValue("(i)", 1);
+  assert(OutObj);
   return OutObj;
-
 }
 
 PyObject* ClearExtInputs( void ) {
   PyObject *OutObj = NULL;
-  
-  if( CleanupExtInputs( gIData ) ) {
-    OutObj = Py_BuildValue("(i)", 1);
-    assert(OutObj);
-  }
-  else {
-    OutObj = Py_BuildValue("(i)", 0);
-    assert(OutObj);
-  }
+  CleanupExtInputs( gIData );
+  OutObj = Py_BuildValue("(i)", 1);
+  assert(OutObj);
   return OutObj;
-
 }
 
 PyObject* ClearEvents( void ) {
   PyObject *OutObj = NULL;
-  
-  if( CleanupEvents( gIData ) ) {
-    OutObj = Py_BuildValue("(i)", 1);
-    assert(OutObj);
-  }
-  else {
-    OutObj = Py_BuildValue("(i)", 0);
-    assert(OutObj);
-  }
+  CleanupEvents( gIData );
+  OutObj = Py_BuildValue("(i)", 1);
+  assert(OutObj);
   return OutObj;
-
 }
 
 PyObject* ClearInteg( void ) {
   PyObject *OutObj = NULL;
-  
-  if( CleanupIData( gIData ) ) {
-    OutObj = Py_BuildValue("(i)", 1);
-    assert(OutObj);
-  }
-  else {
-    OutObj = Py_BuildValue("(i)", 0);
-    assert(OutObj);
-  }
+  CleanupIData( gIData );
+  OutObj = Py_BuildValue("(i)", 1);
+  assert(OutObj);
   return OutObj;
-
 }
 
 PyObject* ClearParams( void ) {
   PyObject *OutObj = NULL;
-
-  if( CleanupRunParams( gIData ) ) {
-    OutObj = Py_BuildValue("(i)", 1);
-    assert(OutObj);
-  }
-  else {
-    OutObj = Py_BuildValue("(i)", 0);
-    assert(OutObj);
-  }
+  CleanupRunParams( gIData );
+  OutObj = Py_BuildValue("(i)", 1);
+  assert(OutObj);
   return OutObj;
-
 }
 
 PyObject* Reset( void ) {
@@ -597,8 +571,6 @@ PyObject* PackOut( IData *GS, double *ICs,
   PyObject *TimeOut = NULL; /* Trajectory times */
   PyObject *PointsOut = NULL; /* Trajectory points */
   PyObject *StatsOut = NULL; /* */
-  PyObject *hout = NULL;
-  PyObject *idout = NULL;
 
   PyObject *EventPointsOutTuple = NULL;
   PyObject *EventTimesOutTuple = NULL;
@@ -612,7 +584,7 @@ PyObject* PackOut( IData *GS, double *ICs,
     return Py_None;
   }
   
-  import_array();
+  _init_numpy();
 
   EventPointsOutTuple = PyTuple_New(GS->nEvents);
   assert(EventPointsOutTuple);
@@ -740,5 +712,3 @@ PyObject* PackOut( IData *GS, double *ICs,
 
   return OutObj;
 }
-
-

@@ -177,7 +177,8 @@ class _Builder(object):
             sources=sources,
             include_dirs=incdirs,
             extra_compile_args=utils.extra_arch_arg(
-                ["-w", "-Wno-return-type", "-Wall"]) + self.cflags,
+                ["-w", "-std=c99", "-Wall",
+                 "-Wno-unused-function"]) + self.cflags,
             extra_link_args=utils.extra_arch_arg(["-w"]),
             libraries=self.libs
         )
