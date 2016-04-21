@@ -194,19 +194,15 @@ IFmodel_splen.compute(trajname='disp',
 
 ## Plot data
 print("Acquiring plot data")
-origline=plot(orig_pdata['t'], orig_pdata['v'])
-origleg = "Un-fitted IF orbit"
+origline=plot(orig_pdata['t'], orig_pdata['v'], label="Un-fitted IF orbit")
 IF_sampleData = []
 for t in HH_sampleData['t']:
     IF_sampleData.append(IFmodel_splen('disp', t, ['v']))
 plt.ylabel('w')
 plt.xlabel('t')
-goalline=plot(HH_sampleData['t'], HH_sampleData['v'], 'bo')
-goalleg = 'HH reference'
+goalline=plot(HH_sampleData['t'], HH_sampleData['v'], 'bo',
+              label='HH reference')
 estline_splen = plot(HH_sampleData['t'], IF_sampleData, 'k-',
-                         linewidth=2)
-estleg_splen = 'IF spike thresh \& width fitted'
-plt.legend([goalline, estline_splen, origline],
-             [goalleg, estleg_splen, origleg],
-             'lower left')
+                     linewidth=2, label='IF spike thresh \& width fitted')
+plt.legend(loc='lower left')
 show()

@@ -142,18 +142,14 @@ print('  ... finished in %.3f seconds.\n' % (clock()-start))
 print('\nPreparing plots')
 disp_dt = 0.05
 ##plotData_goal = reftraj.sample(['v'], disp_dt)
-goalleg = "v original"
 plotData_par = testModel.sample('test_iface_traj', ['v'], disp_dt, precise=True)
 
 plt.ylabel('v')
 plt.xlabel('t')
 ##goalline=plot(plotData_par['t'], plotData_goal['v'])
 goal_v = reftraj(tmesh, 'v')
-goalline = plot(tmesh, goal_v, 'ok')
-estline = plot(plotData_par['t'], plotData_par['v'])
-estleg = 'v estimated'
+goalline = plot(tmesh, goal_v, 'ok', label='v original')
+estline = plot(plotData_par['t'], plotData_par['v'], label='v estimated')
 
-plt.legend([goalline, estline],
-             [goalleg, estleg],
-             'lower left')
+plt.legend(loc='lower left')
 show()

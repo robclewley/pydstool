@@ -227,19 +227,14 @@ print('\nPreparing plots')
 figure()
 disp_dt = 0.05
 plotData_orig = HH_test_model.sample('orig', ['v'], disp_dt, precise=True)
-origleg = "v initial"
 plotData_goal = goaltraj.sample(['v'], disp_dt, precise=True)
-goalleg = "v goal"
 plotData_par = sol_traj.sample(['v'])
 
 plt.ylabel('v')
 plt.xlabel('t')
-goalline = plot(plotData_goal['t'], plotData_goal['v'])
-origline = plot(plotData_orig['t'], plotData_orig['v'])
-estline = plot(plotData_par['t'], plotData_par['v'])
-estleg = 'v estimated'
+goalline = plot(plotData_goal['t'], plotData_goal['v'], label="v goal")
+origline = plot(plotData_orig['t'], plotData_orig['v'], label="v initial")
+estline = plot(plotData_par['t'], plotData_par['v'], label='v estimated')
 
-plt.legend([origline, goalline, estline],
-             [origleg, goalleg, estleg],
-             'lower left')
+plt.legend(loc='lower left')
 show()
