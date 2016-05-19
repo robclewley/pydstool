@@ -586,6 +586,9 @@ def saveObjects(objlist, filename, force=False):
     if not force:
         if os.path.isfile(filename):
             raise ValueError("File '" + filename + "' already exists")
+    dir = os.path.dirname(filename)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
     pklfile = open(filename, 'wb')
     opt = 0
     if not isinstance(objlist, list):
