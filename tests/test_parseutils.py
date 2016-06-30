@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import pytest
+
 from PyDSTool.parseUtils import (
     addArgToCalls,
     proper_match,
+    convertPowers,
     wrapArgInCall,
 )
 
@@ -30,3 +33,13 @@ def test_proper_match():
     s = '1 +abc13 + abc'
     assert proper_match(s, 'abc')
     assert not proper_match(s[:10], 'abc')
+
+
+@pytest.mark.parametrize('target,expected', (
+    ('pow', 'pow(x,3)'),
+    ('^', 'x^3'),
+    ('**', 'x**3'),
+))
+def test_convertPowers(target, expected):
+    s = 'pow(x,3)'
+    assert expected == convertPowers(s, target=target)

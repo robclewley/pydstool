@@ -2087,8 +2087,8 @@ class PointInfo(object):
 
     def __eq__(self, other):
         try:
-            return all(list(self.by_index.keys()) == list(other.by_index.keys())) and \
-                   all(list(self.by_label.keys()) == list(other.by_label.keys()))
+            return (sorted(self.by_index.keys()) == sorted(other.by_index.keys()) and
+                   sorted(self.by_label.keys()) == sorted(other.by_label.keys()))
         except AttributeError:
             raise TypeError("Invalid type for comparison to PointInfo")
 

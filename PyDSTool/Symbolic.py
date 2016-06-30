@@ -1434,7 +1434,6 @@ class QuantSpec(object):
             print("Type: %s %r" % (className(self),  results))
         return alltrue(results)
 
-
     def __ne__(self, other):
         return not self.__eq__(other)
 
@@ -3057,7 +3056,7 @@ def DiffStr(t, a='x'):
         alt = copy(t)
         alt[0] = 'power'; alt[2]=='DOUBLESTAR'
         return simplify(toCircumflexSyntax(string2ast(DiffStr(alt,a))))
-    if t[0]=='power':
+    if t[0] in ['power', 'atom_expr']:
         # covers math functions like sin, cos, and log10 as well!
         if t[2][0]=='trailer':
             if len(t)>3:
