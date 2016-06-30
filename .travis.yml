@@ -6,11 +6,6 @@ matrix:
             - NUMPY_SPEC=numpy
             - SCIPY_SPEC="scipy<0.17"
             - COVERAGE="no"
-        - python: 3.3
-          env:
-            - NUMPY_SPEC=numpy
-            - SCIPY_SPEC="scipy<0.17"
-            - COVERAGE="no"
         - python: 2.7
           env:
             - NUMPY_SPEC=numpy
