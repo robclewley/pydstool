@@ -1532,5 +1532,5 @@ def findApproxPeriod(traj, t0, t1_guess=None, T_guess=None, coordname=None,
           repr(val) +
           "\nwith infinity-norm %f > %f tolerance.\n"%(max_rval,rtol) +
           "Try a different starting point," +
-          "a different test variable, or reduce relative tolerance.")
+          "a different test variable, or increase relative tolerance.")
         raise ValueError("Did not converge")
