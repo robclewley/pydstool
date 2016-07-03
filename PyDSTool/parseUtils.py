@@ -1411,7 +1411,7 @@ class parserObject(object):
                                 if tokenized[-1] == '<':
                                     tokenized[-1] = '<='
                                 else:
-                                    tokenized[-1] = '<='
+                                    tokenized.append('<=')
                                 s = ''
                                 returnstr += stemp
                                 continue   # avoids returnstr += stemp below
