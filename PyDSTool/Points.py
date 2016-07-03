@@ -2328,7 +2328,7 @@ def exportPointset(thepointset, infodict, separator='   ',
         if isinstance(info, str):
             infodict_usedkeys += [info]
         elif info == []:
-            infodict[key] = copy.copy(thepointset.coordnames)
+            infodict[key] = copy(thepointset.coordnames)
             infodict_usedkeys.extend(thepointset.coordnames)
         else:
             infodict_usedkeys += list(info)
