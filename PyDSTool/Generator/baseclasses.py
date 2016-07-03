@@ -1373,11 +1373,17 @@ class Generator(object):
                 try:
                     delattr(eval(finfo[0]), fname)
                 except AttributeError:
+                    # nothing to delete, fname no longer an attribute
                     pass
-                except NameError:
+                except (NameError, SyntaxError):
+                    # NameError:
                     # not sure what happens here, but some other names
                     # may be deleted before all references to them have
                     # been deleted, but it's very non-fatal to ignore.
+                    # SyntaxError:
+                    # Also unsure, but sometimes finfo[0] is None
+                    # (rather than the usual 'self') so cannot evaluate
+                    # to object.
                     pass
             if hasattr(self, 'eventstruct'):
                 if self.eventstruct is not None:
