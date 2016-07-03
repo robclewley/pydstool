@@ -651,25 +651,13 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
         qspec = QuantSpec('spec', specStr, treatMultiRefs=False)
         qspec.mapNames({'abs': 'fabs', 'sign': 'signum', 'mod': 'fmod',
                         'and': '&&', 'or': '||', 'not': '!',
-                        'True': 1, 'False': 0,
+                        'True': 1, 'False': 0, 'if': '__rhs_if',
                         'max': '__maxof', 'min': '__minof'})
         qtoks = qspec.parser.tokenized
         # default value
         new_specStr = str(qspec)
-        if 'if' in qtoks:
-            new_specStr = ""
-            num_ifs = qtoks.count('if')
-            if_ix = -1
-            ix_continue = 0
-            for _ in range(num_ifs):
-                if_ix = qtoks[if_ix + 1:].index('if') + if_ix + 1
-                new_specStr += "".join(qtoks[ix_continue:if_ix]) + "__rhs_if("
-                rbrace_ix = findEndBrace(qtoks[if_ix + 1:]) + if_ix + 1
-                ix_continue = rbrace_ix + 1
-                new_specStr += "".join(qtoks[if_ix + 2:ix_continue])
-            new_specStr += "".join(qtoks[ix_continue:])
-            qspec = QuantSpec('spec', new_specStr)
-            qtoks = qspec.parser.tokenized
+        # NOTE: This simple iterative parsing of the arguments means that
+        # user cannot nest calls to min() or max() with eachother
         if '__minof' in qtoks:
             new_specStr = ""
             num = qtoks.count('__minof')
