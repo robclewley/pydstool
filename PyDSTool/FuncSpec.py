@@ -19,6 +19,7 @@ from .Symbolic import QuantSpec, allmathnames_symbolic
 # Other imports
 from copy import copy, deepcopy
 from numpy import any
+import six
 
 import PyDSTool.core.codegenerators as CG
 
@@ -94,7 +95,8 @@ class FuncSpec(object):
         # declare name lists: variables, aux variables, parameters, inputs
         for name in ['vars', 'pars', 'inputs', 'auxvars']:
             ns = kw.pop(name, [])
-            setattr(self, name, [ns] if isinstance(ns, str) else sorted(ns))
+            setattr(self, name, [ns] if isinstance(ns, six.string_types)
+                    else sorted(ns))
 
         self.targetlang = kw.pop('targetlang', 'python')
         if self.targetlang == 'c':
@@ -449,7 +451,7 @@ class FuncSpec(object):
         assert len(spec) == 2, 'auxspec tuple must be of length 2'
         if not isinstance(spec[0], list):
             raise TypeError('aux function arguments must be given as a list')
-        if not isinstance(spec[1], str):
+        if not isinstance(spec[1], six.string_types):
             raise TypeError('aux function specification must be a string of the function code')
 
     def generateSpec(self):
@@ -461,7 +463,8 @@ class FuncSpec(object):
             assert self.varspecs != {}, 'varspecs attribute must be defined'
             assert set(self.vars) - set(self.varspecs.keys()) == set([]), 'Mismatch between declared variable names and varspecs keys'
             for name, spec in self.varspecs.items():
-                assert type(spec) == str, "Specification for %s was not a string" % name
+                assert isinstance(spec, six.string_types), \
+                       "Specification for %s was not a string" % name
             self.spec = self.codegen.generate_spec(self.vars, self.varspecs)
 
     def generate_user_module(self, eventstruct, **kwargs):

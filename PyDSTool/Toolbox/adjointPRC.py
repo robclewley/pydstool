@@ -2,6 +2,7 @@ from __future__ import absolute_import, print_function
 
 from PyDSTool import *
 from PyDSTool.PyCont.misc import getFlowMaps, getFlowJac, getLeftEvecs
+import six
 
 __all__ = ['adjointPRC', 'rotate_phase']
 
@@ -28,7 +29,7 @@ def adjointPRC(model, limit_cycle, vname, freepar, numIntervals=500,
     other algorithmic information.
     """
 
-    assert isinstance(freepar, str), "Free parameter must be a single string"
+    assert isinstance(freepar, six.string_types), "Free parameter must be a single string"
 
     try:
         MDCont = ContClass(model)

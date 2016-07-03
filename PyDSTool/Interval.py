@@ -108,7 +108,7 @@ class Interval(object):
     """
 
     def __init__(self, name, intervaltype, intervalspec=None, abseps=None):
-#        if not isinstance(name, str):
+#        if not isinstance(name, six.string_types):
 #            raise PyDSTool_TypeError('Name must be a string')
         self.name = name
         try:

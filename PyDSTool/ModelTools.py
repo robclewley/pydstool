@@ -249,7 +249,7 @@ class GeneratorConstructor(object):
             # the dictionary of string signatures and definitions format
             self.userfns = Symbolic.ensureStrArgDict(copy.copy(userfns))
         self.unravelInfo = unravelInfo   # presently just a Boolean
-        if isinstance(targetGen, str):
+        if isinstance(targetGen, six.string_types):
             self.targetGen = targetGen
         else:
             raise TypeError("targetGen argument must be a string")
@@ -334,7 +334,7 @@ class GeneratorConstructor(object):
         if eventPars is not None and eventPars != [] and eventPars != '':
             if isinstance(eventPars, list):
                 self.eventPars.extend(eventPars)
-            elif isinstance(eventPars, str):
+            elif isinstance(eventPars, six.string_types):
                 self.eventPars.append(eventPars)
 
 
@@ -1312,7 +1312,7 @@ class ModelConstructor(object):
         if eventPars is not None and eventPars != [] and eventPars != '':
             if isinstance(eventPars, list):
                 self._eventPars[hostGen].extend(eventPars)
-            elif isinstance(eventPars, str):
+            elif isinstance(eventPars, six.string_types):
                 self._eventPars[hostGen].append(eventPars)
             self._generators[hostGen].addEvtPars(eventPars)
 
@@ -1352,7 +1352,7 @@ class ModelConstructor(object):
     def setInternalVars(self, arg):
         if isinstance(arg, list):
             self.forcedIntVars = arg
-        elif isinstance(arg, str):
+        elif isinstance(arg, six.string_types):
             self.forcedIntVars = [arg]
         # !! Should check whether these are valid variable names of model
 
@@ -1589,7 +1589,8 @@ class EvMapping(object):
         else:
             if len(self.assignDict) > 0:
                 for lhs, rhs in self.assignDict.items():
-                    if not(type(lhs)==type(rhs)==str):
+                    if not(isinstance(lhs, six.string_types) and \
+                           isinstance(rhs, six.string_types)):
                         raise TypeError("Assignment dictionary for event "
                                         "mapping must consist of strings for "
                                         "both keys and values")
@@ -1599,7 +1600,8 @@ class EvMapping(object):
                 fnString += "\n" + indent + ("\n"+indent).join(self.defString.split("\n"))
             if len(self.activeDict) > 0:
                 for evname, state in self.activeDict.items():
-                    if not(type(evname)==str and type(state)==bool):
+                    if not(isinstance(evname, six.string_types) and \
+                           isinstance(state, bool)):
                         raise TypeError("Invalid types given for setting "
                                         "active events")
                 fnString += "\n" + indent + \
@@ -1679,7 +1681,7 @@ def makeModelInfoEntry(dsi, allModelNames=None, swmap_list=None,
         #       "Cannot use non-embedded Generators in hybrid system"
         if swmap_list != []:
             for (name, target) in swmap_list:
-                if isinstance(target, str):
+                if isinstance(target, six.string_types):
                     if target != 'terminate':
                         print("%s %s" % (name, target))
                         raise AssertionError("Generators can only be used "
@@ -1751,7 +1753,7 @@ def makeModelInfoEntry(dsi, allModelNames=None, swmap_list=None,
         if isinstance(mapping_info, tuple):
             targetName = mapping_info[0]
             numargs = len(mapping_info)
-        elif isinstance(mapping_info, str):
+        elif isinstance(mapping_info, six.string_types):
             targetName = mapentry[1]
             numargs = 1
         else:
@@ -1929,7 +1931,7 @@ class ModelManager(object):
     """Model management and repository class."""
 
     def __init__(self, name):
-        assert isinstance(name, str)
+        assert isinstance(name, six.string_types)
         self.proj_name = name
         # registry of model descriptors and instances that form the project
         self._mReg = MReg()
@@ -2453,7 +2455,7 @@ class MReg(object):
         """Return info about stored model specifications.
         Valid query keys: 'orig_name', 'in_description'
         """
-        assert isinstance(querykey, str), \
+        assert isinstance(querykey, six.string_types), \
                        ("Query argument must be a single string")
         _keylist = ['orig_name', 'in_description']
         if querykey not in _keylist:

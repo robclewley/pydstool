@@ -9,7 +9,7 @@ from PyDSTool.Symbolic import QuantSpec
 from PyDSTool.utils import compareList, info
 
 from .base import _processReused, CodeGenerator
-
+import six
 
 PYTHON_FUNCTION_TEMPLATE = """
 def {name}(ds, t, x, parsinps):
@@ -79,9 +79,9 @@ class Python(CodeGenerator):
             # auxinfo[1] = string containing body of function definition
             assert isinstance(auxinfo[0], list), ('aux function arguments '
                                                   'must be given as a list')
-            assert isinstance(auxinfo[1], str), ('aux function specification '
-                                                 'must be a string '
-                                                 'of the function code')
+            assert isinstance(auxinfo[1], six.string_types), \
+                   ('aux function specification '
+                    'must be a string of the function code')
             # Process Jacobian functions, etc., specially, if present
             if auxname == 'Jacobian':
                 if not compareList(auxinfo[0], ['t'] + self.fspec.vars):
@@ -494,7 +494,7 @@ class Python(CodeGenerator):
         specname_count = 0
         for specname in specnames:
             specstr = specdict[specname]
-            assert isinstance(specstr, str), \
+            assert isinstance(specstr, six.string_types), \
                    "Specification for %s was not a string" % specname
             if not noreturndefs:
                 specstr_lang += _indentstr + \

@@ -218,7 +218,7 @@ class _mathobj(object):
                                 break
             else:
                 convert = False
-            argstr = ", ".join(map(str,args))
+            argstr = ", ".join(map(str, args))
             if convert:
                 try:
                     return eval(self.name.lower())(*args)
@@ -230,14 +230,14 @@ class _mathobj(object):
         else:
             arglist = []
             for a in args:
-                if isinstance(a, str):
+                if isinstance(a, six.string_types):
                     arglist.append(float(a))
                 else:
                     arglist.append(a)
             try:
                 return float(eval(self.name.lower())(*arglist))
             except NameError:
-                argstr = ", ".join(map(str,args))
+                argstr = ", ".join(map(str, args))
                 return QuantSpec("__result__", self.name + "(" + argstr +")")
             except TypeError:
                 print("Error evaluating %s on args:"%self.name.lower() + args)
@@ -301,7 +301,7 @@ def strIfSeq(x):
 def ensureQlist(thelist):
     o = []
     for s in thelist:
-        if isinstance(s, str):
+        if isinstance(s, six.string_types):
             o.append(QuantSpec('__dummy__', s))
         elif isinstance(s, QuantSpec) or isinstance(s, Quantity):
             o.append(s)
@@ -319,7 +319,7 @@ def ensureStrArgDict(d, renderForCode=True):
         # d is a Point or dictionary
         for k, v in d.items():
             if isinstance(v, tuple):
-                if alltrue([isinstance(x, str) for x in v[0]]):
+                if alltrue([isinstance(x, six.string_types) for x in v[0]]):
                     o[str(k)] = (v[0], str(v[1]))
                 else:
                     o[str(k)] = ([str(x) for x in v[0]], str(v[1]))
@@ -361,7 +361,7 @@ def ensureStrArgDict(d, renderForCode=True):
 
 
 def _eval(q, math_globals, local_free, eval_at_runtime):
-    if isinstance(q, str):
+    if isinstance(q, six.string_types):
         qstr = q
     else:
         qstr = str(q)
@@ -395,7 +395,7 @@ def _propagate_str_eval(s):
         return "["+",".join([_propagate_str_eval(s_el) for s_el in s])+"]"
     elif isinstance(s, tuple):
         return "("+",".join([_propagate_str_eval(s_el) for s_el in s])+")"
-    elif isinstance(s, str):
+    elif isinstance(s, six.string_types):
         return s
     else:
         raise TypeError("Don't know how to evaluate to string: %s"%(str(s)))
@@ -465,7 +465,7 @@ def expr2fun(qexpr, ensure_args=None, ensure_dynamic=None, fn_name='',
     free = []
     h_map = symbolMapClass()
     for k, v in values.items():
-        if isinstance(v, str):
+        if isinstance(v, six.string_types):
             vs = v
         elif isinstance(v, _num_types):
             # retain most accuracy in float
@@ -1202,7 +1202,7 @@ class QuantSpec(object):
                 otherstr = str(otherstr[1:])
             otherbraces = int((opstr == '*' or opstr == '-') and other.isCompound(['+','-']) \
                            or opstr == '/' and other.isCompound())
-        elif isinstance(other, str):
+        elif isinstance(other, six.string_types):
             e = None
             try:
                 e = eval(other, {}, {})
@@ -1320,7 +1320,7 @@ class QuantSpec(object):
         if reverseorder:
             specType = self.specType
             # other can only be non-Quant for rpow to be called
-            if isinstance(other, str):
+            if isinstance(other, six.string_types):
                 try:
                     otherval = float(other)
                     if otherval == 0:
@@ -1363,7 +1363,7 @@ class QuantSpec(object):
                 except ValueError:
                     # take no action
                     pass
-            elif isinstance(other, str):
+            elif isinstance(other, six.string_types):
                 try:
                     otherval = float(other)
                     if otherval == 0:
@@ -1615,7 +1615,7 @@ class QuantSpec(object):
                             if isinstance(obj, _num_types):
                                 if key != repr(obj):
                                     scope[key] = repr(obj)
-                            elif isinstance(obj, str):
+                            elif isinstance(obj, six.string_types):
                                 if key != obj:
                                     scope[key] = obj
                             else:
@@ -1665,7 +1665,7 @@ class QuantSpec(object):
                             if isinstance(obj, _num_types):
                                 if key != repr(obj):
                                     scope[key] = repr(obj)
-                            elif isinstance(obj, str):
+                            elif isinstance(obj, six.string_types):
                                 if key != obj:
                                     scope[key] = obj
                             else:
@@ -1683,7 +1683,7 @@ class QuantSpec(object):
         arglist.sort()
         # convert any numeric substitutions into strings
         for k, v in defs.items():
-            if not isinstance(v, str) and k not in [str(v), "__result__"]:
+            if not isinstance(v, six.string_types) and k not in [str(v), "__result__"]:
                 scope[k] = str(v)
             else:
                 continue
@@ -1873,15 +1873,17 @@ class QuantSpec(object):
             # simplified numeric version otherwise (including lower case functions)
             try:
                 new_qtemp = eval(defstr_feval, {}, local_scope_feval)
-                assert isinstance(new_qtemp, (Quantity, QuantSpec, str, list, \
+                assert isinstance(new_qtemp, (Quantity, QuantSpec, \
+                                        six.string_types, list, \
                                         _num_types))
             except:
                 new_qtemp = QuantSpec(self.subjectToken, defstr_feval, self.specType)
         elif eval_type == 0:
             try:
                 new_qtemp = eval(defstr, {}, local_scope)
-                assert isinstance(new_qtemp, (Quantity, QuantSpec, str, list, \
-                                    _num_types))
+                assert isinstance(new_qtemp, (Quantity, QuantSpec, \
+                                        six.string_types, list, \
+                                        _num_types))
                 # assume that number of braces correlates with complexity
                 # only keep this if trying to simplify and expression becomes
                 # simpler, or we're trying to reduce float sub-expressions
@@ -1935,7 +1937,7 @@ class QuantSpec(object):
         but it will convert it internally to a symbolMapClass."""
         namemap = symbolMapClass(nameMap)
         newsubj = namemap(self.subjectToken)
-        if isinstance(newsubj, str) and \
+        if isinstance(newsubj, six.string_types) and \
               (isNameToken(newsubj, True) or \
                isHierarchicalName(newsubj, treatMultiRefs=True)):
             self.subjectToken = newsubj
@@ -2273,7 +2275,7 @@ class Quantity(object):
 
     def __init__(self, spec, name="", domain=None, specType=None):
         self.multiDefInfo = (False, "", "", 0, 0)   # initial, default value
-        if isinstance(strIfSeq(spec), str):
+        if isinstance(strIfSeq(spec), six.string_types):
             spec = strIfSeq(spec)
             if isNameToken(spec):
                 # then we're declaring a single symbol
@@ -2529,7 +2531,7 @@ class Quantity(object):
         elif isinstance(other, Quantity):
             other_specType = other.specType
             otherstr = other.name
-        elif isinstance(other, str):
+        elif isinstance(other, six.string_types):
             other_specType = 'ExpFuncSpec'
             otherstr = other
         elif isinstance(other, _num_types):
@@ -2659,7 +2661,8 @@ class Quantity(object):
                 raise ValueError("spec target mismatch for token '" \
                              + self.name + "' vs. '" + self.spec.subjectToken \
                              +"'")
-        assert isinstance(self.spec.specStr, str), "specStr invalid"
+        assert isinstance(self.spec.specStr, six.string_types), \
+               "specStr invalid"
         assert self.spec.specType in specTypes, "specType invalid"
         bad_tls = remain(self.targetLangs, targetLangs)
         if len(bad_tls)>0:
@@ -2820,7 +2823,7 @@ class Fun(Quantity):
                             newname += "_"
                         argNameMapInv[newname] = name
                         args[i].mapNames({name:newname})
-                elif isinstance(args[i], str):
+                elif isinstance(args[i], six.string_types):
                     qtemp = QuantSpec("__arg__", args[i])
                     isection = intersect(qtemp.freeSymbols, self.signature)
                     for name in isection:
@@ -2959,7 +2962,7 @@ def Diff(t, a):
                 if t_arg == '':
                     # use symbol name
                     t_arg = str(qt)
-    elif isinstance(t, str):
+    elif isinstance(t, six.string_types):
         t_strip = t.strip()
         if t_strip[0] == "[" and t_strip[-1] == "]":
             return Diff(splitargs(t_strip[1:-1]), a)
@@ -2979,7 +2982,7 @@ def Diff(t, a):
     elif isinstance(a, list):
         ostr = "[" + ",".join([str(Diff(t,o)) for o in a]) + "]"
         return QuantSpec("__result__", ostr)
-    elif isinstance(a, str):
+    elif isinstance(a, six.string_types):
         a_arg = a
     else:
         print("Found: type (%s)" % (a, type(a)))
@@ -3014,7 +3017,7 @@ def DiffStr(t, a='x'):
 ##        __Diff_saved[s] = res
 ##        return res
         return ast2string(o)
-    elif isinstance(t, str):
+    elif isinstance(t, six.string_types):
         return ast2string(DiffStr(string2ast(t),a))
 ##        s= ''.join([t, '__derivWRT__', str(a)])
 ##        r=__Diff_saved.get(s, None)

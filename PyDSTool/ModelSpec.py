@@ -25,7 +25,7 @@ from numpy import Inf, NaN, isfinite,  mod, sum
 from numpy import sometrue, alltrue
 from copy import copy, deepcopy
 import math, random
-
+import six
 
 # ---------------------------------------------------------------------------
 ### Exports
@@ -327,7 +327,7 @@ class ModelSpec(object):
 
 
     def addConnxnTarget(self, targ):
-        if isinstance(targ, str):
+        if isinstance(targ, six.string_types):
             if targ not in self.connxnTargets:
                 self.connxnTargets.append(targ)
         elif isinstance(targ, list):
@@ -339,7 +339,7 @@ class ModelSpec(object):
 
 
     def delConnxnTarget(self, targ):
-        if isinstance(targ, str):
+        if isinstance(targ, six.string_types):
             try:
                 self.connxnTargets.remove(targ)
             except ValueError:
@@ -396,7 +396,8 @@ class ModelSpec(object):
 
 
     def validate(self):
-        assert isinstance(self.name, str), "ModelSpec name must be a string"
+        assert isinstance(self.name, six.string_types), \
+               "ModelSpec name must be a string"
         assert len(remain(self.targetLangs, targetLangs)) == 0, \
                "Invalid target language for '" + self.name + "'"
         if hasattr(self, 'components'):
@@ -739,7 +740,7 @@ class ModelSpec(object):
 
         if hasattr(target, 'name'):
             objname = target.name
-        elif isinstance(target, str):
+        elif isinstance(target, six.string_types):
             objname = target
         elif isinstance(target, list):
             for t in target: self.remove(t)

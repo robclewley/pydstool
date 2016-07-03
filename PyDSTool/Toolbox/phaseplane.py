@@ -2484,7 +2484,8 @@ def make_distance_to_line_auxfn(linename, fname, p, by_vector_dp=True):
     or a point q, depending on the second input argument.
     Also returns list of parameter names used.
     """
-    assert len(p)==2 and isinstance(p[0], str) and isinstance(p[1], str)
+    assert len(p)==2 and isinstance(p[0], six.string_types) \
+           and isinstance(p[1], six.string_types)
     p0 = linename+'_p_'+p[0]
     p1 = linename+'_p_'+p[1]
     pars = [p0, p1]

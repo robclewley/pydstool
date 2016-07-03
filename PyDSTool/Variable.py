@@ -83,7 +83,7 @@ def numeric_to_vars(vals, coordnames, indepvar=None, indepvarname='t',
     If discrete option set to True (default is False) then the
     Variables will be linearly interpolated within their domain.
     """
-    if isinstance(coordnames, str):
+    if isinstance(coordnames, six.string_types):
         coordnames = [coordnames]
     if isinstance(vals, _num_types):
         vals = [[vals]]
@@ -154,7 +154,7 @@ class Variable(object):
         # funcreg stores function data for dynamically created methods
         # to allow a Variable to be copied using pickling
         self._funcreg = {}
-        if isinstance(name, str):
+        if isinstance(name, six.string_types):
             # !!! name is probably redundant
             self.name = name
         else:
@@ -523,7 +523,7 @@ class Variable(object):
 
 
     def setIndepdomain(self, indepdomain, abseps=None):
-        if isinstance(indepdomain, str):
+        if isinstance(indepdomain, six.string_types):
             self.indepvarname = indepdomain
             if self.indepdomain is not None:
                 # If indepdomain already set and indepvarname is none then
@@ -584,7 +584,7 @@ class Variable(object):
 
 
     def setDepdomain(self, depdomain, abseps=None):
-        if isinstance(depdomain, str):
+        if isinstance(depdomain, six.string_types):
             self.coordname = depdomain
             if self.depdomain is None:
                 if self.coordtype is None:

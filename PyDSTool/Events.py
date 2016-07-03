@@ -454,7 +454,7 @@ class Event(object):
             self.preciseFlag = True
         # store 'plain text' definition of event as string, if provided
         if 'expr' in kw:
-            assert isinstance(kw['expr'],str), \
+            assert isinstance(kw['expr'], six.string_types), \
                     "Invalid type for event definition string"
             self._expr = kw['expr']
         else:
@@ -1055,8 +1055,9 @@ class LowLevelEvent(Event):
                     raise TypeError("Low level events cannot be linked to a"
                                     " variable")
         Event.__init__(self, kw)
-        assert isinstance(kw['LLfuncspec'], str), ("For low level events, must "
-                                "pass string for 'LLfuncspec' in initialization")
+        assert isinstance(kw['LLfuncspec'], six.string_types), \
+                          ("For low level events, must "
+                           "pass string for 'LLfuncspec' in initialization")
         LLfuncstr = kw['LLfuncspec']
         dummyQ = QuantSpec('dummy', LLfuncstr, preserveSpace=True)
         dummyQ.mapNames({'abs': 'fabs', 'sign': 'signum', 'mod': 'fmod'})
@@ -1086,8 +1087,9 @@ class MatlabEvent(LowLevelEvent):
                     raise TypeError("Low level events cannot be linked to a variable")
         kw['noHighLevel'] = True
         Event.__init__(self, kw)
-        assert isinstance(kw['Matlabfuncspec'], str), ("For low level events, must "
-                                "pass string for 'LLfuncspec' in initialization")
+        assert isinstance(kw['Matlabfuncspec'], six.string_types), \
+                             ("For low level events, must "
+                              "pass string for 'LLfuncspec' in initialization")
         LLfuncstr = kw['Matlabfuncspec']
         dummyQ = QuantSpec('dummy', LLfuncstr, preserveSpace=True)
         if dummyQ[0] != 'return':
@@ -1413,10 +1415,10 @@ def makePythonStateZeroCrossEvent(varname, targetvalue, dircode, argDict,
     if isinstance(varname, Var):
         # supporting a Variable object
         varname = varname.name
-    elif not isinstance(varname, str):
+    elif not isinstance(varname, six.string_types):
         raise TypeError("Invalid type for event variable")
     funcname = "_f_"+varname+"_zc"
-    if isinstance(targetvalue, str):
+    if isinstance(targetvalue, six.string_types):
         # this is assumed to be a parameter name if not a numeric value,
         # but user preferred to add the p[' '] wrapping around a
         # parameter name
@@ -1431,7 +1433,7 @@ def makePythonStateZeroCrossEvent(varname, targetvalue, dircode, argDict,
     # 'ds' plays role of 'self' (named for compatibility with FuncSpec's
     # automatic name resolution of auxiliary functions during parsing.
     if isinstance(var, Variable):
-        if not isinstance(targetvalue, str):
+        if not isinstance(targetvalue, six.string_types):
             assert targetvalue in var.depdomain, 'targetvalue not in var.depdomain'
         funcstr = "def "+funcname+"(ds, t, p%s):\n\treturn "%pdefstr + \
                     "ds.vars['"+varname+"'](t) - "+targstr+"\n"

@@ -52,6 +52,7 @@ from .parseUtils import isHierarchicalName, NAMESEP, mapNames, symbolMapClass
 
 ## Other imports
 import math, sys
+import six
 from numpy import Inf, NaN, isfinite, sign, abs, array, arange, \
      zeros, concatenate, transpose, shape
 from numpy import sometrue, alltrue, any, all
@@ -94,7 +95,7 @@ class boundary_containment(ModelContext.qt_feature_leaf):
             # test all coords at once
             self.pars.coordname = None
         else:
-            assert isinstance(self.pars.coordname, str), \
+            assert isinstance(self.pars.coordname, six.string_types), \
                    "Coordinate name must be a string"
 
         def evaluate(self, target):
@@ -633,7 +634,7 @@ class Model(object):
          'ics', 'initialconditions', 'vars', 'variables',
          'auxvars', 'auxvariables', 'vardomains', 'pardomains', 'abseps'
          """
-        assert isinstance(querykey, str), \
+        assert isinstance(querykey, six.string_types), \
                        ("Query argument must be a single string")
         if querykey not in self._querykeys:
             print('Valid query keys are: %r' % self._querykeys)
@@ -862,7 +863,7 @@ class Model(object):
                 # automated updating.
                 t0val_dict = kw['inputs_t0']
                 for inp, val in t0val_dict.items():
-                    if isinstance(val, str):
+                    if isinstance(val, six.string_types):
                         try:
                             new_val = self.pars[val]
                         except KeyError:
@@ -1003,7 +1004,7 @@ class Model(object):
                         m._delTraj(trajname)
         else:
             # propagate deletions down through registry
-            if not isinstance(traj.modelNames, str):
+            if not isinstance(traj.modelNames, six.string_types):
                 for i, model_name_i in enumerate(traj.modelNames):
                     del(self.registry[model_name_i][trajname+'_%i'%i])
             del(self.trajectories[trajname])
@@ -1072,7 +1073,8 @@ class Model(object):
         """Check types and uniqueness of variable names."""
         namelist = []  # records those seen so far
         for vname in names:
-            assert isinstance(vname, str), 'variable name must be a string'
+            assert isinstance(vname, six.string_types), \
+                   'variable name must be a string'
             assert vname not in namelist, ('variable names must be unique for'
                                            ' model')
             namelist.append(vname)
@@ -1394,7 +1396,7 @@ class Model(object):
         if ics is None:
             ics = self.icdict
         estruct = self.modelInfo[target]['dsi'].get('eventstruct', ics, t)
-        if isinstance(target, str):
+        if isinstance(target, six.string_types):
             if flagVal:
                 return [x[0] for x in estruct.getTermEvents()]
             else:
@@ -1432,7 +1434,7 @@ class Model(object):
         if ics is None:
             ics = self.icdict
         estruct = self.modelInfo[target]['dsi'].get('eventstruct', ics, t)
-        if isinstance(target, str):
+        if isinstance(target, six.string_types):
             if flagVal:
                 return [x[0] for x in estruct.getActiveEvents()]
             else:

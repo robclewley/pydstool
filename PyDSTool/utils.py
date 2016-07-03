@@ -3,8 +3,6 @@
 """
 from __future__ import absolute_import, print_function
 
-import os
-
 from distutils.util import get_platform
 from numpy.distutils import misc_util
 
@@ -27,6 +25,7 @@ except AttributeError:
     newton_meth = zeros.newton
 import time, sys, os, platform
 import copy
+import six
 
 
 # --------------------------------------------------------------------
@@ -621,7 +620,7 @@ def loadObjects(filename, namelist=None):
         raise ValueError("File '" + filename + "' not found")
     if namelist is None:
         namelist = []
-    was_singleton_name = isinstance(namelist, str)
+    was_singleton_name = isinstance(namelist, six.string_types)
     if not isinstance(namelist, list):
         if was_singleton_name:
             namelist = [copy.copy(namelist)]

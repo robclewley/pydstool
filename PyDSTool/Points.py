@@ -27,7 +27,7 @@ from numpy import complex, complexfloating, int, integer, \
 from numpy import any, all, alltrue, sometrue, ndarray
 import numpy as npy
 
-
+import six
 import sys
 from copy import copy, deepcopy
 import warnings
@@ -123,7 +123,8 @@ class Point(object):
             vals = []
             for n, v in kw['coorddict'].items():
                 # Add coord name with type checking
-                coordnames.append(n if isinstance(n, str) else repr(n))
+                coordnames.append(n if isinstance(n, six.string_types) \
+                                  else repr(n))
 
                 # Add coord value with type checking
                 ## Extract value from sequence if needed
@@ -161,7 +162,7 @@ class Point(object):
                 raise TypeError('Coordinate type %s not valid for Point' % str(type(vals)))
 
             if 'coordnames' in kw:
-                if isinstance(kw['coordnames'], str):
+                if isinstance(kw['coordnames'], six.string_types):
                     coordnames = list(kw['coordnames'])
                 else:
                     coordnames = kw['coordnames']
@@ -224,10 +225,11 @@ class Point(object):
     def addlabel(self, label):
         if label is None:
             pass
-        elif isinstance(label, str):
+        elif isinstance(label, six.string_types):
             self.labels = {label: {}}
         elif isinstance(label, tuple) and len(label)==2:
-            if isinstance(label[0], str) and isinstance(label[1], dict):
+            if isinstance(label[0], six.string_types) and \
+               isinstance(label[1], dict):
                 self.labels[label[0]] = label[1]
         elif isinstance(label, dict):
             self.labels = label
@@ -670,7 +672,7 @@ class Pointset(Point):
             self._parameterized = False
         if self.indepvarname:
             # do validation checks
-            assert isinstance(self.indepvarname, str), \
+            assert isinstance(self.indepvarname, six.string_types), \
                    'independent variable name must be a string'
             try:
                 self.indepvartype = _num_equivtype[self.indepvararray.dtype.type]
@@ -703,7 +705,7 @@ class Pointset(Point):
                 except KeyError:
                     raise TypeError('Coordinate type %s not valid for Point'%str(ct))
             for c, v in kw['coorddict'].items():
-                if isinstance(c, str):
+                if isinstance(c, six.string_types):
                     c_key = c
                 else:
                     c_key = repr(c)
@@ -778,7 +780,7 @@ class Pointset(Point):
                 raise ValueError("Invalid rank for coordinate array %i"%r)
             self.dimension = self.coordarray.shape[0]
             if 'coordnames' in kw:
-                if isinstance(kw['coordnames'], str):
+                if isinstance(kw['coordnames'], six.string_types):
                     coordnames = [kw['coordnames']]
                 else:
                     coordnames = kw['coordnames']
@@ -827,7 +829,7 @@ class Pointset(Point):
             else:
                 self._abseps = 1e-13
         if 'name' in kw:
-            if isinstance(kw['name'], str):
+            if isinstance(kw['name'], six.string_types):
                 self.name = kw['name']
             else:
                 raise TypeError("name argument must be a string")
@@ -939,7 +941,7 @@ class Pointset(Point):
     def bylabel(self, s):
         """Return pointset containing points labelled with the supplied
         labels. Argument s can be a string or a list of strings."""
-        if isinstance(s, str):
+        if isinstance(s, six.string_types):
             if s == '':
                 raise ValueError("Label must be non-empty")
             else:
@@ -951,7 +953,7 @@ class Pointset(Point):
         elif isinstance(s, list):
             ixlist = []
             for ss in s:
-                if isinstance(ss, str):
+                if isinstance(ss, six.string_types):
                     if ss == '':
                         raise ValueError("Label must be non-empty")
                     ixlist = sortedDictKeys(self.labels[ss])
@@ -1012,7 +1014,7 @@ class Pointset(Point):
                     self.labels.update({ix: p.labels})
             else:
                 raise TypeError("New value is not a singleton numeric type")
-        elif isinstance(ix, str):
+        elif isinstance(ix, six.string_types):
             if ix == self.indepvarname:
                 if isinstance(p, Pointset):
                     if compareNumTypes(self.indepvartype, int32) and \
@@ -1077,7 +1079,7 @@ class Pointset(Point):
                 raise ValueError("Only use 2-tuples in referencing pointset")
             ref1 = ix[0]
             ref2 = ix[1]
-        elif isinstance(ix, str):
+        elif isinstance(ix, six.string_types):
             # reference by coord name
             if self._parameterized:
                 if ix == self.indepvarname:
@@ -1823,7 +1825,7 @@ class PointInfo(object):
                 if not isinstance(k, _int_types):
                     raise TypeError("Initialization dictionary must be keyed "
                                     "by integer indices")
-                if isinstance(v, str):
+                if isinstance(v, six.string_types):
                     self.by_label[v][k] = {}
                     self.by_index[k][v] = {}
                 else:
@@ -1896,7 +1898,7 @@ class PointInfo(object):
                     except TypeError:
                         key = self_ixs
                 else:
-                    if all([isinstance(k, str) for k in key]):
+                    if all([isinstance(k, six.string_types) for k in key]):
                         keylabels = intersect(key, self.getLabels())
                         key = []
                         for l in keylabels:
@@ -1919,7 +1921,7 @@ class PointInfo(object):
 
     def __setitem__(self, key1, the_rest):
         if isinstance(the_rest, tuple) and len(the_rest) == 2:
-            if isinstance(the_rest[0], str):
+            if isinstance(the_rest[0], six.string_types):
                 label = the_rest[0]
                 ix = None
             elif isinstance(the_rest[0], _int_types):
@@ -1931,7 +1933,7 @@ class PointInfo(object):
                 info = copy(the_rest[1])
             else:
                 raise TypeError("Dictionary expected for info")
-        elif isinstance(the_rest, str):
+        elif isinstance(the_rest, six.string_types):
             label = the_rest
             ix = None
             info = {}
@@ -1953,7 +1955,7 @@ class PointInfo(object):
             if label is None:
                 raise TypeError("Label expected")
             ix = key1
-        elif isinstance(key1, str):
+        elif isinstance(key1, six.string_types):
             if ix is None:
                 raise TypeError("Index expected")
             label = key1
@@ -2022,7 +2024,7 @@ class PointInfo(object):
                     if isinstance(k, _int_types):
                         if k < 0:
                             k = k + len(self.by_index)
-                        if isinstance(v, str):
+                        if isinstance(v, six.string_types):
                             k2 = v
                             k3 = {}
                             self.update(k, k2, k3)
@@ -2049,7 +2051,7 @@ class PointInfo(object):
                     self.__setitem__(key1, (key2, info))
             else:
                 self.__setitem__(key1, (key2, info))
-        elif isinstance(key1, str):
+        elif isinstance(key1, six.string_types):
             if info is None:
                 info = {}
             if key1 in self.by_label:
@@ -2194,7 +2196,7 @@ def pointsToPointset(pointlist, indepvarname='', indepvararray=None,
     optional third argument.
     """
 
-    if not isinstance(indepvarname, str):
+    if not isinstance(indepvarname, six.string_types):
         raise TypeError("String expected for independent variable name")
     if isinstance(pointlist, Point):
         pointlist = [pointlist]
@@ -2325,7 +2327,7 @@ def exportPointset(thepointset, infodict, separator='   ',
                         "arrayToPointset first!")
     infodict_usedkeys = []
     for key, info in infodict.items():
-        if isinstance(info, str):
+        if isinstance(info, six.string_types):
             infodict_usedkeys += [info]
         elif info == []:
             infodict[key] = copy(thepointset.coordnames)
@@ -2340,7 +2342,8 @@ def exportPointset(thepointset, infodict, separator='   ',
         print("Coords not found in pointset:%r" % remlist)
         raise ValueError("invalid keys in infodict - some not present "
                          "in thepointset")
-    assert isinstance(ext, str), "'ext' extension argument must be a string"
+    assert isinstance(ext, six.string_types), \
+           "'ext' extension argument must be a string"
     if ext != '':
         if ext[0] != '.':
             ext = '.'+ext
@@ -2360,7 +2363,7 @@ def exportPointset(thepointset, infodict, separator='   ',
             print("There was a problem opening file "+fname+ext)
             raise
         try:
-            if isinstance(tup, str):
+            if isinstance(tup, six.string_types):
                 try:
                     varray = thepointset[tup]
                 except TypeError:
@@ -2371,8 +2374,8 @@ def exportPointset(thepointset, infodict, separator='   ',
                 except TypeError:
                     raise ValueError("Invalid specification of coordinates")
             elif isinstance(tup, (list, tuple)):
-                if alltrue([isinstance(ti,str) for ti in tup]):
-                    thetup=list(tup)
+                if alltrue([isinstance(ti, six.string_types) for ti in tup]):
+                    thetup = list(tup)
                     if thepointset.indepvarname in tup:
                         tix = thetup.index(thepointset.indepvarname)
                         thetup.remove(thepointset.indepvarname)
@@ -2457,7 +2460,7 @@ def importPointset(xFileName, t=None, indices=None, sep=" ",
     x_dummy_vallist = [s for s in x_dummy_all.split(sep) if s != '']
     if t is None:
         get_t = 0
-    elif isinstance(t, str):
+    elif isinstance(t, six.string_types):
         tFileName = t
         tFile = open(tFileName, 'r')
         tFileStrList = tFile.readlines()
