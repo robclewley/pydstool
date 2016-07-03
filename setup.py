@@ -77,6 +77,15 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
+def get_datafiles():
+    source_dirs = ['examples', 'tests']
+    datafiles = []
+    for s in source_dirs:
+        for d, _, files in os.walk(s):
+            datafiles.append((d, [os.path.join(d, f) for f in files]))
+    return datafiles
+
+
 setup(
     name="PyDSTool",
     version=__version__,
@@ -106,6 +115,7 @@ setup(
     package_data={
         '': ['*.txt', '*.rst'],
     },
+    data_files=get_datafiles(),
     classifiers=[
         "Development Status :: 4 - Beta",
         "Topic :: Scientific/Engineering",
