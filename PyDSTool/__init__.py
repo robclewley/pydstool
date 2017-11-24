@@ -50,31 +50,6 @@ try:
     import scipy
 except ImportError:
     raise RuntimeError("SciPy is required")
-try:
-    verstr_parts = scipy.__version__.split('.')
-except AttributeError:
-    verstr_parts = scipy.__scipy_version__.split('.')
-digits = [str(n) for n in range(10)]
-vernums = []
-# filter out any trailing alphabetic chars in version number,
-# e.g. for release candidates
-temp_str = ''
-for s in verstr_parts:
-    for t in s:
-        if t in digits:
-            temp_str += t
-        else:
-            break
-    try:
-        vernums.append(int(temp_str))
-    except ValueError:
-        # wholly alphabetical component, e.g. in '0.5.2.dev'
-        pass
-    temp_str = ''
-assert len(vernums) > 0
-if vernums[1] < 5:
-    raise RuntimeError("SciPy v0.5.1 or above is required")
-del digits, vernums, temp_str
 
 import math, random
 import types, time
