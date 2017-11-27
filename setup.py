@@ -92,7 +92,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "six",
-        "scipy>=0.9",
+        "scipy>=0.9,<0.17",
         "numpy>=1.6"
     ],
     tests_require=['pytest', 'mock', 'pytest-xdist'],
