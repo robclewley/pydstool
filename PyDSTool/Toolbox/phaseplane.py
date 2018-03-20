@@ -1321,7 +1321,7 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1000, eps=1e-8,
     # NOTE: def Rhs(self, t, xdict, pdict) and Jacobian signature
     # has same form, so need to use a wrapper function to convert order
     # of arguments to suit solver.
-    #
+
     Rhs_wrap = make_RHS_wrap(gen, xdict, x0_names)
     if gen.haveJacobian():
         fprime = make_Jac_wrap(gen, xdict, x0_names)
@@ -1346,8 +1346,9 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1000, eps=1e-8,
     xtol = eps/10.
     def array_to_point(a):
         return Point(dict(zip(x0_names,a)))
+
     for dummy_ix in range(n**D):
-        x0 = array([x0_coords[i][d_posns[i]] for i in range(D)])
+        x0 = [ x0_coords[i][d_posns[i]] for i in range(D)]
         # TEST
         #sol = root(Rhs_wrap, x0, (t,gen.pars), method='hybr',
         #           jac=fprime, options={'xtol':xtol})
@@ -4809,7 +4810,7 @@ class base_n_counter(object):
     def __init__(self, n, d):
         self._maxval = n-1
         self._d = d
-        self.counter = np.zeros((d,))
+        self.counter = np.zeros((d,), dtype=np.int)
 
     def inc(self):
         ix = 0
