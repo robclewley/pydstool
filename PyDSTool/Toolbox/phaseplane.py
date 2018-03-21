@@ -4163,13 +4163,7 @@ def get_PP(gen, pt, vars, doms=None, doplot=True,
                            t=t, eps=1e-8)
 
     f = figure(1)
-    nulls_x, nulls_y, handles = find_nullclines(gen, xFS, yFS,
-                                    x_dom=x_dom, y_dom=y_dom,
-                                    fixed_vars=ptFS, n=3, t=t,
-                                    max_step={xFS: 0.1, yFS: 1},
-                                    max_num_points=10000, fps=fps,
-                                    doplot=doplot, plot_style=null_style,
-                                    newfig=False)
+    nulls_x, nulls_y = find_nullclines( gen, xFS, yFS, n=3, t=t )
     if doplot:
         tol = 0.01
         xwidth = abs(x_dom[1]-x_dom[0])
