@@ -4036,7 +4036,7 @@ def plot_PP_fps(fps, coords=None, do_evecs=False, markersize=10):
             style = 'ko'
         plt.plot(fp.point[x], fp.point[y], style, markersize=markersize, mew=2)
 
-def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0):
+def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0, **plotdict):
     """Draw 2D vector field in (xname, yname) coordinates of given Generator,
     sampling on a uniform grid of n by n points.
 
@@ -4080,14 +4080,9 @@ def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0):
 
     X, Y = np.meshgrid(xs, ys)
     dxs, dys = np.meshgrid(xs, ys)
-
-##    dx_big = 0
-##    dy_big = 0
     dz_big = 0
     vec_dict = {}
 
-#    dxs = array((n,), float)
-#    dys = array((n,), float)
     for xi, x in enumerate(xs):
         for yi, y in enumerate(ys):
             xdict.update({xname: x, yname: y})
@@ -4096,41 +4091,19 @@ def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0):
             dxs[yi,xi] = dx
             dys[yi,xi] = dy
             dz = np.linalg.norm((dx,dy))
-##            vec_dict[ (x,y) ] = (dx, dy, dz)
-##            if dx > dx_big:
-##                dx_big = dx
-##            if dy > dy_big:
-##                dy_big = dy
             if dz > dz_big:
                 dz_big = dz
 
     plt.quiver(X, Y, dxs, dys, angles='xy', pivot='middle', units='inches',
                scale=dz_big*max(h,w)/(10*exp(2*scale_exp)), lw=0.01/exp(scale_exp-1),
                headwidth=max(2,1.5/(exp(scale_exp-1))),
-               #headlength=2*max(2,1.5/(exp(scale_exp-1))),
-               width=0.001*max(h,w), minshaft=2, minlength=0.001)
-
-##    # Use 95% of interval size
-##    longest_x = w*0.95/(n-1)
-##    longest_y = h*0.95/(n-1)
-##    longest = min(longest_x, longest_y)
-##
-##    scaling_x = longest_x/dx_big
-##    scaling_y = longest_y/dy_big
-##    scaling = min(scaling_x, scaling_y)
-
+               width=0.001*max(h,w), minshaft=2, minlength=0.001,
+               **plotdict
+               )
     ax = plt.gca()
-##    hw = longest/10
-##    hl = hw*2
-##    for x in xs:
-##        for y in ys:
-##            dx, dy, dz = vec_dict[ (x,y) ]
-##            plt.arrow(x, y, scaling*dx, yscale*scaling*dy,
-##                      head_length=hl, head_width=hw, length_includes_head=True)
     ax.set_xlim(xdom)
     ax.set_ylim(ydom)
     plt.draw()
-
 
 def get_PP(gen, pt, vars, doms=None, doplot=True,
            t=0, saveplot=None, format='svg', trail_pts=None,
