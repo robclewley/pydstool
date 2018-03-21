@@ -1,7 +1,12 @@
+cache: apt
+sudo: true
 language: python
+python:
+    - "3.6"
+    - "2.7"
+    - "3.7-dev"
 matrix:
     include:
-        - python: 3.4
           env:
             - NUMPY_SPEC=numpy
             - SCIPY_SPEC="scipy<0.17"
@@ -31,9 +36,6 @@ script:
 after_success:
     - if [ "${COVERAGE}" == "yes" ]; then coveralls --config_file .coveragerc; fi
 
-cache: apt
-
-sudo: false
 
 addons:
     apt:
