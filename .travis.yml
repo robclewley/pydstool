@@ -4,12 +4,12 @@ matrix:
         - python: 3.4
           env:
             - NUMPY_SPEC=numpy
-            - SCIPY_SPEC="scipy<0.17"
+            - SCIPY_SPEC="scipy>=1.0,<2.0"
             - COVERAGE="no"
         - python: 2.7
           env:
             - NUMPY_SPEC=numpy
-            - SCIPY_SPEC="scipy<0.17"
+            - SCIPY_SPEC="scipy>=1.0,<2.0"
             - COVERAGE="yes"
 
 before_install:
