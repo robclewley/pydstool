@@ -72,7 +72,7 @@ for s in verstr_parts:
         pass
     temp_str = ''
 assert len(vernums) > 0
-if vernums[1] < 5:
+if vernums[0] == 0 and vernums[1] < 5:
     raise RuntimeError("SciPy v0.5.1 or above is required")
 del digits, vernums, temp_str
 
