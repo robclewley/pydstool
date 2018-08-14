@@ -523,7 +523,7 @@ class Generator(object):
     def _kw_process_tdomain(self, kw, fs_args):
         if 'tdomain' in kw:
             self.tdomain = kw['tdomain']
-            if self.tdomain[0] >= self.tdomain[1]:
+            if not self._is_domain_ordered(self.tdomain[0], self.tdomain[1]):
                 print("Time domain specified: [%s, %s]"%(self.tdomain[0],
                                                          self.tdomain[1]))
                 raise PyDSTool_ValueError("tdomain values must be in order of "
@@ -709,6 +709,16 @@ class Generator(object):
                 else:
                     self.xtype[name] = float
 
+    def _is_domain_ordered(self, left_bound, right_bound):
+        try:
+            return left_bound <= right_bound
+        except TypeError:
+            # non-numeric types are unorderable
+            if isinstance(left_bound, QuantSpec):
+                return self._is_domain_ordered(
+                    float(str(left_bound)), float(str(right_bound)))
+            return True
+
     def _kw_process_xdomain(self, kw, fs_args):
         if 'xdomain' in kw:
             self.xdomain = {}
@@ -717,11 +727,11 @@ class Generator(object):
                 if isinstance(v, _seq_types):
                     assert len(v) == 2, \
                            "Invalid size of domain specification for "+name
-                    if v[0] >= v[1]:
+                    if self._is_domain_ordered(v[0], v[1]):
+                        self.xdomain[name] = copy(v)
+                    else:
                         raise PyDSTool_ValueError('xdomain values must be in'
                                                   'order of increasing size')
-                    else:
-                        self.xdomain[name] = copy(v)
                 elif isinstance(v, _num_types):
                     self.xdomain[name] = [v, v]
                 else:
@@ -795,7 +805,7 @@ class Generator(object):
                                "Invalid size of domain specification for "+k
                     self.pdomain[self._FScompatibleNames(str(k))] = v
                 for name in self.pdomain:
-                    if self.pdomain[name][0] >= self.pdomain[name][1]:
+                    if not self._is_domain_ordered(self.pdomain[name][0], self.pdomain[name][1]):
                         raise PyDSTool_ValueError('pdomain values must be in order of increasing size')
                 for name in remain(self.pars.keys(), self.pdomain.keys()):
                     self.pdomain[name] = [-Inf, Inf]

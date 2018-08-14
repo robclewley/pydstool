@@ -561,17 +561,21 @@ class Interval(object):
                 hival = arg[1]
                 #assert not isnan(loval) and not isnan(hival), \
                 #       "Cannot specify NaN as interval endpoint"
-                if not loval < hival:
-                    print("set() was passed loval = ", loval, \
-                          " and hival = ", hival)
-                    raise PyDSTool_ValueError('Interval endpoints must be '
-                                    'given in order of increasing size')
+                try:
+                    if not loval < hival:
+                        print("set() was passed loval = ", loval, \
+                            " and hival = ", hival)
+                        raise PyDSTool_ValueError('Interval endpoints must be '
+                                        'given in order of increasing size')
+                except TypeError:
+                    # unorderable types
+                    pass
                 self._intervalstr = '['+str(loval)+',' \
                                     +str(hival)+']'
                 if compareNumTypes(type(loval), self.type):
                     self._loval = loval
                 elif compareNumTypes(self.type, _float_types):
-                    self._loval = float(loval)
+                    self._loval = float(str(loval))
                 elif isinf(loval):
                     # allow Inf to be used for integer types
                     self._loval = loval
@@ -580,7 +584,7 @@ class Interval(object):
                 if compareNumTypes(type(hival), self.type):
                     self._hival = hival
                 elif compareNumTypes(self.type, _float_types):
-                    self._hival = float(hival)
+                    self._hival = float(str(hival))
                 elif isinf(hival):
                     # allow Inf to be used for integer types
                     self._hival = hival
