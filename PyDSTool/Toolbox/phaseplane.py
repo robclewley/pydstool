@@ -1005,7 +1005,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                         y_null_part = crop_2D(array([P_y['null_curve_y'].sol[xname],
                                                      P_y['null_curve_y'].sol[yname]]).T,
                                               xinterval, yinterval)
-                        in_subom = len(y_null_part)>0
+                        in_subdom = len(y_null_part)>0
                         done = num_points > 15*loop_step
 
             # BACKWARD ###########
@@ -1042,7 +1042,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                         y_null_part = crop_2D(array([P_y['null_curve_y'].sol[xname],
                                                      P_y['null_curve_y'].sol[yname]]).T,
                                               xinterval, yinterval)
-                        in_subom = len(y_null_part)>0
+                        in_subdom = len(y_null_part)>0
                         done = num_points > 15*loop_step
 
             # overwrite y_null from fsolve, pre-PyCont
