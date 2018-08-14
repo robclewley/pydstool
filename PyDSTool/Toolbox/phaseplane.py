@@ -4809,13 +4809,13 @@ class base_n_counter(object):
     def __init__(self, n, d):
         self._maxval = n-1
         self._d = d
-        self.counter = np.zeros((d,))
+        self.counter = np.zeros((d,), dtype=np.int)
 
     def inc(self):
         ix = 0
         while True:
             if ix == self._d:
-                self.counter = np.zeros((self._d,))
+                self.counter = np.zeros((self._d,), dtype=np.int)
                 break
             if self.counter[ix] < self._maxval:
                 self.counter[ix] += 1
@@ -4831,7 +4831,7 @@ class base_n_counter(object):
             raise IndexError("Invalid index for counter")
 
     def reset(self):
-        self.counter = np.zeros((self._d,))
+        self.counter = np.zeros((self._d,), dtype=np.int)
 
     def __str__(self):
         return str(self.counter.tolist())
