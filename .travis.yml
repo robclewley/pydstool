@@ -1,23 +1,25 @@
 language: python
+
+python:
+    - "3.4"
+    - "3.5"
+    - "3.6"
+    - "3.7-dev"
+env:
+    - COVERAGE="no"
+
 matrix:
     include:
-        - python: 3.4
-          env:
-            - NUMPY_SPEC=numpy
-            - SCIPY_SPEC="scipy>=1.0,<2.0"
-            - COVERAGE="no"
-        - python: 2.7
-          env:
-            - NUMPY_SPEC=numpy
-            - SCIPY_SPEC="scipy>=1.0,<2.0"
-            - COVERAGE="yes"
+      - python: 2.7
+        env: COVERAGE="yes"
+
 
 before_install:
     - pip install --upgrade pip setuptools
     - pip install pytest pytest-xdist six mock
 
 install:
-    - pip install $NUMPY_SPEC $SCIPY_SPEC
+    - pip install numpy "scipy>=1.0,<2.0"
     - if [ "${COVERAGE}" == "yes" ]; then pip install coverage==4.0.3 python-coveralls; fi
 
 script:
