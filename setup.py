@@ -86,10 +86,15 @@ def get_datafiles():
     return datafiles
 
 
+needs_pytest = {'test', 'pytest', 'ptr'}.intersection(sys.argv)
+pytest_runner = ['pytest-runner'] if needs_pytest else []
+
+
 setup(
     name="PyDSTool",
     version=__version__,
     packages=find_packages(),
+    setup_requires=pytest_runner,
     install_requires=[
         "six",
         "scipy>=1.0,<2.0",
