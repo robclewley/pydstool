@@ -1284,9 +1284,9 @@ class Pointset(Point):
         if isinstance(other, Pointset):
             if not all(self.indepvararray == other.indepvararray):
                 raise ValueError("Independent variable arrays are not the same")
-            return array([self[i] < other[i] for i in range(len(self))], 'Bool')
+            return array([self[i] < other[i] for i in range(len(self))], dtype=npy.bool_)
         elif isinstance(other, Point):
-            return array([p < other for p in self], 'Bool')
+            return array([p < other for p in self], dtype=npy.bool_)
         else:
             try:
                 return self.coordarray < other
@@ -1297,9 +1297,9 @@ class Pointset(Point):
         if isinstance(other, Pointset):
             if not all(self.indepvararray == other.indepvararray):
                 raise ValueError("Independent variable arrays are not the same")
-            return array([self[i] > other[i] for i in range(len(self))], 'Bool')
+            return array([self[i] > other[i] for i in range(len(self))], dtype=npy.bool_)
         elif isinstance(other, Point):
-            return array([p > other for p in self], 'Bool')
+            return array([p > other for p in self], dtype=npy.bool_)
         else:
             try:
                 return self.coordarray > other
@@ -1310,9 +1310,9 @@ class Pointset(Point):
         if isinstance(other, Pointset):
             if not all(self.indepvararray == other.indepvararray):
                 raise ValueError("Independent variable arrays are not the same")
-            return array([self[i] <= other[i] for i in range(len(self))], 'Bool')
+            return array([self[i] <= other[i] for i in range(len(self))], dtype=npy.bool_)
         elif isinstance(other, Point):
-            return array([p <= other for p in self], 'Bool')
+            return array([p <= other for p in self], dtype=npy.bool_)
         else:
             try:
                 return self.coordarray <= other
@@ -1323,9 +1323,9 @@ class Pointset(Point):
         if isinstance(other, Pointset):
             if not all(self.indepvararray == other.indepvararray):
                 raise ValueError("Independent variable arrays are not the same")
-            return array([self[i] >= other[i] for i in range(len(self))], 'Bool')
+            return array([self[i] >= other[i] for i in range(len(self))], dtype=npy.bool_)
         elif isinstance(other, Point):
-            return array([p >= other for p in self], 'Bool')
+            return array([p >= other for p in self], dtype=npy.bool_)
         else:
             try:
                 return self.coordarray >= other
@@ -1338,9 +1338,9 @@ class Pointset(Point):
         if isinstance(other, Pointset):
             if not all(self.indepvararray == other.indepvararray):
                 raise ValueError("Independent variable arrays are not the same")
-            return array([self[i] == other[i] for i in range(len(self))], 'Bool')
+            return array([self[i] == other[i] for i in range(len(self))], dtype=npy.bool_)
         elif isinstance(other, Point):
-            return array([p == other for p in self], 'Bool')
+            return array([p == other for p in self], dtype=npy.bool_)
         else:
             try:
                 return self.coordarray == other
@@ -1351,9 +1351,9 @@ class Pointset(Point):
         if isinstance(other, Pointset):
             if not all(self.indepvararray == other.indepvararray):
                 raise ValueError("Independent variable arrays are not the same")
-            return array([self[i] != other[i] for i in range(len(self))], 'Bool')
+            return array([self[i] != other[i] for i in range(len(self))], dtype=npy.bool_)
         elif isinstance(other, Point):
-            return array([p != other for p in self], 'Bool')
+            return array([p != other for p in self], dtype=npy.bool_)
         else:
             try:
                 return self.coordarray != other

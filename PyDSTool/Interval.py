@@ -517,7 +517,7 @@ class Interval(object):
                 if self._hival not in samplelist:
                     samplelist.append(self._hival)
             else: # choose automatically
-                n = max(round(intervalsize/dt),2)
+                n = max(int(round(intervalsize / dt)), 2)
                 dt = intervalsize/n
                 samplelist = list(linspace(self._loval, self._hival, n))
             if avoidendpoints:
@@ -718,4 +718,3 @@ def issingleton(ni):
         return ni.issingleton
     else:
         raise PyDSTool_ExistError('Interval undefined')
-
