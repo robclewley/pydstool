@@ -37,7 +37,7 @@ from scipy import linalg
 from numpy import dot as matrixmultiply
 from numpy import array, float, complex, int, float64, complex64, int32, \
      zeros, divide, subtract, argmax, identity, argsort, conjugate, sqrt, \
-     arange, Inf, NaN, isfinite, r_, c_, sign, mod, mat, sum, \
+     arange, Inf, NaN, isfinite, r_, c_, sign, mod, sum, \
      multiply, transpose, eye, real, imag, ndarray
 from math import pi as PI
 from copy import copy

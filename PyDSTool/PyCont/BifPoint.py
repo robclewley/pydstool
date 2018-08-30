@@ -12,7 +12,7 @@ from .misc import *
 from PyDSTool.common import args
 from .TestFunc import DiscreteMap, FixedPointMap
 
-from numpy import Inf, NaN, isfinite, r_, c_, sign, mod, mat, \
+from numpy import Inf, NaN, isfinite, r_, c_, sign, mod, \
     subtract, divide, transpose, eye, real, imag, \
     conjugate, average
 from scipy import optimize, linalg

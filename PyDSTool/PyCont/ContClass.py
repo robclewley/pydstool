@@ -28,7 +28,7 @@ from PyDSTool.matplotlib_import import *
 
 from numpy import dot as matrixmultiply
 from numpy import array, float, complex, int, float64, complex64, int32, \
-     zeros, divide, subtract, Inf, NaN, isfinite, r_, c_, sign, mod, mat, \
+     zeros, divide, subtract, Inf, NaN, isfinite, r_, c_, sign, mod, \
      subtract, divide, transpose, eye, real, imag, all, ndarray
 from numpy import get_include
 
