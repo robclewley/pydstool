@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import
 
-import mock
 import pytest
 
 from PyDSTool import (
@@ -14,8 +13,8 @@ from PyDSTool.Generator import (
 )
 
 
-def test_mandatory_specfn_key():
-    model = mock.MagicMock()
+def test_mandatory_specfn_key(mocker):
+    model = mocker.MagicMock()
     model.query.return_value = {}
     with pytest.raises(PyDSTool_KeyError):
         EmbeddedSysGen({'name': 'test', 'system': model})

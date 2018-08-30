@@ -1,12 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+# pylint: disable=redefined-outer-name,protected-access,line-too-long
 """
     Tests for Matlab code generator
 
 """
 
-import mock
 import pytest
 
 from PyDSTool import FuncSpec
@@ -104,7 +101,6 @@ def test_matlab_auxspec_if_raises_exception():
             'varspecs': {'x': 'x**3'},
             'fnspecs': {'myaux': (['x'], 'if(x < 0, x, x**3)')},
         })
-
 
 
 def test_matlab_funcspec_has_python_user_auxfn_interface():
@@ -338,75 +334,82 @@ def test_matlab_funcspec_with_reuseterms_and_aux_funcs():
     ]
 
 
-class TestMatlabGenerateAux(object):
+_NAME = 'myaux'
+_SPEC = (['x', 'y', 'z'], 'x * z + y')
+_TEMPLATE = MATLAB_AUX_TEMPLATE.split('\n')
 
-    def setup(self):
-        self.fspec = mock.Mock(spec=FuncSpec)
-        self.fspec.name = 'funspec'
-        self.fspec.pars = []
-        self.fspec.vars = ['x', 'y', 'z']
-        self.name = 'myaux'
-        self.spec =(['x', 'y', 'z'], 'x * z + y')
-        self.fspec._auxfnspecs = {self.name: self.spec}
-        self.fspec.auxfns = {self.name: self.spec}
-        self.fspec.reuseterms = {}
 
-    @property
-    def template(self):
-        return MATLAB_AUX_TEMPLATE.split('\n')
+@pytest.fixture
+def fspec(mocker):
+    fspec = mocker.Mock(spec=FuncSpec)
+    fspec.name = 'funspec'
+    fspec.pars = []
+    fspec.vars = ['x', 'y', 'z']
+    fspec._auxfnspecs = {_NAME: _SPEC}
+    fspec.auxfns = {_NAME: _SPEC}
+    fspec.reuseterms = {}
+    return fspec
 
-    def test_signature(self):
-        _, sig = Matlab(self.fspec).generate_auxfun(self.name, self.spec)
 
-        assert self.template[0].format(
-            name=self.name,
-            args=', '.join([str(v) + '__' for v in self.spec[0]]),
-        ) == sig.split('\n')[0]  # FIXME: signature should be single string
+def test_signature(fspec):
+    _, sig = Matlab(fspec).generate_auxfun(_NAME, _SPEC)
 
-    def test_intro_comment_follows_signature(self):
-        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec)
+    assert _TEMPLATE[0].format(
+        name=_NAME,
+        args=', '.join([str(v) + '__' for v in _SPEC[0]]),
+    ) == sig.split('\n')[0]  # FIXME: signature should be single string
 
-        assert self.template[1].format(name=self.name, specname=self.fspec.name) in code
-        assert self.template[2] in code
 
-    def test_pardef_section_for_no_params(self):
-        self.fspec.pars = []
-        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec)
+def test_intro_comment_follows_signature(fspec):
+    code, _ = Matlab(fspec).generate_auxfun(_NAME, _SPEC)
 
-        # FIXME: do not insert "Parameter definitions" if no par definitions
-        assert '% Parameter definitions' in code
+    assert _TEMPLATE[1].format(name=_NAME, specname=fspec.name) in code
+    assert _TEMPLATE[2] in code
 
-    def test_pardef_section_for_single_param(self):
-        self.fspec.pars = ['p']
-        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec)
 
-        assert '% Parameter definitions' in code
-        assert 'p = p_(1);' in code
+def test_pardef_section_for_no_params(fspec):
+    fspec.pars = []
+    code, _ = Matlab(fspec).generate_auxfun(_NAME, _SPEC)
 
-    def test_pardef_section_for_two_params(self):
-        self.fspec.pars = ['p', 'q']
-        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec)
+    # FIXME: do not insert "Parameter definitions" if no par definitions
+    assert '% Parameter definitions' in code
 
-        assert '% Parameter definitions' in code
-        assert 'p = p_(1);' in code
-        assert 'q = p_(2);' in code
 
-    def test_reuseterms_section_when_no_reuseterms(self):
-        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec)
+def test_pardef_section_for_single_param(fspec):
+    fspec.pars = ['p']
+    code, _ = Matlab(fspec).generate_auxfun(_NAME, _SPEC)
 
-        assert '% reused term definitions ' not in code
+    assert '% Parameter definitions' in code
+    assert 'p = p_(1);' in code
 
-    def test_reuseterms_section(self):
-        self.spec = (['x', 'y', 'z'], 'xz + y')
-        self.fspec.reuseterms = {'x*z': 'xz'}
 
-        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec)
+def test_pardef_section_for_two_params(fspec):
+    fspec.pars = ['p', 'q']
+    code, _ = Matlab(fspec).generate_auxfun(_NAME, _SPEC)
 
-        assert '% reused term definitions ' in code
-        assert 'xz = x__*z__;' in code
-        assert 'y_ = xz + y__;' in code
+    assert '% Parameter definitions' in code
+    assert 'p = p_(1);' in code
+    assert 'q = p_(2);' in code
 
-    def test_auxfun_value(self):
-        code, _ = Matlab(self.fspec).generate_auxfun(self.name, self.spec)
 
-        assert 'y_ = x__ * z__ + y__;' in code
+def test_reuseterms_section_when_no_reuseterms(fspec):
+    code, _ = Matlab(fspec).generate_auxfun(_NAME, _SPEC)
+
+    assert '% reused term definitions ' not in code
+
+
+def test_reuseterms_section(fspec):
+    spec = (['x', 'y', 'z'], 'xz + y')
+    fspec.reuseterms = {'x*z': 'xz'}
+
+    code, _ = Matlab(fspec).generate_auxfun(_NAME, spec)
+
+    assert '% reused term definitions ' in code
+    assert 'xz = x__*z__;' in code
+    assert 'y_ = xz + y__;' in code
+
+
+def test_auxfun_value(fspec):
+    code, _ = Matlab(fspec).generate_auxfun(_NAME, _SPEC)
+
+    assert 'y_ = x__ * z__ + y__;' in code

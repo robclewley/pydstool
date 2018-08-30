@@ -100,7 +100,7 @@ setup(
         "scipy>=1.0,<2.0",
         "numpy>=1.6"
     ],
-    tests_require=['pytest', 'mock', 'pytest-xdist'],
+    tests_require=['pytest', 'pytest-mock', 'pytest-xdist'],
     cmdclass={
         'test': PyTest,
         'clean': clean
