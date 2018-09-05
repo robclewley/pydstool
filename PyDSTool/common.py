@@ -1496,7 +1496,12 @@ def timestamp(tdigits=8):
     """Return a unique timestamp string for the session. useful for ensuring
     unique function identifiers, etc.
     """
-    return str(time.clock()).replace(".", "").replace("-","")[:tdigits+1]
+    try:
+        t = time.process_time()
+    except AttributeError:
+        # Python 2.7 compatibility
+        t = time.clock()
+    return str(t).replace(".", "").replace("-", "")[:tdigits + 1]
 
 
 def isUniqueSeq(objlist):
