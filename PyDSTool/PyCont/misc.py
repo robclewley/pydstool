@@ -175,7 +175,7 @@ def trilinearform(A, x1, x2, x3):
 
 def ijtoind(i, j):
     """ 0 <= j < i """
-    return i*(i-1)/2 + j
+    return i*(i-1)//2 + j
 
 def indtoij(ind):
     #size = array([n*(n-1)/2 - k*(k-1)/2 for k in range(1,n+1)])
@@ -190,7 +190,7 @@ def indtoij(ind):
     return i, j
 
 def testindij(n):
-    bn = n*(n-1)/2
+    bn = n*(n-1)//2
     print("Testing %d..." % n)
     for ind in range(bn):
         i, j = indtoij(ind)
@@ -201,7 +201,7 @@ def testindij(n):
 
 def wedge(u, v):
     n = u.shape[0]
-    bn = n*(n-1)/2
+    bn = n*(n-1)//2
     q = zeros((bn,1), float)
 
     for ind in range(bn):

@@ -27,7 +27,7 @@ def make_noise_signal(dt, t_end, mean, stddev, num_cells, seed=None):
     for a duration of t_end."""
     if seed is not None:
         numpy.random.seed(seed)
-    N = ceil(t_end*1./dt)
+    N = int(ceil(t_end*1./dt))
     t = linspace(0, t_end, N)
     coorddict = {}
     for cellnum in range(num_cells):

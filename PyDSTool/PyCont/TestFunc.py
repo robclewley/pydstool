@@ -1065,7 +1065,7 @@ class NS_Det(BiAltMethod):
         BiAltMethod.__init__(self, (F.n,1), F, C, save=save, numpoints=numpoints)
 
     def func(self, X, V):
-        n = self.F.m*(self.F.m-1)/2
+        n = self.F.m*(self.F.m-1)//2
         self.bialtprod(self.F.J_coords,self.F.J_coords)
         return array([linalg.det(self.data.P - eye(n,n))])
 
