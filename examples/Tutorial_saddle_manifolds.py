@@ -4,6 +4,7 @@ Based on example from Brian M in sourceforge discussion:
 https://sourceforge.net/p/pydstool/discussion/472291/thread/063160f4/
 """
 
+from __future__ import print_function
 import PyDSTool as dst
 from PyDSTool.Toolbox import phaseplane as pp
 import numpy as np
@@ -100,7 +101,7 @@ def build_sys():
     DSargs.events = [ev_plus, ev_minus]
 
     # an instance of the 'Generator' class.
-    print "Initializing generator..."
+    print("Initializing generator...")
     return gentype(DSargs)
 
 def plot_PP_fps_custom(fps, coords=None, do_evecs=False, markersize=10, flip_coords=False):
@@ -200,8 +201,8 @@ def plot_PP_vf_custom(gen, xname, yname, N=20, subdomain=None, scale_exp=0):
 
     ax = plt.gca()
 
-    print "xdom: ", xdom
-    print "ydom: ", ydom
+    print("xdom: ", xdom)
+    print("ydom: ", ydom)
     ax.set_xlim(xdom)
     ax.set_ylim(ydom)
     plt.draw()
@@ -318,7 +319,7 @@ for which_man in ['s', 'u']:
             # are close to the saddle point
             if len(man_part) == 1:
                 # first stage (only called once)
-                print "  First stage..."
+                print("  First stage...")
                 ode_sys.set(algparams={'max_pts': 20000})
                 man_new = pp.find_saddle_manifolds(saddle, 'phi', ds=0.004, ds_gamma=0.02,
                                 ds_perp=0.005, tmax=60, max_arclen=max_arclen, eps=2e-5,
