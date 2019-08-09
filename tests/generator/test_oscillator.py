@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
+r"""
     Simple forward integration test for ODE generators
 
     Comparing numerical results with exact solution
