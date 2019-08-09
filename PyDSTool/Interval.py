@@ -30,7 +30,7 @@ import copy
 MIN_EXP = -15
 
 # type identifiers
-re_number = '([-+]?(\d+(\.\d*)?|\d*\.\d+)([eE][-+]?\d+)?)'
+re_number = r'([-+]?(\d+(\.\d*)?|\d*\.\d+)([eE][-+]?\d+)?)'
 
 c=1  # contained const
 n=0  # notcontained const
