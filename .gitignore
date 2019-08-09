@@ -22,3 +22,5 @@ PyDSTool.egg-info/
 .settings
 .DS_Store
 *.o
+.tox/
+.eggs/
