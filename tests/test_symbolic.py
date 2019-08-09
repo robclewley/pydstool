@@ -11,7 +11,11 @@ from numpy import (
     pi,
 )
 from numpy.random import rand
-from numpy.testing.utils import assert_approx_equal
+try:
+    from numpy.testing import assert_approx_equal
+except ImportError: 
+    # For backwards compatibility
+    from numpy.testing.utils import assert_approx_equal
 from copy import copy
 
 from PyDSTool.parseUtils import (
