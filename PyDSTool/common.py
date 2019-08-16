@@ -39,10 +39,14 @@ else:
     _all_numpy_complex = (complex_, complex64, complex128, complex192)
 
 try:
-    from scipy.misc import factorial
+    from scipy.special import factorial
 except ImportError:
-    # retain backward compatibility to older scipy versions
-    from scipy import factorial
+    try:
+        # Retain backward compatibility with older scipy versions
+        from scipy.misc import factorial
+    except ImportError:
+        # Retain backward compatibility with even older scipy versions
+        from scipy import factorial
 
 
 import time
