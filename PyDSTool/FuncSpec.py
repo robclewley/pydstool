@@ -274,13 +274,13 @@ class FuncSpec(object):
                                 'arithmetic operators')
         for s in term:
             if self.targetlang == 'python':
-                if s in '[]{}~@#$%&\|?^': # <>! now OK, e.g. for "if" statements
+                if s in r'[]{}~@#$%&\|?^': # <>! now OK, e.g. for "if" statements
                     print("Error in term:%s" % term)
                     raise ValueError('terms to be substituted must be '
                         'alphanumeric or contain arithmetic operators '
                         '+ - / *')
             else:
-                if s in '[]{}~!@#$%&\|?><': # removed ^ from this list
+                if s in r'[]{}~!@#$%&\|?><': # removed ^ from this list
                     print("Error in term:%s" % term)
                     raise ValueError('terms to be substituted must be alphanumeric or contain arithmetic operators + - / *')
         return True
@@ -290,7 +290,7 @@ class FuncSpec(object):
             print("Error in replacement term:%s" % repterm)
             raise ValueError('replacement terms must not begin with numbers')
         for s in repterm:
-            if s in '+-/*.()[]{}~!@#$%^&\|?><,':
+            if s in r'+-/*.()[]{}~!@#$%^&\|?><,':
                 print("Error in replacement term:%s" % repterm)
                 raise ValueError('replacement terms must be alphanumeric')
 
