@@ -1,7 +1,7 @@
 # Radau ODE system
 from __future__ import division, absolute_import, print_function
 
-import imp
+import importlib
 
 from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem
@@ -35,8 +35,10 @@ class radau(integrator):
                             defaultBound=defaultBound)
         self.modname = modname
         try:
-            self._integMod = imp.load_module(
-                modname, *imp.find_module(modname, ["radau5_temp"]))
+            self._integMod = importlib.import_module(
+                '.' + modname,
+                package='radau5_temp',
+            )
         except:
             print("Error in importing compiled vector field and integrator.")
             print("Did you compile the RHS C code?")
