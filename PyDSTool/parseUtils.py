@@ -156,8 +156,8 @@ __all__ = _functions + _classes + _objects + _constants + _symbfuncs + _symbcons
 
 ## constants for parsing
 name_chars_RE = re.compile(r'\w')
-alphanumeric_chars_RE = re.compile('[a-zA-Z0-9]')   # without the '_'
-alphabet_chars_RE = re.compile('[a-zA-Z]')
+alphanumeric_chars_RE = re.compile(r'[a-zA-Z0-9]')   # without the '_'
+alphabet_chars_RE = re.compile(r'[a-zA-Z]')
 num_chars = [str(i) for i in range(10)]
 
 if DO_POW:
