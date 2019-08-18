@@ -74,7 +74,8 @@ class TestDSSRT:
         assert self.res3 == ('join', 'w')
 
     def test_four(self):
-        pytest.raises(PyDSTool_ValueError, "transition_psi(self.ep2, Point({'x': 1, 'z': 2, 'w': 0.1}), 0.01)")
+        with pytest.raises(PyDSTool_ValueError):
+            transition_psi(self.ep2, Point({'x': 1, 'z': 2, 'w': 0.1}), 0.01)
 
     def test_five(self):
         assert self.res5 == ('leave', 'y')
@@ -86,7 +87,8 @@ class TestDSSRT:
         assert self.res7 == ('join', 'w')
 
     def test_eight(self):
-        pytest.raises(PyDSTool_ValueError, "transition_psi(self.ep4, Point({'x': 1, 'z': 2, 'w': 0.1}), 0.01)")
+        with pytest.raises(PyDSTool_ValueError):
+            transition_psi(self.ep4, Point({'x': 1, 'z': 2, 'w': 0.1}), 0.01)
 
     def test_nine(self):
         assert self.res9 == ('leave', 'y')
