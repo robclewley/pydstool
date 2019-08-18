@@ -35,8 +35,8 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-if sys.version_info[:2] < (2, 7) or (3, 0) <= sys.version_info[0:2] < (3, 3):
-    raise RuntimeError("Python version 2.7 or >= 3.3 required.")
+if  sys.version_info[0:2] < (3, 6):
+    raise RuntimeError("Python 3.6+ required.")
 
 
 class clean(Command):
