@@ -19,7 +19,7 @@ from PyDSTool.Toolbox.ParamEst import LMpest, L2_feature
 
 import random
 from copy import copy
-from time import clock
+from time import perf_counter
 
 
 # ------------------------------------------------------------
@@ -129,13 +129,13 @@ pest_pars = LMpest(freeParams=est_parnames,
                  context=c
                 )
 
-start = clock()
+start = perf_counter()
 
 pestData_par = pest_pars.run(parDict={'ftol':ftol,
                                       'xtol':1e-3},
                              verbose=True
                              )
-print('  ... finished in %.3f seconds.\n' % (clock()-start))
+print('  ... finished in %.3f seconds.\n' % (perf_counter()-start))
 
 # Prepare plots
 print('\nPreparing plots')

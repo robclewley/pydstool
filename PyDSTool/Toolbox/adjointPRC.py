@@ -54,9 +54,9 @@ def adjointPRC(model, limit_cycle, vname, freepar, numIntervals=500,
         MDCont.newCurve(PCargs)
 
         print('Computing curve...')
-        start = clock()
+        start = perf_counter()
         MDCont['EQ1'].forward()
-        print('done in %.3f seconds!' % (clock()-start))
+        print('done in %.3f seconds!' % (perf_counter()-start))
 
         #PCargs.name = 'LC1'
         #PCargs.type = 'LC-C'

@@ -34,9 +34,9 @@ PCargs.verbosity = 2
 PyCont.newCurve(PCargs)
 
 print('Computing curve...')
-start = clock()
+start = perf_counter()
 PyCont['FP1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 PCargs = args(name='FP2', type='FP-C')
 PCargs.freepars = ['p1']
@@ -48,12 +48,12 @@ PCargs.verbosity = 2
 PyCont.newCurve(PCargs)
 
 print('Computing second branch...')
-start = clock()
+start = perf_counter()
 PyCont['FP2'].forward()
 PyCont['FP2'].update(args(MaxNumPoints=10))
 PyCont['FP2'].backward()
 PyCont['FP2'].cleanLabels()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 PCargs.name = 'FP3'
 PCargs.initpoint = 'FP2:BP2'
@@ -62,11 +62,11 @@ PCargs.MaxNumPoints = 50
 PyCont.newCurve(PCargs)
 
 print('Computing third branch...')
-start = clock()
+start = perf_counter()
 PyCont['FP3'].forward()
 PyCont['FP3'].backward()
 PyCont['FP3'].cleanLabels()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 PCargs.name = 'FP4'
 PCargs.initpoint = 'FP2:PD1'
@@ -76,11 +76,11 @@ PCargs.MaxNumPoints = 100
 PyCont.newCurve(PCargs)
 
 print('Computing third branch...')
-start = clock()
+start = perf_counter()
 PyCont['FP4'].forward()
 PyCont['FP4'].backward()
 PyCont['FP4'].cleanLabels()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 # Plot
 PyCont.display(('p1','u1'))

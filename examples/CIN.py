@@ -8,7 +8,7 @@ Robert Clewley, Erik Sherwood, Oct 2005
 
 from PyDSTool import *
 from PyDSTool.Toolbox.neuralcomp import *
-from time import clock
+from time import perf_counter
 
 # --------------------------------------------------------------------------
 
@@ -76,7 +76,7 @@ print("Target integrator is "+targetGen)
 print("------------------------------------")
 
 # measure time to build model
-t0 = clock()
+t0 = perf_counter()
 
 # Motor cell
 MNtheta_m = makePar('theta_m', -52)
@@ -165,13 +165,13 @@ synRGN_MN.add([Tmax,Vp,Kp])
 # Bring network components together into one large ModelSpec component: HHnet
 HHnet = makePointNeuronNetwork('HHnet', [RGNcell1, MNcell1, synRGN_MN])
 
-t1=clock()
+t1=perf_counter()
 print("Compiled network specification in %f seconds"%(t1-t0))
 
 ## uncomment for easy interactive reference at prompt
 #flatspec = HHnet.flattenSpec()
 
-t0 = clock()
+t0 = perf_counter()
 alg_args = {'init_step':0.5, 'max_pts': 40000}
 ic_args_net = {}
 ic_args_net.update(defaultICs(RGNcell1))
@@ -188,7 +188,7 @@ CB = modelC_net.getModel()
 # checklevel = 0 switches off all bounds checking if not needed (faster!)
 CB.set(ics=ic_args_net, checklevel=0)
 
-t1=clock()
+t1=perf_counter()
 print("Instantiated model for target ODE solver %s in %f seconds"%(targetGen, t1-t0))
 
 def getTraj(dt_plot=0.25, tend=1000):
@@ -244,9 +244,9 @@ def plotCurrents(cell_name, dataset):
 # --------------------------------------------------------------------
 
 print("\n\nComputing trajectory and getting plot data...")
-t0=clock()
+t0=perf_counter()
 v_dat = getTraj()
-t1=clock()
+t1=perf_counter()
 print("... finished in %f seconds\n"%(t1-t0))
 
 #plotActivation(MNtaun, [-100,30], [MNtheta_n, MNk_n, MNtaun_bar])

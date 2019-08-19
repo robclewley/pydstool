@@ -100,11 +100,11 @@ pest_pars = LMpest(freeParams=['k'],
                  context=c
                 )
 
-start_time = time.clock()
+start_time = time.perf_counter()
 pestData_par = pest_pars.run(parDict={'ftol': ftol,
                                       'xtol':1e-3},
                              verbose=True)
-print('... finished in %.4f seconds\n' % (time.clock()-start_time))
+print('... finished in %.4f seconds\n' % (time.perf_counter()-start_time))
 
 bestFitModel_par = pestData_par['sys_sol']
 

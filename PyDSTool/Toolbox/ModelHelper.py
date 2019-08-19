@@ -10,7 +10,7 @@
 
 from PyDSTool import *
 from copy import copy
-from time import clock
+from time import perf_counter
 
 class SpiffyODEModel(LeafComponent):
     pass

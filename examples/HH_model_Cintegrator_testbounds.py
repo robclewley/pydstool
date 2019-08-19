@@ -8,7 +8,7 @@ and dynamic update of bounds between integration runs.
 # textually substitute 'Dopri' for 'Radau' in this file to use Radau
 
 from PyDSTool import *
-from time import clock
+from time import perf_counter
 
 
 # ------------------------------------------------------------

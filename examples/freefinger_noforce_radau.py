@@ -5,7 +5,7 @@
 """
 
 from PyDSTool import *
-from time import clock
+from time import perf_counter
 from scipy.io import *
 
 # ------------------------------------------------------------
@@ -123,9 +123,9 @@ if __name__=='__main__':
 #    saveObjects(finger, 'fingergen', force=True)
 
     print('Integrating...')
-    start = clock()
+    start = perf_counter()
     ftraj = finger.compute('test')
-    print('Computed trajectory in %.3f seconds.\n' % (clock()-start))
+    print('Computed trajectory in %.3f seconds.\n' % (perf_counter()-start))
     plotData = ftraj.sample(dt=.001)
 
     exportPointset(plotData, {'varvals': ['phi1','phi2','phi3'], 'tvals':'t'},

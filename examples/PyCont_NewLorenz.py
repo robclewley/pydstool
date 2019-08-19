@@ -35,9 +35,9 @@ PCargs.verbosity = 2
 PyCont.newCurve(PCargs)
 
 print('Computing equilibrium curve...')
-start = clock()
+start = perf_counter()
 PyCont['EQ1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 # Hopf curve
 PCargs = args(name='HO1', type='H-C2')
@@ -48,9 +48,9 @@ PCargs.MaxNumPoints = 40
 PyCont.newCurve(PCargs)
 
 print('Computing hopf curve...')
-start = clock()
+start = perf_counter()
 PyCont['HO1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 # Plot
 PyCont.display(('F','x'))

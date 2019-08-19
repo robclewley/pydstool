@@ -23,7 +23,7 @@ from copy import copy, deepcopy
 import sys, gc
 #import distutils
 from distutils.sysconfig import get_python_inc
-from time import clock, sleep
+from time import perf_counter, sleep
 
 
 class dopri(integrator):

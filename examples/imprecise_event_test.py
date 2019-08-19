@@ -4,7 +4,7 @@
 """
 
 from PyDSTool import *
-from time import clock
+from time import perf_counter
 
 
 # ------------------------------------------------------------

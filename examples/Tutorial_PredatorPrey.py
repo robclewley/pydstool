@@ -64,9 +64,9 @@ PCargs.verbosity = 2
 PC.newCurve(PCargs)
 
 print('Computing curve...')
-start = clock()
+start = perf_counter()
 PC['EQ1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 PCargs.name = 'HO1'
 PCargs.type = 'H-C2'
@@ -79,9 +79,9 @@ PCargs.SaveEigen = True
 PC.newCurve(PCargs)
 
 print('Computing Hopf curve...')
-start = clock()
+start = perf_counter()
 PC['HO1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 PCargs = args(name = 'FO1', type = 'LP-C')
 PCargs.initpoint = 'HO1:ZH1'

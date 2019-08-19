@@ -15,7 +15,7 @@ import os, platform, shutil, sys, gc
 import distutils
 from distutils.core import setup, Extension
 from distutils.sysconfig import get_python_inc
-from time import clock, sleep
+from time import perf_counter, sleep
 
 # path to the installation
 import PyDSTool

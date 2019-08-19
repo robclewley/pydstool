@@ -6,7 +6,7 @@ and dynamic update of bounds between integration runs.
 """
 
 from PyDSTool import *
-from time import clock
+from time import perf_counter
 
 
 # ------------------------------------------------------------

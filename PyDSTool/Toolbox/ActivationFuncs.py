@@ -1,7 +1,7 @@
 
 from PyDSTool import *
 from PyDSTool.Toolbox import *
-from time import clock
+from time import perf_counter
 
 # --------------------------------------------------------------------------
 # Helper functions

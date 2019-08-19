@@ -10,7 +10,7 @@ Inclusion of additional libraries in C code is also tested.
 # textually substitute 'Dopri' for 'Radau' in this file to use Radau
 
 from PyDSTool import *
-from time import clock
+from time import perf_counter
 
 
 # ------------------------------------------------------------
@@ -82,9 +82,9 @@ HH_term.makeLib(include=['limits.h'])
 print("Successfully tested inclusion of additional C libraries into vector")
 print("field definition code.")
 HH_term.set(tdata=[0, 25])
-start = clock()
+start = perf_counter()
 HHtraj_term = HH_term.compute('test_term')
-print('Computed trajectory in %.3f seconds.\n' % (clock()-start))
+print('Computed trajectory in %.3f seconds.\n' % (perf_counter()-start))
 trajdata = HHtraj_term.sample(dt=1.0)
 print("Sampled this data at dt=1.0 up to the event", HH_term.getEventTimes(), ":")
 print(trajdata['v'], "\n")
@@ -97,9 +97,9 @@ HH = makeHHneuron('HH_model_test', par_args, ic_args, [thresh_ev])
 HH.set(tdata=[0, 50])
 
 print('Integrating...')
-start = clock()
+start = perf_counter()
 HHtraj = HH.compute('test')
-print('  ... finished in %.3f seconds.\n' % (clock()-start))
+print('  ... finished in %.3f seconds.\n' % (perf_counter()-start))
 plotData = HHtraj.sample(dt=0.1)
 evt=HH.getEventTimes()['thresh_ev']
 

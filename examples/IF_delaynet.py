@@ -15,7 +15,7 @@
 """
 
 from PyDSTool import *
-from time import clock
+from time import perf_counter
 
 # ---------------------------------------------------------------------------
 
@@ -149,9 +149,9 @@ def test():
                     tdata=[0, 300],
                     ics=icdict,
                     verboselevel=0)
-start = clock()
+start = perf_counter()
 test()
-print('... finished in %.3f seconds.\n' % (clock()-start))
+print('... finished in %.3f seconds.\n' % (perf_counter()-start))
 
 # -------------------------------------------------------------------------
 

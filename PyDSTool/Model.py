@@ -55,7 +55,7 @@ from numpy import Inf, NaN, isfinite, sign, abs, array, arange, \
      zeros, concatenate, transpose, shape
 from numpy import sometrue, alltrue, any, all
 import copy
-from time import clock
+from time import perf_counter
 import pprint
 
 __all__ = ['Model', 'HybridModel', 'NonHybridModel',

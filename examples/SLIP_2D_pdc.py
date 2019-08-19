@@ -9,7 +9,7 @@ from SLIP_plot import SLIP_plot
 from SLIP_2D import *
 
 from scipy.optimize import minpack, optimize
-from time import clock
+from time import perf_counter
 from copy import copy, deepcopy
 
 # ---- Define pars and i.c.'s
@@ -126,14 +126,14 @@ icdict_pdc['ydot'] = ydot_opt
 icdict_pdc['incontact'] = 0
 
 print("Computing trajectory...\n")
-start = clock()
+start = perf_counter()
 SLIP.compute(trajname='pdc',
                  tdata=[0, 12],
                  ics=icdict_pdc,
                  verboselevel=1)   # optional
 assert allclose(SLIP.trajectories['pdc'].indepdomain.get(), [0, 12], 1e-8), "Independent domain not correct"
 assert allclose(SLIP('pdc', 12, 'y'), 8.18, 1e-2), "Hybrid model computation has a problem"
-print('... finished in %.3f seconds.\n' % (clock()-start))
+print('... finished in %.3f seconds.\n' % (perf_counter()-start))
 
 print('Plotting periodic trajectory')
 
