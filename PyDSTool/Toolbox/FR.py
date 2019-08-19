@@ -1,7 +1,6 @@
 # Fruchterman-Reingold graph drawing algorithm in Python
 # R. Clewley, November 2005
 
-from __future__ import division, absolute_import, print_function
 from numpy import array, alltrue, arange, sign
 from numpy.linalg import norm
 import math

@@ -4,11 +4,11 @@
     Robert Clewley, September 2005.
 """
 
-from __future__ import absolute_import, print_function
 
 from .errors import *
 
-import sys, types
+import sys
+import types
 import numpy as npy
 import scipy as spy
 from scipy.optimize import minpack
@@ -52,8 +52,7 @@ except ImportError:
 import time
 from copy import copy, deepcopy
 import os
-from six.moves import cPickle as pickle
-import six
+import pickle
 
 # ----------------------------------------------------------------------------
 ### EXPORTS
@@ -106,7 +105,7 @@ targetLangs = ['c', 'python', 'matlab'] #, 'xpp', 'dstool'
 
 _num_types = (float, int, floating, integer) # complex, complexfloating
 
-_int_types = six.integer_types + (integer, )
+_int_types = (int, integer)
 _float_types = (float, floating)
 _complex_types = (complex, complexfloating)
 _real_types = (int, integer, float, floating)
@@ -1500,11 +1499,7 @@ def timestamp(tdigits=8):
     """Return a unique timestamp string for the session. useful for ensuring
     unique function identifiers, etc.
     """
-    try:
-        t = time.process_time()
-    except AttributeError:
-        # Python 2.7 compatibility
-        t = time.clock()
+    t = time.process_time()
     return str(t).replace(".", "").replace("-", "")[:tdigits + 1]
 
 
@@ -1525,7 +1520,7 @@ def object2str(x, digits=5):
     """Convert occurrences of types / classes,
     to pretty-printable strings."""
     try:
-        if type(x) in six.class_types + (type, ):
+        if isinstance(x, type):
             return className(x, True)
         elif isinstance(x, list):
             # search through any iterable parts (that aren't strings)

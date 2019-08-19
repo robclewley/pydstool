@@ -1,5 +1,4 @@
 # Implicit function generator
-from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from .baseclasses import ctsGen, theGenSpecHelper
@@ -12,7 +11,6 @@ from numpy import Inf, NaN, isfinite, sometrue, alltrue, array, \
      transpose, shape
 import math, random
 from copy import copy, deepcopy
-import six
 
 
 class ImplicitFnGen(ctsGen):
@@ -120,7 +118,7 @@ class ImplicitFnGen(ctsGen):
         tempfs.spec = tempspec
         # test supplied code
         try:
-            six.exec_(tempspec[0], globals())
+            exec(tempspec[0], globals())
         except:
             print('Error in supplied functional specification code')
             raise

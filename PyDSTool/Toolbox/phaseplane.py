@@ -18,7 +18,6 @@ because it is still highly experimental.
 R. Clewley, 2006 - 2015
 """
 
-from __future__ import division, absolute_import, print_function
 # itertools, operator used for _filter_consecutive function
 import itertools, operator
 import os
@@ -57,7 +56,6 @@ from scipy import linspace, isfinite, sign, alltrue, sometrue, arctan, arctan2
 from random import uniform
 import copy
 import sys
-import six
 
 norm = np.linalg.norm
 
@@ -2152,7 +2150,7 @@ class fixedpoint_nD(object):
                     dict_str = "{" + ",".join(entries) + "})\n"
                     jac_def_str = "def jac_fn(t, " + arg_str + "):\n\t" + \
                         "return self.gen.Jacobian(t, " + dict_str
-                    six.exec_(jac_def_str, locals(), globals())
+                    exec(jac_def_str, locals(), globals())
                     return jac_fn
                 else:
                     raise NotImplementedError('Jacobian is not the right shape')
@@ -2484,8 +2482,8 @@ def make_distance_to_line_auxfn(linename, fname, p, by_vector_dp=True):
     or a point q, depending on the second input argument.
     Also returns list of parameter names used.
     """
-    assert len(p)==2 and isinstance(p[0], six.string_types) \
-           and isinstance(p[1], six.string_types)
+    assert len(p)==2 and isinstance(p[0], str) \
+           and isinstance(p[1], str)
     p0 = linename+'_p_'+p[0]
     p1 = linename+'_p_'+p[1]
     pars = [p0, p1]

@@ -1,7 +1,6 @@
 """Reproduces dominant scale analysis results for Hodgkin-Huxley neuron model
 from R. Clewley, Proc. ICCS 2004."""
 
-from __future__ import print_function
 from PyDSTool import *
 from PyDSTool.Toolbox.dssrt import *
 import sys

@@ -3,10 +3,9 @@ spike, as a hybrid system.
 
    Robert Clewley, March 2005.
 """
-from __future__ import print_function
 
 from PyDSTool import *
-from time import clock
+from time import perf_counter
 
 # ----------------------------------------------------------------
 
@@ -109,13 +108,13 @@ if __name__=='__main__':
     IFmodel = makeIFneuron('IF_fit', par_args_linear, par_args_spike)
     icdict = {'v': -80, 'excited': 0}
 
-    start = clock()
+    start = perf_counter()
     print('Computing trajectory...')
     IFmodel.compute(trajname='onespike',
                         tdata=[0, 60],
                         ics=icdict,
                         verboselevel=0)
-    print('\n... finished in %.3f seconds.\n' % (clock()-start))
+    print('\n... finished in %.3f seconds.\n' % (perf_counter()-start))
 
     IFmodel.set(pars={'Iapp': 1.0, 'threshval': -60})
     print('Recomputing trajectory with new params...')

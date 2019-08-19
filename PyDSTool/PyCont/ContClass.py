@@ -3,7 +3,6 @@
     Drew LaMar, March 2006
 """
 
-from __future__ import absolute_import, print_function
 
 from .Continuation import (
     EquilibriumCurve, FoldCurve, HopfCurveOne, HopfCurveTwo,

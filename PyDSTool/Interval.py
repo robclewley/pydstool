@@ -12,7 +12,6 @@ Interval objects have attributes:
    issingleton: boolean
    _intervalstr: str
 """
-from __future__ import division, absolute_import, print_function
 
 # Note: The integer intervals will later be used as the basis for
 # supporting finitely-sampled real ranges.
@@ -108,7 +107,7 @@ class Interval(object):
     """
 
     def __init__(self, name, intervaltype, intervalspec=None, abseps=None):
-#        if not isinstance(name, six.string_types):
+#        if not isinstance(name, str):
 #            raise PyDSTool_TypeError('Name must be a string')
         self.name = name
         try:

@@ -3,11 +3,10 @@
     Drew LaMar, May 2006
 """
 
-from __future__ import absolute_import, print_function
 
 from PyDSTool.common import args
 from PyDSTool.matplotlib_import import *
-from six.moves import reduce
+from functools import reduce
 
 # THESE ARE REPEATS FROM CONTINUATION!  MAKE SURE AND UPDATE!!!
 all_point_types = ['P', 'RG', 'LP', 'BP', 'H', 'BT', 'ZH', 'CP', 'GH', 'DH', 'LPC', 'PD',

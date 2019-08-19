@@ -7,7 +7,6 @@ may include its own event determination implementation.)
 
     Robert Clewley, October 2005.
 """
-from __future__ import absolute_import, print_function
 
 # PyDSTool imports
 from .Variable import *
@@ -21,15 +20,19 @@ from .Symbolic import QuantSpec, Var, ensureStrArgDict
 from . import FuncSpec
 
 # Other imports
-import scipy, numpy, scipy, scipy.special
-import math, random
-import copy, types
-import six
-from six.moves import reduce
+import copy
+from functools import reduce
+import math
+import random
+import types
+
+import numpy
+import scipy
+import scipy.special
 
 __all__ = ['EventStruct', 'Event',
-            'HighLevelEvent', 'LowLevelEvent', 'MatlabEvent',
-            'makePythonStateZeroCrossEvent', 'makeZeroCrossEvent']
+           'HighLevelEvent', 'LowLevelEvent', 'MatlabEvent',
+           'makePythonStateZeroCrossEvent', 'makeZeroCrossEvent']
 
 
 # helper functions
@@ -454,7 +457,7 @@ class Event(object):
             self.preciseFlag = True
         # store 'plain text' definition of event as string, if provided
         if 'expr' in kw:
-            assert isinstance(kw['expr'], six.string_types), \
+            assert isinstance(kw['expr'], str), \
                     "Invalid type for event definition string"
             self._expr = kw['expr']
         else:
@@ -630,7 +633,7 @@ class Event(object):
             print(self._funcstr)
             raise
         try:
-            setattr(self, '_fn', six.create_bound_method(locals()[self._funcname], self))
+            setattr(self, '_fn', types.MethodType(locals()[self._funcname], self))
         except KeyError:
             print('Must pass objective function for event at initialization')
             raise
@@ -649,7 +652,7 @@ class Event(object):
                 print(funcpair[0])
                 raise
             try:
-                setattr(self, funcpair[1], six.create_bound_method(locals()[funcpair[1]], self))
+                setattr(self, funcpair[1], types.MethodType(locals()[funcpair[1]], self))
             except KeyError:
                 print('Must pass objective function for event at initialization')
                 raise
@@ -1055,7 +1058,7 @@ class LowLevelEvent(Event):
                     raise TypeError("Low level events cannot be linked to a"
                                     " variable")
         Event.__init__(self, kw)
-        assert isinstance(kw['LLfuncspec'], six.string_types), \
+        assert isinstance(kw['LLfuncspec'], str), \
                           ("For low level events, must "
                            "pass string for 'LLfuncspec' in initialization")
         LLfuncstr = kw['LLfuncspec']
@@ -1087,7 +1090,7 @@ class MatlabEvent(LowLevelEvent):
                     raise TypeError("Low level events cannot be linked to a variable")
         kw['noHighLevel'] = True
         Event.__init__(self, kw)
-        assert isinstance(kw['Matlabfuncspec'], six.string_types), \
+        assert isinstance(kw['Matlabfuncspec'], str), \
                              ("For low level events, must "
                               "pass string for 'LLfuncspec' in initialization")
         LLfuncstr = kw['Matlabfuncspec']
@@ -1415,10 +1418,10 @@ def makePythonStateZeroCrossEvent(varname, targetvalue, dircode, argDict,
     if isinstance(varname, Var):
         # supporting a Variable object
         varname = varname.name
-    elif not isinstance(varname, six.string_types):
+    elif not isinstance(varname, str):
         raise TypeError("Invalid type for event variable")
     funcname = "_f_"+varname+"_zc"
-    if isinstance(targetvalue, six.string_types):
+    if isinstance(targetvalue, str):
         # this is assumed to be a parameter name if not a numeric value,
         # but user preferred to add the p[' '] wrapping around a
         # parameter name
@@ -1433,7 +1436,7 @@ def makePythonStateZeroCrossEvent(varname, targetvalue, dircode, argDict,
     # 'ds' plays role of 'self' (named for compatibility with FuncSpec's
     # automatic name resolution of auxiliary functions during parsing.
     if isinstance(var, Variable):
-        if not isinstance(targetvalue, six.string_types):
+        if not isinstance(targetvalue, str):
             assert targetvalue in var.depdomain, 'targetvalue not in var.depdomain'
         funcstr = "def "+funcname+"(ds, t, p%s):\n\treturn "%pdefstr + \
                     "ds.vars['"+varname+"'](t) - "+targstr+"\n"

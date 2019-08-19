@@ -8,10 +8,9 @@
 
     Robert Clewley, February/August 2005.
 """
-from __future__ import print_function
 
 from PyDSTool import *
-from time import clock
+from time import perf_counter
 from copy import copy
 
 
@@ -62,9 +61,9 @@ print("\n")
 testODE = Vode_ODEsystem(DSargs)
 
 print('Integrating...')
-start = clock()
+start = perf_counter()
 testtraj = testODE.compute('test')
-print('  ... finished in %.3f seconds.\n' % (clock()-start))
+print('  ... finished in %.3f seconds.\n' % (perf_counter()-start))
 
 print("\nTesting direct call to vector field function:")
 print("""testODE.Rhs(0.3, {'w':10., 'y':0.3}, DSargs.pars,

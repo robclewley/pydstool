@@ -4,12 +4,11 @@ and dynamic update of bounds between integration runs.
 
    Robert Clewley, September 2006.
 """
-from __future__ import print_function
 
 # textually substitute 'Dopri' for 'Radau' in this file to use Radau
 
 from PyDSTool import *
-from time import clock
+from time import perf_counter
 
 
 # ------------------------------------------------------------

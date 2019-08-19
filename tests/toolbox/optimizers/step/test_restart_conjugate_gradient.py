@@ -3,7 +3,6 @@
 # Matthieu Brucher
 # Last Change : 2007-08-29 14:13
 
-from __future__ import absolute_import
 
 import unittest
 import numpy

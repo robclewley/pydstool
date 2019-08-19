@@ -6,7 +6,6 @@
 Optimization module
 """
 
-from __future__ import absolute_import
 
 # Needed so that default paramaters are accessible from everywhere in the submodule
 def mod_path():

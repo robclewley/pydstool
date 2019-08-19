@@ -4,7 +4,6 @@ Copyright (C) 2007-2012 Georgia State University
 
 print PyDSTool.__LICENSE__    for the terms of use.
 """
-from __future__ import absolute_import, print_function
 
 
 __LICENSE__ = """\
@@ -54,7 +53,6 @@ except ImportError:
 import math, random
 import types, time
 
-import six
 
 # PyDSTool imports
 from .Events import *
@@ -107,15 +105,6 @@ from .common import Continuous, Discrete, targetLangs, _seq_types, \
               LargestInt32, diff, diff2
 from scipy import who as scipy_who
 from .utils import *
-
-
-# ------ Check Python version compatibility
-major, minor1, minor2, s, tmp = sys.version_info
-_validpython = (major==2 and minor1>=6) or (major==3 and minor1>=3)
-
-if not _validpython:
-    raise RuntimeError("Python 2.6+ or 3.3+ is required to run PyDSTool")
-del _validpython, major, minor1, minor2, s, tmp
 
 _pyDSToolTypes = [ndarray, Generator_, Variable, Trajectory, Event,
                 EventStruct, Point, Pointset, Interval, ParamEst,
@@ -191,7 +180,7 @@ def who(typelist=None, objdict=None, verboselevel=0, returnlevel=0,
         #else:
         #    raise TypeError("Invalid PyDSTool object types passed")
     for objname, obj in objdict.items():
-        if not isinstance(obj, six.class_types + (types.ModuleType, )):
+        if not isinstance(obj, (type, types.ModuleType)):
             if compareClassAndBases(obj, typelist_actual):
                 if isinstance(obj, QuantSpec) and objname in protected_allnames:
                     # don't display internally-created QuantSpecs (i.e. all

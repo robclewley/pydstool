@@ -55,11 +55,11 @@ PCargs.SaveJacobian = True
 PyCont.newCurve(PCargs)
 
 print("Beginning computation of curve in backward and then forward direction...")
-start = clock()
+start = perf_counter()
 PyCont['LC1'].backward()
 PyCont['LC1'].update({'MaxNumPoints': 90, 'NumSPOut': 90})
 PyCont['LC1'].forward()
-print("\nComputation complete in %.3f seconds.\n" % (clock()-start))
+print("\nComputation complete in %.3f seconds.\n" % (perf_counter()-start))
 
 # Plot
 PyCont['LC1'].cleanLabels()

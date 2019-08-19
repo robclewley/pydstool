@@ -4,7 +4,6 @@
 
 Robert Clewley, January 2011
 """
-from __future__ import print_function
 
 from PyDSTool import *
 from PyDSTool.Toolbox.neuralcomp import *

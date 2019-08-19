@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 from PyDSTool import *  # @UnusedWildImport
 from nineml import units as un

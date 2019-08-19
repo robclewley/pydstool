@@ -1,7 +1,6 @@
 """VODE integrator for ODE systems, imported from a mild modification of
 the scipy-wrapped VODE Fortran solver.
 """
-from __future__ import division, absolute_import, print_function
 
 import math
 from copy import copy, deepcopy

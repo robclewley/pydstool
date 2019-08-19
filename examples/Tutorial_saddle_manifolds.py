@@ -4,7 +4,6 @@ Based on example from Brian M in sourceforge discussion:
 https://sourceforge.net/p/pydstool/discussion/472291/thread/063160f4/
 """
 
-from __future__ import print_function
 import PyDSTool as dst
 from PyDSTool.Toolbox import phaseplane as pp
 import numpy as np

@@ -3,7 +3,6 @@
 Robert Clewley, September 2005.
 
 """
-from __future__ import print_function
 
 from math import pi
 

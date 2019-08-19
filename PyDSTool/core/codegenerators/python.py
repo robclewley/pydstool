@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, print_function
 
 from PyDSTool.common import invertMap, intersect, remain, concatStrDict, makeUniqueFn
 from PyDSTool.parseUtils import _indentstr, convertPowers, makeParList, parseMatrixStrToDictStr, count_sep
@@ -9,7 +8,6 @@ from PyDSTool.Symbolic import QuantSpec
 from PyDSTool.utils import compareList, info
 
 from .base import _processReused, CodeGenerator
-import six
 
 PYTHON_FUNCTION_TEMPLATE = """
 def {name}(ds, t, x, parsinps):
@@ -79,7 +77,7 @@ class Python(CodeGenerator):
             # auxinfo[1] = string containing body of function definition
             assert isinstance(auxinfo[0], list), ('aux function arguments '
                                                   'must be given as a list')
-            assert isinstance(auxinfo[1], six.string_types), \
+            assert isinstance(auxinfo[1], str), \
                    ('aux function specification '
                     'must be a string of the function code')
             # Process Jacobian functions, etc., specially, if present
@@ -494,7 +492,7 @@ class Python(CodeGenerator):
         specname_count = 0
         for specname in specnames:
             specstr = specdict[specname]
-            assert isinstance(specstr, six.string_types), \
+            assert isinstance(specstr, str), \
                    "Specification for %s was not a string" % specname
             if not noreturndefs:
                 specstr_lang += _indentstr + \

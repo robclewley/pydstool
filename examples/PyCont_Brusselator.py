@@ -43,9 +43,9 @@ PCargs.SaveEigen = True
 PyCont.newCurve(PCargs)
 
 print('Computing curve...')
-start = clock()
+start = perf_counter()
 PyCont['EQ1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 # Plot
 PyCont['EQ1'].display(('lambda','X1'), stability=True)

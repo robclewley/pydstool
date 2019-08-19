@@ -40,9 +40,9 @@ DSargs.algparams = {'init_step' :0.2, 'strictopt':False}
 testDS = Generator.Vode_ODEsystem(DSargs)
 
 print('Integrating...')
-start = clock()
+start = perf_counter()
 testtraj = testDS.compute('testDS')
-print('  ... finished in %.3f seconds.\n' % (clock()-start))
+print('  ... finished in %.3f seconds.\n' % (perf_counter()-start))
 
 if 0:
     plotData=testtraj.sample(dt=0.1)
@@ -68,9 +68,9 @@ PCargs.MaxTestIters = 200
 PyCont.newCurve(PCargs)
 
 print('Computing curve...')
-start = clock()
+start = perf_counter()
 PyCont['EQ1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 if 0:
     PyCont.display(('alpha','m'),stability=True)
@@ -84,10 +84,10 @@ PCargs.StopAtPoints = ['B']
 PyCont.newCurve(PCargs)
 
 print('Computing curve...')
-start = clock()
+start = perf_counter()
 PyCont['FO1'].forward()
 PyCont['FO1'].backward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 PyCont['FO1'].display(('theta','alpha'),stability=True)
 show()

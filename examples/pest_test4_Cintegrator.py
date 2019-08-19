@@ -6,7 +6,6 @@
 
     Robert Clewley, March 2005.
 """
-from __future__ import print_function
 
 # PyDSTool imports
 from PyDSTool import *
@@ -14,7 +13,7 @@ from PyDSTool.Toolbox.ParamEst import LMpest
 from PyDSTool.Toolbox.neuro_data import *
 import HH_model
 
-from time import clock
+from time import perf_counter
 
 # print "This test runs much more efficiently using the Dopri integrator"
 gentype = 'dopri'
@@ -188,7 +187,7 @@ pest_pars.fn.eps=1e-5
 pest_context.set_weights({spike_interface: {sp_feat: 10},
                           geom_interface: {geom_feat: 0.2}})
 
-t0=clock()
+t0=perf_counter()
 pestData_par_phase1 = pest_pars.run(parDict={'ftol':1e-5,
                                       'xtol':1e-6
                                       },
@@ -203,7 +202,7 @@ pestData_par = pest_pars.run(parDict={'ftol':1e-5,
                                       },
                              verbose=True)
 
-print('... finished in %.4f seconds\n'%(clock()-t0))
+print('... finished in %.4f seconds\n'%(perf_counter()-t0))
 
 
 ## Finish preparing plots

@@ -1,9 +1,8 @@
-from __future__ import print_function
 import sys
 
 from PyDSTool import *
 from PyDSTool.Toolbox.makeSloppyModel import *
-from time import clock
+from time import perf_counter
 
 sloppyModelEg = {
  'assignments': {'CLB2T_21': 'CLB2_20 + C2_4 + C2P_5 + F2_29 + F2P_30',
@@ -343,14 +342,14 @@ for name, val in all_ics_pars.items():
 def compute(trajname='fig2', thi=205, dt=0.1, verboselevel=0):
     print("Computing trajectory")
     sModel.set(algparams={'init_step': dt})
-    t0=clock()
+    t0=perf_counter()
     sModel.compute(trajname=trajname,
                    force=True,
                    ics=ics,
                    tdata=[0,thi],  # time in minutes
                    verboselevel=verboselevel
                   )
-    print("Finished in %f seconds using initial step size of %f"%(clock()-t0,dt))
+    print("Finished in %f seconds using initial step size of %f"%(perf_counter()-t0,dt))
 
 
 def doPlots(trajname='test', coords=None, dt=0.1, tlo=None, thi=None):

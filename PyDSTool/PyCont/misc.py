@@ -20,7 +20,6 @@
 #
 # ----------------------------------------------------------------------------
 
-from __future__ import absolute_import, print_function
 
 from PyDSTool import pointsToPointset, Point, Pointset
 from PyDSTool.common import args
@@ -32,7 +31,7 @@ all_point_types = ['P', 'RG', 'LP', 'BP', 'H', 'BT', 'ZH', 'CP', 'GH',
                    'DH', 'LPC', 'PD', 'NS', 'MX', 'UZ']
 all_curve_types = ['EP', 'LP', 'H', 'FP', 'LC', 'FD']
 
-from time import clock
+from time import perf_counter
 from scipy import linalg
 from numpy import dot as matrixmultiply
 from numpy import array, float, complex, int, float64, complex64, int32, \
