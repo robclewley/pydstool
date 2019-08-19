@@ -1,7 +1,6 @@
 # Library functions for building matrices for rigid body mechanics
 # Robert Clewley, (c) 2005, 2006
 
-from __future__ import absolute_import
 
 from numpy import mat, identity, shape, resize, dot, array, transpose
 import math

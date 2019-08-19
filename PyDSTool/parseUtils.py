@@ -8,7 +8,6 @@
 """
 
 # IMPORTS
-from __future__ import division, absolute_import, print_function
 from .errors import *
 from .common import *
 import re

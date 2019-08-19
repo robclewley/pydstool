@@ -1,5 +1,4 @@
 # Lookup table
-from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from .baseclasses import discGen, theGenSpecHelper

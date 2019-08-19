@@ -1,5 +1,4 @@
 """Testing auxiliary variables for a model of a stick-finger on a wheel."""
-from __future__ import print_function
 
 from PyDSTool import *
 

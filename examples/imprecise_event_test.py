@@ -2,7 +2,6 @@
 
    Robert Clewley, August 2005.
 """
-from __future__ import print_function
 
 from PyDSTool import *
 from time import clock

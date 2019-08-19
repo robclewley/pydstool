@@ -96,7 +96,6 @@ setup(
     packages=find_packages(),
     setup_requires=pytest_runner,
     install_requires=[
-        "six",
         "scipy>=1.0,<2.0",
         "numpy>=1.6"
     ],

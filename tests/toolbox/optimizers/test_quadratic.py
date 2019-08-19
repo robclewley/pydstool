@@ -7,7 +7,6 @@
 Class defining a quadratic function
 """
 
-from __future__ import absolute_import
 
 import numpy
 from numpy.testing import assert_almost_equal

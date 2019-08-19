@@ -4,7 +4,6 @@
 """
 
 # ----------------------------------------------------------------------------
-from __future__ import absolute_import, print_function
 
 # PyDSTool imports
 from .Variable import *
@@ -24,7 +23,6 @@ from numpy.linalg import norm
 import math
 import copy
 import sys
-import six
 
 # -------------------------------------------------------------
 
@@ -135,7 +133,7 @@ class Trajectory(object):
                  FScompatibleNames=None, FScompatibleNamesInv=None,
                  abseps=None, globalt0=0, checklevel=0, norm=2,
                  parameterized=True):
-        if isinstance(name, six.string_types):
+        if isinstance(name, str):
             self.name = name
         else:
             raise TypeError("name argument must be a string")
@@ -377,10 +375,10 @@ class Trajectory(object):
             coordlist = self.coordnames
         elif isinstance(coords, int):
             coordlist = [self.coordnames[coords]]
-        elif isinstance(coords, six.string_types):
+        elif isinstance(coords, str):
             coordlist = [coords]
         elif isinstance(coords, _seq_types):
-            if all([isinstance(c, six.string_types) for c in coords]):
+            if all([isinstance(c, str) for c in coords]):
                 coordlist = [v for v in self.coordnames if v in coords]
                 if asmap:
                     # allow independent variable name to be listed now
@@ -390,7 +388,7 @@ class Trajectory(object):
                 if remain(coords, test_names) != []:
                     print("Valid coordinate names:%r" % self.coordnames)
                     raise ValueError("Invalid coordinate names passed")
-            elif any([isinstance(c, six.string_types) for c in coords]):
+            elif any([isinstance(c, str) for c in coords]):
                 raise TypeError("Cannot mix string and numeric values in "
                                   "coords")
             else:
@@ -552,7 +550,7 @@ class Trajectory(object):
             coords_sorted = self.coordnames
         else:
             if not isinstance(coords, list):
-                assert isinstance(coords, six.string_types), \
+                assert isinstance(coords, str), \
                        "coords must be a list of strings or a singleton string"
                 coords_sorted = [self._FScompatibleNames(coords)]
             else:
@@ -929,7 +927,7 @@ class Trajectory(object):
         # self.events is a dict of pointsets keyed by event name
         if evnames is None:
             evnames = list(self.events.keys())
-        if isinstance(evnames, six.string_types):
+        if isinstance(evnames, str):
             # singleton
             assert evnames in self.events, "Invalid event name provided: %s"%evnames
             result = copy.copy(self.events[evnames])
@@ -965,7 +963,7 @@ class Trajectory(object):
         if evnames is None:
             evnames = list(self.events.keys())
         # self.eventTimes is a dict of lists keyed by event name
-        if isinstance(evnames, six.string_types):
+        if isinstance(evnames, str):
             # singleton
             assert evnames in self.events, "Invalid event name provided: %s"%evnames
             if asGlobalTime:
@@ -1005,7 +1003,7 @@ class HybridTrajectory(Trajectory):
                  FScompatibleNames=None, FScompatibleNamesInv=None,
                  abseps=None, globalt0=0, checklevel=0, norm=2,
                  timePartitions=None):
-        if isinstance(name, six.string_types):
+        if isinstance(name, str):
             self.name = name
         else:
             raise TypeError("name argument must be a string")
@@ -1131,7 +1129,7 @@ class HybridTrajectory(Trajectory):
         if coords is None:
             coords = copy.copy(self.coordnames)
         else:
-            if isinstance(coords, six.string_types):
+            if isinstance(coords, str):
                 coords = [self._FScompatibleNames(coords)]
             elif isinstance(coords, list):
                 coords = self._FScompatibleNames(coords)
@@ -1403,7 +1401,7 @@ class HybridTrajectory(Trajectory):
             coords = self.coordnames
         else:
             if not isinstance(coords, list):
-                assert isinstance(coords, six.string_types), \
+                assert isinstance(coords, str), \
                        "coords must be a list of strings or a singleton string"
                 coords = [coords]
             coords = self._FScompatibleNames(coords)

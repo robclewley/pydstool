@@ -1,6 +1,5 @@
 """Euler integrator for ODE systems, with no step refinement for events.
 """
-from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem

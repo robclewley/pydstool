@@ -3,7 +3,6 @@
 
     Robert Clewley, July 2005.
 """
-from __future__ import print_function
 
 from PyDSTool import *
 from SLIP_plot import SLIP_plot

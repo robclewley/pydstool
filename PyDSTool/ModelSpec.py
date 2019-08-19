@@ -12,7 +12,6 @@ Robert Clewley, October 2005.
 
 # ----------------------------------------------------------------------------
 
-from __future__ import division, absolute_import, print_function
 from .common import *
 from .utils import info as utils_info
 from .parseUtils import *
@@ -25,7 +24,6 @@ from numpy import Inf, NaN, isfinite,  mod, sum
 from numpy import sometrue, alltrue
 from copy import copy, deepcopy
 import math, random
-import six
 
 # ---------------------------------------------------------------------------
 ### Exports
@@ -327,7 +325,7 @@ class ModelSpec(object):
 
 
     def addConnxnTarget(self, targ):
-        if isinstance(targ, six.string_types):
+        if isinstance(targ, str):
             if targ not in self.connxnTargets:
                 self.connxnTargets.append(targ)
         elif isinstance(targ, list):
@@ -339,7 +337,7 @@ class ModelSpec(object):
 
 
     def delConnxnTarget(self, targ):
-        if isinstance(targ, six.string_types):
+        if isinstance(targ, str):
             try:
                 self.connxnTargets.remove(targ)
             except ValueError:
@@ -396,7 +394,7 @@ class ModelSpec(object):
 
 
     def validate(self):
-        assert isinstance(self.name, six.string_types), \
+        assert isinstance(self.name, str), \
                "ModelSpec name must be a string"
         assert len(remain(self.targetLangs, targetLangs)) == 0, \
                "Invalid target language for '" + self.name + "'"
@@ -740,7 +738,7 @@ class ModelSpec(object):
 
         if hasattr(target, 'name'):
             objname = target.name
-        elif isinstance(target, six.string_types):
+        elif isinstance(target, str):
             objname = target
         elif isinstance(target, list):
             for t in target: self.remove(t)

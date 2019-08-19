@@ -8,7 +8,6 @@ and for manipulation of abstraction digraphs.
 """
 
 # PyDSTool imports
-from __future__ import division, absolute_import, print_function
 from .utils import *
 from .common import *
 from .parseUtils import *
@@ -19,7 +18,6 @@ from .Symbolic import QuantSpec, allmathnames_symbolic
 # Other imports
 from copy import copy, deepcopy
 from numpy import any
-import six
 
 import PyDSTool.core.codegenerators as CG
 
@@ -95,7 +93,7 @@ class FuncSpec(object):
         # declare name lists: variables, aux variables, parameters, inputs
         for name in ['vars', 'pars', 'inputs', 'auxvars']:
             ns = kw.pop(name, [])
-            setattr(self, name, [ns] if isinstance(ns, six.string_types)
+            setattr(self, name, [ns] if isinstance(ns, str)
                     else sorted(ns))
 
         self.targetlang = kw.pop('targetlang', 'python')
@@ -451,7 +449,7 @@ class FuncSpec(object):
         assert len(spec) == 2, 'auxspec tuple must be of length 2'
         if not isinstance(spec[0], list):
             raise TypeError('aux function arguments must be given as a list')
-        if not isinstance(spec[1], six.string_types):
+        if not isinstance(spec[1], str):
             raise TypeError('aux function specification must be a string of the function code')
 
     def generateSpec(self):
@@ -463,7 +461,7 @@ class FuncSpec(object):
             assert self.varspecs != {}, 'varspecs attribute must be defined'
             assert set(self.vars) - set(self.varspecs.keys()) == set([]), 'Mismatch between declared variable names and varspecs keys'
             for name, spec in self.varspecs.items():
-                assert isinstance(spec, six.string_types), \
+                assert isinstance(spec, str), \
                        "Specification for %s was not a string" % name
             self.spec = self.codegen.generate_spec(self.vars, self.varspecs)
 

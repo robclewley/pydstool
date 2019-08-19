@@ -6,7 +6,6 @@
 
     Robert Clewley, March 2005.
 """
-from __future__ import print_function
 
 # PyDSTool imports
 from PyDSTool import *

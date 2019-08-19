@@ -6,7 +6,6 @@ Inclusion of additional libraries in C code is also tested.
 
    Robert Clewley, June 2005.
 """
-from __future__ import print_function
 
 # textually substitute 'Dopri' for 'Radau' in this file to use Radau
 

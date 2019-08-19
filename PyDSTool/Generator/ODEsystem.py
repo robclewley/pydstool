@@ -1,5 +1,4 @@
 # ODEsystem base class
-from __future__ import absolute_import, print_function
 
 from .allimports import *
 from .baseclasses import ctsGen, theGenSpecHelper, auxfn_container
@@ -13,10 +12,10 @@ from PyDSTool.Interval import uncertain
 # Other imports
 from numpy import Inf, NaN, isfinite, sometrue, alltrue, array, arange, \
      zeros, float64, int32, transpose, shape
-import math, random
+import math
+import random
 import types
 from copy import copy, deepcopy
-import six
 
 
 class ODEsystem(ctsGen):
@@ -107,7 +106,7 @@ class ODEsystem(ctsGen):
                 except:
                     print('Error in supplied auxiliary function code')
                 self._funcreg[fninfo[1]] = ('self', fninfo[0])
-                setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
+                setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]], self))
                 # user auxiliary function interface wrapper
                 try:
                     uafi_code = self.funcspec._user_auxfn_interface[auxfnname]
@@ -117,7 +116,7 @@ class ODEsystem(ctsGen):
                         print('Error in auxiliary function wrapper')
                         raise
                     setattr(self.auxfns, auxfnname,
-                            six.create_bound_method(locals()[auxfnname], self.auxfns))
+                            types.MethodType(locals()[auxfnname], self.auxfns))
                     self._funcreg[auxfnname] = ('', uafi_code)
                 except KeyError:
                     # not a user-defined aux fn
@@ -132,7 +131,7 @@ class ODEsystem(ctsGen):
                 print('Error in supplied functional specification code')
                 raise
             self._funcreg[fninfo[1]] = ('self', fninfo[0])
-            setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
+            setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]], self))
             # Add the auxiliary spec function (if present) to this
             # Generator's namespace
             if self.funcspec.auxspec != '':
@@ -143,7 +142,7 @@ class ODEsystem(ctsGen):
                     print('Error in supplied auxiliary variable code')
                     raise
                 self._funcreg[fninfo[1]] = ('self', fninfo[0])
-                setattr(self, fninfo[1], six.create_bound_method(locals()[fninfo[1]], self))
+                setattr(self, fninfo[1], types.MethodType(locals()[fninfo[1]], self))
 
 
     def haveJacobian(self):

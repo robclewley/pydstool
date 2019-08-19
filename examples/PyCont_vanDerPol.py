@@ -6,7 +6,6 @@
 
     Drew LaMar, April 2007
 """
-from __future__ import print_function
 
 from PyDSTool import *
 import sys

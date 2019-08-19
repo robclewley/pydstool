@@ -1,5 +1,4 @@
 # ADMC++ ODE system
-from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem

@@ -4,7 +4,8 @@ For latest changes see http://github.com/robclewley/pydstool
 
 Version 0.90.3 (in development)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* Fixed tests for Python 3.5+
+* Removed support for Python < 3.6
+* Fixed tests for Python 3.6+
 * Corrected typos in PyDSTool/Toolbox/phaseplane.py (#134)
 * Added support for SciPy 1.0+ (#132)
 * Used proper division in PyDSTool/PyCont/TestFunc.py (#125)

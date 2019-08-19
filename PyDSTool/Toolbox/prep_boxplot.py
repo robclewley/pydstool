@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from PyDSTool import remain, loadObjects, array, save_fig, arange, args
 from matplotlib.font_manager import FontProperties

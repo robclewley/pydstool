@@ -3,7 +3,6 @@
    Robert Clewley.
 """
 
-from __future__ import division, absolute_import, print_function
 
 # PyDSTool imports
 from PyDSTool.Points import Point, Pointset

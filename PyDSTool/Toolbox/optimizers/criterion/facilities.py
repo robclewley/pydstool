@@ -6,7 +6,6 @@
 Proposes a way to create a composite criterion
 """
 
-from __future__ import absolute_import
 
 __all__ = ['criterion']
 

@@ -1,5 +1,4 @@
 # Differential-delay system (incomplete)
-from __future__ import division, absolute_import
 
 from .allimports import *
 from .baseclasses import ctsGen

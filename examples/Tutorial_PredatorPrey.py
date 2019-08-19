@@ -5,7 +5,6 @@ For details, see
 "Predator migration in response to prey density: What are the consequences?"
 by Y. Huang et al, J. Math Biol, Vol. 43, pp. 561-581, (2001)
 """
-from __future__ import print_function
 
 from PyDSTool import *
 import matplotlib as mpl

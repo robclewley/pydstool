@@ -3,7 +3,6 @@ spike, as a hybrid system.
 
    Robert Clewley, March 2005.
 """
-from __future__ import print_function
 
 from PyDSTool import *
 from time import clock

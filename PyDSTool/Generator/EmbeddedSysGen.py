@@ -1,5 +1,4 @@
 # Embedded dynamical system generator
-from __future__ import division, absolute_import, print_function
 
 from .allimports import *
 from .baseclasses import ctsGen, theGenSpecHelper

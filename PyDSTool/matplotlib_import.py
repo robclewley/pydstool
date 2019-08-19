@@ -4,7 +4,6 @@
     Robert Clewley, March 2006.
 """
 
-from __future__ import absolute_import, print_function
 
 from numpy import Inf, NaN, isfinite, int, int8, int16, int32, int64, float, float32, float64
 try:

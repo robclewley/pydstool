@@ -4,7 +4,6 @@
    Robert Clewley, September 2007.
 """
 
-from __future__ import absolute_import, print_function
 
 import copy
 import sys, traceback

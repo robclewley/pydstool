@@ -5,7 +5,6 @@ a spinal cord neural model or commisural interneurons.
 Robert Clewley, Erik Sherwood, Oct 2005
 """
 
-from __future__ import print_function
 
 from PyDSTool import *
 from PyDSTool.Toolbox.neuralcomp import *

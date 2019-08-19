@@ -7,7 +7,6 @@ details.
 Robert Clewley, 2009
 
 """
-from __future__ import division, absolute_import, print_function
 
 from PyDSTool import common
 from PyDSTool import utils
@@ -18,13 +17,13 @@ from PyDSTool.Trajectory import numeric_to_traj
 from PyDSTool.Points import Point, Pointset, pointsToPointset
 from PyDSTool.errors import *
 
-import itertools
 import numpy as np
 import scipy as sp
 import copy
 import operator
-
-from six.moves import cStringIO, range, reduce, zip_longest
+from itertools import zip_longest, chain
+from functools import reduce
+from io import StringIO
 
 #############
 
@@ -1175,7 +1174,7 @@ class dssrt_assistant(object):
             # Can expect only mspec
             self._init_from_MSpec(list(self.model._mspecdict.values())[0]['modelspec'])
         all_inputs = []
-        for ins in itertools.chain(self.gamma1.values(), self.gamma2.values()):
+        for ins in chain(self.gamma1.values(), self.gamma2.values()):
             try:
                 all_inputs.extend(ins)
             except TypeError:
@@ -2568,7 +2567,7 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left',
                                  len(delim)*(len(maxWidths)-1))
     # select the appropriate justify method
     justify = {'center':str.center, 'right':str.rjust, 'left':str.ljust}[justify.lower()]
-    output=cStringIO()
+    output = StringIO()
     if separateRows:
         print(rowSeparator, file=output)
     for physicalRows in logicalRows:

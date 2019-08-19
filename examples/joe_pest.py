@@ -13,7 +13,6 @@
 
    Robert Clewley, March 2005, updated 2008 for ModelInterface classes.
 """
-from __future__ import print_function
 
 from PyDSTool import *
 from PyDSTool.Toolbox.ParamEst import LMpest, L2_feature

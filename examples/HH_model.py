@@ -5,7 +5,6 @@ See ModelSpec_test.py for example of using the neuralcomp toolbox.
 
    Robert Clewley, June 2005.
 """
-from __future__ import print_function
 
 from PyDSTool import *
 from time import clock

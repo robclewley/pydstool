@@ -20,7 +20,6 @@
 #
 # ----------------------------------------------------------------------------
 
-from __future__ import absolute_import, print_function
 
 from PyDSTool import pointsToPointset, Point, Pointset
 from PyDSTool.common import args

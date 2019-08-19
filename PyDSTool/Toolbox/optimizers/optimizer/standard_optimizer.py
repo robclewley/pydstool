@@ -2,7 +2,6 @@
 # Matthieu Brucher
 # Last Change : 2007-08-10 23:13
 
-from __future__ import absolute_import, print_function
 
 """
 A standard optimizer

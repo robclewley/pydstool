@@ -4,7 +4,6 @@
 
     Robert Clewley, August 2006.
 """
-from __future__ import print_function
 
 from PyDSTool import *
 from copy import copy, deepcopy

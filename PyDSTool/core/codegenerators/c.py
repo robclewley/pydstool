@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, print_function
 
 from PyDSTool.common import invertMap, intersect, concatStrDict, sortedDictItems, isUniqueSeq
 from PyDSTool.parseUtils import convertPowers, parseMatrixStrToDictStr, addArgToCalls, wrapArgInCall, splitargs, findEndBrace

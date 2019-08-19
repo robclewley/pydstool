@@ -15,7 +15,6 @@ Finite Difference functions :
   - also, versions with in-built caching of previous values
 """
 
-from __future__ import absolute_import
 
 from .quadratic import *
 
