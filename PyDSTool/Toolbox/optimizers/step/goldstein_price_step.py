@@ -23,7 +23,7 @@ class GoldsteinPriceStep(object):
 
   def __call__(self, function, point, state):
     """
-    Computes Goldstein-Price step 
+    Computes Goldstein-Price step
     """
     g = function.gradient(point)
     state['gradient'] = g
