@@ -24,3 +24,5 @@ PyDSTool.egg-info/
 *.o
 .tox/
 .eggs/
+dist/
+tox.log
