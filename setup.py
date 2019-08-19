@@ -27,7 +27,7 @@ import sys
 
 MAJOR = 0
 MINOR = 90
-MICRO = 2
+MICRO = 3
 __version__ = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 
@@ -35,7 +35,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-if  sys.version_info[0:2] < (3, 6):
+if sys.version_info[0:2] < (3, 6):
     raise RuntimeError("Python 3.6+ required.")
 
 
@@ -112,7 +112,7 @@ setup(
     long_description=read('README.rst') + '\n\n' + read('WHATS_NEW.txt'),
     license="BSD",
     keywords="dynamical systems, bioinformatics, modeling, bifurcation analysis",
-    url="http://pydstool.sourceforge.net/",
+    url="https://pydstool.github.io/PyDSTool/FrontPage.html",
     download_url="https://github.com/robclewley/pydstool/tarball/v%s" % __version__,
     include_package_data=True,
     platforms=["any"],
@@ -125,9 +125,8 @@ setup(
         "Topic :: Scientific/Engineering",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: BSD License",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: POSIX :: BSD :: FreeBSD",
