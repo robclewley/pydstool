@@ -699,7 +699,7 @@ class Event(object):
                     print("Error in event %s" % (self.name, ))
                     info(parDict, "Parameters")
                     raise
-                self.prevsign = scipy.sign(self.fval)
+                self.prevsign = numpy.sign(self.fval)
                 self.prevprevsign = None
                 return False
             else:
@@ -709,7 +709,7 @@ class Event(object):
                     print("Error in event %s" % (self.name, ))
                     info(parDict, "Parameters")
                     raise
-                sval = scipy.sign(self.fval)
+                sval = numpy.sign(self.fval)
                 if self.dircode == 0:
                     result = self.prevsign != sval
                 else:
@@ -740,7 +740,7 @@ class Event(object):
                     print("\n")
                     info(varDict_temp, "Variables")
                     raise
-                self.prevsign = scipy.sign(self.fval)
+                self.prevsign = numpy.sign(self.fval)
                 self.prevprevsign = None
                 return False
             else:
@@ -752,7 +752,7 @@ class Event(object):
                     print("\n")
                     info(varDict_temp, "Variables")
                     raise
-                sval = scipy.sign(self.fval)
+                sval = numpy.sign(self.fval)
                 if self.dircode == 0:
                     result = self.prevsign != sval
                 else:
