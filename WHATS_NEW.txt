@@ -2,6 +2,12 @@ Release notes: Highlights of new features
 =========================================
 For latest changes see http://github.com/robclewley/pydstool
 
+Version 0.91.0 01 Feb 2020
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Fixed code to support scipy 1.4+
+
+Thanks to Daniel Bliss for contributing patch.
+
 Version 0.90.3 20 Aug 2019
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Removed support for Python < 3.6 (#146)

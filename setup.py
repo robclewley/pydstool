@@ -26,8 +26,8 @@ from setuptools import Command
 import sys
 
 MAJOR = 0
-MINOR = 90
-MICRO = 3
+MINOR = 91
+MICRO = 0
 __version__ = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 
