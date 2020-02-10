@@ -26,3 +26,4 @@ PyDSTool.egg-info/
 .eggs/
 dist/
 tox.log
+.mypy_cache/
