@@ -1022,11 +1022,11 @@ class Variable(object):
                     # to be multiple attempts to delete it (which of course
                     # fail after the first successful attempt)
                     pass
-            elif fname is 'funcspec':
+            elif fname == 'funcspec':
                 # doesn't refer to any dynamically-created methods
                 # so ignore
                 pass
-            elif fname is 'outputdata':
+            elif fname == 'outputdata':
                 # doesn't refer to any dynamically-created methods
                 # so ignore
                 pass
