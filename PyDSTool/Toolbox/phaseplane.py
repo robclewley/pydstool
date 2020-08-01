@@ -920,6 +920,14 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                         sysargs_y['inputs'] = gen.inputs.copy()
                 sysargs_y.pars.update(gen.pars)
                 sysargs_y.pars.update(filteredDict(vardict, [xname, yname], neg=True))
+                for extra_par in ['codeinsert_start', 'codeinsert_end', 'ignorespecial']:
+                    if extra_par in gen.funcspec._initargs:
+                        # input param uses 'vfcodeinsert_start' etc.
+                        if extra_par.startswith('code'):
+                            key = 'vf'+extra_par
+                        else:
+                            key = extra_par
+                        sysargs_y[key] = gen.funcspec._initargs[extra_par]
                 varspecs = {yname: gen.funcspec._initargs['varspecs'][yname]}
                 if 'fnspecs' in gen.funcspec._initargs:
                     old_fnspecs = gen.funcspec._initargs['fnspecs']
@@ -1121,6 +1129,14 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                         sysargs_x['inputs'] = gen.inputs.copy()
                 sysargs_x.pars.update(gen.pars)
                 sysargs_x.pars.update(filteredDict(vardict, [xname, yname], neg=True))
+                for extra_par in ['codeinsert_start', 'codeinsert_end', 'ignorespecial']:
+                    if extra_par in gen.funcspec._initargs:
+                        # input param uses 'vfcodeinsert_start' etc.
+                        if extra_par.startswith('code'):
+                            key = 'vf'+extra_par
+                        else:
+                            key = extra_par
+                        sysargs_x[key] = gen.funcspec._initargs[extra_par]
                 varspecs = {xname: gen.funcspec._initargs['varspecs'][xname]}
                 if 'fnspecs' in gen.funcspec._initargs:
                     old_fnspecs = gen.funcspec._initargs['fnspecs']
@@ -1165,6 +1181,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             PCargs.MaxCorrIters = 8
             #PCargs.verbosity = 100
             P_x.newCurve(PCargs)
+
             done = False
             num_points = 0
             in_subdom = x_init in xinterval and y_init in yinterval
