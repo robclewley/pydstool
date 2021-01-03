@@ -26,12 +26,12 @@ def make_noise_signal(dt, t_end, mean, stddev, num_cells, seed=None):
     """Helper function: Gaussian white noise at sample rate = dt for 1 or more cells,
     for a duration of t_end."""
     if seed is not None:
-        numpy.random.seed(seed)
+        np.random.seed(seed)
     N = int(ceil(t_end*1./dt))
     t = linspace(0, t_end, N)
     coorddict = {}
     for cellnum in range(num_cells):
-        coorddict['noise%i' % (cellnum+1)] = numpy.random.normal(0, stddev, N)
+        coorddict['noise%i' % (cellnum+1)] = np.random.normal(0, stddev, N)
     vpts = Pointset(coorddict=coorddict, indepvararray=t)
     return pointset_to_vars(vpts, discrete=False)
 
@@ -64,13 +64,13 @@ def make_Poisson_signal(dt, t_end, mean, tau1, tau2, num_cells, seed=None):
     for a duration of t_end. The mean is expected number of spikes per
     time unit."""
     if seed is not None:
-        numpy.random.seed(seed)
+        np.random.seed(seed)
     N = ceil(t_end*1./dt)
     t = linspace(0, t_end, N)
     sfunc = make_biexp(tau1, tau2)
     coorddict = {}
     for cellnum in range(num_cells):
-        rand_vals = numpy.random.random_sample(N)
+        rand_vals = np.random.random_sample(N)
         spike_ixs = argwhere(rand_vals < mean*dt).flatten()
         spike_ts = t[spike_ixs]
         f = convolve_biexp(sfunc, spike_ixs, spike_ts, t, dt, tau1, tau2)

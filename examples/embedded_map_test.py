@@ -8,7 +8,7 @@
 from PyDSTool import *
 from copy import copy, deepcopy
 from scipy.optimize import minpack, optimize
-from numpy.linalg import eigvals, det, norm
+from np.linalg import eigvals, det, norm
 from PyDSTool.PyCont import *
 
 # van der Pol type oscillator

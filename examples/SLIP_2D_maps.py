@@ -10,7 +10,7 @@ from SLIP_plot import SLIP_plot
 from SLIP_2D import makeSLIP2D_Dopri, makeSLIP2D_Vode, makeSLIP2D_Radau
 from copy import copy
 from scipy.optimize import minpack, optimize
-from numpy.linalg import eigvals, det, norm
+from np.linalg import eigvals, det, norm
 
 
 # ---- Define pars and i.c.'s

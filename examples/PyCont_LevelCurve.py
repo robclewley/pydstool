@@ -5,7 +5,7 @@ Robert Clewley, August 2008.
 """
 
 from PyDSTool import *
-from numpy.linalg import norm
+from np.linalg import norm
 
 # f(y) = 0 is the required form
 # where f(y) = x^2 /2 + y^2 - 1

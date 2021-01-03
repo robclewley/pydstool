@@ -31,8 +31,8 @@ pcwl_interp = InterpolateTable({'tdata': timeData,
                               }).compute('interp')
 
 
-assert numpy.allclose(pcwc_interp(5.68)['sinx'], -0.551, atol=0.001)
-assert numpy.allclose(pcwl_interp(5.68)['sinx'], -0.559, atol=0.001)
+assert np.allclose(pcwc_interp(5.68)['sinx'], -0.551, atol=0.001)
+assert np.allclose(pcwl_interp(5.68)['sinx'], -0.559, atol=0.001)
 
 ### DEMO
 # x = linspace(0,10,300)
