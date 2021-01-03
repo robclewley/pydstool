@@ -51,9 +51,10 @@ from .parseUtils import isHierarchicalName, NAMESEP, mapNames, symbolMapClass
 
 ## Other imports
 import math, sys
-from numpy import Inf, NaN, isfinite, sign, abs, array, arange, \
+from numpy import isfinite, sign, abs, array, arange, \
      zeros, concatenate, transpose, shape
 from numpy import sometrue, alltrue, any, all
+import numpy as np
 import copy
 from time import perf_counter
 import pprint
@@ -318,7 +319,7 @@ class domain_test(ModelContext.qt_feature_node):
         if self.results.satisfied:
             # Trajectory satified domain conditions!
             return None
-        lowest_idx = Inf
+        lowest_idx = np.Inf
         for sfname, sf in self.subfeatures.items():
             if self.pars.verbose_level > 0:
                 print("\n %s %r" % (sfname, sf.results))
@@ -422,7 +423,7 @@ class Model(object):
             self.icdict = dict(kw['ics'])
             _foundKeys += 1
         else:
-            self.icdict = {}.fromkeys(self.allvars, NaN)
+            self.icdict = {}.fromkeys(self.allvars, np.NaN)
         if 'tdata' in kw:
             self.tdata = kw['tdata']
             _foundKeys += 1
@@ -612,7 +613,7 @@ class Model(object):
             assert isinstance(tdata, float) or isinstance(tdata, int), \
                    'tdata must be either a single number or a pair'
             t0_global = tdata[0]
-            t1_global = Inf
+            t1_global = np.Inf
         elif len(tdata) == 2:
             t0_global = tdata[0]
             t1_global = tdata[1]
@@ -684,7 +685,7 @@ class Model(object):
                         result[vname] = vdom
             # remaining vars are promoted aux vars
             for vname in remain(self.allvars, result.keys()):
-                result[vname] = Interval(vname, float, [-Inf, Inf])
+                result[vname] = Interval(vname, float, [-np.Inf, np.Inf])
         elif querykey in ['pardomains', 'pdomains']:
             result = {}
             # accumulate domains from each sub-model for regular variables
@@ -2064,10 +2065,10 @@ class NonHybridModel(Model):
         dsi = list(self.modelInfo.values())[0]['dsi']
         for globalDS in list(self.modelInfo.values())[0]['globalConRules']:
             if globalDS(dsi):
-                global_end_reasons[Inf] = \
+                global_end_reasons[np.Inf] = \
                         globalDS.conditions.collate_results('reasons',
                                                         merge_lists=True)
-                global_end_ixs.append(Inf)
+                global_end_ixs.append(np.Inf)
             else:
                 # if global consistency fails then the features *must* provide
                 # the last OK position in the trajectory to truncate to,
@@ -2984,10 +2985,10 @@ class HybridModel(Model):
             global_end_ixs = []
             for globalDS in globalConRules:
                 if globalDS(MI):
-                    global_end_reasons[Inf] = \
+                    global_end_reasons[np.Inf] = \
                             globalDS.conditions.collate_results('reasons',
                                                             merge_lists=True)
-                    global_end_ixs.append(Inf)
+                    global_end_ixs.append(np.Inf)
                 else:
                     # if global consistency fails then the features *must* provide
                     # the last OK position in the trajectory to truncate to,
@@ -3002,7 +3003,7 @@ class HybridModel(Model):
                                                                      traj.name))
                     else:
                         if final_ok_idx is None:
-                            final_ok_idx = Inf
+                            final_ok_idx = np.Inf
                         global_end_ixs.append(final_ok_idx)
                         global_end_reasons[final_ok_idx] = \
                                 globalDS.conditions.collate_results('reasons',

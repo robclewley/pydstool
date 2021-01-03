@@ -66,8 +66,8 @@ from .errors import *
 
 #from math import *
 from .utils import *
-from numpy import array, Inf, NaN, isfinite, mod, sum, float64, int32
-from numpy import sometrue, alltrue
+from numpy import array, isfinite, mod, sum, float64, int32, sometrue, alltrue
+import numpy as np
 # replacements of math functions so that expr2fun etc. produce vectorizable math functions
 from numpy import arccos, arcsin, arctan, arctan2, arccosh, arcsinh, arctanh, \
      ceil, cos, cosh, exp, fabs, floor, fmod, frexp, hypot, ldexp, log, log10, \
@@ -95,8 +95,8 @@ pow = power
 # determine what "globals" will be for math evaluations in _eval method
 math_dir = dir(math)
 math_globals = dict(zip(math_dir,[getattr(math, m) for m in math_dir]))
-math_globals['Inf'] = Inf
-math_globals['NaN'] = NaN
+math_globals['Inf'] = np.Inf
+math_globals['NaN'] = np.NaN
 
 # protected (function) names come from parseUtils.py
 # (constants are all-caps and are filtered out)
@@ -2379,7 +2379,7 @@ class Quantity(object):
         # various ways to specify domain ...
         if domain is None:
             # assume continuous-valued from -Inf to Inf
-            self.domain = (float, Continuous, [-Inf, Inf])
+            self.domain = (float, Continuous, [-np.Inf, np.Inf])
         else:
             self.setDomain(domain)
         try:

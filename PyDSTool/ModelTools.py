@@ -42,11 +42,10 @@ from . import Model, Generator, ModelSpec, Symbolic, Events, ModelContext
 from .parseUtils import symbolMapClass, NAMESEP, isNumericToken
 
 # Other imports
-from numpy import Inf, NaN, isfinite,  array, \
+from numpy import isfinite,  array, \
      arange, zeros, ones, concatenate, swapaxes, take, \
      sometrue, alltrue, any, all
-import numpy
-import scipy
+import numpy as np
 import math  # for access by user-defined code of EvMapping
 import sys
 import types
@@ -151,7 +150,7 @@ class MDescriptor(Descriptor):
                   'withJac', 'withJacP',
                   'eventtol', 'eventPars',
                   'withStdEvts', 'stdEvtArgs')
-    _defaults = {'description': '', 'indepvar': ('t', [-Inf,Inf]),
+    _defaults = {'description': '', 'indepvar': ('t', [-np.Inf, np.Inf]),
                  'checklevel': 2, 'activateAllBounds': False,
                  'generatorspecs': {}, 'icvalues': {}, 'parvalues': {},
                  'inputs': {}, 'unravelInfo': True}
@@ -211,7 +210,7 @@ class GeneratorConstructor(object):
     def __init__(self, mspec=None, userevents=None, userfns=None,
                  unravelInfo=True, inputs=None, checklevel=2,
                  activateAllBounds=False, activatedBounds=None,
-                 targetGen="", algparams=None, indepvar=('t',[-Inf,Inf]),
+                 targetGen="", algparams=None, indepvar=('t',[-np.Inf, np.Inf]),
                  tdata=None, parvalues=None, icvalues=None, reuseTerms=None,
                  options=None, abseps=None, eventPars=None, preReuse=False,
                  preReuseTerms=None, preFlat=False):
@@ -445,7 +444,7 @@ class GeneratorConstructor(object):
         xtype = {}
         pdomain = {}
         for k, d in flatspec['domains'].items():
-            # e.g. d == (float, Continuous, [-Inf, Inf])
+            # e.g. d == (float, Continuous, [-np.Inf, np.Inf])
             if k in flatspec['vars']:
                 if isinstance(d[2], _num_types):
                     xdomain[k] = d[2]
@@ -613,7 +612,7 @@ class GeneratorConstructor(object):
 class ModelConstructor(object):
     def __init__(self, name, userevents=None, userfns=None, unravelInfo=True,
                  inputs=None, checklevel=2, activateAllBounds=False,
-                 generatorspecs=None, indepvar=('t',[-Inf,Inf]),
+                 generatorspecs=None, indepvar=('t',[-np.Inf, np.Inf]),
                  parvalues=None, icvalues=None, tdata=None, reuseTerms=None,
                  withJac=None, withJacP=None, featureDicts=None,
                  abseps=None, eventtol=None, eventPars=None,

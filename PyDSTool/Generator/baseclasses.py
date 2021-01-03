@@ -11,7 +11,8 @@ from PyDSTool.Points import Pointset
 import PyDSTool.Events as Events
 
 # Other imports
-from numpy import Inf, NaN, isfinite, sometrue, alltrue
+from numpy import isfinite, sometrue, alltrue
+import numpy as np
 import math, random
 import os
 from copy import copy, deepcopy
@@ -528,7 +529,7 @@ class Generator(object):
                                 "increasing size")
             self.foundKeys += 1
         else:
-            self.tdomain = [-Inf, Inf]
+            self.tdomain = [-np.Inf, np.Inf]
 
     def _kw_process_ttype(self, kw, fs_args):
         # e.g. for map system
@@ -633,12 +634,12 @@ class Generator(object):
                     raise ValueError("Missing varspec entries for declared ICs: " + str(unspecd))
             for name in remain(self.__all_vars,
                                self._xdatadict.keys()):
-                self.initialconditions[name] = NaN
+                self.initialconditions[name] = np.NaN
             self.foundKeys += 1
         else:
             self._xdatadict = {}
             for name in self.__all_vars:
-                self.initialconditions[name] = NaN
+                self.initialconditions[name] = np.NaN
 
     def _kw_process_allvars(self, kw, fs_args):
         if 'auxvars' in kw:
@@ -742,9 +743,9 @@ class Generator(object):
                     # pull out everything in parentheses
                     for_spec = fs_args['varspecs'][name][4:-1].replace(' ', '').split(',')
                     for name_i in range(int(for_spec[1]), int(for_spec[2])+1):
-                        self.xdomain[base+str(name_i)] = [-Inf, Inf]
+                        self.xdomain[base+str(name_i)] = [-np.Inf, np.Inf]
                 else:
-                    self.xdomain[name] = [-Inf, Inf]
+                    self.xdomain[name] = [-np.Inf, np.Inf]
             self.foundKeys += 1
         else:
             self.xdomain = {}
@@ -755,9 +756,9 @@ class Generator(object):
                     # pull out everything in parentheses
                     for_spec = fs_args['varspecs'][name][4:-1].replace(' ', '').split(',')
                     for name_i in range(int(for_spec[1]), int(for_spec[2])+1):
-                        self.xdomain[base+str(name_i)] = [-Inf, Inf]
+                        self.xdomain[base+str(name_i)] = [-np.Inf, np.Inf]
                 else:
-                    self.xdomain[name] = [-Inf, Inf]
+                    self.xdomain[name] = [-np.Inf, np.Inf]
 
     def _kw_process_reuseterms(self, kw, fs_args):
         if 'reuseterms' in kw:
@@ -806,7 +807,7 @@ class Generator(object):
                     if not self._is_domain_ordered(self.pdomain[name][0], self.pdomain[name][1]):
                         raise PyDSTool_ValueError('pdomain values must be in order of increasing size')
                 for name in remain(self.pars.keys(), self.pdomain.keys()):
-                    self.pdomain[name] = [-Inf, Inf]
+                    self.pdomain[name] = [-np.Inf, np.Inf]
                 self.foundKeys += 1
             else:
                 raise ValueError('Cannot specify pdomain because no pars declared')
@@ -814,7 +815,7 @@ class Generator(object):
             if self.pars:
                 self.pdomain = {}
                 for pname in self.pars:
-                    self.pdomain[pname] = [-Inf, Inf]
+                    self.pdomain[pname] = [-np.Inf, np.Inf]
         if self.pars:
             self.parameterDomains = {}
             for pname in self.pdomain:

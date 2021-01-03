@@ -9,11 +9,9 @@ from .errors import *
 
 import sys
 import types
-import numpy as npy
-import scipy as spy
 from scipy.optimize import minpack
 # In future, will convert these specific imports to be referred as npy.X
-from numpy import Inf, NaN, atleast_1d, clip, less, greater, logical_or, \
+from numpy import atleast_1d, clip, less, greater, logical_or, \
      searchsorted, isfinite, shape, mat, sign, any, all, sometrue, alltrue, \
      array, swapaxes, zeros, ones, finfo, double, exp, log, \
      take, less_equal, putmask, ndarray, asarray, \
@@ -21,6 +19,8 @@ from numpy import Inf, NaN, atleast_1d, clip, less, greater, logical_or, \
      int_, int0, int8, int16, int32, int64, float_, float32, float64, \
      complex_, complex64, complex128, argmin, argmax
 from numpy.linalg import norm
+import numpy as np
+import scipy as sp
 from math import sqrt
 
 try:
@@ -143,9 +143,9 @@ _num_name2equivtypes = {'float': _all_float,
 # default types used by PyDSTool when named
 _num_name2type = {'float': float64, 'int': int32} #, 'complex': complex128}
 
-_num_maxmin = {float64: [-Inf, Inf],
+_num_maxmin = {float64: [-np.Inf, np.Inf],
              int32: [-LargestInt32-1, LargestInt32],
-##             complex128: [-Inf-Inf*1.0j, Inf+Inf*1.0j]
+##             complex128: [-np.Inf-np.Inf*1.0j, np.Inf+np.Inf*1.0j]
              }
 
 _typefrompytype = {float: float64, int: int32} #, complex: complex128}
@@ -846,11 +846,11 @@ def _scalar_diff(func, x0, dx):
     CON = 1.4
     CON2 = CON*CON
     SAFE = 2
-    a=zeros((max_order,max_order),'f')
+    a = zeros((max_order,max_order), 'f')
     a[0,0] = (func(x0+dx)-func(x0-dx))/(2.*dx)
-    err=BIG
-    ans = NaN
-    for i in range(1,max_order):
+    err = BIG
+    ans = np.NaN
+    for i in range(1, max_order):
         dx /= CON
         # try a smaller stepsize
         a[0,i] = (func(x0+dx)-func(x0-dx))/(2.*dx)
@@ -1931,7 +1931,7 @@ class interp0d(interpclass):
         self.makecopy = makecopy   # RHC -- renamed from copy to avoid nameclash
         self.bounds_error = bounds_error
         if fill_value is None:
-            self.fill_value = NaN   # RHC -- was:   array(0.0) / array(0.0)
+            self.fill_value = np.NaN
         else:
             self.fill_value = fill_value
 
@@ -2093,7 +2093,7 @@ class interp1d(interpclass):    # RHC -- made this a new-style Python class
         self.makecopy = makecopy   # RHC -- renamed from copy to avoid nameclash
         self.bounds_error = bounds_error
         if fill_value is None:
-            self.fill_value = NaN   # RHC -- was:   array(0.0) / array(0.0)
+            self.fill_value = np.NaN
         else:
             self.fill_value = fill_value
 

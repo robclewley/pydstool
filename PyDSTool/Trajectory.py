@@ -17,9 +17,10 @@ from .errors import *
 
 # Other imports
 from numpy import array, arange, float64, int32, concatenate, zeros, shape, \
-     sometrue, alltrue, any, all, ndarray, asarray, Inf, unique
+     sometrue, alltrue, any, all, ndarray, asarray, unique
 from scipy.optimize import bisect, newton
 from numpy.linalg import norm
+import numpy as np
 import math
 import copy
 import sys
@@ -1065,7 +1066,7 @@ class HybridTrajectory(Trajectory):
         for ov in self.coordnames:
             self.variables[ov] = HybridVariable(self, ov,
                                             timeInterval, abseps=abseps)
-            self.depdomain[ov] = Interval(ov, float, [-Inf, Inf],
+            self.depdomain[ov] = Interval(ov, float, [-np.Inf, np.Inf],
                                             abseps=abseps)
         self.globalt0 = globalt0
         self.indepdomain = timeInterval

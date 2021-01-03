@@ -13,9 +13,9 @@ from .Points import *
 from .Interval import *
 from .FuncSpec import ImpFuncSpec
 
-from numpy import Inf, NaN, isfinite, sometrue, alltrue, any, all, \
+from numpy import isfinite, sometrue, alltrue, any, all, \
      array, float64, int32, ndarray, asarray
-
+import numpy as np
 import copy
 import types, math, random
 
@@ -464,7 +464,7 @@ class Variable(object):
                 try:
                     self.initialconditions = {self.coordname: self.output(t0)}
                 except ValueError:
-                    self.initialconditions = {self.coordname: NaN}
+                    self.initialconditions = {self.coordname: np.NaN}
                 except TypeError:
                     print("Debugging info: self.output = %s" % self.output)
                     raise
@@ -530,7 +530,7 @@ class Variable(object):
                 self.indepdomain.name = indepdomain
             else:
                 self.indepdomain = Interval(self.indepvarname, float,
-                                           [-Inf, Inf], abseps=abseps)
+                                           [-np.Inf, np.Inf], abseps=abseps)
             self.indepvartype = float
         else:
             if isinstance(indepdomain, Interval):
@@ -587,7 +587,7 @@ class Variable(object):
             if self.depdomain is None:
                 if self.coordtype is None:
                     self.depdomain = Interval(self.coordname, float,
-                                                 [-Inf, Inf], abseps=abseps)
+                                                 [-np.Inf, np.Inf], abseps=abseps)
                     self.coordtype = float
                 else:
                     self.depdomain = Interval(self.coordname,
@@ -1062,7 +1062,7 @@ class HybridVariable(Variable):
         self.indepvartype = float
         self.coordname = coordname
         self.depdomain = Interval(self.coordname, float,
-                                    [-Inf, Inf], abseps=abseps)
+                                    [-np.Inf, np.Inf], abseps=abseps)
         self.coordtype = float
         self.trajirange = None
         self.trajdrange = None
@@ -1120,9 +1120,9 @@ class OutputFn(object):
         # datapoints can be exhaustive list of known values for fn or
         # a Interval range for continuous-valued functions
         if datapoints is None:
-            datapoints = (Interval('indepvardom', numtypes[0], [-Inf, Inf],
+            datapoints = (Interval('indepvardom', numtypes[0], [-np.Inf, np.Inf],
                                    abseps=abseps),
-                          Interval('depvardom', numtypes[1], [-Inf, Inf],
+                          Interval('depvardom', numtypes[1], [-np.Inf, np.Inf],
                                abseps=abseps))
         try:
             self.datapoints = (datapoints[0], datapoints[1])
