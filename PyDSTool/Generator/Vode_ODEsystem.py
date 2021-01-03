@@ -5,7 +5,7 @@ the scipy-wrapped VODE Fortran solver.
 import math
 from copy import copy, deepcopy
 
-import numpy as npy
+import numpy as np
 from scipy.integrate import ode
 
 from .allimports import *
@@ -231,7 +231,7 @@ class Vode_ODEsystem(ODEsystem):
         auxvarsfn = getattr(self, self.funcspec.auxspec[1])
         strict = self.algparams['strictdt']
         # Make t mesh if it wasn't given as 'specialtimes'
-        if not npy.all(npy.isfinite(self.indepvariable.depdomain.get())):
+        if not np.all(np.isfinite(self.indepvariable.depdomain.get())):
             print('Time domain was: %f' % self.indepvariable.depdomain.get())
             raise ValueError('Ensure time domain is finite')
         if dt == indepdom1 - indepdom0:
@@ -449,8 +449,8 @@ class Vode_ODEsystem(ODEsystem):
                         for evname in temp_names:
                             Evtimes[evname].append(solver.t)
                             xv = solver.y
-                            av = npy.array(avals)
-                            Evpoints[evname].append(npy.concatenate((xv, av)))
+                            av = np.array(avals)
+                            Evpoints[evname].append(np.concatenate((xv, av)))
                     for evname, ev in precEvts:
                         # only record events if they have not been previously
                         # flagged within their event interval
@@ -503,8 +503,8 @@ class Vode_ODEsystem(ODEsystem):
                         for evname in evnames:
                             Evtimes[evname].append(solver.t)
                             xv = solver.y
-                            av = npy.array(avals)
-                            Evpoints[evname].append(npy.concatenate((xv, av)))
+                            av = np.array(avals)
+                            Evpoints[evname].append(np.concatenate((xv, av)))
                         # break while loop after appending t, x
                         breakwhile = True
                     else:
@@ -560,8 +560,8 @@ class Vode_ODEsystem(ODEsystem):
                             for evname in evnames:
                                 Evtimes[evname].append(solver.t)
                                 xv = solver.y
-                                av = npy.array(avals)
-                                Evpoints[evname].append(npy.concatenate((xv, av)))
+                                av = np.array(avals)
+                                Evpoints[evname].append(np.concatenate((xv, av)))
                             # Cannot continue -- dt_min no smaller than
                             # previous dt. If this is more than the first time
                             # in this code then have found the event to within
@@ -711,7 +711,7 @@ class Vode_ODEsystem(ODEsystem):
         for x in xnames:
             if len(alltData) > 1:
                 if do_poly:
-                    xvals = npy.array([allxDataDict[x], alldxDataDict[x]]).T
+                    xvals = np.array([allxDataDict[x], alldxDataDict[x]]).T
                     interp = PiecewisePolynomial(alltData, xvals, 2)
                 else:
                     xvals = allxDataDict[x]
@@ -796,8 +796,8 @@ class Vode_ODEsystem(ODEsystem):
                 aval = list(auxvarsfn(evt, xval, plist + ilist))
                 for evname in evnames:
                     Evtimes[evname].append(evt)
-                    Evpoints[evname].append(npy.array(xval + aval))
-                tcond = npy.less_equal(alltData[tix:], evt).tolist()
+                    Evpoints[evname].append(np.array(xval + aval))
+                tcond = np.less_equal(alltData[tix:], evt).tolist()
                 try:
                     tix = tcond.index(0) + tix  # lowest index for t > evt
                     do_insert = (alltData[tix - 1] != evt)
@@ -818,8 +818,8 @@ class Vode_ODEsystem(ODEsystem):
             for x in xnames:
                 if do_poly:
                     # use asarray in case points added to sequences as a list
-                    xvals = npy.array([npy.asarray(allxDataDict[x]),
-                                   npy.asarray(alldxDataDict[x])]).T
+                    xvals = np.array([np.asarray(allxDataDict[x]),
+                                   np.asarray(alldxDataDict[x])]).T
                     interp = PiecewisePolynomial(alltData, xvals, 2)
                 else:
                     xvals = allxDataDict[x]
@@ -850,7 +850,7 @@ class Vode_ODEsystem(ODEsystem):
                 if evpt == []:
                     self.trajevents[evname] = None
                 else:
-                    evpt = npy.transpose(npy.array(evpt))
+                    evpt = np.transpose(np.array(evpt))
                     self.trajevents[evname] = Pointset({
                         'coordnames': xnames + anames,
                         'indepvarname': 't',

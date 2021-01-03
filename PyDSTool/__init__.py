@@ -1,13 +1,11 @@
 """PyDSTool initialization script.
 
-Copyright (C) 2007-2012 Georgia State University
-
 print PyDSTool.__LICENSE__    for the terms of use.
 """
 
 
 __LICENSE__ = """\
-Copyright (C) 2007-2012, Copyright (C) 2007-2014, Robert Clewley
+Copyright (C) 2007-2020, Copyright (C) 2007-2020, Robert Clewley
 All rights reserved.
 
 Parts of this distribution that originate from different authors are
@@ -25,10 +23,9 @@ modification, are permitted provided that the following conditions are met:
       disclaimer in the documentation and/or other materials provided
       with the distribution.
 
-    3. The name of Robert Clewley, or of his affiliations (Georgia State
-      University, and its representatives) may not be used to endorse or
-      promote products derived from this software without specific prior
-      written permission.
+    3. The name of Robert Clewley, or of his affiliations may not be used to
+      endorse or promote products derived from this software without specific
+      prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY ROBERT CLEWLEY ``AS IS'' AND ANY
 EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -80,10 +77,8 @@ from .ModelSpec import *
 from .parseUtils import auxfnDBclass, protected_allnames, protected_auxnamesDB, \
          convertPowers
 from .PyCont import *
-import numpy
-import numpy as npy  # alternate
-# import scipy already done at top
-import scipy as spy  # alternate
+import numpy as np
+import scipy as sp
 from math import *
 try:
     from matplotlib import pyplot as plt
@@ -93,8 +88,8 @@ except ImportError:
 
 from numpy import *
 
-#from numpy.linalg import *
 from copy import copy
+
 # note that the names with leading underscores will not be exported by
 # "from PyDSTool import *"
 # diff overwrites numpy diff
@@ -114,6 +109,7 @@ _pyDSToolTypes = [ndarray, Generator_, Variable, Trajectory, Event,
                 GeneratorInterface, ModelInterface, ModelManager,
                 ModelTransform, GDescriptor, MDescriptor, context,
                 ModelLibrary]
+
 
 def who(typelist=None, objdict=None, verboselevel=0, returnlevel=0,
         deepSearch=False, _localCall=False):

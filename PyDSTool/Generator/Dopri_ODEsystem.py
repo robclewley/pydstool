@@ -12,10 +12,10 @@ from PyDSTool.common import *
 from PyDSTool import utils
 from PyDSTool import common
 from PyDSTool.integrator import integrator
-import numpy as npy
+import numpy as np
 
 # Other imports
-from numpy import Inf, NaN, isfinite, int, int32, float, float64, \
+from numpy import isfinite, int, int32, float, float64, \
      sometrue, alltrue, any, all, concatenate, transpose, array, zeros
 import math, random
 import operator
@@ -660,12 +660,12 @@ class Dopri_ODEsystem(ODEsystem, CompiledMixin):
         # post-process check of variable bounds (if defined and algparams['checkBounds'] True)
         if self._dircode > 0:
             compare = operator.lt
-            last_ix = Inf
+            last_ix = np.Inf
         else:
             compare = operator.gt
-            last_ix = -Inf
+            last_ix = -np.Inf
         highest_ix = X.shape[1]-1
-        last_t = Inf
+        last_t = np.Inf
         if self.algparams['checkBounds'] > 0:
             # temp storage for repeatedly used object attributes (for lookup efficiency)
             depdomains = dict(zip(range(self.dimension),
@@ -684,7 +684,7 @@ class Dopri_ODEsystem(ODEsystem, CompiledMixin):
                     offender_ix = xi
             if not isfinite(last_ix) and last_ix < 0:
                 # only use +Inf hereon to flag no truncation needed
-                last_ix = Inf
+                last_ix = np.Inf
             elif last_ix >= 0 and last_ix < highest_ix:
                 # truncate data
                 last_t = alltData[last_ix]
@@ -716,7 +716,7 @@ class Dopri_ODEsystem(ODEsystem, CompiledMixin):
                     ev_array = Evpoints[evix]
                 if last_ix >= 0 and last_ix < highest_ix:
                     # don't count last_ix = -1 which is the same as highest_ix
-                    last_ev_tix = npy.argmax(Evtimes[evix] >= alltData[last_ix])
+                    last_ev_tix = np.argmax(Evtimes[evix] >= alltData[last_ix])
                     if last_ev_tix == 0 and Evtimes[evix][0] >= last_t:
                         # checks that there was actually a violation
                         # - so no events to record

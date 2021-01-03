@@ -11,7 +11,7 @@ from .parseUtils import joinStrs
 from PyDSTool.core.context_managers import RedirectStdout
 
 # !! Replace use of these named imports with np.<X>
-from numpy import Inf, NaN, isfinite, less, greater, sometrue, alltrue, \
+from numpy import isfinite, less, greater, sometrue, alltrue, \
      searchsorted, take, argsort, array, swapaxes, asarray, zeros, transpose, \
      float64, int32, argmin, ndarray, concatenate
 import numpy as np
@@ -239,7 +239,7 @@ def makeImplicitFunc(f, x0, fprime=None, extrafargs=(), xtolval=1e-8,
         raise ValueError("Unrecognized type of implicit function solver")
 
 
-def findClosestPointIndex(pt, target, tol=Inf, in_order=True):
+def findClosestPointIndex(pt, target, tol=np.Inf, in_order=True):
     """
     Find index of the closest N-dimensional Point in the target N by M array
     or Pointset. Uses norm of order given by the Point

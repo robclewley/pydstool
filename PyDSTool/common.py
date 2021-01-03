@@ -10,7 +10,7 @@ from .errors import *
 import sys
 import types
 from scipy.optimize import minpack
-# In future, will convert these specific imports to be referred as npy.X
+# In future, will convert these specific imports to be referred as np.X
 from numpy import atleast_1d, clip, less, greater, logical_or, \
      searchsorted, isfinite, shape, mat, sign, any, all, sometrue, alltrue, \
      array, swapaxes, zeros, ones, finfo, double, exp, log, \
@@ -161,7 +161,7 @@ class predicate_op(object):
         self.record = []
 
     def precondition(self, objlist):
-        res = npy.all([p.precondition(objlist) for p in self.predicates])
+        res = np.all([p.precondition(objlist) for p in self.predicates])
         self.record = [(self.name, [p.record for p in self.predicates])]
         return res
 
@@ -182,14 +182,14 @@ class and_op(predicate_op):
     name = 'AND'
 
     def evaluate(self, obj):
-        return npy.all([p(obj) for p in self.predicates])
+        return np.all([p(obj) for p in self.predicates])
 
 
 class or_op(predicate_op):
     name = 'OR'
 
     def evaluate(self, obj):
-        return npy.any([p(obj) for p in self.predicates])
+        return np.any([p(obj) for p in self.predicates])
 
 
 class not_op(predicate_op):
@@ -1772,8 +1772,8 @@ def extent(data):
     """Returns a pair of the min and max values of a dataset, or just a numeric type if these are equal.
     (Ignores NaNs.)
     """
-    minval = npy.nanmin(data)
-    maxval = npy.nanmax(data)
+    minval = np.nanmin(data)
+    maxval = np.nanmax(data)
     if minval == maxval:
         return minval
     else:
@@ -2269,11 +2269,11 @@ class KroghInterpolator(object):
 
         >>> KroghInterpolator([0,0,1],[0,2,0])
         """
-        self.xi = npy.asarray(xi)
-        self.yi = npy.asarray(yi)
+        self.xi = np.asarray(xi)
+        self.yi = np.asarray(yi)
         if len(self.yi.shape)==1:
             self.vector_valued = False
-            self.yi = self.yi[:,npy.newaxis]
+            self.yi = self.yi[:,np.newaxis]
         elif len(self.yi.shape)>2:
             raise ValueError("y coordinates must be either scalars or vectors")
         else:
@@ -2286,9 +2286,9 @@ class KroghInterpolator(object):
             raise ValueError("%d x values provided and %d y values; must be equal" % (n, nn))
         self.r = r
 
-        c = npy.zeros((n+1,r))
+        c = np.zeros((n+1,r))
         c[0] = yi[0]
-        Vk = npy.zeros((n,r))
+        Vk = np.zeros((n,r))
         for k in range(1,n):
             s = 0
             while s<=k and xi[k-s]==xi[k]:
@@ -2318,22 +2318,22 @@ class KroghInterpolator(object):
             whether the interpolator is vector-valued or scalar-valued.
             If x is a vector, returns a vector of values.
         """
-        if npy.isscalar(x):
+        if np.isscalar(x):
             scalar = True
             m = 1
         else:
             scalar = False
             m = len(x)
-        x = npy.asarray(x)
+        x = np.asarray(x)
 
         n = self.n
         pi = 1
-        p = npy.zeros((m,self.r))
-        p += self.c[0,npy.newaxis,:]
+        p = np.zeros((m,self.r))
+        p += self.c[0,np.newaxis,:]
         for k in range(1,n):
             w = x - self.xi[k-1]
             pi = w*pi
-            p = p + npy.multiply.outer(pi,self.c[k])
+            p = p + np.multiply.outer(pi,self.c[k])
         if not self.vector_valued:
             if scalar:
                 return p[0,0]
@@ -2376,13 +2376,13 @@ class KroghInterpolator(object):
                [2.0,2.0],
                [3.0,3.0]])
         """
-        if npy.isscalar(x):
+        if np.isscalar(x):
             scalar = True
             m = 1
         else:
             scalar = False
             m = len(x)
-        x = npy.asarray(x)
+        x = np.asarray(x)
 
         n = self.n
         r = self.r
@@ -2390,24 +2390,24 @@ class KroghInterpolator(object):
         if der is None:
             der = self.n
         dern = min(self.n,der)
-        pi = npy.zeros((n,m))
-        w = npy.zeros((n,m))
+        pi = np.zeros((n,m))
+        w = np.zeros((n,m))
         pi[0] = 1
-        p = npy.zeros((m,self.r))
-        p += self.c[0,npy.newaxis,:]
+        p = np.zeros((m,self.r))
+        p += self.c[0,np.newaxis,:]
 
         for k in range(1,n):
             w[k-1] = x - self.xi[k-1]
             pi[k] = w[k-1]*pi[k-1]
-            p += npy.multiply.outer(pi[k],self.c[k])
+            p += np.multiply.outer(pi[k],self.c[k])
 
-        cn = npy.zeros((max(der,n+1),m,r))
-        cn[:n+1,...] += self.c[:n+1,npy.newaxis,:]
+        cn = np.zeros((max(der,n+1),m,r))
+        cn[:n+1,...] += self.c[:n+1,np.newaxis,:]
         cn[0] = p
         for k in range(1,n):
             for i in range(1,n-k+1):
                 pi[i] = w[k+i-1]*pi[i-1]+pi[i]
-                cn[k] = cn[k]+pi[i,:,npy.newaxis]*cn[k+i]
+                cn[k] = cn[k]+pi[i,:,np.newaxis]*cn[k+i]
             cn[k]*=factorial(k)
 
         cn[n,...] = 0
@@ -2483,15 +2483,15 @@ class BarycentricInterpolator(object):
             will be supplied later.
         """
         self.n = len(xi)
-        self.xi = npy.asarray(xi)
+        self.xi = np.asarray(xi)
         if yi is not None and len(yi)!=len(self.xi):
             raise ValueError("yi dimensions do not match xi dimensions")
         self.set_yi(yi)
-        self.wi = npy.zeros(self.n)
+        self.wi = np.zeros(self.n)
         self.wi[0] = 1
         for j in range(1,self.n):
             self.wi[:j]*=(self.xi[j]-self.xi[:j])
-            self.wi[j] = npy.multiply.reduce(self.xi[:j]-self.xi[j])
+            self.wi[j] = np.multiply.reduce(self.xi[:j]-self.xi[j])
         self.wi**=-1
 
     def set_yi(self, yi):
@@ -2511,10 +2511,10 @@ class BarycentricInterpolator(object):
         if yi is None:
             self.yi = None
             return
-        yi = npy.asarray(yi)
+        yi = np.asarray(yi)
         if len(yi.shape)==1:
             self.vector_valued = False
-            yi = yi[:,npy.newaxis]
+            yi = yi[:,np.newaxis]
         elif len(yi.shape)>2:
             raise ValueError("y coordinates must be either scalars or vectors")
         else:
@@ -2546,11 +2546,11 @@ class BarycentricInterpolator(object):
         if yi is not None:
             if self.yi is None:
                 raise ValueError("No previous yi value to update!")
-            yi = npy.asarray(yi)
+            yi = np.asarray(yi)
             if len(yi.shape)==1:
                 if self.vector_valued:
                     raise ValueError("Cannot extend dimension %d y vectors with scalars" % self.r)
-                yi = yi[:,npy.newaxis]
+                yi = yi[:,np.newaxis]
             elif len(yi.shape)>2:
                 raise ValueError("y coordinates must be either scalars or vectors")
             else:
@@ -2558,20 +2558,20 @@ class BarycentricInterpolator(object):
                 if r!=self.r:
                     raise ValueError("Cannot extend dimension %d y vectors with dimension %d y vectors" % (self.r, r))
 
-            self.yi = npy.vstack((self.yi,yi))
+            self.yi = np.vstack((self.yi,yi))
         else:
             if self.yi is not None:
                 raise ValueError("No update to yi provided!")
         old_n = self.n
-        self.xi = npy.concatenate((self.xi,xi))
+        self.xi = np.concatenate((self.xi,xi))
         self.n = len(self.xi)
         self.wi**=-1
         old_wi = self.wi
-        self.wi = npy.zeros(self.n)
+        self.wi = np.zeros(self.n)
         self.wi[:old_n] = old_wi
         for j in range(old_n,self.n):
             self.wi[:j]*=(self.xi[j]-self.xi[:j])
-            self.wi[j] = npy.multiply.reduce(self.xi[:j]-self.xi[j])
+            self.wi[j] = np.multiply.reduce(self.xi[:j]-self.xi[j])
         self.wi**=-1
 
     def __call__(self, x):
@@ -2593,14 +2593,14 @@ class BarycentricInterpolator(object):
         weights, that is, it constructs an intermediate array of size
         N by M, where N is the degree of the polynomial.
         """
-        scalar = npy.isscalar(x)
-        x = npy.atleast_1d(x)
-        c = npy.subtract.outer(x,self.xi)
+        scalar = np.isscalar(x)
+        x = np.atleast_1d(x)
+        c = np.subtract.outer(x,self.xi)
         z = c==0
         c[z] = 1
         c = self.wi/c
-        p = npy.dot(c,self.yi)/npy.sum(c,axis=-1)[:,npy.newaxis]
-        i, j = npy.nonzero(z)
+        p = np.dot(c,self.yi)/np.sum(c,axis=-1)[:,np.newaxis]
+        i, j = np.nonzero(z)
         p[i] = self.yi[j]
         if not self.vector_valued:
             if scalar:
@@ -2656,7 +2656,7 @@ class PiecewisePolynomial(interpclass):
         # don't store any derivative information in datapoints
         self.datapoints = (array(xi, float), array(yi[:,0], float))
         self.type = float    # RHC -- for access from PyDSTool
-        yi0 = npy.asarray(yi[0])
+        yi0 = np.asarray(yi[0])
         if len(yi0.shape)==2:
             self.vector_valued = True
             self.r = yi0.shape[1]
@@ -2695,11 +2695,11 @@ class PiecewisePolynomial(interpclass):
         assert n1<=len(y1)
         assert n2<=len(y2)
 
-        xi = npy.zeros(n)
+        xi = np.zeros(n)
         if self.vector_valued:
-            yi = npy.zeros((n,self.r))
+            yi = np.zeros((n,self.r))
         else:
-            yi = npy.zeros((n,))
+            yi = np.zeros((n,))
 
         xi[:n1] = x1
         yi[:n1] = y1[:n1]
@@ -2721,7 +2721,7 @@ class PiecewisePolynomial(interpclass):
             possible order
         """
 
-        yi = npy.asarray(yi)
+        yi = np.asarray(yi)
         if self.vector_valued:
             if (len(yi.shape)!=2 or yi.shape[1]!=self.r):
                 raise ValueError("Each derivative must be a vector of length %d" % self.r)
@@ -2730,7 +2730,7 @@ class PiecewisePolynomial(interpclass):
                 raise ValueError("Each derivative must be a scalar")
 
         if self.direction is None:
-            self.direction = npy.sign(xi-self.xi[-1])
+            self.direction = np.sign(xi-self.xi[-1])
         elif (xi-self.xi[-1])*self.direction < 0:
             raise ValueError("x coordinates must be in the %d direction: %s" % (self.direction, self.xi))
 
@@ -2771,7 +2771,7 @@ class PiecewisePolynomial(interpclass):
         """
 
         for i in range(len(xi)):
-            if orders is None or npy.isscalar(orders):
+            if orders is None or np.isscalar(orders):
                 self.append(xi[i],yi[i],orders)
             else:
                 self.append(xi[i],yi[i],orders[i])
@@ -2787,17 +2787,17 @@ class PiecewisePolynomial(interpclass):
         -------
         y : scalar or array-like of length R or length N or N by R
         """
-        if npy.isscalar(x):
-            pos = npy.clip(npy.searchsorted(self.xi, x) - 1, 0, self.n-2)
+        if np.isscalar(x):
+            pos = np.clip(np.searchsorted(self.xi, x) - 1, 0, self.n-2)
             y = self.polynomials[pos](x)
         else:
-            x = npy.asarray(x)
+            x = np.asarray(x)
             m = len(x)
-            pos = npy.clip(npy.searchsorted(self.xi, x) - 1, 0, self.n-2)
+            pos = np.clip(np.searchsorted(self.xi, x) - 1, 0, self.n-2)
             if self.vector_valued:
-                y = npy.zeros((m,self.r))
+                y = np.zeros((m,self.r))
             else:
-                y = npy.zeros(m)
+                y = np.zeros(m)
             for i in range(self.n-1):
                 c = pos==i
                 y[c] = self.polynomials[i](x[c])
@@ -2840,17 +2840,17 @@ class PiecewisePolynomial(interpclass):
         y : array-like of shape der by R or der by N or der by N by R
 
         """
-        if npy.isscalar(x):
-            pos = npy.clip(npy.searchsorted(self.xi, x) - 1, 0, self.n-2)
+        if np.isscalar(x):
+            pos = np.clip(np.searchsorted(self.xi, x) - 1, 0, self.n-2)
             y = self.polynomials[pos].derivatives(x,der=der)
         else:
-            x = npy.asarray(x)
+            x = np.asarray(x)
             m = len(x)
-            pos = npy.clip(npy.searchsorted(self.xi, x) - 1, 0, self.n-2)
+            pos = np.clip(np.searchsorted(self.xi, x) - 1, 0, self.n-2)
             if self.vector_valued:
-                y = npy.zeros((der,m,self.r))
+                y = np.zeros((der,m,self.r))
             else:
-                y = npy.zeros((der,m))
+                y = np.zeros((der,m))
             for i in range(self.n-1):
                 c = pos==i
                 y[:,c] = self.polynomials[i].derivatives(x[c],der=der)
@@ -2962,12 +2962,12 @@ class fit_function(object):
             if self.verbose:
                 def res_fn(p):
                     print("\n%r" % (p,))
-                    r = npy.concatenate((constraint(*p), (self.fn(xs, *p) - ys)*weight))
+                    r = np.concatenate((constraint(*p), (self.fn(xs, *p) - ys)*weight))
                     print("Residual = %f"%norm(r))
                     return r
             else:
                 def res_fn(p):
-                    return npy.concatenate((constraint(*p), (self.fn(xs, *p) - ys)*weight))
+                    return np.concatenate((constraint(*p), (self.fn(xs, *p) - ys)*weight))
 
         try:
             res = minpack.leastsq(res_fn, pars_ic,

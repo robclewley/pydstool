@@ -1,5 +1,5 @@
 
-import numpy as npy
+import numpy as np
 from PyDSTool import Events, Variable, Pointset, Trajectory
 from PyDSTool.common import args, metric, metric_L2, metric_weighted_L2, \
      metric_float, remain, fit_quadratic, fit_exponential, fit_diff_of_exp, \
@@ -39,8 +39,8 @@ def find_internal_extrema(pts, noise_tol=0):
     last_ix = len(pts)-1
     end_ixs = (0, last_ix)
 
-    max_val_ix = npy.argmax(pts)
-    min_val_ix = npy.argmin(pts)
+    max_val_ix = np.argmax(pts)
+    min_val_ix = np.argmin(pts)
     glob_xmax = pts[max_val_ix][0]
     glob_xmin = pts[min_val_ix][0]
 
@@ -61,8 +61,8 @@ def find_internal_extrema(pts, noise_tol=0):
             index_min = min_val_ix
             xmin = pts[index_min]
             # find associated interior local maximum
-            max_val_ix1 = npy.argmax(pts[:min_val_ix])
-            max_val_ix2 = npy.argmax(pts[min_val_ix:])+min_val_ix
+            max_val_ix1 = np.argmax(pts[:min_val_ix])
+            max_val_ix2 = np.argmax(pts[min_val_ix:])+min_val_ix
             if max_val_ix1 in end_ixs:
                 if max_val_ix2 in end_ixs:
                     index_max = None
@@ -79,9 +79,9 @@ def find_internal_extrema(pts, noise_tol=0):
         index_max = max_val_ix
         xmax = pts[index_max][0]
         # find associated interior local minimum
-        min_val_ix1 = npy.argmin(pts[:max_val_ix])
+        min_val_ix1 = np.argmin(pts[:max_val_ix])
         xmin1 = pts[min_val_ix1][0]
-        min_val_ix2 = npy.argmin(pts[max_val_ix:])+max_val_ix
+        min_val_ix2 = np.argmin(pts[max_val_ix:])+max_val_ix
         xmin2 = pts[min_val_ix2][0]
         if min_val_ix1 in end_ixs or abs(xmin1-x0)<noise_tol or abs(xmin1-x1)<noise_tol:
             if min_val_ix2 in end_ixs or abs(xmin1-x0)<noise_tol or abs(xmin1-x1)<noise_tol:
@@ -126,16 +126,16 @@ class get_spike_model(ql_feature_leaf):
             test1 = test2 = test3 = False
         else:
             test1 = max_val_ix not in (loc_extrema['first'][0], loc_extrema['last'][0])
-            test2 = npy.linalg.norm(global_xmin-xmax) > self.pars.height_tol
+            test2 = np.linalg.norm(global_xmin-xmax) > self.pars.height_tol
             try:
-                test3 = npy.linalg.norm(xmin-xmax) > self.pars.height_tol
+                test3 = np.linalg.norm(xmin-xmax) > self.pars.height_tol
             except:
                 # fails if xmin is None, i.e. no interior minimum
                 # allow no local minimum present, in which case use the other endpoint for test
                 # ... we don't know which is the one alread tested in test2, so test both ends again,
                 # knowing that they are both lower than the interior maximum found in this case
                 xmin = max([global_xmin, loc_extrema['last'][1], loc_extrema['first'][1]])
-                test3 = npy.linalg.norm(xmin-xmax) > self.pars.height_tol
+                test3 = np.linalg.norm(xmin-xmax) > self.pars.height_tol
             self.results.ixmax = max_val_ix
             self.results.tmax = pts.indepvararray[max_val_ix]
         self.results.spike_pts = pts
@@ -195,16 +195,16 @@ class get_spike_data(ql_feature_leaf):
 
         # could split these tests into 3 further sub-features but we'll skip that here for efficiency
         test1 = max_val_ix not in (loc_extrema['first'][0], loc_extrema['last'][0])
-        test2 = npy.linalg.norm(global_xmin-xmax) > self.pars.height_tol
+        test2 = np.linalg.norm(global_xmin-xmax) > self.pars.height_tol
         try:
-            test3 = npy.linalg.norm(xmin-xmax) > self.pars.height_tol
+            test3 = np.linalg.norm(xmin-xmax) > self.pars.height_tol
         except:
             # fails if xmin is None, i.e. no interior minimum
             # allow no local minimum present, in which case use the other endpoint for test
             # ... we don't know which is the one already tested in test2, so test both ends again,
             # knowing that they are both lower than the interior maximum found in this case
             xmin = max([global_xmin, loc_extrema['last'][1], loc_extrema['first'][1]])
-            test3 = npy.linalg.norm(xmin-xmax) > self.pars.height_tol
+            test3 = np.linalg.norm(xmin-xmax) > self.pars.height_tol
         # generate a suitable threshold from local maximum
         try:
             thresh_pc = self.pars.thresh_pc
@@ -222,7 +222,7 @@ class get_spike_data(ql_feature_leaf):
         tlo = evs_found[0][0]
         thi = evs_found[1][0]
         tmax = pts.indepvararray[max_val_ix]
-        symm_dist = npy.min([abs(tmax-tlo), abs(thi-tmax)])
+        symm_dist = np.min([abs(tmax-tlo), abs(thi-tmax)])
         # HACK! Ensure dt value will not cause us to hit an index directly, otherwise
         # have to catch case from Pointset.find method when return value is a single
         # integer index rather than a pair of indices
@@ -338,7 +338,7 @@ class get_burst_duration(qt_feature_leaf):
         t = pts.indepvararray
         x_rev = x[:ix_hi:-1]
         t_rev = t[:ix_hi:-1]
-        off_ix = len(x) - npy.argmin(npy.asarray(x_rev < thresh, int))
+        off_ix = len(x) - np.argmin(np.asarray(x_rev < thresh, int))
         ix_lo, ix_hi = nearest_2n_indices(x, off_ix, 2)
         pp = make_poly_interpolated_curve(pts[ix_lo:ix_hi+1], varname,
                                           target.model)
@@ -423,8 +423,8 @@ class burst_feature(ql_feature_node):
         b, a = self.pars.filt_coeffs_LP
         xf = filtfilt(b, a, xrs)
         t = pts.indepvararray
-        min_val_ix = npy.argmin(xf)  # use LPF version to avoid noise artifacts
-        max_val_ix = npy.argmax(xf)  # use LPF version to avoid spikes
+        min_val_ix = np.argmin(xf)  # use LPF version to avoid noise artifacts
+        max_val_ix = np.argmax(xf)  # use LPF version to avoid spikes
         min_ix_lo, min_ix_hi = nearest_2n_indices(xrs, min_val_ix, 30)
         max_ix_lo, max_ix_hi = nearest_2n_indices(xrs, max_val_ix, 30)
         min_res = smooth_pts(trs[min_ix_lo:min_ix_hi+1],
@@ -460,13 +460,13 @@ class burst_feature(ql_feature_node):
             # look to the right
             start_t = self.pars.ref_burst_est.spike_ts[-1]
             start_ix = pts.find(start_t, end=1)
-            other_min_ix = npy.argmin(x[start_ix:])
+            other_min_ix = np.argmin(x[start_ix:])
             other_min_t = t[start_ix+other_min_ix]
         else:
             # look to the left
             start_t = self.pars.ref_burst_est.spike_ts[0]
             start_ix = pts.find(start_t, end=0)
-            other_min_ix = npy.argmin(x[:start_ix])
+            other_min_ix = np.argmin(x[:start_ix])
             other_min_t = t[other_min_ix]
         self.pars.ref_period = abs(other_min_t - min_t)
 
@@ -485,8 +485,8 @@ class burst_feature(ql_feature_node):
         b, a = self.pars.filt_coeffs_LP
         xf = filtfilt(b, a, xrs)
         t = pts.indepvararray
-        min_val_ix = npy.argmin(x) # precise because of Model's events
-        max_val_ix = npy.argmax(xf)
+        min_val_ix = np.argmin(x) # precise because of Model's events
+        max_val_ix = np.argmax(xf)
         max_ix_lo, max_ix_hi = nearest_2n_indices(xrs, max_val_ix, 4)
         max_res = smooth_pts(trs[max_ix_lo:max_ix_hi+1],
                              xf[max_ix_lo:max_ix_hi+1], self.pars.quadratic)
@@ -530,14 +530,14 @@ class burst_feature(ql_feature_node):
             # look to the right
             start_t = self.results.burst_est.spike_ts[-1]
             start_ix = pts.find(start_t, end=1)
-            other_min_ix = npy.argmin(x[start_ix:])
+            other_min_ix = np.argmin(x[start_ix:])
             other_min_t = t[start_ix+other_min_ix]
             other_min_val = x[start_ix+other_min_ix]
         else:
             # look to the left
             start_t = self.results.burst_est.spike_ts[0]
             start_ix = pts.find(start_t, end=0)
-            other_min_ix = npy.argmin(x[:start_ix])
+            other_min_ix = np.argmin(x[:start_ix])
             other_min_t = t[other_min_ix]
             other_min_val = x[other_min_ix]
         self.results.period = abs(other_min_t - min_t)
@@ -621,10 +621,10 @@ class get_burst_peak_env(qt_feature_leaf):
         # discrete option false yields error if only one spike found, but error is cryptic!
 
         if len(peak_t) > 1:
-            ref_env_ts = npy.linspace(peak_t[0], peak_t[-1],
+            ref_env_ts = np.linspace(peak_t[0], peak_t[-1],
                                             self.pars.num_samples)
         else:
-            ref_env_ts = npy.array(peak_t)
+            ref_env_ts = np.array(peak_t)
         self.pars.ref_peak_vals = self.ref_traj(ref_env_ts,
                                    self.super_pars.burst_coord)[0]
 
@@ -658,7 +658,7 @@ class get_burst_peak_env(qt_feature_leaf):
 #        call_args['spest'] = burst_est
 #        env = spike_envelope(burst_est.pts, burst_est.mean_ISI,
 #                             **call_args)
-        test_env_ts = npy.linspace(peak_t[0], peak_t[-1], self.pars.num_samples)
+        test_env_ts = np.linspace(peak_t[0], peak_t[-1], self.pars.num_samples)
         return self.metric(self.results.burst_peak_env(test_env_ts,
                                                    self.super_pars.burst_coord),
                            self.super_pars.ref_peak_vals) < self.pars.tol
@@ -679,14 +679,14 @@ class get_burst_trough_env(qt_feature_leaf):
                             burst_est.spike_ixs[i]) \
                            for i in range(1, len(burst_est.spike_ixs))]
         # should really use quadratic fit to get an un-biased minimum
-        trough_ixs = [npy.argmin(vals[ix_lo:ix_hi])+ix_lo for ix_lo, ix_hi in \
+        trough_ixs = [np.argmin(vals[ix_lo:ix_hi])+ix_lo for ix_lo, ix_hi in \
                       inter_spike_ixs]
         trough_vals = [vals[i] for i in trough_ixs]
         trough_t = [burst_pts.indepvararray[i] for i in trough_ixs]
         self.ref_traj = numeric_to_traj([trough_vals], 'trough_envelope',
                                         self.super_pars.burst_coord, trough_t,
                                         burst_pts.indepvarname, discrete=False)
-        ref_env_ts = npy.linspace(trough_t[0], trough_t[-1],
+        ref_env_ts = np.linspace(trough_t[0], trough_t[-1],
                                             self.pars.num_samples)
         self.pars.ref_trough_vals = self.ref_traj(ref_env_ts,
                                   self.super_pars.burst_coord)
@@ -707,7 +707,7 @@ class get_burst_trough_env(qt_feature_leaf):
                            for i in range(1, len(ts))]
         # min and max events in model mean that these are recorded
         # accurately in the pointsets already
-        trough_ixs = [npy.argmin(vals[ix_lo:ix_hi])+ix_lo for ix_lo, ix_hi in \
+        trough_ixs = [np.argmin(vals[ix_lo:ix_hi])+ix_lo for ix_lo, ix_hi in \
                       inter_spike_ixs]
         trough_vals = [vals[i] - dc_offset for i in trough_ixs]
         # use self.pars.trough_t for isi mid-point times
@@ -717,7 +717,7 @@ class get_burst_trough_env(qt_feature_leaf):
                                         self.super_pars.burst_coord,
                                         trough_t,
                                         burst_pts.indepvarname, discrete=False)
-        test_env_ts = npy.linspace(trough_t[0], trough_t[-1],
+        test_env_ts = np.linspace(trough_t[0], trough_t[-1],
                                    self.pars.num_samples)
         self.results.trough_t = trough_t
         return self.metric(self.results.burst_trough_env(test_env_ts,
@@ -745,7 +745,7 @@ class get_burst_isi_env(qt_feature_leaf):
         self.ref_traj = numeric_to_traj([isi_vals], 'isi_envelope',
                                         self.super_pars.burst_coord, isi_t,
                                         burst_pts.indepvarname, discrete=False)
-        ref_env_ts = npy.linspace(isi_t[0], isi_t[-1],
+        ref_env_ts = np.linspace(isi_t[0], isi_t[-1],
                                             self.pars.num_samples)
         self.pars.ref_isis = self.ref_traj(ref_env_ts,
                                    self.super_pars.burst_coord)
@@ -760,7 +760,7 @@ class get_burst_isi_env(qt_feature_leaf):
                                         self.super_pars.burst_coord,
                                         self.super_results.trough_t,
                                         tname, discrete=False)
-        test_env_ts = npy.linspace(self.super_results.trough_t[0],
+        test_env_ts = np.linspace(self.super_results.trough_t[0],
                                    self.super_results.trough_t[-1],
                                    self.pars.num_samples)
         return self.metric(self.results.burst_isi_env(test_env_ts,
@@ -777,7 +777,7 @@ class get_burst_upsweep(qt_feature_leaf):
         vname = self.super_pars.burst_coord
         ts = [self.super_pars.ref_spike_times[0] - toff for \
               toff in self.pars.t_offs]
-        self.pars.ref_upsweep_V = npy.array([self.ref_traj(t, vname) for \
+        self.pars.ref_upsweep_V = np.array([self.ref_traj(t, vname) for \
                                              t in ts])
 
     def evaluate(self, target):
@@ -789,13 +789,13 @@ class get_burst_upsweep(qt_feature_leaf):
             target_t = self.super_results.spike_times[0] - toff
             if target_t < all_pts.indepvararray[0]:
                 # out of range - return penalty
-                self.metric.results = 5000*npy.ones((self.metric_len,),float)
+                self.metric.results = 5000*np.ones((self.metric_len,),float)
                 return False
             tix = all_pts.find(target_t, end=0)
             new_var = make_poly_interpolated_curve(all_pts[tix-5:tix+5],
                                                    vname, target.model)
             vals.append(new_var(target_t))
-        self.results.upsweep_V = npy.array(vals) - dc_offset
+        self.results.upsweep_V = np.array(vals) - dc_offset
         return self.metric(self.results.upsweep_V, \
                                self.pars.ref_upsweep_V) < self.pars.tol
 
@@ -809,7 +809,7 @@ class get_burst_downsweep(qt_feature_leaf):
         vname = self.super_pars.burst_coord
         ts = [self.super_pars.ref_spike_times[-1] + toff for \
               toff in self.pars.t_offs]
-        self.pars.ref_downsweep_V = npy.array([self.ref_traj(t, vname) for \
+        self.pars.ref_downsweep_V = np.array([self.ref_traj(t, vname) for \
                                                t in ts])
 
     def evaluate(self, target):
@@ -821,13 +821,13 @@ class get_burst_downsweep(qt_feature_leaf):
             target_t = self.super_results.spike_times[-1] + toff
             if target_t > all_pts.indepvararray[-1]:
                 # out of range - return penalty
-                self.metric.results = 5000*npy.ones((self.metric_len,),float)
+                self.metric.results = 5000*np.ones((self.metric_len,),float)
                 return False
             tix = all_pts.find(target_t, end=0)
             new_var = make_poly_interpolated_curve(all_pts[tix-5:tix+5],
                                                    vname, target.model)
             vals.append(new_var(target_t))
-        self.results.downsweep_V = npy.array(vals) - dc_offset
+        self.results.downsweep_V = np.array(vals) - dc_offset
         return self.metric(self.results.downsweep_V,
                                self.pars.ref_downsweep_V) < self.pars.tol
 
@@ -837,8 +837,8 @@ class get_burst_num_spikes(qt_feature_leaf):
         self.metric_len = 1
 
     def evaluate(self, target):
-        return self.metric(npy.array(len(self.super_results.spike_times)),
-                           npy.array(len(self.super_pars.ref_spike_times))) == 0
+        return self.metric(np.array(len(self.super_results.spike_times)),
+                           np.array(len(self.super_pars.ref_spike_times))) == 0
 
 
 class get_burst_period_info(qt_feature_leaf):
@@ -846,12 +846,12 @@ class get_burst_period_info(qt_feature_leaf):
         self.metric = metric_weighted_L2()
         self.metric_len = 2
         # strongly penalize lack of periodicity
-        self.metric.weights = npy.array([1., 1000.])
+        self.metric.weights = np.array([1., 1000.])
 
     def evaluate(self, target):
-        return self.metric(npy.array([self.super_results.period,
+        return self.metric(np.array([self.super_results.period,
                                   self.super_results.period_val_error]),
-                           npy.array([self.super_pars.ref_period,
+                           np.array([self.super_pars.ref_period,
                                   0.])) \
                < self.pars.tol
 
@@ -864,8 +864,8 @@ class spike_metric(metric):
     signals (0.05 of time distance)."""
     def __call__(self, sp1, sp2):
         # weight 'v' component down b/c 't' values are on a different scale
-        self.results = npy.array(sp1-sp2).flatten()*npy.array([1,0.05])
-        return npy.linalg.norm(self.results)
+        self.results = np.array(sp1-sp2).flatten()*np.array([1,0.05])
+        return np.linalg.norm(self.results)
 
 class spike_feature(qt_feature_node):
     """pars keys: tol"""
@@ -912,15 +912,15 @@ class estimate_spiking(object):
         max_x = max(x_filt)
         # retain only values larger than 10% of max to estimate burst
         # envelope
-        x_filt_mask = npy.asarray(x_filt>(0.1*max_x),int)
-        burst_off_ix = len(t) - npy.argmax(x_filt_mask[::-1])
-        burst_on_ix = npy.argmax(x_filt_mask)
+        x_filt_mask = np.asarray(x_filt>(0.1*max_x),int)
+        burst_off_ix = len(t) - np.argmax(x_filt_mask[::-1])
+        burst_on_ix = np.argmax(x_filt_mask)
         self.burst_on = (burst_on_ix, t[burst_on_ix])
         self.burst_off = (burst_off_ix, t[burst_off_ix])
         self.burst_duration = t[burst_off_ix] - t[burst_on_ix]
         # retain only values larger than 25% of max for actual spikes
         # FAILING: temp switch off
-        x_filt_th = x_filt_mask #npy.asarray(x_filt>(0.25*max_x),int)*x_filt
+        x_filt_th = x_filt_mask #np.asarray(x_filt>(0.25*max_x),int)*x_filt
         # find each spike by group of positive values
         # eliminating each afterwards (separated by zeros)
         spike_ixs = []
@@ -937,30 +937,30 @@ class estimate_spiking(object):
         self.spike_ts = t[spike_ixs]
         self.ISIs = [self.spike_ts[i]-self.spike_ts[i-1] for \
                      i in range(1, len(spike_ixs))]
-        self.mean_ISI = npy.mean(self.ISIs)
-        self.std_ISI = npy.std(self.ISIs)
+        self.mean_ISI = np.mean(self.ISIs)
+        self.std_ISI = np.std(self.ISIs)
         self.num_spikes = len(spike_ixs)
 
     def eliminate_group(self, xf, spike_ixs):
-        centre_ix = npy.argmax(xf)
+        centre_ix = np.argmax(xf)
 #        print "Current spike_ixs", spike_ixs
 #        print "eliminating group at t = ", self.t[centre_ix]
         # forward half-group
-        end_ix = npy.argmin(xf[centre_ix:])+centre_ix
+        end_ix = np.argmin(xf[centre_ix:])+centre_ix
         # backward half-group
-        start_ix = centre_ix-npy.argmin(xf[:centre_ix+1][::-1])
+        start_ix = centre_ix-np.argmin(xf[:centre_ix+1][::-1])
         # nullify values in range!
         xf[start_ix:end_ix]=0
 #        print start_ix, end_ix, xf[start_ix:end_ix]
         if self.sense == 'up':
             # x will be rising to peak, so track forwards until
             # xfilt makes zero crossing and becomes negative
-            new = centre_ix+npy.argmax(self.x_just_filt[centre_ix:]<0)
+            new = centre_ix+np.argmax(self.x_just_filt[centre_ix:]<0)
             if new not in spike_ixs:
                 spike_ixs.append(new)
         else:
             # track backwards
-            new = centre_ix-npy.argmin(self.x_just_filt[:centre_ix+1]>0)
+            new = centre_ix-np.argmin(self.x_just_filt[:centre_ix+1]>0)
             if new not in spike_ixs:
                 spike_ixs.append(new)
         return xf
@@ -1020,7 +1020,7 @@ class spike_envelope(object):
         # assume that the maximum is a spike, so is a reliable
         # phase reference
         if start_t is None:
-            self.start_ix = npy.argmax(self.vals)
+            self.start_ix = np.argmax(self.vals)
             self.start_t = self.tvals[self.start_ix]
         else:
             assert start_t in self.tvals
@@ -1082,8 +1082,8 @@ class spike_envelope(object):
         spike_ixs_lo.sort()
         spike_ixs_hi.sort()
         ts = self.pts.indepvararray
-        self.spike_ixs = npy.array(spike_ixs_lo+spike_ixs_hi)
-        self.spike_vals = npy.array([self.vals[i] for i in self.spike_ixs])
+        self.spike_ixs = np.array(spike_ixs_lo+spike_ixs_hi)
+        self.spike_vals = np.array([self.vals[i] for i in self.spike_ixs])
         nearest_per_ix_lo = self.pts.find(ts[self.spike_ixs[0]]-per*tol, end=1)
         nearest_per_ix_hi = self.pts.find(ts[self.spike_ixs[-1]]+per*tol, end=0)
         # fill in rest of curve (outside of +/- period tolerance) with zeros
@@ -1112,7 +1112,7 @@ class spike_envelope(object):
             postpend_t = [ts[nearest_per_ix_hi],
                           ts[nearest_per_ix_hi+1],
                           ts[-1]]
-        curve_vals = npy.array(prepend_v+[self.vals[i] for i in \
+        curve_vals = np.array(prepend_v+[self.vals[i] for i in \
                                         self.spike_ixs]+postpend_v)
         curve_t = prepend_t + list(ts[self.spike_ixs]) \
                    + postpend_t
@@ -1166,7 +1166,7 @@ class spike_envelope(object):
                 done = True
                 continue
             else:
-                max_ix = npy.argmax(self.vals[lo_ix:hi_ix])
+                max_ix = np.argmax(self.vals[lo_ix:hi_ix])
             # now ensure that time window was large enough to capture a true
             # extremum, and not just an endpoint extremum
             room_lo = lo_ix

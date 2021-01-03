@@ -7,7 +7,7 @@
 
 import copy
 import sys, traceback
-import numpy as npy
+import numpy as np
 
 # PyDSTool imports
 from . import Events, ModelSpec, Symbolic, Trajectory
@@ -117,11 +117,11 @@ class feature(object):
             satisfied = False
             if hasattr(self, 'metric'):
                 self.metric.results = self.pars.penalty * \
-                                  npy.ones((self.metric_len,), float)
+                                  np.ones((self.metric_len,), float)
             for sf in self.subfeatures:
                 if hasattr(sf, 'metric'):
                     sf.metric.results = self.pars.penalty * \
-                      npy.ones((sf.metric_len,), float)
+                      np.ones((sf.metric_len,), float)
         if satisfied:
             self.finish(target)
         self.results.satisfied = satisfied
@@ -316,7 +316,7 @@ class feature_node(feature):
                     # kludgy penalty function in lieu of something smarter
                     if sf.metric.results is None:
                         sf.metric.results = self.pars.penalty * \
-                          npy.ones((sf.metric_len,),float)
+                          np.ones((sf.metric_len,),float)
             else:
                 self.results.update(sf.results)
         return satisfied
@@ -466,12 +466,12 @@ class condition(object):
     __repr__ = __str__
 
     def _find_idx(self):
-        min_ix = npy.Inf
+        min_ix = np.Inf
         for f in self.fcd.keys():
             f_ix = f._find_idx()
             if f_ix is not None and f_ix < min_ix:
                 min_ix = f_ix
-        if npy.isfinite(min_ix):
+        if np.isfinite(min_ix):
             return min_ix
         else:
             return None
@@ -545,7 +545,7 @@ class context(object):
         is given, in which case reset to that.
         """
         if old_weights is None:
-            self.weights = npy.ones(self.res_len, 'float')
+            self.weights = np.ones(self.res_len, 'float')
         else:
             self.weights = old_weights
         self.weight_index_mapping = {}
@@ -588,9 +588,9 @@ class context(object):
             if isinstance(fs, common._num_types):
                 feat_dict = {}.fromkeys(flist, fs)
             elif isinstance(fs, dict):
-                assert npy.alltrue([isinstance(w, common._num_types) for \
+                assert np.alltrue([isinstance(w, common._num_types) for \
                             w in fs.values()]), "Invalid scalar weight"
-                assert npy.alltrue([f in flist for f in fs.keys()]), \
+                assert np.alltrue([f in flist for f in fs.keys()]), \
                        "Invalid features given for this test model interface"
                 feat_dict = fs
             for f, w in feat_dict.items():
@@ -686,7 +686,7 @@ class context(object):
         # discard the boolean, just compute the residuals through the calls to
         # metric, and access them through the feature list
         self.evaluate(model)
-        raw_residual = npy.concatenate(tuple([mf[1].metric.results for \
+        raw_residual = np.concatenate(tuple([mf[1].metric.results for \
                                      mf in self.res_feature_list]))
         residual = process_raw_residual(raw_residual, self.weights)
         if include_raw:
@@ -696,9 +696,9 @@ class context(object):
 
 
 def process_raw_residual(raw_residual, weights):
-    ixs = npy.nonzero(weights)
+    ixs = np.nonzero(weights)
     residual = (weights*raw_residual)[ixs]
-    nan_ixs = npy.where(npy.asarray(npy.isnan(residual),int))
+    nan_ixs = np.where(np.asarray(np.isnan(residual),int))
     for ix in nan_ixs:
         residual[ix] = 100.
     return residual
@@ -885,7 +885,7 @@ class ModelInterface(dsInterface):
                                                 t0, dict(ics))[0]
                 self._initiator_cache = (ics, t0, initiator)
         else:
-            if npy.alltrue(self._initiator_cache[0] == ics) and \
+            if np.alltrue(self._initiator_cache[0] == ics) and \
                self._initiator_cache[1] == t0:
                 ics, t0, initiator = self._initiator_cache
             elif ics is None:
@@ -986,7 +986,7 @@ class ModelInterface(dsInterface):
                "Target argument must be another interface object"
         if len(self.compatibleInterfaces) > 0 and \
              target.__class__.__name__ not in self.compatibleInterfaces \
-                and not npy.sometrue([common.compareBaseClass(target, ctype) \
+                and not np.sometrue([common.compareBaseClass(target, ctype) \
                                      for ctype in self.compatibleInterfaces]):
             raise ValueError("Target interface not of compatible type")
         try:
