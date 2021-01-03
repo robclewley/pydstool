@@ -6,7 +6,7 @@ from .errors import PyDSTool_InitError as InitError
 from .errors import PyDSTool_ClearError as ClearError
 from .common import _all_int, _real_types, \
      verify_intbool, verify_pos, verify_nonneg, verify_values
-from numpy import isinf, Inf
+import numpy as np
 import operator
 import sys
 
@@ -114,9 +114,9 @@ class integrator:
             raise InitError('Integrator initialization failed!')
 
 
-    def setEvents(self, maxevtpts=1000, eventActive=[], eventDir=[], eventTerm=[],
-                  eventInt=0.005, eventDelay=1e-4, eventTol=1e-6, maxbisect=100,
-                  eventNearCoef=1000):
+    def setEvents(self, maxevtpts=1000, eventActive=None, eventDir=None,
+                  eventTerm=None, eventInt=0.005, eventDelay=1e-4,
+                  eventTol=1e-6, maxbisect=100, eventNearCoef=1000):
 
         if not self.initBasic:
             raise InitError('You must initialize the integrator before setting events. (initBasic)')
@@ -126,8 +126,7 @@ class integrator:
 
         # Currently we will not raise an error, but instead ignore setting events
         # if nEvents is zero. Just set to some default values and pass to the
-        # shared library
-
+        # shared library.
         if self.nEvents <= 0:
             maxevtpts = 0
             eventActive = []
@@ -137,7 +136,14 @@ class integrator:
             eventDelay = 1e-4
             eventTol = 1e-6
             maxbisect = 100
-            eventNearCoef=1000
+            eventNearCoef = 1000
+
+        if eventActive is None:
+            eventActive = []
+        if eventDir is None:
+            eventDir = []
+        if eventTerm is None:
+            eventTerm = []
 
         self.checkEvents(maxevtpts, eventActive, eventDir, eventTerm,
                          eventInt, eventDelay, eventTol, maxbisect, eventNearCoef)
@@ -345,29 +351,27 @@ class integrator:
             raise TypeError("extInputVals must be list.")
         if len(extInputVals) != self.nExtInputs:
             raise ValueError("length of extInputVals must match nExtInputs")
-        for x in range(self.nExtInputs):
-            for y in range(len(extInputVals[x])):
-                if not isinstance(extInputVals[x][y], _real_types):
-                    raise TypeError("extInputVals entries must be real values")
+        if len(extInputTimes) != self.nExtInputs:
+            raise ValueError("length of extInputTimes must match nExtInputs")
+        if not all([isinstance(v, _real_types) for v in np.array(extInputVals).flatten()]):
+            raise TypeError("extInputVals entries must be real values")
+        if not all([isinstance(v, _real_types) for v in np.array(extInputTimes).flatten()]):
+            raise TypeError("extInputTimes entries must be real values")
 
-        for x in range(self.nExtInputs):
-            for y in range(len(extInputTimes[x])):
-                if not isinstance(extInputVals[x][y], _real_types):
-                    raise TypeError("extInputTimes entries must be real values")
-            if len(extInputTimes[x]) > 1:
+        for ti, time_array in enumerate(extInputTimes):
+            if len(time_array) > 1:
                 # Check orientation
-                orientation = extInputTimes[x][-1] - extInputTimes[x][0]
+                orientation = time_array[-1] - time_array[0]
                 if orientation == 0:
                     raise ValueError("Each extInputTime must be distinct; first and last times are identical with len > 1")
                 if orientation < 0:
-                    for y in range(len(extInputTimes[x])-1):
-                        if extInputTimes[x][y] <= extInputTimes[x][y+1]:
-                            raise ValueError("extInputTimes must be ordered consistently")
+                    if np.any(np.diff(time_array) >= 0):
+                        print("External input #{}: {}".format(ti, time_array))
+                        raise ValueError("extInputTimes must be strictly monotonic")
                 if orientation > 0:
-                    for y in range(len(extInputTimes[x])-1):
-                        if extInputTimes[x][y] >= extInputTimes[x][y+1]:
-                            print("%f %f %f %f" % (x, y, extInputTimes[x][y],extInputTimes[x][y+1]))
-                            raise ValueError("extInputTimes must be ordered consistently")
+                    if np.any(np.diff(time_array) <= 0):
+                        print("External input #{}: {}".format(ti, time_array))
+                        raise ValueError("extInputTimes must be strictly monotonic")
 
 
     def setRunParams(self, ic=[], params=[], t0=[], tend=[], gt0=[], refine=0,
@@ -392,25 +396,7 @@ class integrator:
         else:
             self.direction = -1
 
-        # Set bounds
-        if bounds != []:
-            self.upperBounds = bounds[1]
-            self.lowerBounds = bounds[0]
-            for i in range(self.phaseDim + self.paramDim):
-                if isinf(self.upperBounds[i]) and self.upperBounds[i] > 0:
-                    self.upperBounds[i] = abs(float(self.defaultBound))
-                elif isinf(self.upperBounds[i]) and self.upperBounds[i] < 0:
-                    self.upperBounds[i] = -abs(float(self.defaultBound))
-
-                if isinf(self.lowerBounds[i]) and self.lowerBounds[i] > 0:
-                    self.lowerBounds[i] = abs(float(self.defaultBound))
-                elif isinf(self.lowerBounds[i]) and self.lowerBounds[i] < 0:
-                    self.lowerBounds[i] = -abs(float(self.defaultBound))
-        else:
-            self.upperBounds = [abs(float(self.defaultBound))] * \
-                (self.phaseDim + self.paramDim)
-            self.lowerBounds = [-abs(float(self.defaultBound))] * \
-                (self.phaseDim + self.paramDim)
+        self.set_bounds(bounds)
 
         retval = self._integMod.SetRunParameters(self.ic, self.params,
                              self.gt0, self.t0, self.tend, self.refine,
@@ -423,6 +409,28 @@ class integrator:
         self.canContinue = False
         self.setParams = True
 
+    def set_bounds(self, bounds):
+        """Sets self.upperBounds and self.lowerBounds.
+        """
+        def_bd = abs(float(self.defaultBound))
+
+        if bounds != []:
+            lobd = bounds[0]
+            upbd = bounds[1]
+            # use the zipped transpose values for easy single for loop.
+            # explicit list is OK since these are relatively small objects
+            bounds_T = list(zip(*bounds))
+            for i, (l, u) in enumerate(bounds_T):
+                if np.isinf(u):
+                    upbd[i] = np.sign(u)*def_bd
+                if np.isinf(l):
+                    lobd[i] = np.sign(l)*def_bd
+            self.upperBounds = upbd
+            self.lowerBounds = lobd
+        else:
+            self.upperBounds = [def_bd] * (self.phaseDim + self.paramDim)
+            self.lowerBounds = [-def_bd] * (self.phaseDim + self.paramDim)
+
 
     def clearRunParams(self):
         if not self.initBasic:
@@ -432,6 +440,36 @@ class integrator:
                 raise ClearError('ClearParams call failed!')
             self.canContinue = False
             self.setParams = False
+
+
+    def check_params(self, params):
+        if not isinstance(params, list):
+            raise TypeError("params must be list")
+        if len(params) != self.paramDim:
+            raise ValueError("params must have length equal to phaseDim")
+        if len(params) > 0:
+            for x in params:
+                if not isinstance(x, _real_types):
+                    raise TypeError("params entries must be real values")
+
+
+    def check_bounds(self, bounds):
+        """Check parameter and phase space bounds.
+        """
+        if not isinstance(bounds, list):
+            raise TypeError("bounds must be list")
+        if bounds != []:
+            if len(bounds) != 2:
+                raise TypeError("non-empty bounds must be a 2-list")
+            for i, bd_i in enumerate(bounds):
+                if type(bd_i) is not list:
+                    raise TypeError("non-empty bounds must be a 2-list")
+                if len(bd_i) != self.phaseDim + self.paramDim:
+                    raise ValueError("bounds have incorrect size")
+                if not all([isinstance(bd_ij, _real_types) for bd_ij in bd_i]):
+                    # TEMP
+                    print(i, bd_i)
+                    raise TypeError("bounds entries must be real valued")
 
 
     def checkRunParams(self, ic, params, t0, tend, gt0, refine, specTimes,
@@ -448,15 +486,8 @@ class integrator:
             if not isinstance(x, _real_types):
                 raise TypeError("ic entries must be real values")
 
-        if not isinstance(params, list):
-            raise TypeError("params must be list")
-        if len(params) != self.paramDim:
-            raise ValueError("params must have length equal to phaseDim")
-        if len(params) > 0:
-            for x in params:
-                if not isinstance(x, _real_types):
-                    raise TypeError("params entries must be real values")
-
+        self.check_params(params)
+        self.check_bounds(bounds)
         verify_nonneg('refine', refine, _all_int)
 
         if not isinstance(t0, _real_types):
@@ -474,46 +505,22 @@ class integrator:
             specTimes = list(specTimes)
         except:
             raise TypeError("specTimes must be a sequence type")
+
         if len(specTimes) > 0:
-            if not isinstance(specTimes[0], _real_types):
+            if not all([isinstance(t, _real_types) for t in specTimes]):
                 raise TypeError("specTimes entries must be real valued")
             if direction == 1:
-                if specTimes[0] < t0 or specTimes[0] > tend:
-                    raise ValueError("specTimes entries must be within [%.8f,%.8f]"%(t0,tend))
-            else:
-                if specTimes[0] > t0 or specTimes[0] < tend:
-                    raise ValueError("specTimes entries must be within [%.8f,%.8f]"%(tend,t0))
-
-        if len(specTimes) > 1:
-            for x in range(len(specTimes)-1):
-                if not isinstance(specTimes[x], _real_types):
-                    raise TypeError("specTimes entries must be real valued")
-            if direction == 1:
-                if specTimes[x] < t0 or specTimes[x] > tend:
-                    raise ValueError("specTimes entries must be within [%.8f,%.8f]"%(t0,tend))
-                if specTimes[x] > specTimes[x+1]:
+                tlo = t0
+                thi = tend
+                if np.any(np.diff(specTimes) < 0):
                     raise ValueError("specTimes must be non-decreasing")
             else:
-                if specTimes[x] > t0 or specTimes[x] < tend:
-                    raise ValueError("specTimes entries must be within [%.8f,%.8f]"%(tend,t0))
-                if specTimes[x] < specTimes[x+1]:
+                tlo = tend
+                thi = t0
+                if np.any(np.diff(specTimes) > 0):
                     raise ValueError("specTimes must be non-increasing")
-
-
-        # Check the parameter, phase space bounds
-        if not isinstance(bounds, list):
-            raise TypeError("bounds must be list")
-        if bounds != []:
-            if len(bounds) != 2:
-                raise TypeError("non-empty bounds must be a 2-list")
-            for i in range(2):
-                if type(bounds[i]) is not list:
-                    raise TypeError("non-empty bounds must be a 2-list")
-                if len(bounds[i]) != self.phaseDim + self.paramDim:
-                    raise ValueError("bounds have incorrect size")
-                for j in range(self.phaseDim + self.paramDim):
-                    if not isinstance(bounds[i][j], _real_types):
-                        raise TypeError("bounds entries must be real valued")
+            if any([t < tlo or t > thi for t in specTimes]):
+                raise ValueError("specTimes entries must be within [%.8f,%.8f]"%(t0, tend))
 
 
     def setContParams(self, tend, params, calcSpecTimes, verbose,
@@ -525,22 +532,20 @@ class integrator:
             if tend > self.tend:
                 raise ValueError("new tend must be < old tend")
 
-        if not isinstance(params, list):
-            raise TypeError("params must be list")
+        self.check_params(params)
+        # in case params blank, leave alone
         if params != []:
-            if len(params) != self.paramDim:
-                raise ValueError("params must have length equal to phaseDim")
-            if len(params) > 0:
-                for x in params:
-                    if not isinstance(x, _real_types):
-                        raise TypeError("params entries must be real valued")
+            self.params = params
 
-        if calcSpecTimes not in [0,1]:
+        self.check_bounds(bounds)
+        self.set_bounds(bounds)
+
+        if calcSpecTimes not in (0, 1):
             raise TypeError("calcSpecTimes must be 0 or 1")
         if calcSpecTimes == 1 and len(self.specTimes) <= 0:
             raise ValueError("calcSpecTimes cannot be 1 if specTimes is empty")
 
-        if verbose not in [0,1]:
+        if verbose not in (0, 1):
             raise TypeError("verbose must be 0 or 1")
 
         if extInputChanged:
@@ -553,43 +558,13 @@ class integrator:
             else:
                 self.setExtInputs(True, extInputVals, extInputTimes)
 
-        # Check and set the parameter, phase space bounds
-        if not isinstance(bounds, list):
-            raise TypeError("bounds must be list")
-        if bounds != []:
-            if len(bounds) != 2:
-                raise TypeError("non-empty bounds must be a 2-list")
-            for i in range(2):
-                if not isinstance(bounds[i], list):
-                    raise TypeError("non-empty bounds must be a 2-list")
-                if len(bounds[i]) != self.phaseDim + self.paramDim:
-                    raise ValueError("bounds have incorrect size")
-                for j in range(self.phaseDim + self.paramDim):
-                    if not isinstance(bounds[i][j], _real_types):
-                        raise TypeError("entries in bounds must be real valued")
-
-            self.upperBounds = bounds[0]
-            self.lowerBounds = bounds[1]
-            for i in range(self.phaseDim + self.paramDim):
-                if self.upperBounds[i] == Inf:
-                    self.upperBounds[i] = abs(float(self.defaultBound))
-                elif self.upperBounds[i] == -Inf:
-                    self.upperBounds[i] = -abs(float(self.defaultBound))
-
-                if self.lowerBounds[i] == Inf:
-                    self.lowerBounds[i] = abs(float(self.defaultBound))
-                elif self.lowerBounds[i] == -Inf:
-                    self.lowerBounds[i] = -abs(float(self.defaultBound))
-
-        # in case params blank, leave alone
-        if params != []:
-            self.params = params
         self.tend = tend
 
         retval = self._integMod.SetContParameters(self.tend, self.params,
                                          self.upperBounds, self.lowerBounds)
         if retval[0] != 1:
             raise InitError('Call to SetContParams failed!')
+
 
     def clearAll(self):
         if not self.initBasic:
@@ -598,6 +573,7 @@ class integrator:
         self.clearEvents()
         self.clearInteg()
         self.clearExtInputs()
+
 
     def Run(*args):
         if self.__class__==integrator:
