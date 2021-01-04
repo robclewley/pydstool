@@ -14,7 +14,8 @@ from time import perf_counter
 # ------------------------------------------------------------
 
 
-def makeHHneuron(name, par_args, ic_args, evs=None, extra_terms='', nobuild=False):
+def makeHHneuron(name, par_args, ic_args, evs=None, extra_terms='',
+                 nobuild=False):
     # extra_terms must not introduce new variables!
     vfn_str = '(I'+extra_terms+'-ionic(v,m,h,n))/C'
     mfn_str = 'ma(v)*(1-m)-mb(v)*m'
@@ -23,7 +24,7 @@ def makeHHneuron(name, par_args, ic_args, evs=None, extra_terms='', nobuild=Fals
     aux_str = 'm*m*m*h'
 
     auxdict = {'ionic': (['vv', 'mm', 'hh', 'nn'],
-                              'gna*mm*mm*mm*hh*(vv-vna) + gk*nn*nn*nn*nn*(vv-vk) + gl*(vv-vl)'),
+                 'gna*mm*mm*mm*hh*(vv-vna) + gk*nn*nn*nn*nn*(vv-vk) + gl*(vv-vl)'),
                'ma': (['v'], '0.32*(v+54)/(1-exp(-(v+54)/4))'),
                'mb': (['v'], '0.28*(v+27)/(exp((v+27)/5)-1)'),
                'ha': (['v'], '.128*exp(-(50+v)/18)'),
@@ -46,6 +47,8 @@ def makeHHneuron(name, par_args, ic_args, evs=None, extra_terms='', nobuild=Fals
     DSargs['checklevel'] = 0
     DSargs['ics'] = ic_args
     DSargs['name'] = name
+    DSargs['enforcebounds'] = True
+    DSargs['activatedbounds'] = {'v': [1,1]}
     # nobuild=True so that we can test additional library inclusion
     if nobuild:
         DSargs['nobuild']=True
@@ -67,32 +70,29 @@ if __name__=='__main__':
     # test single terminal event first
     print("Testing bounds terminal event and its sampling")
 
-    bd_event = Events.makeZeroCrossEvent('v-getbound("v",1)', 1,
-                                         {'name': 'bd_ev',
-                                          'eventtol': 1e-4,
-                                          'precise': True,
-                                          'term': True}, ['v'],
-                                         targetlang='c')
-    HH = makeHHneuron('HHtest_bdev', par_args, ic_args, [bd_event])
+    HH = makeHHneuron('HHtest_bdev', par_args, ic_args, [])
     HH.set(tdata=[0, 25])
     HHtraj = HH.compute('test_term')
     trajdata = HHtraj.sample(dt=0.05, tlo=1.3, thi=20)
-    assert HH.getEventTimes()['bd_ev']==[]
     assert trajdata['h_bd0'][0]==0
     assert trajdata['v_bd1'][0]==50
     assert trajdata['v_bd0'][0]==-100
 
     print('Testing continued integration from t=25, having now set')
     print('voltage domain to be [-100,20]')
-    HH.set(xdomain={'v':[-100,20]}, tdata=[0,50])
+    HH.set(xdomain={'v':[-100, 20]}, tdata=[0, 50])
     HHtraj2 = HH.compute('test_cont', 'c')
-    print("Sampled this data up until the event", HH.getEventTimes(), ":")
+    assert len(HH.getEventTimes()['v_domlo']) == 0
+    assert len(HH.getEventTimes()['v_domhi']) > 0
+    print("Sampled this data up until the event at t={}:".format(
+          HH.getEventTimes()['v_domhi'][0]
+    ))
 
     plotData = HHtraj2.sample(dt=0.1)
-    evt=HH.getEventTimes()['bd_ev']
+    evt = HH.getEventTimes()['v_domhi']
     yaxislabelstr = 'v'
     plt.ylabel(yaxislabelstr)
     plt.xlabel('t')
-    vline=plot(plotData['t'], plotData['v'])
+    vline = plot(plotData['t'], plotData['v'])
     plot(evt, HHtraj2(evt, 'v'), 'ro')
     show()

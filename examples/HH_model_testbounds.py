@@ -86,10 +86,10 @@ if __name__=='__main__':
 
     print("Plotting continued orbit...")
     plotData = HHtraj2.sample(dt=0.1)
-    evt=list(HH.getEventTimes().values())[0]
+    evt = list(HH.getEventTimes()['v_domhi'])[0]
     yaxislabelstr = 'v'
     plt.ylabel(yaxislabelstr)
     plt.xlabel('t')
-    vline=plot(plotData['t'], plotData['v'])
+    vline = plot(plotData['t'], plotData['v'])
     plot(evt, HHtraj2(evt, 'v'), 'ro')
     show()
