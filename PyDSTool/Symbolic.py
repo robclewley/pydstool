@@ -1721,11 +1721,11 @@ class QuantSpec(object):
             FScompat_namemap = {}
             FScompat_namemapInv = invertMap(mathNameMap)
         elif eval_type == 1:
-            FScompat_namemap = mathNameMap
+            FScompat_namemap = deepcopy(mathNameMap)
             FScompat_namemapInv = {}
         else:
             # eval_type == -1
-            FScompat_namemap = mathNameMap
+            FScompat_namemap = deepcopy(mathNameMap)
             FScompat_namemapInv = {}
         if num_quotes > 0:
             new_toks = []

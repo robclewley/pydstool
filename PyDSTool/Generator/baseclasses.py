@@ -263,7 +263,7 @@ class Generator(object):
         # the default map allows title-cased quantity objects like
         # Pow, Exp, etc. to be used in FuncSpec defs, but no need
         # to keep an inverse map of these below
-        self._FScompatibleNames = smap_mathnames
+        self._FScompatibleNames = deepcopy(smap_mathnames)
         if 'FScompatibleNames' in kw:
             sm = kw['FScompatibleNames']
             if sm is not None:

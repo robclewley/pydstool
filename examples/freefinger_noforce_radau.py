@@ -22,19 +22,19 @@ def make_finger_massmatrix(name, par_args, ic_args, evs=None, nobuild=False):
     a00 = "1";a01 = "0";a02 = "0";a03 = "0";a04 = "0";a05 = "0"
     # row 1
     a10 = "0"
-    a11 = convertPowers('m2*l2*l1*c2+1/4*m2*l2^2+m2*l1^2+m3*l1^2+m3*l2^2+1/4*m3*l3^2+1/4*m1*l1^2+I1+I2+I3+2*m3*l2*l1*c2+m3*l3*l1*c23+m3*l2*l3*c3')
+    a11 = convertPowers('m2*l2*l1*c2+1/4*m2*l2^2+m2*l1^2+m3*l1^2+m3*l2^2+1/4*m3*l3^2+1/4*m1*l1^2+I_1+I_2+I_3+2*m3*l2*l1*c2+m3*l3*l1*c23+m3*l2*l3*c3')
     a12 = "0";a13 = 'mterm1';a14 = "0";a15 = 'mterm2'
     # row 2
     a20 = "0";a21 = "0";a22 = "1";a23 = "0";a24 = "0";a25 = "0"
     # row 3
     a30 = "0";a31 = 'mterm1';a32 = "0"
-    a33 = convertPowers('1/4*m2*l2^2+1/4*m3*l3^2+m3*l2^2+m3*l2*l3*c3+I2+I3')
+    a33 = convertPowers('1/4*m2*l2^2+1/4*m3*l3^2+m3*l2^2+m3*l2*l3*c3+I_2+I_3')
     a34 = "0";a35 = 'mterm3'
     # row 4
     a40 = "0";a41 = "0";a42 = "0";a43 = "0";a44 = "1";a45 = "0"
     # row 5
     a50 = "0";a51 = 'mterm2';a52 = "0";a53 = 'mterm3';a54 = "0"
-    a55 = convertPowers('1/4*m3*l3^2+I3')
+    a55 = convertPowers('1/4*m3*l3^2+I_3')
     #
     M = "["
     env = locals()
@@ -59,9 +59,9 @@ def make_finger_massmatrix(name, par_args, ic_args, evs=None, nobuild=False):
                             'sin(phi2)': 's2',
                             'sin(phi3)': 's3',
                             'sin(phi2+phi3)': 's23',
-                            convertPowers('1/4*m2*l2^2+1/4*m3*l3^2+m3*l2^2+1/2*m2*l2*l1*c2+m3*l2*l1*c2+m3*l2*l3*c3+1/2*m3*l3*l1*c23+I2+I3'): 'mterm1',
-                            convertPowers('1/4*m3*l3^2+1/2*m3*l3*l1*c23+1/2*m3*l2*l3*c3+I3'): 'mterm2',
-                            convertPowers('1/4*m3*l3^2+1/2*m3*l2*l3*c3+I3'): 'mterm3'}
+                            convertPowers('1/4*m2*l2^2+1/4*m3*l3^2+m3*l2^2+1/2*m2*l2*l1*c2+m3*l2*l1*c2+m3*l2*l3*c3+1/2*m3*l3*l1*c23+I_2+I_3'): 'mterm1',
+                            convertPowers('1/4*m3*l3^2+1/2*m3*l3*l1*c23+1/2*m3*l2*l3*c3+I_3'): 'mterm2',
+                            convertPowers('1/4*m3*l3^2+1/2*m3*l2*l3*c3+I_3'): 'mterm3'}
     DSargs['vars'] = ['phi1', 'phi2', 'phi3', 'phi1dot', 'phi2dot', 'phi3dot']
     DSargs['fnspecs'] = auxdict
     DSargs['xdomain'] = {'phi1': [-.5, 1.], 'phi2': [0,2.], 'phi3': [0,1.]}
@@ -100,9 +100,9 @@ if __name__=='__main__':
                 'm2': m2,
                 'm3': m3,
                 'l1': len1, 'l2': len2, 'l3': len3,
-                'I1': (m1*len1*len1)/12.,
-                'I2': (m2*len2*len2)/12.,
-                'I3': (m3*len3*len3)/12.,
+                'I_1': (m1*len1*len1)/12.,
+                'I_2': (m2*len2*len2)/12.,
+                'I_3': (m3*len3*len3)/12.,
                 'eta': 0., 'F': 0., 'g': 9.81, # F, eta don't affect anything
                 'phi1ref': 10*pi/180, 'phi2ref': 10*pi/180, 'phi3ref': 10*pi/180}
     ic_args = {'phi1': 0.01, 'phi2': 0.01, 'phi3': 0.5,
@@ -110,9 +110,9 @@ if __name__=='__main__':
                }
 
     def updateMass(m1,m2,m3,len1,len2,len3,pars):
-        pars['I1'] = (m1*len1*len1)/12.
-        pars['I2'] = (m2*len2*len2)/12.
-        pars['I3'] = (m3*len3*len3)/12.
+        pars['I_1'] = (m1*len1*len1)/12.
+        pars['I_2'] = (m2*len2*len2)/12.
+        pars['I_3'] = (m3*len3*len3)/12.
         pars['m1'] = m1
         pars['m2'] = m2
         pars['m3'] = m3
