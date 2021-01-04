@@ -44,11 +44,11 @@ vals4 = traj.sample()
 assert vals4[0] == p1
 
 vals5 = traj.sample(tlo=1.8, thi=5.8, dt=0.1, precise=True)
-assert vals5[2] == 0.13
+assert vals5[2]['v'] == 0.13
 assert all(traj.underlyingMesh()['v'][0] == arange(10))
-assert allclose(vals5['t'], linspace(1.8, 5.8, (5.8-1.8)/0.1+1))
+assert allclose(vals5['t'], linspace(1.8, 5.8, int((5.8-1.8)/0.1+1)))
 vals6 = traj.sample(tlo=1.8, thi=5.8, dt=2.1)  # skips some b/c not precise
 assert all(vals6['t'] == array([2.7, 3.7, 5.7]))
-assert vals6[0] == 0.2
+assert vals6[0]['v'] == 0.2
 
 print("\nAll trajectory sampling tests passed")

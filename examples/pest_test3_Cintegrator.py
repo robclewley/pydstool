@@ -11,7 +11,7 @@ from PyDSTool.Toolbox.neuro_data import *
 import HH_model_Cintegrator as HH_model
 
 # Other imports
-from np.linalg import norm
+from numpy.linalg import norm
 from time import perf_counter
 
 # ----------------------------------------------------------------

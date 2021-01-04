@@ -11,8 +11,8 @@ from PyDSTool.Toolbox.neuro_data import *
 import HH_model
 
 # Other imports
-from np.linalg import norm
-from np.testing import assert_almost_equal
+from numpy.linalg import norm
+from numpy.testing import assert_almost_equal
 from time import perf_counter
 
 # ----------------------------------------------------------------
