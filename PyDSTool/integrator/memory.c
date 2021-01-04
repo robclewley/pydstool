@@ -10,10 +10,10 @@
 
 */
 
-int InitializeBasic( IData *GS, int PhaseDim, int ParamDim, int nAux, int nEvents, 
+int InitializeBasic( IData *GS, int PhaseDim, int ParamDim, int nAux, int nEvents,
 		     int nExtInputs, int HasJac, int HasJacP, int HasMass, int extraSize) {
   assert( GS );
-  /* Check to see if we're already basically initialized; if so, check that we 
+  /* Check to see if we're already basically initialized; if so, check that we
      haven't changed dimensions (we assume we're PyMem_Malloc'd here) */
   if( PhaseDim == 0 || ParamDim < 0 ) {
       return FAILURE;
@@ -29,7 +29,7 @@ int InitializeBasic( IData *GS, int PhaseDim, int ParamDim, int nAux, int nEvent
 
   GS->phaseDim = PhaseDim;
   GS->paramDim = ParamDim;
-  
+
   GS->gIC = NULL;
   GS->gIC = (double *)PyMem_Malloc(GS->phaseDim*sizeof(double));
   assert(GS->gIC);
@@ -43,9 +43,9 @@ int InitializeBasic( IData *GS, int PhaseDim, int ParamDim, int nAux, int nEvent
 
   /* Set total number of aux vars */
   GS->nAuxVars = nAux;
-  GS->gAuxPoints = NULL; 
+  GS->gAuxPoints = NULL;
 
-  /* These may not change, but use of jacobians, etc. in integration 
+  /* These may not change, but use of jacobians, etc. in integration
      can be set by passing arguments to the appropriate integrate function.
   */
   GS->hasJac = (( HasJac > 0 ) ? 1 : 0);
@@ -83,7 +83,7 @@ int InitializeBasic( IData *GS, int PhaseDim, int ParamDim, int nAux, int nEvent
   assert(nExtInputs >= 0);
   GS->nExtInputs = nExtInputs;
 
-  /* Any extra working space needed by the vfield, aux funcs, etc. 
+  /* Any extra working space needed by the vfield, aux funcs, etc.
      must be assigned only once. */
   assert(extraSize >= 0);
   GS->extraSpaceSize = extraSize;
@@ -100,14 +100,14 @@ int InitializeBasic( IData *GS, int PhaseDim, int ParamDim, int nAux, int nEvent
 /* Here we free all of the memory that was allocated during
    the InitializeBasic call and set initBasic to 0.
    After this function is called, the integrator is no longer usable
-   and should be deleted. (But the IData struct, etc. have not 
+   and should be deleted. (But the IData struct, etc. have not
    been freed.)
 */
 
 void CleanupBasic( IData *GS ) {
 
   if( GS != NULL ) {
-    
+
     if( GS->gExtraSpace != NULL ) {
       PyMem_Free(GS->gExtraSpace);
       GS->gExtraSpace = NULL;
@@ -143,7 +143,7 @@ void CleanupBasic( IData *GS ) {
   }
 }
 
-int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0, double gTime, 
+int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0, double gTime,
 		  double *GlobalTime0, double tstart, double tend,
 		  int refine, int nSpecTimes, double *specTimes, double *upperBounds, double *lowerBounds) {
 
@@ -151,7 +151,7 @@ int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0
 
   assert( GS );
 
-  /* We only check initBasic because we don't rely on 
+  /* We only check initBasic because we don't rely on
      any other mallocs having been performed.  */
   assert( GS->isInitBasic == 1 );
 
@@ -163,13 +163,13 @@ int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0
       GS->gParams[i] = Pars[i];
     }
   }
-  
+
   /* We expect IC to be global ICs, initialized ahead of time (initialize basic) */
   /* Save initial conditions */
   for( i = 0; i < GS->phaseDim; i++ ) {
     ICs[i] = y0[i];
   }
-  
+
   /* We expect Bds to be global Bounds, initialized ahead of time (initialize basic) */
   /* Save the current upper and lower bounds on parameters. */
   for( i = 0; i < GS->phaseDim + GS->paramDim; i++ ) {
@@ -186,14 +186,14 @@ int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0
   GS->tStart = tstart;
   GS->tEnd = tend;
 
-  GS->lastTime = tstart; 
+  GS->lastTime = tstart;
 
   /* Set the direction of integration */
-  GS->direction = (GS->tStart < GS->tEnd ) ? 1 : -1; 
+  GS->direction = (GS->tStart < GS->tEnd ) ? 1 : -1;
 
   /* Calling SetRunParams forces a new run -- this means we must reset the indices */
   GS->hasRun = 0;
-  GS->timeIdx = 0; GS->pointsIdx = 0; GS->auxIdx = 0;  
+  GS->timeIdx = 0; GS->pointsIdx = 0; GS->auxIdx = 0;
   GS->eventFound = 0;
 
   nSpecTimes = ( nSpecTimes < 0 ) ? 0 : nSpecTimes;
@@ -226,7 +226,7 @@ int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0
   }
 
 
-  /* If refinement is on, allocate space for buffering refinement 
+  /* If refinement is on, allocate space for buffering refinement
      points and times */
   refine = ( refine < 0 ) ? 0 : refine;
   GS->refineBufIdx = 0;
@@ -244,7 +244,7 @@ int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0
       }
 
       GS->refine = refine;
-      
+
       if( GS->gRefineTimes == NULL ) {
 	GS->gRefinePoints = (double **)PyMem_Malloc(GS->refine*sizeof(double *));
 	assert(GS->gRefinePoints);
@@ -256,7 +256,7 @@ int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0
 	assert(GS->gRefineTimes);
       }
     }
-    /* Note in this case we are not reallocing the refine times. 
+    /* Note in this case we are not reallocing the refine times.
        Since this is a 1-D double array, free will take care of it easily. */
     else if (refine < GS->refine) {
       for( i = refine; i < GS->refine; i++ ) {
@@ -270,17 +270,17 @@ int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0
   }
   else {
     if ( refine < GS->refine ) {
-      for( i = 0; i < GS->refine; i++ ) {                                                      
-        if( GS->gRefinePoints[i] != NULL ) {                                                       
-	  PyMem_Free(GS->gRefinePoints[i]);                                                        
-          GS->gRefinePoints[i] = NULL;                                                             
-        }                                                                                          
-      }                                                                                            
+      for( i = 0; i < GS->refine; i++ ) {
+        if( GS->gRefinePoints[i] != NULL ) {
+	  PyMem_Free(GS->gRefinePoints[i]);
+          GS->gRefinePoints[i] = NULL;
+        }
+      }
       PyMem_Free(GS->gRefinePoints);
       GS->gRefinePoints = NULL;
     }
   }
-      
+
   GS->isInitRunParams = 1;
 
   return SUCCESS;
@@ -289,14 +289,14 @@ int SetRunParams( IData *GS, double *Pars, double *ICs, double **Bds, double *y0
 void CleanupRunParams( IData *GS ) {
 
   int i;
-  
+
   assert(GS);
-  
+
   if(GS->gSpecTimes != NULL) {
     PyMem_Free(GS->gSpecTimes);
     GS->gSpecTimes = NULL;
   }
-  
+
   if(GS->gRefinePoints != NULL) {
     for(i = GS->refine-1; i >= 0; i--) {
       if(GS->gRefinePoints[i] != NULL) {
@@ -306,26 +306,26 @@ void CleanupRunParams( IData *GS ) {
     PyMem_Free(GS->gRefinePoints);
     GS->gRefinePoints = NULL;
   }
-  
+
   if(GS->gRefineTimes != NULL) {
     PyMem_Free(GS->gRefineTimes);
-    GS->gRefineTimes = NULL;    
+    GS->gRefineTimes = NULL;
   }
-  
+
   GS->specTimesLen = 0;
   GS->refine = 0;
 
   GS->isInitRunParams = 0;
 }
 
-int InitIntegData( IData *GS,  int Maxpts, double *atol, double *rtol, 
+int InitIntegData( IData *GS,  int Maxpts, double *atol, double *rtol,
 		   ContSolFunType ContSolFun) {
 
   int i;
 
   /* Check that InitIntegData is being called in the right order? */
   assert(GS->isInitBasic == 1);
-  
+
   assert(GS->isInitIntegData == 0);
 
   GS->gPoints = NULL; GS->gTimeV = NULL; GS->gYout = NULL;
@@ -333,8 +333,8 @@ int InitIntegData( IData *GS,  int Maxpts, double *atol, double *rtol,
   GS->lastPoint = NULL;
 
   /* Assign global variables */
-  GS->maxPts = Maxpts; 
-  
+  GS->maxPts = Maxpts;
+
   /* Allocate space for maximum number of points to be calculated during integration
      NB: Change this to throw Python exception on failure? */
   GS->gPoints = (double **)PyMem_Malloc(GS->maxPts*sizeof(double *));
@@ -343,27 +343,27 @@ int InitIntegData( IData *GS,  int Maxpts, double *atol, double *rtol,
     GS->gPoints[i] = (double *)PyMem_Malloc(GS->phaseDim*sizeof(double));
     assert(GS->gPoints[i]);
   }
-  
+
   GS->gTimeV = (double *)PyMem_Malloc(GS->maxPts*sizeof(double));
   assert(GS->gTimeV);
-  
+
   GS->gYout = (double *)PyMem_Malloc(GS->phaseDim*sizeof(double));
   assert(GS->gYout);
 
   /* Radau specific initializations */
-#ifdef __RADAU__  
+#ifdef __RADAU__
   if( GS->hasJac || GS->hasMass ) {
     GS->workArrayLen = (GS->phaseDim)*(5*(GS->phaseDim) + 12) + 20;
-    GS->intWorkArrayLen = 3*(GS->phaseDim) + 20;    
+    GS->intWorkArrayLen = 3*(GS->phaseDim) + 20;
   }
   else {
     GS->workArrayLen = (GS->phaseDim)*(4*(GS->phaseDim) + 12) + 20;
     GS->intWorkArrayLen = 3*(GS->phaseDim) + 20;
   }
-  
+
   GS->gWorkArray = (double *)PyMem_Malloc(GS->workArrayLen*sizeof(double));
   assert(GS->gWorkArray);
-  
+
   GS->gIntWorkArray = (int *)PyMem_Malloc(GS->intWorkArrayLen*sizeof(int));
   assert(GS->gIntWorkArray);
 
@@ -376,7 +376,7 @@ int InitIntegData( IData *GS,  int Maxpts, double *atol, double *rtol,
     GS->jacLowerBandwidth = GS->phaseDim;
   }
   GS->jacUpperBandwidth = 0;
-  
+
   GS->imas = 0; /* Currently ignored */
   /* Currently, only full matrices are supported */
   if( GS->hasMass ) {
@@ -419,10 +419,10 @@ void CleanupIData( IData *GS ) {
   int i;
 
   if( GS != NULL ) {
-   
+
     /* PyMem_Free C memory used for integration, event detection. Try to
        do this in reverse order of allocation for possible memory efficiencies. */
-    
+
     /* PyMem_Free auxilliary points */
     if(GS->gAuxPoints != NULL) {
       for( i = GS->pointsIdx-1; i >= 0; i-- ) {
@@ -500,16 +500,16 @@ int InitializeExtInputs( IData *GS, int nExtInputs, int *extInputLens, double *e
 
   assert(GS);
   assert( nExtInputs == GS->nExtInputs );
-  
+
    /* Only change external inputs if there were external inputs originally;
      cannot add/subtract external inputs after initial run. We assume that if the inputs are
-     being changed, that the input array has the correct number of components. */ 
+     being changed, that the input array has the correct number of components. */
   if( GS->nExtInputs > 0 ) {
-  
+
       assert(extInputLens);
       assert(extInputVals);
       assert(extInputTimes);
-      
+
       /* Free the old memory. We leave the outermost pointers,
 	 since we assume that the number of external inputs is the same as before. */
       if( GS->gExtInputTimes != NULL ) {
@@ -519,7 +519,7 @@ int InitializeExtInputs( IData *GS, int nExtInputs, int *extInputLens, double *e
 	  }
 	}
       }
-      
+
       if( GS->gExtInputVals != NULL ) {
 	for( i = 0; i < GS->nExtInputs; i++ ) {
 	  if( GS->gExtInputVals[i] != NULL ) {
@@ -527,7 +527,7 @@ int InitializeExtInputs( IData *GS, int nExtInputs, int *extInputLens, double *e
 	  }
 	}
       }
-      
+
       /* If we have external inputs, allocate space for them and copy
 	 the inputs into internal memory space */
       if( GS->gExtInputLens == NULL ) {
@@ -544,7 +544,7 @@ int InitializeExtInputs( IData *GS, int nExtInputs, int *extInputLens, double *e
 	  GS->gExtInputLens[i] = 0;
 	}
       }
-     
+
       /* Malloc space for the values and times; we assume that the inputs have
 	 already been checked for appropriate time orientation */
       if( GS->gExtInputVals == NULL ) {
@@ -574,7 +574,7 @@ int InitializeExtInputs( IData *GS, int nExtInputs, int *extInputLens, double *e
 	  GS->gExtInputTimes[i] = NULL;
 	}
       }
-  
+
       /* Malloc space as necessary for the values to be passed to vfieldfunc, etc.
 	 and the current index */
       if( GS->gCurrentExtInputIndex == NULL ) {
@@ -584,7 +584,7 @@ int InitializeExtInputs( IData *GS, int nExtInputs, int *extInputLens, double *e
 	  GS->gCurrentExtInputIndex[i] = 0;
 	}
       }
-      
+
       if( GS->gCurrentExtInputVals == NULL ) {
 	GS->gCurrentExtInputVals = (double *)PyMem_Malloc(GS->nExtInputs*sizeof(double));
 	assert(GS->gCurrentExtInputVals);
@@ -594,11 +594,11 @@ int InitializeExtInputs( IData *GS, int nExtInputs, int *extInputLens, double *e
 
   //  for( i = 0; i < GS->nExtInputs; i++ ) {
   //  for(j = 0; j < GS->gExtInputLens[i]; j++ ) {
-      
+
 
   GS->isInitExtInputs = 1;
-  
-  return SUCCESS;  
+
+  return SUCCESS;
 }
 
 void CleanupExtInputs( IData *GS ) {
@@ -611,12 +611,12 @@ void CleanupExtInputs( IData *GS ) {
 	PyMem_Free(GS->gCurrentExtInputVals);
 	GS->gCurrentExtInputVals = NULL;
       }
-      
+
       if( GS->gCurrentExtInputIndex != NULL ) {
 	PyMem_Free(GS->gCurrentExtInputIndex);
 	GS->gCurrentExtInputIndex = NULL;
       }
-      
+
       if( GS->gExtInputTimes != NULL ) {
 	for( i = 0; i < GS->nExtInputs; i++ ) {
 	  if( GS->gExtInputTimes[i] != NULL ) {
@@ -641,7 +641,7 @@ void CleanupExtInputs( IData *GS ) {
 	PyMem_Free(GS->gExtInputLens);
 	GS->gExtInputLens = NULL;
       }
-      
+
     }
 
     GS->isInitExtInputs = 0;
@@ -690,57 +690,57 @@ int InitializeEvents( IData *GS, int Maxevtpts, int *EventActive, int *EventDir,
   GS->maxEvtPts = Maxevtpts;
   assert(GS->maxEvtPts >= 0 );
 
-  
+
   /* From SetEventPtrs */
-  GS->gEventActive = NULL;   
-  GS->gEventDir = NULL; 
+  GS->gEventActive = NULL;
+  GS->gEventDir = NULL;
   GS->gEventTerm = NULL;
-  GS->gEventDelay = NULL; 
+  GS->gEventDelay = NULL;
   GS->gEventTol = NULL;
   GS->gMaxBisect = NULL;
 
   if( GS->nEvents > 0 ) {
-       
+
     GS->gEventActive = (int *)PyMem_Malloc(GS->nEvents*sizeof(int));
     assert(GS->gEventActive);
     for( i = 0; i < GS->nEvents; i++ ) {
-      GS->gEventActive[i] = EventActive[i]; 
+      GS->gEventActive[i] = EventActive[i];
     }
-   
+
     GS->gEventDir = (int *)PyMem_Malloc(GS->nEvents*sizeof(int));
     assert(GS->gEventDir);
     for( i = 0; i < GS->nEvents; i++ ) {
-      GS->gEventDir[i] = EventDir[i]; 
+      GS->gEventDir[i] = EventDir[i];
     }
 
     GS->gEventTerm = (int *)PyMem_Malloc(GS->nEvents*sizeof(int));
     assert(GS->gEventTerm);
     for( i = 0; i < GS->nEvents; i++ ) {
-      GS->gEventTerm[i] = EventTerm[i]; 
+      GS->gEventTerm[i] = EventTerm[i];
     }
 
     GS->gEventInterval = (double *)PyMem_Malloc(GS->nEvents*sizeof(double));
     assert(GS->gEventInterval);
     for( i = 0; i < GS->nEvents; i++ ) {
-      GS->gEventInterval[i] = EventInterval[i]; 
+      GS->gEventInterval[i] = EventInterval[i];
     }
 
     GS->gEventDelay = (double *)PyMem_Malloc(GS->nEvents*sizeof(double));
     assert(GS->gEventDelay);
     for( i = 0; i < GS->nEvents; i++ ) {
-      GS->gEventDelay[i] = EventDelay[i]; 
+      GS->gEventDelay[i] = EventDelay[i];
     }
 
     GS->gEventTol = (double *)PyMem_Malloc(GS->nEvents*sizeof(double));
     assert(GS->gEventTol);
     for( i = 0; i < GS->nEvents; i++ ) {
-      GS->gEventTol[i] = EventTol[i]; 
+      GS->gEventTol[i] = EventTol[i];
     }
 
     GS->gMaxBisect = (int *)PyMem_Malloc(GS->nEvents*sizeof(int));
     assert(GS->gMaxBisect);
     for( i = 0; i < GS->nEvents; i++ ) {
-      GS->gMaxBisect[i] = Maxbisect[i]; 
+      GS->gMaxBisect[i] = Maxbisect[i];
     }
   }
 
@@ -757,15 +757,15 @@ int InitializeEvents( IData *GS, int Maxevtpts, int *EventActive, int *EventDir,
       }
     }
   }
-  
-  /*  If there are some active events, we will PyMem_Malloc space 
+
+  /*  If there are some active events, we will PyMem_Malloc space
       for them and record where they are */
   if( GS->haveActive > 0 ) {
     int j;
 
     /* PyMem_Malloc space for flag that we found this event on the last
        call to detect events */
-   
+
     /* PyMem_Malloc space for buffering found events and times
        before merging them into trajectory. */
     GS->gEventPointBuf = (double **)PyMem_Malloc(GS->haveActive*sizeof(double *));
@@ -828,7 +828,7 @@ int InitializeEvents( IData *GS, int Maxevtpts, int *EventActive, int *EventDir,
 
     /* Record of how many of each active event we've caught */
     for( i = 0; i < GS->haveActive; i++ ) {
-      GS->gCheckableEventCounts[i] = 0; 
+      GS->gCheckableEventCounts[i] = 0;
     }
 
     /* Allocate space for anticipated events.
@@ -837,7 +837,7 @@ int InitializeEvents( IData *GS, int Maxevtpts, int *EventActive, int *EventDir,
     assert(GS->gEventPoints);
     GS->gEventTimes = (double **)PyMem_Malloc(GS->haveActive*sizeof(double *));
     assert(GS->gEventTimes);
-    
+
     for( i = 0; i < GS->haveActive; i++ ) {
       GS->gEventPoints[i] = (double **)PyMem_Malloc(GS->phaseDim*sizeof(double *));
       assert(GS->gEventPoints[i]);
@@ -849,7 +849,7 @@ int InitializeEvents( IData *GS, int Maxevtpts, int *EventActive, int *EventDir,
 	  assert(GS->gEventPoints[i][j]);
 	}
       }
-    }	
+    }
   }
 
   /* Record the indices of which events are active in a smaller array.
@@ -870,15 +870,15 @@ int InitializeEvents( IData *GS, int Maxevtpts, int *EventActive, int *EventDir,
   }
 
   GS->isInitEvents = 1;
-  
-  return SUCCESS;  
+
+  return SUCCESS;
 }
 
 void CleanupEvents( IData *GS ) {
   int i, j;
- 
+
   if( GS != NULL ) {
-      
+
     if(GS->gEventPoints != NULL) {
       for( i = GS->haveActive-1; i >= 0; i-- ) {
 	if( GS->gEventPoints[i] != NULL ) {
@@ -893,7 +893,7 @@ void CleanupEvents( IData *GS ) {
       PyMem_Free(GS->gEventPoints);
       GS->gEventPoints = NULL;
     }
-    
+
     if(GS->gEventTimes != NULL) {
       for(i = GS->haveActive-1; i >= 0; i--) {
 	if(GS->gEventTimes[i] != NULL) {
@@ -903,17 +903,17 @@ void CleanupEvents( IData *GS ) {
       PyMem_Free(GS->gEventTimes);
       GS->gEventTimes = NULL;
     }
-     
+
     if(GS->gTempPoint != NULL) {
       PyMem_Free(GS->gTempPoint);
       GS->gTempPoint = NULL;
     }
-    
+
     if(GS->gNTEvtFoundTimes != NULL) {
       PyMem_Free(GS->gNTEvtFoundTimes);
       GS->gNTEvtFoundTimes = NULL;
     }
-    
+
     if(GS->gNTEvtFoundOrder != NULL) {
       PyMem_Free(GS->gNTEvtFoundOrder);
       GS->gNTEvtFoundOrder = NULL;
@@ -928,12 +928,12 @@ void CleanupEvents( IData *GS ) {
       PyMem_Free(GS->gNonTermIndices);
       GS->gNonTermIndices = NULL;
     }
-    
-    if(GS->gTermIndices != NULL) { 
+
+    if(GS->gTermIndices != NULL) {
       PyMem_Free(GS->gTermIndices);
       GS->gTermIndices = NULL;
     }
-    
+
     if(GS->gCheckableEventCounts != NULL) {
       PyMem_Free(GS->gCheckableEventCounts);
       GS->gCheckableEventCounts = NULL;
@@ -948,7 +948,7 @@ void CleanupEvents( IData *GS ) {
       PyMem_Free(GS->gEventTimeBuf);
       GS->gEventTimeBuf = NULL;
     }
-    
+
     if(GS->gEventPointBuf != NULL) {
       for(i = GS->haveActive-1; i >= 0; i--) {
 	if(GS->gEventPointBuf[i] != NULL) {
@@ -971,11 +971,11 @@ void CleanupEvents( IData *GS ) {
 
     if(GS->gEventDelay != NULL){
       PyMem_Free(GS->gEventDelay);
-      GS->gEventDelay = NULL; 
+      GS->gEventDelay = NULL;
     }
     if(GS->gEventInterval != NULL) {
       PyMem_Free(GS->gEventInterval);
-      GS->gEventInterval = NULL; 
+      GS->gEventInterval = NULL;
     }
 
     if(GS->gEventTerm != NULL) {
@@ -985,14 +985,14 @@ void CleanupEvents( IData *GS ) {
 
     if(GS->gEventDir != NULL) {
       PyMem_Free(GS->gEventDir);
-      GS->gEventDir = NULL; 
+      GS->gEventDir = NULL;
     }
 
     if(GS->gEventActive != NULL) {
       PyMem_Free(GS->gEventActive);
-      GS->gEventActive = NULL;   
+      GS->gEventActive = NULL;
     }
-    
+
     if(GS->gEventY != NULL) {
       PyMem_Free(GS->gEventY);
       GS->gEventY = NULL;
@@ -1010,7 +1010,7 @@ void CleanupEvents( IData *GS ) {
 
 void CleanupAll( IData *GS, double *ICs, double **Bds ) {
   int i = 0;
- 
+
   if( Bds != NULL ) {
     for( i = 0; i < 2; i++ ) {
       if( Bds[i] != NULL ) {
@@ -1047,19 +1047,19 @@ int SetContParams( IData *GS, double tend, double *pars, double **Bds, double *u
   assert(pars);
   assert(GS->gParams);
   assert(GS->hasRun != 0);
-  
+
   GS->tStart = GS->tEnd;
   GS->tEnd = tend;
-  
+
   for( i = 0; i < GS->paramDim; i++ ) {
     GS->gParams[i] = pars[i];
   }
 
   for( i = 0; i < GS->phaseDim + GS->paramDim; i++ ) {
-    Bds[0][i] = upperBounds[i];
-    Bds[1][i] = lowerBounds[i];
+    Bds[0][i] = lowerBounds[i];
+    Bds[1][i] = upperBounds[i];
   }
-  
+
   return SUCCESS;
 }
 
@@ -1079,7 +1079,7 @@ int ResetIndices( IData *GS ) {
   /* From Events */
   GS->eventBufIdx = 0;
   GS->eventFound = 0;
-  
+
   if( GS->haveActive > 0 ) {
     assert(GS->gCheckableEventCounts);
     for( i = 0; i < GS->haveActive; i++ ) {
@@ -1109,7 +1109,7 @@ int ResetIndices( IData *GS ) {
 void BlankIData( IData *GS ) {
 
   assert(GS);
-  
+
   /* Internal state flags */
   GS->isInitBasic = 0;
   GS->isInitIntegData = 0;
@@ -1119,10 +1119,10 @@ void BlankIData( IData *GS ) {
   GS->hasRun = 0;
 
   /* Basic parameters */
-  GS->phaseDim = 0; 
-  GS->paramDim = 0; 
-  GS->hasJac = 0; 
-  GS->hasJacP = 0; 
+  GS->phaseDim = 0;
+  GS->paramDim = 0;
+  GS->hasJac = 0;
+  GS->hasJacP = 0;
   GS->hasMass = 0;
   GS->gIC = NULL;
   GS->nEvents = 0;
@@ -1134,24 +1134,24 @@ void BlankIData( IData *GS ) {
   GS->gMassPtrs = NULL;
 
   /* Point saving (initInteg) */
-  GS->maxPts = 0; 
-  GS->timeIdx = 0; 
-  GS->pointsIdx = 0; 
+  GS->maxPts = 0;
+  GS->timeIdx = 0;
+  GS->pointsIdx = 0;
   GS->lastTime = 0;
   GS->lastPoint = NULL;
   GS->gATol = NULL;
   GS->gRTol = NULL;
   GS->gPoints = NULL;
-  GS->gTimeV = NULL; 
+  GS->gTimeV = NULL;
   GS->gYout = NULL;
   GS->cContSolFun = NULL;
 
   /* Run parameters */
-  GS->tStart = 0; 
+  GS->tStart = 0;
   GS->tEnd = 0;
-  GS->refine = 0; 
+  GS->refine = 0;
   GS->direction = 0;
-  GS->gParams = NULL; 
+  GS->gParams = NULL;
   GS->gRefinePoints = NULL;
   GS->gRefineTimes = NULL;
   GS->refineBufIdx = 0;
@@ -1171,7 +1171,7 @@ void BlankIData( IData *GS ) {
   GS->gEventActive = NULL;
   GS->gEventDir = NULL;
   GS->gEventTerm = NULL;
-  GS->gMaxBisect = NULL; 
+  GS->gMaxBisect = NULL;
   GS->gEventTol = NULL;
   GS->gEventDelay = NULL;
   GS->gEventInterval = NULL;
@@ -1182,7 +1182,7 @@ void BlankIData( IData *GS ) {
   GS->gCheckableEvents = NULL;
   GS->gCheckableEventCounts = NULL;
   GS->eventFound = 0;
-  GS->eventT = 0; 
+  GS->eventT = 0;
   GS->gEventY = NULL;
   GS->gEventPoints = NULL;
   GS->gEventTimes = NULL;
@@ -1203,22 +1203,22 @@ void BlankIData( IData *GS ) {
   GS->gCurrentExtInputVals = NULL;
   GS->gCurrentExtInputIndex = NULL;
 
-  /* Radau specific */  
+  /* Radau specific */
 #ifdef __RADAU__
-  GS->workArrayLen = 0; 
+  GS->workArrayLen = 0;
   GS->intWorkArrayLen = 0;
-  GS->gWorkArray = NULL; 
-  GS->gIntWorkArray = NULL; 
+  GS->gWorkArray = NULL;
+  GS->gIntWorkArray = NULL;
 
-  GS->ijac = 0; 
-  GS->jacLowerBandwidth = 0; 
-  GS->jacUpperBandwidth = 0; 
-  
-  GS->imas = 0; 
-  GS->masLowerBandwidth = 0; 
-  GS->masUpperBandwidth = 0; 
+  GS->ijac = 0;
+  GS->jacLowerBandwidth = 0;
+  GS->jacUpperBandwidth = 0;
 
-  GS->contdim = NULL; 
+  GS->imas = 0;
+  GS->masLowerBandwidth = 0;
+  GS->masUpperBandwidth = 0;
+
+  GS->contdim = NULL;
   GS->contdata = NULL;
 #endif
 
@@ -1235,7 +1235,7 @@ void BlankIData( IData *GS ) {
 void setJacPtrs( IData *GS, double *jacSpace ) {
   int i;
   assert( GS );
-  
+
   if( GS->hasJac == 1 && GS->phaseDim > 0 ) {
     assert(GS->gJacPtrs);
     assert(jacSpace);
@@ -1249,7 +1249,7 @@ void setJacPtrs( IData *GS, double *jacSpace ) {
 void setMassPtrs( IData *GS, double *massSpace ) {
   int i;
   assert( GS );
-  
+
   if( GS->hasMass == 1 && GS->phaseDim > 0 ) {
     assert(GS->gMassPtrs);
     assert(massSpace);
@@ -1262,15 +1262,15 @@ void setMassPtrs( IData *GS, double *massSpace ) {
 
 
 #ifdef __RADAU__
-int InitializeRadauOptions( IData *GS, double uround, double safety, 
-			    double jacRecompute, double newtonStop, 
+int InitializeRadauOptions( IData *GS, double uround, double safety,
+			    double jacRecompute, double newtonStop,
 			    double stepChangeLB, double stepChangeUB,
 			    double hmax, double stepSizeLB, double stepSizeUB,
 			    int hessenberg, int maxSteps, int maxNewton,
 			    int newtonStart, int index1dim, int index2dim,
-			    int index3dim, int stepSizeStrategy, 
+			    int index3dim, int stepSizeStrategy,
 			    int DAEstructureM1, int DAEstructureM2 ) {
-  
+
   int i;
 
   assert( GS );
@@ -1289,7 +1289,7 @@ int InitializeRadauOptions( IData *GS, double uround, double safety,
 				      are costly. Set <= 0.001 for small systems.
 				      Set < 0 to force recomputation at every step.
 				      Default is 0.001 */
-  GS->gWorkArray[3] = newtonStop; /* Stopping criterion for Newton's method, should be 
+  GS->gWorkArray[3] = newtonStop; /* Stopping criterion for Newton's method, should be
 				    < 1. Smaller values mean slower computation, but
 				    safer. Default is min(0.03, sqrt(rtol[0])) */
   GS->gWorkArray[4] = stepChangeLB;
@@ -1300,14 +1300,14 @@ int InitializeRadauOptions( IData *GS, double uround, double safety,
 				      systems, stepChangeLB = 1, stepChangeUB = 1.2
 				      might be good; for large full systems,
 				      stepChangeLB = 0.99, stepChangeUB = 2.0
-				      might be good. Default is stepChangeLB = 1, 
+				      might be good. Default is stepChangeLB = 1,
 				      stepChangeUB = 1.2 */
 
   GS->gWorkArray[6] = hmax; /* Max stepsize, default = tend - t0 */
   GS->gWorkArray[7] = stepSizeLB;
   GS->gWorkArray[8] = stepSizeUB; /* New stepsize is chosen subject to
 				    stepSizeLB < hnew/hold < stepSizeUB,
-				    Default is stepSizeLB = 0.2, 
+				    Default is stepSizeLB = 0.2,
 				    stepSizeUB = 8.0 */
 
   GS->gIntWorkArray[0] = hessenberg; /* If != 0, transforms jacobian to Hessenberg
@@ -1315,7 +1315,7 @@ int InitializeRadauOptions( IData *GS, double uround, double safety,
 				     jacobian. Does not work for banded jacobian
 				     (mljac < phaseDim) or implicit (imas = 1)
 				     systems. */
-  GS->gIntWorkArray[1] = maxSteps; /* Max number of steps. If 0, default is 
+  GS->gIntWorkArray[1] = maxSteps; /* Max number of steps. If 0, default is
 				   100000 */
   GS->gIntWorkArray[2] = maxNewton; /* Max number of newton iterations per step
 				    to solve implicit systems. Default is 7 */
@@ -1330,9 +1330,9 @@ int InitializeRadauOptions( IData *GS, double uround, double safety,
 				 */
   GS->gIntWorkArray[5] = index2dim; /* Dimension of index 2 variables. Default 0 */
   GS->gIntWorkArray[6] = index3dim; /* Dimension of index 3 variables. Default 0 */
-  
+
   GS->gIntWorkArray[7] = stepSizeStrategy; /* Step size selection strategy.
-					   If == 1, Mod. Predictive controller 
+					   If == 1, Mod. Predictive controller
 					   (Gustafsson)
 					   If == 2, Classical step size control
 					   1 seems safer; 2 produces faster runs
@@ -1340,7 +1340,7 @@ int InitializeRadauOptions( IData *GS, double uround, double safety,
   GS->gIntWorkArray[8] = DAEstructureM1; /* DAE Structure M1. See radau5.f header.
 					 Default 0. */
   GS->gIntWorkArray[8] = DAEstructureM2; /* DAE Structure M2. See radau5.f header.
-					  Default = M1. */ 
+					  Default = M1. */
 
 
   return SUCCESS;
@@ -1349,11 +1349,11 @@ int InitializeRadauOptions( IData *GS, double uround, double safety,
 #endif
 
 #ifdef __DOPRI__
-int InitializeDopriOptions( IData *GS, int checkBounds, int boundsCheckMaxSteps, 
+int InitializeDopriOptions( IData *GS, int checkBounds, int boundsCheckMaxSteps,
 			    double *magBound) {
-  
+
   int i;
-  
+
   assert( GS );
   if( GS->isInitIntegData != 1 )
     return FAILURE;

@@ -499,6 +499,9 @@ class Dopri_ODEsystem(ODEsystem, CompiledMixin):
             if abs(t1-tbegin) < abs(self.algparams['init_step']):
                 raise ValueError("Integration end point too close to initial "
                                  "point")
+            self._solver.setContParams(tend-tbegin, plist, False,
+                                           self.algparams['verbose'],
+                                           False, None, None, bounds)
 #            if self.inputs and self._extInputsChanged:
 #                self._extInputsChanged = False
 #                self._solver.setContParams(tend, plist,
