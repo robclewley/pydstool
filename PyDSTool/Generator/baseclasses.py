@@ -584,15 +584,22 @@ class Generator(object):
         if 'inputs' in kw:
             inputs = copy(kw['inputs'])
             if isinstance(inputs, Trajectory):
+                for n in inputs.variables:
+                    if n in mathNameMap:
+                        raise ValueError("Input name {} clash with built-in math/scipy name".format(n))
                 # extract the variables
                 self.inputs.update(self._FScompatibleNames(inputs.variables))
             elif isinstance(inputs, Variable):
+                if inputs.name in mathNameMap:
+                    raise ValueError("Input name {} clash with built-in math/scipy name".format(n))
                 self.inputs.update({self._FScompatibleNames(inputs.name): \
                                     inputs})
             elif isinstance(inputs, Pointset):
                 # turn into Variables with linear interpoolation between
                 # independent variable values
                 for n in inputs.coordnames:
+                    if n in mathNameMap:
+                        raise ValueError("Input name {} clash with built-in math/scipy name".format(n))
                     x_array = inputs[n]
                     nFS = self._FScompatibleNames(n)
                     self.inputs[nFS] = \
@@ -602,6 +609,9 @@ class Generator(object):
                                                   abseps=self._abseps),
                                          name=n)  # keep original name here
             elif isinstance(inputs, dict):
+                for n in inputs.keys():
+                    if n in mathNameMap:
+                        raise ValueError("Input name {} clash with built-in math/scipy name".format(n))
                 self.inputs.update(self._FScompatibleNames(inputs))
                 # ensure values are Variables or Pointsets
                 for k, v in self.inputs.items():
@@ -642,6 +652,9 @@ class Generator(object):
                 self.initialconditions[name] = np.NaN
 
     def _kw_process_allvars(self, kw, fs_args):
+        for varname in self.__all_vars:
+            if varname in mathNameMap:
+                raise ValueError("Var name {} clash with built-in math/scipy name".format(varname))
         if 'auxvars' in kw:
             assert 'vars' not in kw, ("Cannot use both 'auxvars' and 'vars' "
                                       "keywords")
@@ -783,12 +796,16 @@ class Generator(object):
             if isinstance(kw['pars'], list):
                 # may be a list of symbolic definitions
                 for p in kw['pars']:
+                    if p.name in mathNameMap:
+                        raise ValueError("Param name {} clash with built-in math/scipy name".format(p.name))
                     try:
                         self.pars[self._FScompatibleNames(p.name)] = p.tonumeric()
                     except (AttributeError, TypeError):
                         raise TypeError("Invalid parameter symbolic definition")
             else:
                 for k, v in dict(kw['pars']).items():
+                    if str(k) in mathNameMap:
+                        raise ValueError("Param name {} clash with built-in math/scipy name".format(k))
                     self.pars[self._FScompatibleNames(str(k))] = ensurefloat(v)
             fs_args['pars'] = list(self.pars.keys())
             self._register(self.pars)
