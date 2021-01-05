@@ -270,7 +270,10 @@ class ModelSpec(object):
                 for a in v:
                     afsname = FScompatibleNames[a.name]
                     acopy = copy(a)
-                    acopy.mapNames(mathNameMap)
+                    # don't include the local signature names in the mapping
+                    acopy.mapNames(filteredDict(mathNameMap,
+                                                 a.signature,
+                                                 neg=True))
                     aspec = acopy.spec
                     try:
                         outfs[k][afsname] = (a.signature, replaceSep(aspec))
