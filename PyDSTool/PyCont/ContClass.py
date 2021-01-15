@@ -3,7 +3,6 @@
     Drew LaMar, March 2006
 """
 
-from __future__ import absolute_import, print_function
 
 from .Continuation import (
     EquilibriumCurve, FoldCurve, HopfCurveOne, HopfCurveTwo,
@@ -28,7 +27,7 @@ from PyDSTool.matplotlib_import import *
 
 from numpy import dot as matrixmultiply
 from numpy import array, float, complex, int, float64, complex64, int32, \
-     zeros, divide, subtract, Inf, NaN, isfinite, r_, c_, sign, mod, mat, \
+     zeros, divide, subtract, Inf, NaN, isfinite, r_, c_, sign, mod, \
      subtract, divide, transpose, eye, real, imag, all, ndarray
 from numpy import get_include
 
@@ -182,7 +181,7 @@ class ContClass(Utility):
                     initPoint = self.curves[curvename].parsdict.copy()
 
                 initPoint.update(initargs['initpoint'].copy().todict())
-                initargs['initpoint'] = initPoint                
+                initargs['initpoint'] = initPoint
                 # initargs['initpoint'] = initargs['initpoint'].copy().todict()
                 #for p in initargs['freepars']:
                 #    if p not in initargs['initpoint'].keys():

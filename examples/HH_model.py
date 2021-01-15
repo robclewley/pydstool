@@ -5,10 +5,9 @@ See ModelSpec_test.py for example of using the neuralcomp toolbox.
 
    Robert Clewley, June 2005.
 """
-from __future__ import print_function
 
 from PyDSTool import *
-from time import clock
+from time import perf_counter
 from copy import copy
 
 # ------------------------------------------------------------
@@ -87,9 +86,9 @@ if __name__=='__main__':
 
     HH_term = makeHHneuron('HHtest', par_args, ic_args, [thresh_ev_term])
     HH_term.set(tdata=[0, 25])
-    start = clock()
+    start = perf_counter()
     HHtraj_term = HH_term.compute('test_term')
-    print('Computed trajectory in %.3f seconds.\n' % (clock()-start))
+    print('Computed trajectory in %.3f seconds.\n' % (perf_counter()-start))
     trajdata = HHtraj_term.sample(dt=1.0, precise=True)
     print("sampled this data up until the event", HH_term.getEventTimes(), ":")
     print(trajdata['v'], "\n")
@@ -111,9 +110,9 @@ if __name__=='__main__':
     HH.set(tdata=[0, 6.797])
 
     print('Integrating...')
-    start = clock()
+    start = perf_counter()
     HHtraj = HH.compute('test')
-    print('  ... finished in %.3f seconds.\n' % (clock()-start))
+    print('  ... finished in %.3f seconds.\n' % (perf_counter()-start))
     evt = HH.getEventTimes()['thresh_ev']
     evt_same = HH.getEventTimes('thresh_ev')
     assert evt == [] == evt_same

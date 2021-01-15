@@ -8,6 +8,8 @@
 # 	dev   - installation using 'python setup.py develop'
 # 	undev - uninstall after 'make dev'
 
+TEST_CMD=python setup.py test
+
 .PHONY: install local
 	
 install:
@@ -23,13 +25,10 @@ examples:
 	@cd examples && python run_all_tests.py
 
 test: clean
-	@python setup.py test
-
+	@$(TEST_CMD)
 
 cov:
-	@sed -i'.bak' -e 's/ --boxed//' pytest.ini
-	@py.test --cov PyDSTool --cov-report html --cov-config .coveragerc
-	@mv -f pytest.ini.bak pytest.ini
+	@$(TEST_CMD) --addopts="--cov PyDSTool --cov-report html"
 
 
 .PHONY: _tags dev undev

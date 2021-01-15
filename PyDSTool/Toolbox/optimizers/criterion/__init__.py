@@ -38,7 +38,6 @@ Information criteria :
     - Identical to AICCriterion except that a number of increases are tolerated
 """
 
-from __future__ import absolute_import
 
 from .criteria import *
 from .composite_criteria import *

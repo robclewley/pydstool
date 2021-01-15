@@ -1,4 +1,3 @@
-from __future__ import division
 
 from PyDSTool import *
 import pytest
@@ -37,7 +36,8 @@ def setup_module(PyDSTool):
 class TestInterval:
 
     def test_one(self):
-        pytest.raises(PyDSTool_TypeError, "self.b.contains(self.a)")
+        with pytest.raises(PyDSTool_TypeError):
+            self.b.contains(self.a)
 
     def test_two(self):
         assert -2 < self.a
@@ -73,13 +73,15 @@ class TestInterval:
         assert (self.a > array([-5, -4, -1])) == [True, True, False]
 
     def test_thirteen(self):
-        pytest.raises(PyDSTool_UncertainValueError, "self.n in self.m")
+        with pytest.raises(PyDSTool_UncertainValueError):
+            self.n in self.m
 
     def test_fourteen(self):
         assert self.s in self.m
 
     def test_fifteen(self):
-        pytest.raises(PyDSTool_UncertainValueError, "self.b in self.m")
+        with pytest.raises(PyDSTool_UncertainValueError):
+            self.b in self.m
 
     def test_sixteen(self):
         assert self.b in self.i
@@ -130,19 +132,23 @@ class TestInterval:
         assert len(self.i3.sample(0.36, strict=True)) == 3
 
     def test_thirtytwo(self):
-        pytest.raises(PyDSTool_TypeError, "self.inf_int.contains(self.inf3)")
+        with pytest.raises(PyDSTool_TypeError):
+            self.inf_int.contains(self.inf3)
 
     def test_thirtythree(self):
         assert self.inf_int.contains(-Inf)
 
     def test_thirtyfour(self):
-        pytest.raises(PyDSTool_TypeError, "self.inf3.intersect(self.i4).get()")
+        with pytest.raises(PyDSTool_TypeError):
+            self.inf3.intersect(self.i4).get()
 
     def test_thirtyfive(self):
-        pytest.raises(PyDSTool_TypeError, "self.j.intersect(self.i2).get()")
+        with pytest.raises(PyDSTool_TypeError):
+            self.j.intersect(self.i2).get()
 
     def test_thirtyfive(self):
-        pytest.raises(PyDSTool_TypeError, "self.j.intersect(self.i2).get()")
+        with pytest.raises(PyDSTool_TypeError):
+            self.j.intersect(self.i2).get()
 
     def test_thirtysix(self):
         assert self.i5.issingleton

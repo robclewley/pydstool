@@ -26,7 +26,7 @@ See more at `pydstool.sourceforge.net <http://pydstool.sourceforge.net>`__.
 Requirements
 ~~~~~~~~~~~~
 
-*  `Python <http://www.python.org>`__ 2.7 or 3.3+;
+*  `Python <http://www.python.org>`__ 3.6+;
 *  `numpy <http://www.numpy.org>`__;
 *  `scipy <http://www.scipy.org>`__.
 

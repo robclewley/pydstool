@@ -1,7 +1,6 @@
 """Toolbox for phase response curves measured by finite perturbations
 """
 
-from __future__ import absolute_import, print_function
 
 import numpy as np
 from PyDSTool import Pointset, Model, embed

@@ -1,5 +1,4 @@
 # PyDSTool imports
-from __future__ import absolute_import
 
 # Imports of variables from these modules are not transferred to the caller
 # of this script, so those modules have to imported there specially.

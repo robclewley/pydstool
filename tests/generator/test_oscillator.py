@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
+r"""
     Simple forward integration test for ODE generators
 
     Comparing numerical results with exact solution
@@ -15,7 +15,6 @@
 """
 
 
-from __future__ import absolute_import, print_function
 
 from numpy import linspace, allclose, array, cos, sin, sqrt
 

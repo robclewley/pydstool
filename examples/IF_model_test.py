@@ -14,7 +14,7 @@ the Model class as a hybrid dynamical system.
 """
 
 from PyDSTool import *
-from time import clock
+from time import perf_counter
 
 # ---------------------------------------------------------------------------
 
@@ -77,9 +77,9 @@ modelInfoDict = makeModelInfo([DS_leak_info, DS_spike_info])
 IFmodel = Model.HybridModel({'name': 'IF_fit', 'modelInfo': modelInfoDict})
 
 print("Computing trajectory...\n")
-start = clock()
+start = perf_counter()
 IFmodel.compute(trajname='onespike', tdata=[0,30], ics=ics, verboselevel=2, force=True)
-print('... finished in %.3f seconds.\n' % (clock()-start))
+print('... finished in %.3f seconds.\n' % (perf_counter()-start))
 
 print('Preparing plot to show non-identity mapping of epoch state transitions')
 plotData = IFmodel.sample('onespike', ['V'], 0.02)

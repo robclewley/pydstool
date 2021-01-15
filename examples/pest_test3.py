@@ -3,7 +3,6 @@
 
     Robert Clewley, March 2005.
 """
-from __future__ import print_function
 
 # PyDSTool imports
 from PyDSTool import *
@@ -14,7 +13,7 @@ import HH_model
 # Other imports
 from numpy.linalg import norm
 from numpy.testing import assert_almost_equal
-from time import clock
+from time import perf_counter
 
 # ----------------------------------------------------------------
 
@@ -191,12 +190,12 @@ print('Goal values are vl =', par_args_HH_goal['vl'], ', gl = ', \
 ##                 verbose_level=2
 ##                )
 ##
-##start = clock()
+##start = perf_counter()
 ##pestData_par = pest_pars.run(parDict={'ftol':1e-5,
 ##                                      'xtol':1e-5,
 ##                                      },
 ##                             verbose=True)
-##print '... finished in %.3f seconds\n' % (clock()-start)
+##print '... finished in %.3f seconds\n' % (perf_counter()-start)
 
 pnames = ['vl', 'gl']
 parscales = {'vl': 1, 'gl': 0.01}

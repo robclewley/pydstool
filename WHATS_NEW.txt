@@ -2,6 +2,27 @@ Release notes: Highlights of new features
 =========================================
 For latest changes see http://github.com/robclewley/pydstool
 
+Version 0.91.0 01 Feb 2020
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Fixed code to support scipy 1.4+
+
+Thanks to Daniel Bliss for contributing patch.
+
+Version 0.90.3 20 Aug 2019
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Removed support for Python < 3.6 (#146)
+* Fixed tests for Python 3.6+
+* Fixed Dopri/Radau generators for SWIG 3+
+* Corrected typos in PyDSTool/Toolbox/phaseplane.py (#134)
+* Added support for SciPy 1.0+ (#132)
+* Used proper division in PyDSTool/PyCont/TestFunc.py (#125)
+* Fixed numeric type for index arrays in PyDSTool/Toolbox/phaseplane.py (#123)
+* Updated NineML import to match lib9ML (#112)
+* Dropped PSYCO support (#111)
+
+Thanks to John Kegelman, Daniel P. Bliss, Takafumi Arakaki, Tom Close,
+Sourav Singh and Will Furnass for contributing patches.
+
 
 Version 0.90.2 06 Jul 2015
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

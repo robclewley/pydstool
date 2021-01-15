@@ -12,7 +12,6 @@
     Robert Clewley, August 2005.
 """
 
-from __future__ import print_function
 from PyDSTool import *
 
 DSargs = args(fnspecs={'Jacobian': (['t','y0','y1','y2'],

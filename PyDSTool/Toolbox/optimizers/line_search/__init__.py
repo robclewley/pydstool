@@ -2,7 +2,6 @@
 # Matthieu Brucher
 # Last Change : 2007-12-12 09:29
 
-from __future__ import absolute_import
 
 """
 Module containing the line searchers

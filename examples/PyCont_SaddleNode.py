@@ -36,9 +36,9 @@ PCargs.Corrector = 'Natural'
 PyCont.newCurve(PCargs)
 
 print('Computing equilibrium curve...')
-start = clock()
+start = perf_counter()
 PyCont['EQ1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 # Plot
 PyCont.display(('r','x'), stability=True, linewidth=0.5)

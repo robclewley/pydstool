@@ -1,7 +1,6 @@
 """Basic integrator interface class
    Erik Sherwood, September 2006
 """
-from __future__ import absolute_import, print_function
 
 from .errors import PyDSTool_InitError as InitError
 from .errors import PyDSTool_ClearError as ClearError

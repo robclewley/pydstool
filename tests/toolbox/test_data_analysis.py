@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 from numpy import arange
 from numpy.linalg import norm

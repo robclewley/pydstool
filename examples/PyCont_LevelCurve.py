@@ -3,7 +3,6 @@ function. Example is an ellipse.
 
 Robert Clewley, August 2008.
 """
-from __future__ import print_function
 
 from PyDSTool import *
 from numpy.linalg import norm

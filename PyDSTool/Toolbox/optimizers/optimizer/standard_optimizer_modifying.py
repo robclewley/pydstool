@@ -2,7 +2,6 @@
 # Matthieu Brucher
 # Last Change : 2007-08-10 23:10
 
-from __future__ import absolute_import
 
 """
 A standard optimizer with a special object that modifies the resulting set of parameters

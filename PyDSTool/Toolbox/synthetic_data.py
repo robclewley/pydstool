@@ -4,12 +4,10 @@ Robert Clewley, 2006, 2007.
 
 """
 
-from __future__ import absolute_import, print_function
 
 from PyDSTool import *
 from numpy import random, array, dot, zeros, transpose
 from numpy.linalg import norm, inv
-from six.moves import range
 
 _generators = ['generate_swirl', 'generate_discspiral', 'generate_hypercube',
               'generate_spiral']

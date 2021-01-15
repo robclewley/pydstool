@@ -3,7 +3,6 @@
 
     Robert Clewley, March 2005.
 """
-from __future__ import print_function
 
 # PyDSTool imports
 from PyDSTool import *
@@ -13,7 +12,7 @@ import HH_model_Cintegrator as HH_model
 
 # Other imports
 from numpy.linalg import norm
-from time import clock
+from time import perf_counter
 
 # ----------------------------------------------------------------
 
@@ -191,7 +190,7 @@ pest1, opt = make_opt(pnames, residual_fn_context, HH_test_model, pest_context,
 #                 verbose_level=2
 #                )
 
-start = clock()
+start = perf_counter()
 #pestData_par = pest_pars.run(parDict={'ftol':1e-4,
 #                                      'xtol':1e-4,
 #                                      },
@@ -203,7 +202,7 @@ pest2, opt = make_opt(pnames, residual_fn_context, HH_test_model, pest_context,
                       parscales=parscales, parseps=parseps)
 opt.iterate()
 
-print('... finished in %.3f seconds\n' % (clock()-start))
+print('... finished in %.3f seconds\n' % (perf_counter()-start))
 
 
 log_ix = pest2.find_logs()[0]

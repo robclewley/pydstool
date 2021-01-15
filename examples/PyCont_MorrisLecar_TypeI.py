@@ -53,9 +53,9 @@ PCargs.SaveEigen = True
 PyCont.newCurve(PCargs)
 
 print('Computing curve...')
-start = clock()
+start = perf_counter()
 PyCont['EQ1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 PCargs.name = 'LC1'
 PCargs.type = 'LC-C'
@@ -71,9 +71,9 @@ PCargs.SaveEigen = True
 PyCont.newCurve(PCargs)
 
 print('Computing curve...')
-start = clock()
+start = perf_counter()
 PyCont['LC1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 # Plot
 PyCont.display(('Iapp','v'),stability=True)

@@ -82,7 +82,7 @@ class CubicInterpolationSearch(object):
 
         if h>0:
           a, b = m1, m2
-        else: 
+        else:
             a, b = m2, m1
             f1, f2 = f2, f1
             df1, df2 = df2, df1 # in the origin algorithm ithe line is absent but I think it should be present elseware error occures

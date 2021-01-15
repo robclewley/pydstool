@@ -26,8 +26,8 @@ from setuptools import Command
 import sys
 
 MAJOR = 0
-MINOR = 90
-MICRO = 2
+MINOR = 91
+MICRO = 0
 __version__ = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 
@@ -35,8 +35,8 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-if sys.version_info[:2] < (2, 7) or (3, 0) <= sys.version_info[0:2] < (3, 3):
-    raise RuntimeError("Python version 2.7 or >= 3.3 required.")
+if sys.version_info[0:2] < (3, 6):
+    raise RuntimeError("Python 3.6+ required.")
 
 
 class clean(Command):
@@ -86,16 +86,20 @@ def get_datafiles():
     return datafiles
 
 
+needs_pytest = {'test', 'pytest', 'ptr'}.intersection(sys.argv)
+pytest_runner = ['pytest-runner'] if needs_pytest else []
+
+
 setup(
     name="PyDSTool",
     version=__version__,
     packages=find_packages(),
+    setup_requires=pytest_runner,
     install_requires=[
-        "six",
-        "scipy>=0.9",
+        "scipy>=1.0,<2.0",
         "numpy>=1.6"
     ],
-    tests_require=['pytest', 'mock', 'pytest-xdist'],
+    tests_require=['pytest', 'pytest-mock', 'pytest-xdist'],
     cmdclass={
         'test': PyTest,
         'clean': clean
@@ -108,7 +112,7 @@ setup(
     long_description=read('README.rst') + '\n\n' + read('WHATS_NEW.txt'),
     license="BSD",
     keywords="dynamical systems, bioinformatics, modeling, bifurcation analysis",
-    url="http://pydstool.sourceforge.net/",
+    url="https://pydstool.github.io/PyDSTool/FrontPage.html",
     download_url="https://github.com/robclewley/pydstool/tarball/v%s" % __version__,
     include_package_data=True,
     platforms=["any"],
@@ -121,9 +125,8 @@ setup(
         "Topic :: Scientific/Engineering",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: BSD License",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: POSIX :: BSD :: FreeBSD",

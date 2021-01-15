@@ -35,9 +35,9 @@ PCargs.SaveEigen = True
 PyCont.newCurve(PCargs)
 
 print('Computing curve...')
-start = clock()
+start = perf_counter()
 PyCont['EQ1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 # Hopf Curve -- Curiously screws up further out on curve.  Will take a closer look later .....
 PCargs = args(name='HO1', type='H-C2')
@@ -49,9 +49,9 @@ PCargs.verbosity = 2
 PyCont.newCurve(PCargs)
 
 print('Computing Hopf curve...')
-start = clock()
+start = perf_counter()
 PyCont['HO1'].backward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 # Plot
 PyCont.display(('p1','u1'), stability=True)

@@ -1,7 +1,6 @@
 # Dopri ODE system
-from __future__ import division, absolute_import, print_function
 
-import imp
+import importlib
 
 from .allimports import *
 from PyDSTool.Generator import ODEsystem as ODEsystem
@@ -24,7 +23,7 @@ from copy import copy, deepcopy
 import sys, gc
 #import distutils
 from distutils.sysconfig import get_python_inc
-from time import clock, sleep
+from time import perf_counter, sleep
 
 
 class dopri(integrator):
@@ -41,8 +40,10 @@ class dopri(integrator):
                             extraSpace=extraSpace, defaultBound=defaultBound)
         self.modname = modname
         try:
-            self._integMod = imp.load_module(
-                modname, *imp.find_module(modname, ["dop853_temp"]))
+            self._integMod = importlib.import_module(
+                '.' + modname,
+                package='dop853_temp',
+            )
         except:
             print("Error in importing compiled vector field and integrator.")
             print("Did you compile the RHS C code?")

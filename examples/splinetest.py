@@ -135,7 +135,7 @@ PyCont['FO2'].info()
 
 
 
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 ax1=subplot(111)
 PyCont['FO1'].display(('delta','D_max'),axes=ax1, stability=True, color='green')

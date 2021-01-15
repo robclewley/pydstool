@@ -33,7 +33,6 @@ Overview of steps that ModelConstructor takes:
  order to use its structure in resolving information about the relationship
  between variables.
 """
-from __future__ import absolute_import, print_function
 
 # PyDSTool imports
 from .errors import *
@@ -46,12 +45,15 @@ from .parseUtils import symbolMapClass, NAMESEP, isNumericToken
 from numpy import Inf, NaN, isfinite,  array, \
      arange, zeros, ones, concatenate, swapaxes, take, \
      sometrue, alltrue, any, all
-import numpy, scipy, math # for access by user-defined code of EvMapping
-import sys, types, copy
+import numpy
+import scipy
+import math  # for access by user-defined code of EvMapping
+import sys
+import types
+import copy
 from . import common
 from . import parseUtils
 import copy
-import six
 
 # Exports
 __all__ = ['GeneratorConstructor', 'ModelConstructor',
@@ -249,7 +251,7 @@ class GeneratorConstructor(object):
             # the dictionary of string signatures and definitions format
             self.userfns = Symbolic.ensureStrArgDict(copy.copy(userfns))
         self.unravelInfo = unravelInfo   # presently just a Boolean
-        if isinstance(targetGen, six.string_types):
+        if isinstance(targetGen, str):
             self.targetGen = targetGen
         else:
             raise TypeError("targetGen argument must be a string")
@@ -334,7 +336,7 @@ class GeneratorConstructor(object):
         if eventPars is not None and eventPars != [] and eventPars != '':
             if isinstance(eventPars, list):
                 self.eventPars.extend(eventPars)
-            elif isinstance(eventPars, six.string_types):
+            elif isinstance(eventPars, str):
                 self.eventPars.append(eventPars)
 
 
@@ -1312,7 +1314,7 @@ class ModelConstructor(object):
         if eventPars is not None and eventPars != [] and eventPars != '':
             if isinstance(eventPars, list):
                 self._eventPars[hostGen].extend(eventPars)
-            elif isinstance(eventPars, six.string_types):
+            elif isinstance(eventPars, str):
                 self._eventPars[hostGen].append(eventPars)
             self._generators[hostGen].addEvtPars(eventPars)
 
@@ -1352,7 +1354,7 @@ class ModelConstructor(object):
     def setInternalVars(self, arg):
         if isinstance(arg, list):
             self.forcedIntVars = arg
-        elif isinstance(arg, six.string_types):
+        elif isinstance(arg, str):
             self.forcedIntVars = [arg]
         # !! Should check whether these are valid variable names of model
 
@@ -1589,8 +1591,8 @@ class EvMapping(object):
         else:
             if len(self.assignDict) > 0:
                 for lhs, rhs in self.assignDict.items():
-                    if not(isinstance(lhs, six.string_types) and \
-                           isinstance(rhs, six.string_types)):
+                    if not(isinstance(lhs, str) and \
+                           isinstance(rhs, str)):
                         raise TypeError("Assignment dictionary for event "
                                         "mapping must consist of strings for "
                                         "both keys and values")
@@ -1600,7 +1602,7 @@ class EvMapping(object):
                 fnString += "\n" + indent + ("\n"+indent).join(self.defString.split("\n"))
             if len(self.activeDict) > 0:
                 for evname, state in self.activeDict.items():
-                    if not(isinstance(evname, six.string_types) and \
+                    if not(isinstance(evname, str) and \
                            isinstance(state, bool)):
                         raise TypeError("Invalid types given for setting "
                                         "active events")
@@ -1614,7 +1616,7 @@ class EvMapping(object):
             print('Invalid function definition for event mapping:')
             print(fnString)
             raise
-        setattr(self, 'evmapping', six.create_bound_method(locals()['evmapping'], self))
+        setattr(self, 'evmapping', types.MethodType(locals()['evmapping'], self))
 
     def __getstate__(self):
         d = copy.copy(self.__dict__)
@@ -1681,7 +1683,7 @@ def makeModelInfoEntry(dsi, allModelNames=None, swmap_list=None,
         #       "Cannot use non-embedded Generators in hybrid system"
         if swmap_list != []:
             for (name, target) in swmap_list:
-                if isinstance(target, six.string_types):
+                if isinstance(target, str):
                     if target != 'terminate':
                         print("%s %s" % (name, target))
                         raise AssertionError("Generators can only be used "
@@ -1753,7 +1755,7 @@ def makeModelInfoEntry(dsi, allModelNames=None, swmap_list=None,
         if isinstance(mapping_info, tuple):
             targetName = mapping_info[0]
             numargs = len(mapping_info)
-        elif isinstance(mapping_info, six.string_types):
+        elif isinstance(mapping_info, str):
             targetName = mapentry[1]
             numargs = 1
         else:
@@ -1931,7 +1933,7 @@ class ModelManager(object):
     """Model management and repository class."""
 
     def __init__(self, name):
-        assert isinstance(name, six.string_types)
+        assert isinstance(name, str)
         self.proj_name = name
         # registry of model descriptors and instances that form the project
         self._mReg = MReg()
@@ -2455,7 +2457,7 @@ class MReg(object):
         """Return info about stored model specifications.
         Valid query keys: 'orig_name', 'in_description'
         """
-        assert isinstance(querykey, six.string_types), \
+        assert isinstance(querykey, str), \
                        ("Query argument must be a single string")
         _keylist = ['orig_name', 'in_description']
         if querykey not in _keylist:

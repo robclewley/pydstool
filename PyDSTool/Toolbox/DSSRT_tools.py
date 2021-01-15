@@ -10,7 +10,6 @@ Partial templates for the graphical specs are created.
 
 """
 
-from __future__ import absolute_import, print_function
 
 from PyDSTool import *
 from PyDSTool.parseUtils import symbolMapClass
@@ -18,7 +17,6 @@ from PyDSTool.Toolbox.FR import *
 import os
 from copy import copy
 from random import uniform, gauss
-import six
 
 __all__ = ['DSSRT_info', 'plotNetworkGraph']
 
@@ -242,7 +240,7 @@ class DSSRT_info(object):
             # these variables still need vbars
             magopt = int(bd0 == 0 and bd1 == 1)
             if var in vbars_int:
-                if isinstance(vbars_int[var], six.string_types):
+                if isinstance(vbars_int[var], str):
                     # use vertex of associated external variable
                     assocV = V[vbars_int[var]]
                     x1 = assocV.pos[0]-0.02

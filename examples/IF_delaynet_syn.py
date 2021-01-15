@@ -16,7 +16,7 @@
 """
 
 from PyDSTool import *
-from time import clock
+from time import perf_counter
 
 # ---------------------------------------------------------------------------
 
@@ -197,12 +197,12 @@ IFmodel=IFmodelC.getModel()
 print("Computing trajectory...\n")
 icdict = {'IF1.V': -76, 'IF2.V': -66, 'IF1.excited': 0, 'IF2.excited': 0,
           'IF1.syn_IF2_IF1.s': 0, 'IF2.syn_IF1_IF2.s': 0}
-start = clock()
+start = perf_counter()
 IFmodel.compute(trajname='test',
                     tdata=[0, 1000],
                     ics=icdict,
                     verboselevel=0)
-print('... finished in %.3f seconds.\n' % (clock()-start))
+print('... finished in %.3f seconds.\n' % (perf_counter()-start))
 
 # -------------------------------------------------------------------------
 

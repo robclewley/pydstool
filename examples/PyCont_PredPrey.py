@@ -46,9 +46,9 @@ PCargs.verbosity = 2
 PC.newCurve(PCargs)
 
 print('Computing curve...')
-start = clock()
+start = perf_counter()
 PC['EQ1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 PCargs.name = 'HO1'
 PCargs.type = 'H-C2'
@@ -60,9 +60,9 @@ PCargs.LocBifPoints = ['ZH']
 PC.newCurve(PCargs)
 
 print('Computing Hopf curve...')
-start = clock()
+start = perf_counter()
 PC['HO1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 PCargs = args(name = 'FO1', type = 'LP-C')
 PCargs.initpoint = 'HO1:ZH1'
@@ -73,14 +73,14 @@ PCargs.LocBifPoints = 'all'
 PC.newCurve(PCargs)
 
 print('Computing fold curve (forward)...')
-start = clock()
+start = perf_counter()
 PC['FO1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 print('Computing fold curve (backward)...')
-start = clock()
+start = perf_counter()
 PC['FO1'].backward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 # Plot
 PC.display(('k','D'))

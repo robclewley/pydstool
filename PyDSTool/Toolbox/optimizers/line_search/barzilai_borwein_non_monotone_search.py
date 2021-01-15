@@ -5,7 +5,6 @@
 ##  def gradient(self, x):
 ##    return numpy.array((2 * (x[0] - 2), 4 * (2 * x[1] + 4)))
 
-from __future__ import absolute_import, print_function
 
 
 from .line_search import CubicInterpolationSearch

@@ -5,7 +5,6 @@
     Sample systems of ODEs for testing purposes
 """
 
-from __future__ import absolute_import, print_function
 
 
 def vanDerPol():

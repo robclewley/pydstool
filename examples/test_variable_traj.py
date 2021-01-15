@@ -1,7 +1,6 @@
 """
 Tests and demonstration of Variable class
 """
-from __future__ import print_function
 
 from PyDSTool import *
 

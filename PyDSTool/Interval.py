@@ -12,7 +12,6 @@ Interval objects have attributes:
    issingleton: boolean
    _intervalstr: str
 """
-from __future__ import division, absolute_import, print_function
 
 # Note: The integer intervals will later be used as the basis for
 # supporting finitely-sampled real ranges.
@@ -30,7 +29,7 @@ import copy
 MIN_EXP = -15
 
 # type identifiers
-re_number = '([-+]?(\d+(\.\d*)?|\d*\.\d+)([eE][-+]?\d+)?)'
+re_number = r'([-+]?(\d+(\.\d*)?|\d*\.\d+)([eE][-+]?\d+)?)'
 
 c=1  # contained const
 n=0  # notcontained const
@@ -108,7 +107,7 @@ class Interval(object):
     """
 
     def __init__(self, name, intervaltype, intervalspec=None, abseps=None):
-#        if not isinstance(name, six.string_types):
+#        if not isinstance(name, str):
 #            raise PyDSTool_TypeError('Name must be a string')
         self.name = name
         try:
@@ -517,7 +516,7 @@ class Interval(object):
                 if self._hival not in samplelist:
                     samplelist.append(self._hival)
             else: # choose automatically
-                n = max(round(intervalsize/dt),2)
+                n = max(int(round(intervalsize / dt)), 2)
                 dt = intervalsize/n
                 samplelist = list(linspace(self._loval, self._hival, n))
             if avoidendpoints:
@@ -561,17 +560,21 @@ class Interval(object):
                 hival = arg[1]
                 #assert not isnan(loval) and not isnan(hival), \
                 #       "Cannot specify NaN as interval endpoint"
-                if not loval < hival:
-                    print("set() was passed loval = ", loval, \
-                          " and hival = ", hival)
-                    raise PyDSTool_ValueError('Interval endpoints must be '
-                                    'given in order of increasing size')
+                try:
+                    if not loval < hival:
+                        print("set() was passed loval = ", loval, \
+                            " and hival = ", hival)
+                        raise PyDSTool_ValueError('Interval endpoints must be '
+                                        'given in order of increasing size')
+                except TypeError:
+                    # unorderable types
+                    pass
                 self._intervalstr = '['+str(loval)+',' \
                                     +str(hival)+']'
                 if compareNumTypes(type(loval), self.type):
                     self._loval = loval
                 elif compareNumTypes(self.type, _float_types):
-                    self._loval = float(loval)
+                    self._loval = float(str(loval))
                 elif isinf(loval):
                     # allow Inf to be used for integer types
                     self._loval = loval
@@ -580,7 +583,7 @@ class Interval(object):
                 if compareNumTypes(type(hival), self.type):
                     self._hival = hival
                 elif compareNumTypes(self.type, _float_types):
-                    self._hival = float(hival)
+                    self._hival = float(str(hival))
                 elif isinf(hival):
                     # allow Inf to be used for integer types
                     self._hival = hival
@@ -714,4 +717,3 @@ def issingleton(ni):
         return ni.issingleton
     else:
         raise PyDSTool_ExistError('Interval undefined')
-

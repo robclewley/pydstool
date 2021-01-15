@@ -22,7 +22,6 @@
 #
 # ----------------------------------------------------------------------------
 
-from __future__ import absolute_import, print_function
 
 from .misc import *
 from PyDSTool.common import args, copy
@@ -32,7 +31,7 @@ from scipy import optimize, linalg
 from numpy import dot as matrixmultiply
 from numpy import array, float, complex, int, float64, complex64, int32, \
      zeros, divide, subtract, any, argsort, product, Inf, NaN, isfinite, \
-     r_, c_, sign, mod, mat, subtract, divide, transpose, eye, real, imag, \
+     r_, c_, sign, mod, subtract, divide, transpose, eye, real, imag, \
      conjugate, shape, reshape, sqrt, random, spacing
 from numpy.random import random
 
@@ -378,7 +377,7 @@ class BiAltMethod(TestFunc):
         if self.data is None:
             self.data = args()
         n = len(self.F.coords)
-        self.data.P = zeros((n*int((n-1)/2), n*int((n-1)/2)), float)
+        self.data.P = zeros((n*(n-1)//2, n*(n-1)//2), float)
 
     def bialtprod(self, A, B):
         n = A.shape[0]
@@ -386,9 +385,8 @@ class BiAltMethod(TestFunc):
             for q in range(p):
                 for r in range(1,n):
                     for s in range(r):
-                        self.data.P[int(p*(p-1)/2 + q)][int(r*(r-1)/2 + s)] = \
-                                0.5*(A[p][r]*B[q][s] - A[p][s]*B[q][r] + \
-                                B[p][r]*A[q][s] - B[p][s]*A[q][r])
+                        self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = 0.5*(A[p][r]*B[q][s] - A[p][s]*B[q][r] + \
+                                                                         B[p][r]*A[q][s] - B[p][s]*A[q][r])
         return self.data.P
 
     def bialtprodeye(self, A):
@@ -398,17 +396,17 @@ class BiAltMethod(TestFunc):
                 for r in range(1,n):
                     for s in range(r):
                         if r == q:
-                            self.data.P[int(p*(p-1)/2 + q)][int(r*(r-1)/2 + s)] = -1*A[p][s]
+                            self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = -1*A[p][s]
                         elif r != p and s == q:
-                            self.data.P[int(p*(p-1)/2 + q)][int(r*(r-1)/2 + s)] = A[p][r]
+                            self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = A[p][r]
                         elif r == p and s == q:
-                            self.data.P[int(p*(p-1)/2 + q)][int(r*(r-1)/2 + s)] = A[p][p] + A[q][q]
+                            self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = A[p][p] + A[q][q]
                         elif r == p and s != q:
-                            self.data.P[int(p*(p-1)/2 + q)][int(r*(r-1)/2 + s)] = A[q][s]
+                            self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = A[q][s]
                         elif s == p:
-                            self.data.P[int(p*(p-1)/2 + q)][int(r*(r-1)/2 + s)] = -1*A[q][r]
+                            self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = -1*A[q][r]
                         else:
-                            self.data.P[int(p*(p-1)/2 + q)][int(r*(r-1)/2 + s)] = 0
+                            self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = 0
         return self.data.P
 
 class AddTestFunction(Function):
@@ -718,7 +716,7 @@ class Hopf_Bor(BorderMethod, BiAltMethod):
     def __init__(self, F, C, update=False, corr=False, save=False, numpoints=None):
         n = F.m
         BiAltMethod.__init__(self, (F.n, 1), F, C, save=save, numpoints=numpoints)
-        BorderMethod.__init__(self, (F.n, 1), (n*(n-1)/2, n*(n-1)/2), F, C, update=update, corr=corr, save=save, numpoints=numpoints)
+        BorderMethod.__init__(self, (F.n, 1), (n*(n-1)//2, n*(n-1)//2), F, C, update=update, corr=corr, save=save, numpoints=numpoints)
 
     def setdata(self, X, V):
         self.bialtprodeye(2*self.F.J_coords)
@@ -765,7 +763,7 @@ class Hopf_Double_Bor_One(BorderMethod, BiAltMethod):
     def __init__(self, F, C, update=False, save=False, numpoints=None):
         n = F.m
         BiAltMethod.__init__(self, (F.n,1), F, C, save=save, numpoints=numpoints)
-        BorderMethod.__init__(self, (F.n,1), (n*(n-1)/2, n*(n-1)/2), F, C, r=2, corr=True, update=update, save=save, numpoints=numpoints)
+        BorderMethod.__init__(self, (F.n,1), (n*(n-1)//2, n*(n-1)//2), F, C, r=2, corr=True, update=update, save=save, numpoints=numpoints)
 
     def setdata(self, X, V):
         A = self.bialtprodeye(2*self.F.J_coords)
@@ -1066,7 +1064,7 @@ class NS_Det(BiAltMethod):
         BiAltMethod.__init__(self, (F.n,1), F, C, save=save, numpoints=numpoints)
 
     def func(self, X, V):
-        n = self.F.m*(self.F.m-1)/2
+        n = self.F.m*(self.F.m-1)//2
         self.bialtprod(self.F.J_coords,self.F.J_coords)
         return array([linalg.det(self.data.P - eye(n,n))])
 
@@ -1074,15 +1072,15 @@ class NS_Bor(BorderMethod, BiAltMethod):
     def __init__(self, F, C, update=True, corr=True, save=False, numpoints=None):
         n = F.m
         BiAltMethod.__init__(self, (F.n, 1), F, C, save=save, numpoints=numpoints)
-        BorderMethod.__init__(self, (F.n, 1), (n*(n-1)/2, n*(n-1)/2), F, C, update=update, corr=corr, save=save, numpoints=numpoints)
+        BorderMethod.__init__(self, (F.n, 1), (n*(n-1)//2, n*(n-1)//2), F, C, update=update, corr=corr, save=save, numpoints=numpoints)
 
     def setdata(self, X, V):
-        n = self.F.m*(self.F.m-1)/2
+        n = self.F.m*(self.F.m-1)//2
         self.bialtprod(self.F.J_coords,self.F.J_coords)
         BorderMethod.setdata(self, self.data.P - eye(n, n))
 
     def func(self, X, V):
-        n = self.F.m*(self.F.m-1)/2
+        n = self.F.m*(self.F.m-1)//2
         self.bialtprod(self.F.J_coords,self.F.J_coords)
         return array(BorderMethod.func(self, self.data.P - eye(n, n))[0])
 
@@ -1090,7 +1088,7 @@ class NS_Bor(BorderMethod, BiAltMethod):
         try:
             n = len(ind)
         except:
-            n = self.F.m*(self.F.m-1)/2
+            n = self.F.m*(self.F.m-1)//2
             ind = list(range(n))
 
         self.F.J_coords = self.F.jac(X, self.F.coords)

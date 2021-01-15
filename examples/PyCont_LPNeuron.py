@@ -117,9 +117,9 @@ PCargs.verbosity = 2
 PyCont.newCurve(PCargs)
 
 print('Computing curve...')
-start = clock()
+start = perf_counter()
 PyCont['EQ1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 PyCont['EQ1'].display(('Iext','v'), figure='new')
 PyCont.plot.toggleAll('off', bytype='P')
@@ -139,9 +139,9 @@ PCargs.TestTol = 1e-8
 PyCont.newCurve(PCargs)
 
 print('Computing limit-cycle curve...')
-start = clock()
+start = perf_counter()
 PyCont['LC1'].forward()
-print('done in %.3f seconds!' % (clock()-start))
+print('done in %.3f seconds!' % (perf_counter()-start))
 
 PyCont['LC1'].display(('Iext','v'), stability=True)
 
@@ -161,9 +161,9 @@ show()
 # PyCont.newCurve(PCargs)
 #
 # print 'Computing hopf curve...'
-# start = clock()
+# start = perf_counter()
 # PyCont['HO1'].forward()
-# print 'done in %.3f seconds!' % (clock()-start)
+# print 'done in %.3f seconds!' % (perf_counter()-start)
 
 # Fold curve
 # PCargs.name = 'FO1'
@@ -175,6 +175,6 @@ show()
 # PyCont.newCurve(PCargs)
 #
 # print 'Computing fold curve...'
-# start = clock()
+# start = perf_counter()
 # PyCont['FO1'].backward()
-# print 'done in %.3f seconds!' % (clock()-start)
+# print 'done in %.3f seconds!' % (perf_counter()-start)

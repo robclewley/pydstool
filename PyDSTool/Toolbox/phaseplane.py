@@ -18,7 +18,6 @@ because it is still highly experimental.
 R. Clewley, 2006 - 2015
 """
 
-from __future__ import division, absolute_import, print_function
 # itertools, operator used for _filter_consecutive function
 import itertools, operator
 import os
@@ -57,7 +56,6 @@ from scipy import linspace, isfinite, sign, alltrue, sometrue, arctan, arctan2
 from random import uniform
 import copy
 import sys
-import six
 
 norm = np.linalg.norm
 
@@ -922,6 +920,14 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                         sysargs_y['inputs'] = gen.inputs.copy()
                 sysargs_y.pars.update(gen.pars)
                 sysargs_y.pars.update(filteredDict(vardict, [xname, yname], neg=True))
+                for extra_par in ['codeinsert_start', 'codeinsert_end', 'ignorespecial']:
+                    if extra_par in gen.funcspec._initargs:
+                        # input param uses 'vfcodeinsert_start' etc.
+                        if extra_par.startswith('code'):
+                            key = 'vf'+extra_par
+                        else:
+                            key = extra_par
+                        sysargs_y[key] = gen.funcspec._initargs[extra_par]
                 varspecs = {yname: gen.funcspec._initargs['varspecs'][yname]}
                 if 'fnspecs' in gen.funcspec._initargs:
                     old_fnspecs = gen.funcspec._initargs['fnspecs']
@@ -1005,7 +1011,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                         y_null_part = crop_2D(array([P_y['null_curve_y'].sol[xname],
                                                      P_y['null_curve_y'].sol[yname]]).T,
                                               xinterval, yinterval)
-                        in_subom = len(y_null_part)>0
+                        in_subdom = len(y_null_part)>0
                         done = num_points > 15*loop_step
 
             # BACKWARD ###########
@@ -1042,7 +1048,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                         y_null_part = crop_2D(array([P_y['null_curve_y'].sol[xname],
                                                      P_y['null_curve_y'].sol[yname]]).T,
                                               xinterval, yinterval)
-                        in_subom = len(y_null_part)>0
+                        in_subdom = len(y_null_part)>0
                         done = num_points > 15*loop_step
 
             # overwrite y_null from fsolve, pre-PyCont
@@ -1123,6 +1129,14 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
                         sysargs_x['inputs'] = gen.inputs.copy()
                 sysargs_x.pars.update(gen.pars)
                 sysargs_x.pars.update(filteredDict(vardict, [xname, yname], neg=True))
+                for extra_par in ['codeinsert_start', 'codeinsert_end', 'ignorespecial']:
+                    if extra_par in gen.funcspec._initargs:
+                        # input param uses 'vfcodeinsert_start' etc.
+                        if extra_par.startswith('code'):
+                            key = 'vf'+extra_par
+                        else:
+                            key = extra_par
+                        sysargs_x[key] = gen.funcspec._initargs[extra_par]
                 varspecs = {xname: gen.funcspec._initargs['varspecs'][xname]}
                 if 'fnspecs' in gen.funcspec._initargs:
                     old_fnspecs = gen.funcspec._initargs['fnspecs']
@@ -1167,6 +1181,7 @@ def find_nullclines(gen, xname, yname, subdomain=None, fps=None, n=10,
             PCargs.MaxCorrIters = 8
             #PCargs.verbosity = 100
             P_x.newCurve(PCargs)
+
             done = False
             num_points = 0
             in_subdom = x_init in xinterval and y_init in yinterval
@@ -2153,7 +2168,7 @@ class fixedpoint_nD(object):
                     dict_str = "{" + ",".join(entries) + "})\n"
                     jac_def_str = "def jac_fn(t, " + arg_str + "):\n\t" + \
                         "return self.gen.Jacobian(t, " + dict_str
-                    six.exec_(jac_def_str, locals(), globals())
+                    exec(jac_def_str, locals(), globals())
                     return jac_fn
                 else:
                     raise NotImplementedError('Jacobian is not the right shape')
@@ -2485,8 +2500,8 @@ def make_distance_to_line_auxfn(linename, fname, p, by_vector_dp=True):
     or a point q, depending on the second input argument.
     Also returns list of parameter names used.
     """
-    assert len(p)==2 and isinstance(p[0], six.string_types) \
-           and isinstance(p[1], six.string_types)
+    assert len(p)==2 and isinstance(p[0], str) \
+           and isinstance(p[1], str)
     p0 = linename+'_p_'+p[0]
     p1 = linename+'_p_'+p[1]
     pars = [p0, p1]
@@ -4783,7 +4798,7 @@ class base_n_counter(object):
         ix = 0
         while True:
             if ix == self._d:
-                self.counter = np.zeros((self._d,))
+                self.counter = np.zeros((self._d,), dtype=np.int)
                 break
             if self.counter[ix] < self._maxval:
                 self.counter[ix] += 1
@@ -4799,7 +4814,7 @@ class base_n_counter(object):
             raise IndexError("Invalid index for counter")
 
     def reset(self):
-        self.counter = np.zeros((self._d,))
+        self.counter = np.zeros((self._d,), dtype=np.int)
 
     def __str__(self):
         return str(self.counter.tolist())

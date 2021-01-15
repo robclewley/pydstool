@@ -8,7 +8,6 @@
 """
 
 # IMPORTS
-from __future__ import division, absolute_import, print_function
 from .errors import *
 from .common import *
 import re
@@ -63,8 +62,8 @@ scipy_specialfns = ['airy', 'airye', 'ai_zeros', 'bi_zeros', 'ellipj',
             'chebyu', 'chebyc', 'chebys', 'jacobi', 'laguerre',
             'genlaguerre', 'hermite', 'hermitenorm', 'gegenbauer',
             'sh_legendre', 'sh_chebyt', 'sh_chebyu', 'sh_jacobi',
-            'hyp2f1', 'hyp1f1', 'hyperu', 'hyp0f1', 'hyp2f0',
-            'hyp1f2', 'hyp3f0', 'pbdv', 'pbvv', 'pbwa', 'pbdv_seq',
+            'hyp2f1', 'hyp1f1', 'hyperu', 'hyp0f1',
+            'pbdv', 'pbvv', 'pbwa', 'pbdv_seq',
             'pbvv_seq', 'pbdn_seq', 'mathieu_a', 'mathieu_b',
             'mathieu_even_coef', 'mathieu_odd_coef', 'mathieu_cem',
             'mathieu_sem', 'mathieu_modcem1', 'mathieu_modcem2',
@@ -155,9 +154,9 @@ __all__ = _functions + _classes + _objects + _constants + _symbfuncs + _symbcons
 #-----------------------------------------------------------------------------
 
 ## constants for parsing
-name_chars_RE = re.compile('\w')
-alphanumeric_chars_RE = re.compile('[a-zA-Z0-9]')   # without the '_'
-alphabet_chars_RE = re.compile('[a-zA-Z]')
+name_chars_RE = re.compile(r'\w')
+alphanumeric_chars_RE = re.compile(r'[a-zA-Z0-9]')   # without the '_'
+alphabet_chars_RE = re.compile(r'[a-zA-Z]')
 num_chars = [str(i) for i in range(10)]
 
 if DO_POW:
@@ -230,7 +229,7 @@ def mapPowStr(t, p='**'):
 def toCircumflexSyntax(t):
     # R. Clewley
     if isinstance(t[0], str):
-        if t[0] == 'power':
+        if t[0] in ['power', 'atom_expr']:
             if t[2][0] == 'DOUBLESTAR':
                 return string2ast(ensureparen(dopower(ast2string(toCircumflexSyntax(t[1])),
                                     ast2string(toCircumflexSyntax(t[3])),
@@ -261,7 +260,7 @@ def toDoubleStarSyntax(t):
             tc[0] = 'power'
             tc[2] = ['DOUBLESTAR', '**']
             return toDoubleStarSyntax(string2ast(ast2string(tc)))   # yes, i mean this
-        if t[0] == 'power' and t[1] == ['NAME', 'pow']:
+        if t[0] in ['power', 'atom_expr'] and t[1] == ['NAME', 'pow']:
             return string2ast(ensureparen(mapPowStr(t,'**'),1))
     o = []
     for i in t:
@@ -278,7 +277,7 @@ def toDoubleStarSyntax(t):
 def toPowSyntax(t):
     # R. Clewley
     if isinstance(t[0],str):
-        if t[0] == 'power':
+        if t[0] in ['power', 'atom_expr']:
             try:
                 if t[2][0]=='DOUBLESTAR':
                     try:

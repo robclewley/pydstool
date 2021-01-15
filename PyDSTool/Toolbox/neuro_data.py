@@ -1,4 +1,3 @@
-from __future__ import absolute_import, print_function
 
 import numpy as npy
 from PyDSTool import Events, Variable, Pointset, Trajectory

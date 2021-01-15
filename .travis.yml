@@ -1,43 +1,38 @@
 cache: apt
 sudo: true
 language: python
+
 python:
-    - "3.6"
-    - "2.7"
     - "3.7-dev"
+env:
+    - COVERAGE="no"
+
 matrix:
     include:
-          env:
-            - NUMPY_SPEC=numpy
-            - SCIPY_SPEC="scipy<0.17"
-            - COVERAGE="no"
-        - python: 2.7
-          env:
-            - NUMPY_SPEC=numpy
-            - SCIPY_SPEC="scipy<0.17"
-            - COVERAGE="yes"
+      - python: 3.6
+        env: COVERAGE="yes"
+
 
 before_install:
-    # Use miniconda. Taken from https://gist.github.com/dan-blanchard/7045057
-    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    - chmod +x miniconda.sh
-    - ./miniconda.sh -b -p $HOME/miniconda
-    - export PATH=$HOME/miniconda/bin:$PATH
-    - conda update --yes conda
-    - conda install --yes gcc
+    - pip install --upgrade pip setuptools
+    - pip install pytest pytest-xdist six mock
 
 install:
-    - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas $NUMPY_SPEC $SCIPY_SPEC pytest six mock
-    - if [ "${COVERAGE}" == "yes" ]; then conda install --yes -c dan_blanchard coverage python-coveralls; fi
+    - pip install numpy "scipy>=1.0,<2.0"
+    - if [ "${COVERAGE}" == "yes" ]; then pip install coverage==4.0.3 python-coveralls; fi
 
 script:
-    - if [ "${COVERAGE}" == "yes" ]; then sed -i'' -e 's/--boxed//g' pytest.ini && coverage run --source=PyDSTool setup.py test -q; else python setup.py test; fi
+    - if [ "${COVERAGE}" == "yes" ]; then coverage run --source=PyDSTool setup.py test -q; else python setup.py test; fi
 
 after_success:
-    - if [ "${COVERAGE}" == "yes" ]; then coveralls --config_file .coveragerc; fi
+    - if [ "${COVERAGE}" == "yes" ]; then coveralls; fi
 
 
 addons:
     apt:
       packages:
+        - gfortran
         - swig
+        - liblapack-dev
+        - libatlas-dev
+        - libatlas-base-dev

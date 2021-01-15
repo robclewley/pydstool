@@ -2,7 +2,6 @@
 # Matthieu Brucher
 # Last Change : 2007-07-23 10:50
 
-from __future__ import absolute_import
 
 """
 Module containing the core optimizers
