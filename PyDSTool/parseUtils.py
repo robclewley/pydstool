@@ -94,15 +94,15 @@ protected_macronames = ['for', 'if', 'max', 'min', 'sum']
 
 reserved_keywords = ['and', 'not', 'or', 'del', 'for', 'if', 'is', 'raise',
                 'assert', 'elif', 'from', 'lambda', 'return', 'break', 'else',
-                'global', 'try', 'class', 'except', 'while',
+                'global', 'try', 'class', 'except', 'while', 'nonlocal',
                 'continue', 'exec', 'import', 'pass', 'yield', 'def',
-                'finally', 'in', 'print', 'as', 'None']
+                'finally', 'in', 'print', 'as', 'None', 'async', 'await']
 
 convert_power_reserved_keywords = ['del', 'for', 'if', 'is', 'raise',
                 'assert', 'elif', 'from', 'lambda', 'return', 'break', 'else',
-                'global', 'try', 'class', 'except', 'while',
+                'global', 'try', 'class', 'except', 'while', 'nonlocal',
                 'continue', 'exec', 'import', 'pass', 'yield', 'def',
-                'finally', 'in', 'print', 'as', 'None']
+                'finally', 'in', 'print', 'as', 'None', 'async', 'await']
 
 # 'abs' is defined in python core, so doesn't appear in math
 protected_allnames = protected_mathnames + protected_scipynames \
