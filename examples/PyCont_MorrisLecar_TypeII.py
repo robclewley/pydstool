@@ -25,11 +25,11 @@ icdict = {'v': -60., 'w': 0.01}
 # Set up model
 auxfndict = {'minf': (['v'], '0.5*(1 + tanh((v-v1)/v2))'), \
 			 'winf': (['v'], '0.5*(1 + tanh((v-v3)/v4))'), \
-			 'tau': (['v'], '1/cosh((v-v3)/(2*v4))') \
+			 'wtau': (['v'], '1/cosh((v-v3)/(2*v4))') \
 			}
 
 vstr = '(Iapp - gCa*minf(v)*(v-vCa) - gK*w*(v-vK) - gL*(v-vL))/C'
-wstr = 'phi*(winf(v)-w)/tau(v)'
+wstr = 'phi*(winf(v)-w)/wtau(v)'
 
 DSargs = args(name='MorrisLecar')
 DSargs.pars = pars
