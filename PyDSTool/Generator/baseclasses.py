@@ -3,7 +3,8 @@
 from .allimports import *
 from PyDSTool.utils import *
 from PyDSTool.common import *
-from PyDSTool.Symbolic import ensureStrArgDict, Quantity, QuantSpec, mathNameMap
+from PyDSTool.Symbolic import ensureStrArgDict, Quantity, QuantSpec, \
+     mathNameMap, allmathnames
 from PyDSTool.Trajectory import Trajectory
 from PyDSTool.parseUtils import symbolMapClass, readArgs
 from PyDSTool.Variable import Variable, iscontinuous
@@ -585,12 +586,12 @@ class Generator(object):
             inputs = copy(kw['inputs'])
             if isinstance(inputs, Trajectory):
                 for n in inputs.variables:
-                    if n in mathNameMap:
+                    if n in mathNameMap or n in allmathnames:
                         raise ValueError("Input name {} clash with built-in math/scipy name".format(n))
                 # extract the variables
                 self.inputs.update(self._FScompatibleNames(inputs.variables))
             elif isinstance(inputs, Variable):
-                if inputs.name in mathNameMap:
+                if inputs.name in mathNameMap or input.name in allmathnames:
                     raise ValueError("Input name {} clash with built-in math/scipy name".format(n))
                 self.inputs.update({self._FScompatibleNames(inputs.name): \
                                     inputs})
@@ -598,7 +599,7 @@ class Generator(object):
                 # turn into Variables with linear interpoolation between
                 # independent variable values
                 for n in inputs.coordnames:
-                    if n in mathNameMap:
+                    if n in mathNameMap or n in allmathnames:
                         raise ValueError("Input name {} clash with built-in math/scipy name".format(n))
                     x_array = inputs[n]
                     nFS = self._FScompatibleNames(n)
@@ -610,7 +611,7 @@ class Generator(object):
                                          name=n)  # keep original name here
             elif isinstance(inputs, dict):
                 for n in inputs.keys():
-                    if n in mathNameMap:
+                    if n in mathNameMap or n in allmathnames:
                         raise ValueError("Input name {} clash with built-in math/scipy name".format(n))
                 self.inputs.update(self._FScompatibleNames(inputs))
                 # ensure values are Variables or Pointsets
@@ -653,7 +654,7 @@ class Generator(object):
 
     def _kw_process_allvars(self, kw, fs_args):
         for varname in self.__all_vars:
-            if varname in mathNameMap:
+            if varname in mathNameMap or varname in allmathnames:
                 raise ValueError("Var name {} clash with built-in math/scipy name".format(varname))
         if 'auxvars' in kw:
             assert 'vars' not in kw, ("Cannot use both 'auxvars' and 'vars' "
@@ -796,7 +797,7 @@ class Generator(object):
             if isinstance(kw['pars'], list):
                 # may be a list of symbolic definitions
                 for p in kw['pars']:
-                    if p.name in mathNameMap:
+                    if p.name in mathNameMap or p.name in allmathnames:
                         raise ValueError("Param name {} clash with built-in math/scipy name".format(p.name))
                     try:
                         self.pars[self._FScompatibleNames(p.name)] = p.tonumeric()
@@ -804,9 +805,10 @@ class Generator(object):
                         raise TypeError("Invalid parameter symbolic definition")
             else:
                 for k, v in dict(kw['pars']).items():
-                    if str(k) in mathNameMap:
+                    kstr = str(k)
+                    if kstr in mathNameMap or kstr in allmathnames:
                         raise ValueError("Param name {} clash with built-in math/scipy name".format(k))
-                    self.pars[self._FScompatibleNames(str(k))] = ensurefloat(v)
+                    self.pars[self._FScompatibleNames(kstr)] = ensurefloat(v)
             fs_args['pars'] = list(self.pars.keys())
             self._register(self.pars)
             self.foundKeys += 1
@@ -858,7 +860,11 @@ class Generator(object):
 
     def _kw_process_fnspecs(self, kw, fs_args):
         if 'fnspecs' in kw:
-            fs_args['fnspecs'] = ensureStrArgDict(kw['fnspecs'])
+            fnspec_dict = ensureStrArgDict(kw['fnspecs'])
+            for k, v in fnspec_dict.items():
+                if k in mathNameMap or k in allmathnames:
+                    raise ValueError("Aux function name {} clash with built-in math/scipy name".format(k))
+            fs_args['fnspecs'] = fnspec_dict
             self.foundKeys += 1
 
     def _kw_process_target(self, kw, fs_args):
