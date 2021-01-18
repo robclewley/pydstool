@@ -119,7 +119,6 @@ pycont_list = [
     'PyCont_Logistic',
     'PyCont_NewLorenz',
     'PyCont_PredPrey',
-    'PyCont_SaddleNode',
     ]
 
 # Continuation with auto; requires external compilers
@@ -132,6 +131,7 @@ pycont_auto_list = [
     'PyCont_Hamiltonian',
     'PyCont_Lorenz',
     'PyCont_vanDerPol',
+    'PyCont_SaddleNode',
     ]
 
 do_external = any([test_dopri, test_radau, test_param_est_C, test_pycont_auto])
