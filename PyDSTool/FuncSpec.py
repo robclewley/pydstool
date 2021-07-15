@@ -1085,42 +1085,75 @@ def resolveClashingAuxFnPars(fnspecs, varspecs, parnames):
             changed_fns.append(fname)
             new_fnspecs[fname] = (remain(fargs, parnames), fspec)
 
+    new_varspecs = update_fn_params(varspecs, changed_fns, parnames)
+    new_fnspecs = update_fn_params(new_fnspecs, changed_fns, parnames)
+    return new_fnspecs, new_varspecs
+
+def update_fn_params(specs, changed_fns, parnames):
     new_varspecs = {}
-    for vname, vspec in varspecs.items():
+    for vname, vspec_value in specs.items():
+        try:
+            fargs, vspec = vspec_value
+        except ValueError:
+            fargs = None
+            vspec = vspec_value
+        else:
+            # possible that still a varspec string which happens to have exactly
+            # a length of 2
+            if not isinstance(fargs, list):
+                vspec = vspec_value
+                fargs = None
         q = QuantSpec('__temp__', vspec)
         # only update use of functions both changed and used in the varspecs
         used_fns = intersect(q.parser.tokenized, changed_fns)
-        for f in used_fns:
-            ix = q.parser.tokenized.index(f)
-            # identify arg list for this fn call
-            rest = ''.join(q.parser.tokenized[ix+1:])
-            end_ix = findEndBrace(rest)
-            # get string of this arg list
-            argstr = rest[:end_ix+1]
-            # split
-            success, args_list, arglen = readArgs(argstr)
-            assert success, "Parsing arguments failed"
-            new_args_list = []
-            # remove parnames
-            for arg in args_list:
-                qarg = QuantSpec('a', arg)
-                # if parameter appears in a compound expression in the argument,
-                # then we don't know how to process it, so issue warning [was: raise exception]
-                if len(qarg.parser.tokenized) > 1:
-                    if any([p in qarg for p in parnames]):
+        for f in set(used_fns):
+            last_ix = None
+            from_ix = 0
+            while True:
+                # there might be multiple occurrences of f, but ix might be
+                # different for the same occurrence after past replacements
+                try:
+                    ix = q.parser.tokenized[from_ix:].index(f) + from_ix
+                except ValueError:
+                    # no more occurrences
+                    break # while
+                if ix == last_ix:
+                    from_ix = ix + 1
+                    continue
+                # identify arg list for this fn call
+                rest = ''.join(q.parser.tokenized[ix+1:])
+                end_ix = findEndBrace(rest)
+                # get string of this arg list
+                argstr = rest[:end_ix+1]
+                # split
+                success, args_list, arglen = readArgs(argstr)
+                assert success, "Parsing arguments failed"
+                new_args_list = []
+                # remove parnames
+                for arg in args_list:
+                    qarg = QuantSpec('a', arg)
+                    # if parameter appears in a compound expression in the argument,
+                    # then we don't know how to process it, so issue warning [was: raise exception]
+                    if len(qarg.parser.tokenized) > 1:
+                        if any([p in qarg for p in parnames]):
+                            # do not put raw parameter name arguments into new arg list
+                            #raise ValueError("Cannot process argument to aux fn %s"%f)
+                            print("Warning: some auxiliary function parameters clash in function %s" %f)
+                        new_args_list.append(arg)
+                    elif arg not in parnames:
                         # do not put raw parameter name arguments into new arg list
-                        #raise ValueError("Cannot process argument to aux fn %s"%f)
-                        print("Warning: some auxiliary function parameters clash in function %s" %f)
-                    new_args_list.append(arg)
-                elif arg not in parnames:
-                    # do not put raw parameter name arguments into new arg list
-                    new_args_list.append(arg)
-            new_argstr = ','.join(new_args_list)
-            # update vspec and q for next f
-            vspec = ''.join(q[:ix+1]) + '(' + new_argstr + ')' + rest[end_ix+1:]
-            q = QuantSpec('__temp__', vspec)
-        new_varspecs[vname] = vspec
-    return new_fnspecs, new_varspecs
+                        new_args_list.append(arg)
+                new_argstr = ','.join(new_args_list)
+                # update vspec and q for next f
+
+                vspec = ''.join(q[:ix+1]) + '(' + new_argstr + ')' + rest[end_ix+1:]
+                q = QuantSpec('__temp__', vspec)
+                last_ix = ix
+        if fargs is None:
+            new_varspecs[vname] = vspec
+        else:
+            new_varspecs[vname] = (fargs, vspec)
+    return new_varspecs
 
 
 

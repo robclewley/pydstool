@@ -2,8 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-from PyDSTool.common import invertMap, intersect, concatStrDict, sortedDictItems, isUniqueSeq
-from PyDSTool.parseUtils import convertPowers, parseMatrixStrToDictStr, addArgToCalls, wrapArgInCall, splitargs, findEndBrace
+from PyDSTool.common import invertMap, intersect, concatStrDict, \
+     sortedDictItems, isUniqueSeq
+from PyDSTool.parseUtils import convertPowers, parseMatrixStrToDictStr, \
+     addArgToCalls, wrapArgInCall, splitargs, findEndBrace, \
+     add_arglen_to_fn_names, paren_contents
 from PyDSTool.Symbolic import QuantSpec
 from PyDSTool.utils import compareList, info
 
@@ -653,57 +656,10 @@ void jacobianParam(unsigned n_, unsigned np_, double t, double *Y_, double *p_, 
                         'True': 1, 'False': 0, 'if': '__rhs_if',
                         'max': '__maxof', 'min': '__minof'})
         qtoks = qspec.parser.tokenized
-        # default value
-        new_specStr = str(qspec)
-        # NOTE: This simple iterative parsing of the arguments means that
-        # user cannot nest calls to min() or max() with eachother
-        if '__minof' in qtoks:
-            new_specStr = ""
-            num = qtoks.count('__minof')
-            n_ix = -1
-            ix_continue = 0
-            for _ in range(num):
-                n_ix = qtoks[n_ix + 1:].index('__minof') + n_ix + 1
-                new_specStr += "".join(qtoks[ix_continue:n_ix])
-                rbrace_ix = findEndBrace(qtoks[n_ix + 1:]) + n_ix + 1
-                ix_continue = rbrace_ix + 1
-                #assert qtoks[n_ix+2] == '[', "Error in min() syntax"
-                #assert qtoks[rbrace_ix-1] == ']', "Error in min() syntax"
-                #new_specStr += "".join(qtoks[n_ix+3:rbrace_ix-1]) + ")"
-                num_args = qtoks[n_ix + 2:ix_continue].count(',') + 1
-                if num_args > 4:
-                    raise NotImplementedError(
-                        "Max of more than 4 arguments not currently supported in C")
-                new_specStr += '__minof%s(' % str(num_args)
-                new_specStr += "".join(
-                    [q for q in qtoks[n_ix + 2:ix_continue] if q not in ('[', ']')])
-            new_specStr += "".join(qtoks[ix_continue:])
-            qspec = QuantSpec('spec', new_specStr)
-            qtoks = qspec.parser.tokenized
-        if '__maxof' in qtoks:
-            new_specStr = ""
-            num = qtoks.count('__maxof')
-            n_ix = -1
-            ix_continue = 0
-            for _ in range(num):
-                n_ix = qtoks[n_ix + 1:].index('__maxof') + n_ix + 1
-                new_specStr += "".join(qtoks[ix_continue:n_ix])
-                rbrace_ix = findEndBrace(qtoks[n_ix + 1:]) + n_ix + 1
-                ix_continue = rbrace_ix + 1
-                #assert qtoks[n_ix+2] == '[', "Error in max() syntax"
-                #assert qtoks[rbrace_ix-1] == ']', "Error in max() syntax"
-                #new_specStr += "".join(qtoks[n_ix+3:rbrace_ix-1]) + ")"
-                num_args = qtoks[n_ix + 2:ix_continue].count(',') + 1
-                if num_args > 4:
-                    raise NotImplementedError(
-                        "Min of more than 4 arguments not currently supported in C")
-                new_specStr += '__maxof%s(' % str(num_args)
-                new_specStr += "".join(
-                    [q for q in qtoks[n_ix + 2:ix_continue] if q not in ('[', ']')])
-            new_specStr += "".join(qtoks[ix_continue:])
-            qspec = QuantSpec('spec', new_specStr)
-            qtoks = qspec.parser.tokenized
-        return new_specStr
+        pc_info_list = list(paren_contents(qtoks))
+        for fname in ('__maxof', '__minof'):
+            qtoks = add_arglen_to_fn_names(qtoks, fname, pc_info_list)
+        return "".join(qtoks)
 
     def _format_user_code(self, code):
         before = '/* Verbose code insert -- begin */'
