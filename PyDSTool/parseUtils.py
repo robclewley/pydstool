@@ -12,6 +12,7 @@ from .errors import *
 from .common import *
 import re
 import math, random
+from hashlib import sha1
 from numpy import alltrue, sometrue
 import numpy as np
 from copy import copy, deepcopy
@@ -901,7 +902,7 @@ class symbolMapClass(object):
                 return self.lookupDict[arg]
             else:
                 try:
-                    po = parserObject(arg, False)
+                    po = parserObject(arg, False, ignoreQuotes=False)
                 except:
                     # cannot do anything to it!
                     return arg
@@ -1121,11 +1122,17 @@ class parserObject(object):
     An AST is not properly implemented -- rather, we tokenize,
     identify free symbols, and apply a small number of syntactic rule checks.
     The target language parser is relied upon for full syntax checking.
+
+    If ignoreQuotes is used (default True), then quoted sections will be
+    preserved in the tokenized output as single tokens. Embedded quotes are
+    allowed if they are properly nested (this is assumed, not checked).
+
+    treatMultiRefs = True will override ignoreQuotes.
     """
 
     def __init__(self, specStr, includeProtected=True,
                  treatMultiRefs=False, ignoreTokens=[],
-                 preserveSpace=False):
+                 preserveSpace=False, ignoreQuotes=True):
         # freeSymbols does not include protected names, and so forth.
         # freeSymbols only contains unrecognized alphanumeric symbols.
         self.usedSymbols = []
@@ -1142,10 +1149,10 @@ class parserObject(object):
         # record init options in case want to reset
         self.ignoreTokens = copy(ignoreTokens)
         self.includeProtected = includeProtected
+        self.ignoreQuotes = ignoreQuotes
         # process specStr with empty symbol map to create
         # self.freeSymbols and self.usedSymbols
         self.parse(ignoreTokens, None, includeProtected, reset=True)
-
 
     def isCompound(self, ops=['+', '-', '*', '/']):
         """Function to verify whether an expression is 'compound',
@@ -1211,10 +1218,37 @@ class parserObject(object):
         return [i for i, t in enumerate(self.tokenized) if t == token]
 
     def parse(self, specialtoks, symbolMap=None, includeProtected=True,
-              reset=False):
+              ignoreQuotes=True, reset=False):
         if reset:
             self.usedSymbols = []
             self.freeSymbols = []
+        specstr = self.specStr   # eases notation
+        # prep for quotes
+        subs = {}
+        subs_inv = {}
+        if ignoreQuotes and ('"' in specstr or "'" in specstr):
+            q_positions = list(paren_contents(specstr, '"', '"')) + \
+                list(paren_contents(specstr, "'", "'"))
+            # are any of these nested? merge if so
+            redundant_qidxs = []
+            for qidx, (_, __, i, j) in enumerate(q_positions):
+                # check each against all the others
+                for qidx2, (_, __, k, l) in enumerate(q_positions):
+                    if qidx2 == qidx:
+                        continue
+                    elif i < k < l < j:
+                        # these indices can't be equal by definition
+                        redundant_qidxs.append(qidx2)
+            keep_qidxs = [qi for qi in list(range(len(q_positions))) if qi not in redundant_qidxs]
+            ignore_ranges = [q_positions[qidx][2:] for qidx in keep_qidxs]
+            orig_spec = specstr
+            for i, j in ignore_ranges:
+                s = orig_spec[i:j+1]
+                s_sha = "QUOTE_"+sha1(s.encode('utf-8')).hexdigest()
+                subs[s_sha] = s
+                subs_inv[s] = s_sha
+                specstr = specstr.replace(s, s_sha)
+            self.specStr = specstr
         if symbolMap is None:
             # dummy identity function
             symbolMap = lambda x: x
@@ -1228,7 +1262,6 @@ class parserObject(object):
             specialtokens.append('[')
         dohierarchical = '.' not in specialtokens
         allnames = specialtokens + protected_auxnames
-        specstr = self.specStr   # eases notation
         returnstr = ""
         if specstr == "":
             # Hack for empty specs to pass without losing their last characters
@@ -1455,7 +1488,8 @@ class parserObject(object):
                     # find index name in this expression. this should
                     # be the only free symbol, otherwise syntax error.
                     temp = parserObject(expr[1:-1],
-                                        includeProtected=False)
+                                        includeProtected=False,
+                                        ignoreQuotes=False)
                     if len(temp.freeSymbols) == 1:
                         free.extend(temp.freeSymbols)
                         # not sure whether should add to usedSymbols
@@ -1504,7 +1538,8 @@ class parserObject(object):
                             expr = specstr[scount:scount+rbpos+1]
                             # find index name in this expression. this should
                             # be the only free symbol, otherwise syntax error.
-                            temp = parserObject(expr, includeProtected=False)
+                            temp = parserObject(expr, includeProtected=False,
+                                                ignoreQuotes=False)
                             macrotests = [len(temp.tokenized) == 7,
                                temp.tokenized[2] == temp.tokenized[4] == ',',
                                temp.tokenized[5] in ['+','*']]
@@ -1598,7 +1633,7 @@ class parserObject(object):
         # end of scount while loop
         if reset:
             # hack to remove any string literals
-            actual_free = [sym for sym in free if sym in tokenized]
+            actual_free = [sym for sym in free if sym in set(tokenized)]
             for sym in [sym for sym in free if sym not in actual_free]:
                 is_literal = False
                 for tok in tokenized:
@@ -1618,6 +1653,33 @@ class parserObject(object):
             self.freeSymbols = actual_free
             self.specStr = returnstr
             self.tokenized = tokenized
+        if ignoreQuotes and len(subs) > 0:
+            # this overwrites the assignment to specStr from returnstr at the
+            # end of self.parse
+            self.specStr = orig_spec
+            new_toks = []
+            if self.ignoreTokens == []:
+                # easy case, will match whole tokens
+                for tok in self.tokenized:
+                    try:
+                        rep_tok = subs[tok]
+                    except KeyError:
+                        rep_tok = tok
+                    new_toks.append(rep_tok)
+            else:
+                # due to nature of ignoreTokens, the quote temp tokens could
+                # be embedded inside of ignoreTokens, e.g. "[QUOTE_<sha>]"
+                for tok in self.tokenized:
+                    rep_tok = tok
+                    for k, v in subs.items():
+                        # will only match one at a time
+                        rep_tok = rep_tok.replace(k, v)
+                    new_toks.append(rep_tok)
+            self.tokenized = new_toks
+            # remove quote literals from these symbol records
+            self.freeSymbols = [symb for symb in self.freeSymbols if symb not in subs]
+            self.usedSymbols = [symb for symb in self.freeSymbols if symb not in subs]
+            returnstr = orig_spec
         # strip extraneous whitespace
         return returnstr.strip()
 
@@ -2135,24 +2197,49 @@ def paren_contents(seq, lbr='(', rbr=')'):
      tree depth,
      seq index of opening paren,
      seq index of closing paren).
+
+    Works if lbr == rbr, e.g. for matching quote marks, when it's
+    expected that they will be only of depth 1.
     """
     past_outkeys = []
     key_stack = []
     stack = []
-    for i, c in enumerate(seq):
-        if c == lbr:
-            if len(past_outkeys) == 0:
-                key_stack = key_stack + [0]
-            else:
-                if key_stack in past_outkeys:
-                    key_stack = key_stack[:-1] + [key_stack[-1] + 1]
+    if lbr == rbr:
+        # e.g. for matching quotes
+        # max depth should be one, otherwise it would be ambiguous
+        # and we can't work with escaped characters
+        for i, c in enumerate(seq):
+            if c == lbr:
+                if stack:
+                    start, key_stack = stack.pop()
+                    assert len(stack) == 0
+                    past_outkeys.append(key_stack.copy())
+                    yield (tuple(key_stack), len(stack), start, i)
                 else:
+                    if len(past_outkeys) == 0:
+                        key_stack = key_stack + [0]
+                    else:
+                        if key_stack in past_outkeys:
+                            key_stack = key_stack[:-1] + [key_stack[-1] + 1]
+                        else:
+                            key_stack = key_stack + [0]
+                    stack.append((i, key_stack))
+    else:
+        # regular asymmetric case
+        for i, c in enumerate(seq):
+            if c == lbr:
+                if len(past_outkeys) == 0:
                     key_stack = key_stack + [0]
-            stack.append((i, key_stack))
-        elif c == rbr and stack:
-            start, key_stack = stack.pop()
-            past_outkeys.append(key_stack.copy())
-            yield (tuple(key_stack), len(stack), start, i)
+                else:
+                    if key_stack in past_outkeys:
+                        key_stack = key_stack[:-1] + [key_stack[-1] + 1]
+                    else:
+                        key_stack = key_stack + [0]
+                stack.append((i, key_stack))
+            elif c == rbr and stack:
+                start, key_stack = stack.pop()
+                past_outkeys.append(key_stack.copy())
+                yield (tuple(key_stack), len(stack), start, i)
 
 ##def replaceCallsWithDummies(source, callfns, used_dummies=None, notFirst=False):
 ##    """Replace all function calls in source with dummy names,

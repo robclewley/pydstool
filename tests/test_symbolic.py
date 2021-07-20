@@ -12,7 +12,7 @@ from numpy import (
 from numpy.random import rand
 try:
     from numpy.testing import assert_approx_equal
-except ImportError: 
+except ImportError:
     # For backwards compatibility
     from numpy.testing.utils import assert_approx_equal
 from copy import copy
@@ -361,10 +361,11 @@ def test_symbolic():
 
     globals().pop('a')
     qc=QuantSpec('t', "a+coot+b/'coot'")
-    assert str(qc.eval()) == 'a+coot+b/"coot"'
-    coot=QuantSpec('coot', "1.05")
-    globals()['coot'] = coot
-    assert str(qc.eval()) == 'a+1.05+b/"coot"'
+    assert str(qc.eval()) == "a+coot+b/'coot'"
+    qc2=QuantSpec('t', "a+cootie+b/'cootie'")
+    cootie=QuantSpec('cootie', "1.05")
+    globals()['cootie'] = cootie
+    assert str(qc2.eval()) == "a+1.05+b/'cootie'"
 
     print("\nTest of function calling with argument names that clash with")
     print("bound names inside the function.")
@@ -387,3 +388,5 @@ def test_symbolic():
 
     u = Var('Pi/(2*Sin(Pi*t/2))', 'u')
     assert u.eval(t=1).tonumeric() == pi / 2
+
+test_symbolic()
