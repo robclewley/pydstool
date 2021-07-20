@@ -12,6 +12,7 @@ from .errors import *
 from .common import *
 import re
 import math, random
+from hashlib import sha1
 from numpy import alltrue, sometrue
 import numpy as np
 from copy import copy, deepcopy
@@ -94,15 +95,15 @@ protected_macronames = ['for', 'if', 'max', 'min', 'sum']
 
 reserved_keywords = ['and', 'not', 'or', 'del', 'for', 'if', 'is', 'raise',
                 'assert', 'elif', 'from', 'lambda', 'return', 'break', 'else',
-                'global', 'try', 'class', 'except', 'while',
+                'global', 'try', 'class', 'except', 'while', 'nonlocal',
                 'continue', 'exec', 'import', 'pass', 'yield', 'def',
-                'finally', 'in', 'print', 'as', 'None']
+                'finally', 'in', 'print', 'as', 'None', 'async', 'await']
 
 convert_power_reserved_keywords = ['del', 'for', 'if', 'is', 'raise',
                 'assert', 'elif', 'from', 'lambda', 'return', 'break', 'else',
-                'global', 'try', 'class', 'except', 'while',
+                'global', 'try', 'class', 'except', 'while', 'nonlocal',
                 'continue', 'exec', 'import', 'pass', 'yield', 'def',
-                'finally', 'in', 'print', 'as', 'None']
+                'finally', 'in', 'print', 'as', 'None', 'async', 'await']
 
 # 'abs' is defined in python core, so doesn't appear in math
 protected_allnames = protected_mathnames + protected_scipynames \
@@ -901,7 +902,7 @@ class symbolMapClass(object):
                 return self.lookupDict[arg]
             else:
                 try:
-                    po = parserObject(arg, False)
+                    po = parserObject(arg, False, ignoreQuotes=False)
                 except:
                     # cannot do anything to it!
                     return arg
@@ -1121,11 +1122,17 @@ class parserObject(object):
     An AST is not properly implemented -- rather, we tokenize,
     identify free symbols, and apply a small number of syntactic rule checks.
     The target language parser is relied upon for full syntax checking.
+
+    If ignoreQuotes is used (default True), then quoted sections will be
+    preserved in the tokenized output as single tokens. Embedded quotes are
+    allowed if they are properly nested (this is assumed, not checked).
+
+    treatMultiRefs = True will override ignoreQuotes.
     """
 
     def __init__(self, specStr, includeProtected=True,
                  treatMultiRefs=False, ignoreTokens=[],
-                 preserveSpace=False):
+                 preserveSpace=False, ignoreQuotes=True):
         # freeSymbols does not include protected names, and so forth.
         # freeSymbols only contains unrecognized alphanumeric symbols.
         self.usedSymbols = []
@@ -1142,10 +1149,10 @@ class parserObject(object):
         # record init options in case want to reset
         self.ignoreTokens = copy(ignoreTokens)
         self.includeProtected = includeProtected
+        self.ignoreQuotes = ignoreQuotes
         # process specStr with empty symbol map to create
         # self.freeSymbols and self.usedSymbols
         self.parse(ignoreTokens, None, includeProtected, reset=True)
-
 
     def isCompound(self, ops=['+', '-', '*', '/']):
         """Function to verify whether an expression is 'compound',
@@ -1211,10 +1218,37 @@ class parserObject(object):
         return [i for i, t in enumerate(self.tokenized) if t == token]
 
     def parse(self, specialtoks, symbolMap=None, includeProtected=True,
-              reset=False):
+              ignoreQuotes=True, reset=False):
         if reset:
             self.usedSymbols = []
             self.freeSymbols = []
+        specstr = self.specStr   # eases notation
+        # prep for quotes
+        subs = {}
+        subs_inv = {}
+        if ignoreQuotes and ('"' in specstr or "'" in specstr):
+            q_positions = list(paren_contents(specstr, '"', '"')) + \
+                list(paren_contents(specstr, "'", "'"))
+            # are any of these nested? merge if so
+            redundant_qidxs = []
+            for qidx, (_, __, i, j) in enumerate(q_positions):
+                # check each against all the others
+                for qidx2, (_, __, k, l) in enumerate(q_positions):
+                    if qidx2 == qidx:
+                        continue
+                    elif i < k < l < j:
+                        # these indices can't be equal by definition
+                        redundant_qidxs.append(qidx2)
+            keep_qidxs = [qi for qi in list(range(len(q_positions))) if qi not in redundant_qidxs]
+            ignore_ranges = [q_positions[qidx][2:] for qidx in keep_qidxs]
+            orig_spec = specstr
+            for i, j in ignore_ranges:
+                s = orig_spec[i:j+1]
+                s_sha = "QUOTE_"+sha1(s.encode('utf-8')).hexdigest()
+                subs[s_sha] = s
+                subs_inv[s] = s_sha
+                specstr = specstr.replace(s, s_sha)
+            self.specStr = specstr
         if symbolMap is None:
             # dummy identity function
             symbolMap = lambda x: x
@@ -1228,7 +1262,6 @@ class parserObject(object):
             specialtokens.append('[')
         dohierarchical = '.' not in specialtokens
         allnames = specialtokens + protected_auxnames
-        specstr = self.specStr   # eases notation
         returnstr = ""
         if specstr == "":
             # Hack for empty specs to pass without losing their last characters
@@ -1252,11 +1285,11 @@ class parserObject(object):
         while scount < speclen:
             stemp = specstr[scount]
             ## DEBUGGING PRINT STATEMENTS
-##            print "\n*********************************************"
-##            print specstr[:scount]
-##            print stemp
-##            print s
-##            print tokenized
+##            print("\n*********************************************")
+##            print(specstr[:scount])
+##            print(stemp)
+##            print(s)
+##            print(tokenized)
             scount += 1
             if name_chars_RE.match(stemp) is None:
                 # then stemp is a non-alphanumeric char
@@ -1455,7 +1488,8 @@ class parserObject(object):
                     # find index name in this expression. this should
                     # be the only free symbol, otherwise syntax error.
                     temp = parserObject(expr[1:-1],
-                                        includeProtected=False)
+                                        includeProtected=False,
+                                        ignoreQuotes=False)
                     if len(temp.freeSymbols) == 1:
                         free.extend(temp.freeSymbols)
                         # not sure whether should add to usedSymbols
@@ -1504,7 +1538,8 @@ class parserObject(object):
                             expr = specstr[scount:scount+rbpos+1]
                             # find index name in this expression. this should
                             # be the only free symbol, otherwise syntax error.
-                            temp = parserObject(expr, includeProtected=False)
+                            temp = parserObject(expr, includeProtected=False,
+                                                ignoreQuotes=False)
                             macrotests = [len(temp.tokenized) == 7,
                                temp.tokenized[2] == temp.tokenized[4] == ',',
                                temp.tokenized[5] in ['+','*']]
@@ -1571,6 +1606,14 @@ class parserObject(object):
                             snew = symbolMap(s)
                             returnstr += snew
                             tokenized.append(snew)
+                        elif s in ('and', 'or','not'):
+                            # these are the only text-based inline operators
+                            # so they need whitespace around them
+                            if tokenized[-1] == " ":
+                                tokenized.extend([s, " "])
+                            else:
+                                tokenized.extend([" ", s, " "])
+                            returnstr += s
                         else:
                             # s is e.g. a declared argument to an aux fn but
                             # only want to ensure it is present. no action to
@@ -1590,7 +1633,7 @@ class parserObject(object):
         # end of scount while loop
         if reset:
             # hack to remove any string literals
-            actual_free = [sym for sym in free if sym in tokenized]
+            actual_free = [sym for sym in free if sym in set(tokenized)]
             for sym in [sym for sym in free if sym not in actual_free]:
                 is_literal = False
                 for tok in tokenized:
@@ -1610,6 +1653,33 @@ class parserObject(object):
             self.freeSymbols = actual_free
             self.specStr = returnstr
             self.tokenized = tokenized
+        if ignoreQuotes and len(subs) > 0:
+            # this overwrites the assignment to specStr from returnstr at the
+            # end of self.parse
+            self.specStr = orig_spec
+            new_toks = []
+            if self.ignoreTokens == []:
+                # easy case, will match whole tokens
+                for tok in self.tokenized:
+                    try:
+                        rep_tok = subs[tok]
+                    except KeyError:
+                        rep_tok = tok
+                    new_toks.append(rep_tok)
+            else:
+                # due to nature of ignoreTokens, the quote temp tokens could
+                # be embedded inside of ignoreTokens, e.g. "[QUOTE_<sha>]"
+                for tok in self.tokenized:
+                    rep_tok = tok
+                    for k, v in subs.items():
+                        # will only match one at a time
+                        rep_tok = rep_tok.replace(k, v)
+                    new_toks.append(rep_tok)
+            self.tokenized = new_toks
+            # remove quote literals from these symbol records
+            self.freeSymbols = [symb for symb in self.freeSymbols if symb not in subs]
+            self.usedSymbols = [symb for symb in self.freeSymbols if symb not in subs]
+            returnstr = orig_spec
         # strip extraneous whitespace
         return returnstr.strip()
 
@@ -1948,6 +2018,8 @@ def readArgs(argstr, lbchar='(', rbchar=')'):
 
     Returns a triple: [success_boolean, list of arguments, number of args]"""
     bracetest = argstr[0] == lbchar and argstr[-1] == rbchar
+    if not bracetest:
+        raise ValueError("argument string must begin and end with specified braces")
     rest = argstr[1:-1].replace(" ","")
     pieces = []
     while True:
@@ -1985,7 +2057,8 @@ def findEndBrace(s, lbchar='(', rbchar=')'):
     '(' and ')'. Change them with the optional second and third arguments.
     """
     pos = 0
-    assert s[0] == lbchar, 'string argument must begin with left brace'
+    if s[0] != lbchar:
+        raise ValueError('string argument must begin with left brace')
     stemp = s
     leftbrace_count = 0
     notDone = True
@@ -2118,6 +2191,55 @@ def wrapArgInCall(source, callfn, wrapL, wrapR=None, argnums=[0],
             output += source[currpos:]
     return output
 
+def paren_contents(seq, lbr='(', rbr=')'):
+    """Generate info about parenthesized contents in sequence as
+    (unique tree position key,
+     tree depth,
+     seq index of opening paren,
+     seq index of closing paren).
+
+    Works if lbr == rbr, e.g. for matching quote marks, when it's
+    expected that they will be only of depth 1.
+    """
+    past_outkeys = []
+    key_stack = []
+    stack = []
+    if lbr == rbr:
+        # e.g. for matching quotes
+        # max depth should be one, otherwise it would be ambiguous
+        # and we can't work with escaped characters
+        for i, c in enumerate(seq):
+            if c == lbr:
+                if stack:
+                    start, key_stack = stack.pop()
+                    assert len(stack) == 0
+                    past_outkeys.append(key_stack.copy())
+                    yield (tuple(key_stack), len(stack), start, i)
+                else:
+                    if len(past_outkeys) == 0:
+                        key_stack = key_stack + [0]
+                    else:
+                        if key_stack in past_outkeys:
+                            key_stack = key_stack[:-1] + [key_stack[-1] + 1]
+                        else:
+                            key_stack = key_stack + [0]
+                    stack.append((i, key_stack))
+    else:
+        # regular asymmetric case
+        for i, c in enumerate(seq):
+            if c == lbr:
+                if len(past_outkeys) == 0:
+                    key_stack = key_stack + [0]
+                else:
+                    if key_stack in past_outkeys:
+                        key_stack = key_stack[:-1] + [key_stack[-1] + 1]
+                    else:
+                        key_stack = key_stack + [0]
+                stack.append((i, key_stack))
+            elif c == rbr and stack:
+                start, key_stack = stack.pop()
+                past_outkeys.append(key_stack.copy())
+                yield (tuple(key_stack), len(stack), start, i)
 
 ##def replaceCallsWithDummies(source, callfns, used_dummies=None, notFirst=False):
 ##    """Replace all function calls in source with dummy names,
@@ -2289,8 +2411,69 @@ def replaceCallsWithDummies(source, callfns, used_dummies=None, notFirst=False):
     return output, dummies
 
 
+def add_arglen_to_fn_names(qtoks, fname, pc_info_list=None, max_args=4):
+    """Add the number of args to instances of the given function's calls to the
+    name of the function. This is used for python -> C code generation where
+    the C equivalents of python functions such as min() or max() must take a
+    fixed number of arguments known at compile time.
+    See core/codegenerators/c.py for usage.
+
+    qtoks is a list of tokens (e.g. created by QuantSpec.parser.tokenized).
+    pc_info_list is the optional pre-computed output from paren_contents
+      converted to a list (to avoid re-computing for several calls to this
+      function).
+    max_args (default 4) is the maximum number of support arguments for this
+      parse scheme.
+    """
+    if pc_info_list is None:
+        # convert generator to list for repeated iterations
+        pc_info_list = list(paren_contents(qtoks))
+    rep_ix = list(np.where(np.array(qtoks) == fname)[0])
+    if len(rep_ix) != 0:
+        for key, depth, i, j in pc_info_list:
+            if i-1 in rep_ix:
+                temp_qtoks = qtoks[:]
+                # matching function name
+                # get args for this call between parens
+                # blocking out any interior calls at higher depth
+                for key2, depth2, i2, j2 in pc_info_list:
+                    if depth2 == depth + 1 and key2[:len(key)] == key:
+                        temp_qtoks = temp_qtoks[:i2] + ['_']*(j2-i2) + temp_qtoks[j2:]
+                num_args = temp_qtoks[i:j].count(',') + 1
+                if num_args > max_args:
+                    raise ValueError("Too many arguments found for this to parse")
+                qtoks = qtoks[:i-1] + [fname+str(num_args)] + qtoks[i:]
+                rep_ix.remove(i-1)
+                if rep_ix == []:
+                    break # for
+    return qtoks
+
+
+def add_args_to_calls_tok(qtoks, callfns, new_arg_list):
+    """qtoks is a list of tokens (e.g. created by QuantSpec.parser.tokenized).
+    callfns is a list of function names, for which the additional args will be
+      added to call instances.
+    new_arg_list is a list of string tokens to add to calls (no commas).
+    """
+    for fname in callfns:
+        while True:
+            rep_ix = np.where(np.array(qtoks) == fname)[0]
+            if len(rep_ix) == 0:
+                break # while
+            else:
+                for key, depth, i, j in paren_contents(qtoks):
+                    if i-1 in rep_ix:
+                        # matching function name
+                        # get args for this call between parens
+                        qtoks = qtoks[:j] + \
+                            [',' + arg for arg in new_arg_list] + qtoks[j:]
+                        break # for
+
+
 def addArgToCalls(source, callfns, arg, notFirst=''):
     """Add an argument to calls in source, to the functions listed in callfns.
+    This is a legacy function. A better version for future use is
+    add_args_to_calls_tok.
     """
     # This function used to work on lists of callfns directly, but I can't
     # see why it stopped working. So I just added this recursing part at

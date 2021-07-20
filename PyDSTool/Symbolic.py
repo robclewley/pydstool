@@ -58,6 +58,7 @@ Robert Clewley, October 2005.
 
 import os, sys, types
 import pickle
+from hashlib import sha1
 from .Interval import Interval
 from .common import *
 from .utils import info as utils_info
@@ -66,8 +67,8 @@ from .errors import *
 
 #from math import *
 from .utils import *
-from numpy import array, Inf, NaN, isfinite, mod, sum, float64, int32
-from numpy import sometrue, alltrue
+from numpy import array, isfinite, mod, sum, float64, int32, sometrue, alltrue
+import numpy as np
 # replacements of math functions so that expr2fun etc. produce vectorizable math functions
 from numpy import arccos, arcsin, arctan, arctan2, arccosh, arcsinh, arctanh, \
      ceil, cos, cosh, exp, fabs, floor, fmod, frexp, hypot, ldexp, log, log10, \
@@ -95,8 +96,8 @@ pow = power
 # determine what "globals" will be for math evaluations in _eval method
 math_dir = dir(math)
 math_globals = dict(zip(math_dir,[getattr(math, m) for m in math_dir]))
-math_globals['Inf'] = Inf
-math_globals['NaN'] = NaN
+math_globals['Inf'] = np.Inf
+math_globals['NaN'] = np.NaN
 
 # protected (function) names come from parseUtils.py
 # (constants are all-caps and are filtered out)
@@ -1708,6 +1709,8 @@ class QuantSpec(object):
         # deal with string literals that would otherwise lose their quote marks
         # during later evaluation.
         # ... first, convert all single quotes to double quotes
+        # this only works for isolated quotes as tokens, not whole strings as
+        # tokens.
         for q_ix in range(len(toks)):
             if toks[q_ix] == "'":
                 toks[q_ix] = '"'
@@ -1721,16 +1724,18 @@ class QuantSpec(object):
             FScompat_namemap = {}
             FScompat_namemapInv = invertMap(mathNameMap)
         elif eval_type == 1:
-            FScompat_namemap = mathNameMap
+            FScompat_namemap = deepcopy(mathNameMap)
             FScompat_namemapInv = {}
         else:
             # eval_type == -1
-            FScompat_namemap = mathNameMap
+            FScompat_namemap = deepcopy(mathNameMap)
             FScompat_namemapInv = {}
         if num_quotes > 0:
+            # this count only represents isolated quotes as tokens, not
+            # quoted terms as tokens like "something".
             new_toks = []
             n_ix = -1
-            if mod(num_quotes,2)!=0:
+            if mod(num_quotes,2) != 0:
                 raise PyDSTool_ValueError("Mismatch in number of quotes in spec")
             # ensure single quotes always end up as double quotes (makes it C-compatible
             #  and simplify_str() annoyingly converts doubles to singles)
@@ -1751,12 +1756,20 @@ class QuantSpec(object):
                 FScompat_namemapInv[replit[1:-1]] = qlit
             # finish adding the remaining tokens
             new_toks.extend(toks[end_ix+2:])
-            qtemp = QuantSpec(self.subjectToken, "".join(argmap(new_toks)),
-                          self.specType)
         else:
-            new_toks = toks
-            qtemp = self.__copy__()
-            qtemp.mapNames(argmap)
+            new_toks = toks[:]
+            str_tok_ixs = [i for i, tok in enumerate(toks) if tok[0]==tok[-1] and tok[0] in ("'", '"')]
+            for i in str_tok_ixs:
+                # this is for cases where whole strings are single tokens
+                # and we've already taken care of cases where tokens are isolated
+                # quotes in the previous clause
+                replit = "QUOTE_"+sha1(toks[i].encode('utf-8')).hexdigest()
+                FScompat_namemapInv[replit] = toks[i]
+                new_toks[i] = replit
+                repliterals.append(replit)
+
+        qtemp = QuantSpec(self.subjectToken, "".join(argmap(new_toks)),
+                      self.specType)
         # now apply scope mapping so that literals remain unaffected.
         # second pass for one level of indirect references
         # but only use keys that weren't present before, to avoid circular
@@ -1944,6 +1957,10 @@ class QuantSpec(object):
         # (these can confuse function definitions made from these into thinking
         # that there's a badly indented code block following the function body)
         self.specStr = "".join(toks).strip()
+        #self.parser = parserObject(self.specStr,
+        #                           includeProtected=self.parser.includeProtected,
+        #                           ignoreTokens=self.parser.ignoreTokens
+        #                           )
         self.parser.specStr = self.specStr
         self.specStr = \
                 self.parser.parse(self.parser.ignoreTokens, None,
@@ -1975,7 +1992,7 @@ def processMultiDef(s, specstr, specType):
     # allowed in a QuantSpec subjectToken.
     # Correct format is "<symbol 1>[<symbol 2>,<int 1>,<int 2>]"
     # where s1 != s2 and i1 < i2, and s1 does not end in a number
-    m = parserObject(s, ignoreTokens=['['])
+    m = parserObject(s, ignoreTokens=['['], ignoreQuotes=False)
     i1 = eval(m.tokenized[4])
     i2 = eval(m.tokenized[6])
     rootname = m.tokenized[0]
@@ -2071,7 +2088,7 @@ def processMultiDef(s, specstr, specType):
 def isMultiDef(s):
     """Determine whether string is a candidate multiple Quantity definition."""
 
-    temp = parserObject(s, ignoreTokens=['['])
+    temp = parserObject(s, ignoreTokens=['['], ignoreQuotes=False)
     try:
         return alltrue([not temp.isCompound(), len(temp.tokenized)==8,
                         isNameToken(temp.tokenized[0]),
@@ -2083,7 +2100,7 @@ def isMultiDef(s):
 
 
 def findMultiRefs(s):
-    temp = parserObject(s, ignoreTokens=['['])
+    temp = parserObject(s, ignoreTokens=['['], ignoreQuotes=False)
     # reflist contains tuples of (rootname, expr)
     reflist = []
     searchSymbols = temp.freeSymbols
@@ -2150,7 +2167,7 @@ def processMultiRef(s, rootname, ixname, ok_range):
     # "rootname[<expr in ixname>]" for a valid rootname (does not end in
     # a number), where the expression evaluates to an integer when ixname
     # is substituted by an integer in the range ok_range = [i1,i2].
-    temp = parserObject(s, ignoreTokens=['['])
+    temp = parserObject(s, ignoreTokens=['['], ignoreQuotes=False)
     try:
         if len(rootname) > 1:
             test_ix = -1
@@ -2379,7 +2396,7 @@ class Quantity(object):
         # various ways to specify domain ...
         if domain is None:
             # assume continuous-valued from -Inf to Inf
-            self.domain = (float, Continuous, [-Inf, Inf])
+            self.domain = (float, Continuous, [-np.Inf, np.Inf])
         else:
             self.setDomain(domain)
         try:
