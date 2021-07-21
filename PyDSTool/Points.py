@@ -95,6 +95,7 @@ class Point(object):
             if kw != {}:
                 raise ValueError("Cannot mix keyword dictionary and keywords")
             kw = kwd
+
         self._parameterized = False
         self.labels = {}
         if intersect(kw.keys(), point_keys) == []:

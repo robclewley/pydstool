@@ -1336,7 +1336,7 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1000, eps=1e-8,
     # NOTE: def Rhs(self, t, xdict, pdict) and Jacobian signature
     # has same form, so need to use a wrapper function to convert order
     # of arguments to suit solver.
-    #
+
     Rhs_wrap = make_RHS_wrap(gen, xdict, x0_names)
     if gen.haveJacobian():
         fprime = make_Jac_wrap(gen, xdict, x0_names)
@@ -1361,8 +1361,9 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1000, eps=1e-8,
     xtol = eps/10.
     def array_to_point(a):
         return Point(dict(zip(x0_names,a)))
+
     for dummy_ix in range(n**D):
-        x0 = array([x0_coords[i][d_posns[i]] for i in range(D)])
+        x0 = [ x0_coords[i][d_posns[i]] for i in range(D)]
         # TEST
         #sol = root(Rhs_wrap, x0, (t,gen.pars), method='hybr',
         #           jac=fprime, options={'xtol':xtol})
@@ -4050,7 +4051,7 @@ def plot_PP_fps(fps, coords=None, do_evecs=False, markersize=10):
             style = 'ko'
         plt.plot(fp.point[x], fp.point[y], style, markersize=markersize, mew=2)
 
-def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0):
+def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0, **plotdict):
     """Draw 2D vector field in (xname, yname) coordinates of given Generator,
     sampling on a uniform grid of n by n points.
 
@@ -4094,14 +4095,9 @@ def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0):
 
     X, Y = np.meshgrid(xs, ys)
     dxs, dys = np.meshgrid(xs, ys)
-
-##    dx_big = 0
-##    dy_big = 0
     dz_big = 0
     vec_dict = {}
 
-#    dxs = array((n,), float)
-#    dys = array((n,), float)
     for xi, x in enumerate(xs):
         for yi, y in enumerate(ys):
             xdict.update({xname: x, yname: y})
@@ -4110,41 +4106,19 @@ def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0):
             dxs[yi,xi] = dx
             dys[yi,xi] = dy
             dz = np.linalg.norm((dx,dy))
-##            vec_dict[ (x,y) ] = (dx, dy, dz)
-##            if dx > dx_big:
-##                dx_big = dx
-##            if dy > dy_big:
-##                dy_big = dy
             if dz > dz_big:
                 dz_big = dz
 
     plt.quiver(X, Y, dxs, dys, angles='xy', pivot='middle', units='inches',
                scale=dz_big*max(h,w)/(10*exp(2*scale_exp)), lw=0.01/exp(scale_exp-1),
                headwidth=max(2,1.5/(exp(scale_exp-1))),
-               #headlength=2*max(2,1.5/(exp(scale_exp-1))),
-               width=0.001*max(h,w), minshaft=2, minlength=0.001)
-
-##    # Use 95% of interval size
-##    longest_x = w*0.95/(n-1)
-##    longest_y = h*0.95/(n-1)
-##    longest = min(longest_x, longest_y)
-##
-##    scaling_x = longest_x/dx_big
-##    scaling_y = longest_y/dy_big
-##    scaling = min(scaling_x, scaling_y)
-
+               width=0.001*max(h,w), minshaft=2, minlength=0.001,
+               **plotdict
+               )
     ax = plt.gca()
-##    hw = longest/10
-##    hl = hw*2
-##    for x in xs:
-##        for y in ys:
-##            dx, dy, dz = vec_dict[ (x,y) ]
-##            plt.arrow(x, y, scaling*dx, yscale*scaling*dy,
-##                      head_length=hl, head_width=hw, length_includes_head=True)
     ax.set_xlim(xdom)
     ax.set_ylim(ydom)
     plt.draw()
-
 
 def get_PP(gen, pt, vars, doms=None, doplot=True,
            t=0, saveplot=None, format='svg', trail_pts=None,
@@ -4177,13 +4151,7 @@ def get_PP(gen, pt, vars, doms=None, doplot=True,
                            t=t, eps=1e-8)
 
     f = figure(1)
-    nulls_x, nulls_y, handles = find_nullclines(gen, xFS, yFS,
-                                    x_dom=x_dom, y_dom=y_dom,
-                                    fixed_vars=ptFS, n=3, t=t,
-                                    max_step={xFS: 0.1, yFS: 1},
-                                    max_num_points=10000, fps=fps,
-                                    doplot=doplot, plot_style=null_style,
-                                    newfig=False)
+    nulls_x, nulls_y = find_nullclines( gen, xFS, yFS, n=3, t=t )
     if doplot:
         tol = 0.01
         xwidth = abs(x_dom[1]-x_dom[0])
