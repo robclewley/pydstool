@@ -634,7 +634,7 @@ class Vode_ODEsystem(ODEsystem):
             num_points += 1
             if not breakwhile:
                 try:
-                    extralist[self.numpars:listend] = [f(solver.t + self.globalt0,
+                    extralist[self.numpars:listend] = [f(tmesh[0] + self.globalt0,
                                                          self.checklevel)
                                                        for f in inputVarList]
                 except ValueError:
@@ -653,7 +653,12 @@ class Vode_ODEsystem(ODEsystem):
                         'External input call caused t out of range error: t = %f'
                         % solver.t)
                     raise
-                solver.set_f_params(extralist)
+                except IndexError:
+                    # no points left in tmesh, move on and let re-loop catch and break
+                    # to end integration
+                    pass
+                else:
+                    solver.set_f_params(extralist)
                 breakwhile = not solver.successful()
         # Check that any terminal events found terminated the code correctly
         if first_found_t is not None:
