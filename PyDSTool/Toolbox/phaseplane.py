@@ -1334,9 +1334,8 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1000, eps=1e-8,
             x0_coords[ix,:] = linspace(xdom[0], xdom[1], n)
             ix += 1
     # NOTE: def Rhs(self, t, xdict, pdict) and Jacobian signature
-    # has same form, so need to use a wrapper function to convert order
+    # have same form, so need to use a wrapper function to convert order
     # of arguments to suit solver.
-    #
     Rhs_wrap = make_RHS_wrap(gen, xdict, x0_names)
     if gen.haveJacobian():
         fprime = make_Jac_wrap(gen, xdict, x0_names)
@@ -1350,6 +1349,7 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1000, eps=1e-8,
             except (OverflowError, ValueError):
                 # penalty
                 return array([[1e4]*D]*D)
+
         fprime = Jac_wrap
     else:
         fprime = None
@@ -1360,7 +1360,8 @@ def find_fixedpoints(gen, subdomain=None, n=5, maxsearch=1000, eps=1e-8,
     d_posns = base_n_counter(n,D)
     xtol = eps/10.
     def array_to_point(a):
-        return Point(dict(zip(x0_names,a)))
+        return Point(dict(zip(x0_names, a)))
+
     for dummy_ix in range(n**D):
         x0 = array([x0_coords[i][d_posns[i]] for i in range(D)])
         # TEST
@@ -4050,7 +4051,8 @@ def plot_PP_fps(fps, coords=None, do_evecs=False, markersize=10):
             style = 'ko'
         plt.plot(fp.point[x], fp.point[y], style, markersize=markersize, mew=2)
 
-def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0):
+def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0,
+               **quiverplot_dict):
     """Draw 2D vector field in (xname, yname) coordinates of given Generator,
     sampling on a uniform grid of n by n points.
 
@@ -4064,6 +4066,8 @@ def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0):
       size of arrows in case of disparate scales in the vector field. Larger
       values of scale magnify the arrow sizes. For stiff vector fields, values
       from -3 to 3 may be necessary to resolve arrows in certain regions.
+
+    Optional quiverplot_dict to send plotting options to the quiver function.
 
     Requires matplotlib 0.99 or later
     """
@@ -4095,13 +4099,9 @@ def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0):
     X, Y = np.meshgrid(xs, ys)
     dxs, dys = np.meshgrid(xs, ys)
 
-##    dx_big = 0
-##    dy_big = 0
     dz_big = 0
-    vec_dict = {}
+##    vec_dict = {}
 
-#    dxs = array((n,), float)
-#    dys = array((n,), float)
     for xi, x in enumerate(xs):
         for yi, y in enumerate(ys):
             xdict.update({xname: x, yname: y})
@@ -4110,19 +4110,17 @@ def plot_PP_vf(gen, xname, yname, N=20, subdomain=None, scale_exp=0):
             dxs[yi,xi] = dx
             dys[yi,xi] = dy
             dz = np.linalg.norm((dx,dy))
-##            vec_dict[ (x,y) ] = (dx, dy, dz)
-##            if dx > dx_big:
-##                dx_big = dx
-##            if dy > dy_big:
-##                dy_big = dy
             if dz > dz_big:
                 dz_big = dz
 
     plt.quiver(X, Y, dxs, dys, angles='xy', pivot='middle', units='inches',
-               scale=dz_big*max(h,w)/(10*exp(2*scale_exp)), lw=0.01/exp(scale_exp-1),
+               scale=dz_big*max(h,w)/(10*exp(2*scale_exp)),
+               lw=0.01/exp(scale_exp-1),
                headwidth=max(2,1.5/(exp(scale_exp-1))),
                #headlength=2*max(2,1.5/(exp(scale_exp-1))),
-               width=0.001*max(h,w), minshaft=2, minlength=0.001)
+               width=0.001*max(h,w), minshaft=2, minlength=0.001,
+               **quiverplot_dict
+               )
 
 ##    # Use 95% of interval size
 ##    longest_x = w*0.95/(n-1)
@@ -4167,10 +4165,8 @@ def get_PP(gen, pt, vars, doms=None, doplot=True,
         doms = gen.xdomain
     else:
         doms = gen._FScompatibleNames(doms)
-    sub_dom[xFS] = doms[xFS]
-    sub_dom[yFS] = doms[yFS]
-    x_dom = doms[xFS]
-    y_dom = doms[yFS]
+    sub_dom[xFS] = x_dom = doms[xFS]
+    sub_dom[yFS] = y_dom = doms[yFS]
     x_interval = Interval(xFS, float, x_dom, abseps=0)
     y_interval = Interval(yFS, float, y_dom, abseps=0)
     fps = find_fixedpoints(gen, n=6, subdomain=sub_dom,
@@ -4178,12 +4174,11 @@ def get_PP(gen, pt, vars, doms=None, doplot=True,
 
     f = figure(1)
     nulls_x, nulls_y, handles = find_nullclines(gen, xFS, yFS,
-                                    x_dom=x_dom, y_dom=y_dom,
-                                    fixed_vars=ptFS, n=3, t=t,
+                                    subdomain=sub_dom, fps=fps,
+                                    n=3, t=t,
                                     max_step={xFS: 0.1, yFS: 1},
-                                    max_num_points=10000, fps=fps,
-                                    doplot=doplot, plot_style=null_style,
-                                    newfig=False)
+                                    max_num_points=10000
+                                    )
     if doplot:
         tol = 0.01
         xwidth = abs(x_dom[1]-x_dom[0])

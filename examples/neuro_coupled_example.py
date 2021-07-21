@@ -87,7 +87,7 @@ ic_args = {'V': -75.0,
            'NMDA.p': 0.1,
            'KCa.c': 0.1}
 
-print "Computing trajectory using verbosity level %d..." % verboselevel
+print("Computing trajectory using verbosity level %d..." % verboselevel)
 cell.compute(trajname='test',
              tdata=[0, 100],
              ics=ic_args,

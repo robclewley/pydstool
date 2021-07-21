@@ -377,7 +377,7 @@ class BiAltMethod(TestFunc):
         if self.data is None:
             self.data = args()
         n = len(self.F.coords)
-        self.data.P = zeros((n*(n-1)//2, n*(n-1)//2), float)
+        self.data.P = zeros((n*int((n-1)/2), n*int((n-1)/2)), float)
 
     def bialtprod(self, A, B):
         n = A.shape[0]
@@ -385,28 +385,30 @@ class BiAltMethod(TestFunc):
             for q in range(p):
                 for r in range(1,n):
                     for s in range(r):
-                        self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = 0.5*(A[p][r]*B[q][s] - A[p][s]*B[q][r] + \
-                                                                         B[p][r]*A[q][s] - B[p][s]*A[q][r])
+                        self.data.P[int(p*(p-1)/2 + q)][int(r*(r-1)/2 + s)] = \
+                            0.5*(A[p][r]*B[q][s] - A[p][s]*B[q][r] + \
+                                 B[p][r]*A[q][s] - B[p][s]*A[q][r])
         return self.data.P
 
     def bialtprodeye(self, A):
         n = A.shape[0]
-        for p in range(1,n):
+        for p in range(1, n):
             for q in range(p):
-                for r in range(1,n):
+                for r in range(1, n):
                     for s in range(r):
                         if r == q:
-                            self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = -1*A[p][s]
+                            newval = -1*A[p][s]
                         elif r != p and s == q:
-                            self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = A[p][r]
+                            newval = A[p][r]
                         elif r == p and s == q:
-                            self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = A[p][p] + A[q][q]
+                            newval = A[p][p] + A[q][q]
                         elif r == p and s != q:
-                            self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = A[q][s]
+                            newval = A[q][s]
                         elif s == p:
-                            self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = -1*A[q][r]
+                            newval = -1*A[q][r]
                         else:
-                            self.data.P[p*(p-1)//2 + q][r*(r-1)//2 + s] = 0
+                            newval = 0
+                        self.data.P[int(p*(p-1)/2 + q)][int(r*(r-1)/2 + s)] = newval
         return self.data.P
 
 class AddTestFunction(Function):
