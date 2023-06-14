@@ -17,7 +17,7 @@ from numpy import Inf, NaN, atleast_1d, clip, less, greater, logical_or, \
      searchsorted, isfinite, shape, mat, sign, any, all, sometrue, alltrue, \
      array, swapaxes, zeros, ones, finfo, double, exp, log, \
      take, less_equal, putmask, ndarray, asarray, \
-     int, float, complex, complexfloating, integer, floating, \
+     float, complex, complexfloating, integer, floating, \
      int_, int0, int8, int16, int32, int64, float_, float32, float64, \
      complex_, complex64, complex128, argmin, argmax
 from numpy.linalg import norm
